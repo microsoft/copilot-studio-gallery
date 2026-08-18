@@ -5,16 +5,22 @@ import { withBase } from "../lib/url";
 interface Props {
   title?: string;
   description?: string;
+  socialTitle?: string;
 }
 
 const {
   title = "Copilot Studio Gallery",
   description = "Discover community-built Copilot Studio solutions through their agents and workflow canvases.",
+  socialTitle,
 } = Astro.props;
 const fullTitle =
   title === "Copilot Studio Gallery"
     ? title
     : `${title} · Copilot Studio Gallery`;
+const shareTitle = socialTitle ?? fullTitle;
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
+const socialImageUrl = new URL(withBase("/copilot-studio-gallery-social.png"), Astro.site);
+const socialImageAlt = "Copilot Studio Gallery with workflow, agent, tool, MCP, and skill symbols.";
 ---
 
 <!doctype html>
@@ -33,11 +39,24 @@ const fullTitle =
     <meta name="generator" content={Astro.generator} />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <meta property="og:title" content={fullTitle} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:title" content={shareTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Copilot Studio Gallery" />
-    <link rel="icon" type="image/svg+xml" href={withBase("/copilot-studio.svg")} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={socialImageUrl} />
+    <meta property="og:image:secure_url" content={socialImageUrl} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={socialImageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={shareTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageUrl} />
+    <meta name="twitter:image:alt" content={socialImageAlt} />
+    <link rel="icon" type="image/svg+xml" href={withBase("/favicon.svg")} />
   </head>
   <body class="flex min-h-screen flex-col antialiased">
     <header class="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur-xl">
