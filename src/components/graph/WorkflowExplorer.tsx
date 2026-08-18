@@ -18,7 +18,7 @@ export default function WorkflowExplorer({ workflows }: { workflows: WorkflowPre
   return (
     <div>
       <div className="mb-3 flex flex-col gap-3 rounded-[0.625rem] border border-border bg-surface p-3 sm:flex-row sm:items-center sm:justify-between">
-        <label className="flex min-w-0 flex-1 items-center gap-3">
+        <label className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
           <span className="shrink-0 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-soft">
             Workflow
           </span>
