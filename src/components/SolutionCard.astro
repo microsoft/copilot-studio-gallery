@@ -20,14 +20,19 @@ const buildingBlocks = [
 ];
 ---
 
-<a
-  href={withBase(`/solutions/${solution.id}`)}
-  class="product-card group flex h-full flex-col overflow-hidden rounded-[1.125rem] border border-border bg-surface"
->
+<article class="product-card group relative flex h-full flex-col overflow-hidden rounded-[1.125rem] border border-border bg-surface">
+  <a href={withBase(`/solutions/${solution.id}`)} class="absolute inset-0 z-10" aria-label={`View ${data.name}`}>
+    <span class="sr-only">View {data.name}</span>
+  </a>
   <div class:list={["studio-canvas relative m-3 mb-0 overflow-hidden rounded-xl border border-border/70 px-3 py-2 text-muted", compact ? "h-28" : "h-36"]}>
     <div class="studio-grid absolute inset-0 opacity-70"></div>
     <div class="relative h-full transition-transform duration-300 group-hover:scale-[1.02]">
-      <TopologyPreview graph={graph} label={`${data.name} topology`} compact />
+      <TopologyPreview
+        graph={graph}
+        label={`${data.name} topology`}
+        variant={data.workflowCount ? "workflow" : "agent"}
+        compact
+      />
     </div>
   </div>
   <div class="flex flex-1 flex-col p-4 pt-3">
@@ -53,11 +58,17 @@ const buildingBlocks = [
       {isDemo && <span class="rounded-md border border-dashed border-border px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-soft">Demo</span>}
     </div>
     <div class="mt-4 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs text-soft">
-      <span class="truncate" data-author-key={authorKey(data.authorGithub, data.author)}>by {data.author}</span>
+      <a
+        href={withBase(`/contributors/${authorKey(data.authorGithub, data.author)}`)}
+        class="relative z-20 truncate hover:text-accent"
+        data-author-key={authorKey(data.authorGithub, data.author)}
+      >
+        by {data.author}
+      </a>
       <span class="flex shrink-0 items-center gap-3">
         <span title={`${data.agentCount} agents`}>{data.agentCount} agent{data.agentCount === 1 ? "" : "s"}</span>
         <span title={`${data.workflowCount} workflows`}>{data.workflowCount} workflow{data.workflowCount === 1 ? "" : "s"}</span>
       </span>
     </div>
   </div>
-</a>
+</article>

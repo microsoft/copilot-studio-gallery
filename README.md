@@ -15,7 +15,7 @@ The site uses Astro, Tailwind CSS, React Flow, and static GitHub Pages deploymen
   connected-agent delegation.
 - Interactive workflow previews rendered from each export's saved designer graph.
 - Deterministic downloadable ZIP rebuilt from the submitted exploded solution.
-- Contributor directory and JSON catalog endpoint.
+- Contributor directory, individual contributor profiles, and JSON catalog endpoint.
 - Pull-request validation for metadata, solution structure, graph availability,
   unsafe filesystem entries, and generated output.
 

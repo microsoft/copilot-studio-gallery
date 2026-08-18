@@ -407,6 +407,20 @@ export function layoutAgentGraph(nodes: GraphNode[], edges: GraphEdge[]): GraphD
     x: center.x + Math.cos(angle) * radius,
     y: center.y + Math.sin(angle) * radius,
   });
+  const pointInLane = (
+    center: { x: number; y: number },
+    outwardAngle: number,
+    distance: number,
+    gap: number,
+    index: number,
+    count: number,
+  ) => {
+    const lateralOffset = (index - (count - 1) / 2) * gap;
+    return {
+      x: center.x + Math.cos(outwardAngle) * distance - Math.sin(outwardAngle) * lateralOffset,
+      y: center.y + Math.sin(outwardAngle) * distance + Math.cos(outwardAngle) * lateralOffset,
+    };
+  };
 
   const placeAgent = (
     agentId: string,
@@ -420,39 +434,27 @@ export function layoutAgentGraph(nodes: GraphNode[], edges: GraphEdge[]): GraphD
       .filter((id) => nodeById.has(id) && !positions.has(id));
     const components = children.filter((id) => !agentIds.has(id));
     const connectedAgents = children.filter((id) => agentIds.has(id));
-    const ringAngle = (id: string): number => {
-      const index = children.indexOf(id);
-      if (children.length === 1) return -Math.PI / 2;
-      if (children.length === 2) return Math.PI * index;
-      return -Math.PI / 2 + (Math.PI * 2 * index) / children.length;
-    };
 
     components.forEach((id, index) => {
-      const angle = depth === 0
-        ? ringAngle(id)
-        : outwardAngle - Math.PI / 3 + (Math.PI * 2 / 3) * ((index + 1) / (components.length + 1));
-      const point = pointOnCircle(center, depth === 0 ? 220 : 170, angle);
+      const angle = depth === 0 ? Math.PI / 2 : outwardAngle;
+      const point = pointInLane(center, angle, depth === 0 ? 360 : 320, 340, index, components.length);
       positions.set(id, centerPosition(point.x, point.y));
     });
 
     connectedAgents.forEach((id, index) => {
-      const angle = depth === 0
-        ? ringAngle(id)
-        : connectedAgents.length === 1
-          ? outwardAngle
-          : outwardAngle - Math.PI / 3 + (Math.PI * 2 / 3) * ((index + 1) / (connectedAgents.length + 1));
-      const point = pointOnCircle(center, depth === 0 ? 360 : 300, angle);
+      const angle = depth === 0 ? -Math.PI / 2 : outwardAngle;
+      const point = pointInLane(center, angle, depth === 0 ? 500 : 520, 560, index, connectedAgents.length);
       placeAgent(id, point, depth + 1, angle);
     });
   };
 
   roots.forEach((root, index) => {
-    const centerX = (index - (roots.length - 1) / 2) * 1_350;
+    const centerX = (index - (roots.length - 1) / 2) * 1_800;
     placeAgent(root.id, { x: centerX, y: 0 }, 0);
   });
 
   agents.filter((agent) => !positions.has(agent.id)).forEach((agent, index) => {
-    placeAgent(agent.id, { x: index * 1_350, y: 1_100 }, 0);
+    placeAgent(agent.id, { x: index * 1_800, y: 1_200 }, 0);
   });
 
   const unplaced = ordered.filter((node) => !positions.has(node.id));

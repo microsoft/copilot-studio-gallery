@@ -40,7 +40,7 @@ const heroGraph = data.workflows[0]?.graph ?? data.agentGraph;
         <h1 class="mt-2 text-3xl font-semibold tracking-[-0.025em] text-ink sm:text-4xl">{data.name}</h1>
         <p class="mt-4 max-w-4xl text-lg leading-relaxed text-muted">{data.description}</p>
         <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
-          <a href={withBase(`/?author=${encodeURIComponent(contributorKey)}`)} class="font-semibold text-ink hover:text-accent">by {data.author}</a>
+          <a href={withBase(`/contributors/${contributorKey}`)} class="font-semibold text-ink hover:text-accent">by {data.author}</a>
           <span>Version {data.version}</span>
           {updated && <span>Updated {updated}</span>}
         </div>
@@ -54,7 +54,7 @@ const heroGraph = data.workflows[0]?.graph ?? data.agentGraph;
           label={`${data.name} topology preview`}
           variant={data.workflows.length ? "workflow" : "agent"}
           compact
-          client:visible
+          client:load
         />
       </div>
       <div class="grid gap-px border-t border-border bg-border sm:grid-cols-4">
@@ -99,7 +99,7 @@ const heroGraph = data.workflows[0]?.graph ?? data.agentGraph;
                   <p class="mt-1 text-sm text-muted">Select an agent, tool, or skill to inspect the published configuration.</p>
                 </div>
                 <div class="overflow-hidden rounded-2xl border border-border bg-elevated card-shadow">
-                  <GraphCanvas graph={data.agentGraph} label={`${data.name} agent architecture`} variant="agent" client:visible />
+                  <GraphCanvas graph={data.agentGraph} label={`${data.name} agent architecture`} variant="agent" client:load />
                 </div>
                 <div class="mt-5 grid gap-3 md:grid-cols-2">
                   {data.agents.map((agent) => (
@@ -127,7 +127,7 @@ const heroGraph = data.workflows[0]?.graph ?? data.agentGraph;
             <h2 class="text-xl font-semibold text-ink">Workflow canvases</h2>
             <p class="mt-1 text-sm text-muted">These positions and connections come from the saved designer graph in the exported solution.</p>
           </div>
-          <WorkflowExplorer workflows={data.workflows} client:visible />
+          <WorkflowExplorer workflows={data.workflows} client:load />
         </section>
 
         <section id="panel-files" role="tabpanel" data-panel="files" class="hidden pt-7">
