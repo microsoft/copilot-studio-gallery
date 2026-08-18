@@ -1,0 +1,333 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --color-page: var(--cp-bg);
+  --color-elevated: var(--cp-bg-elevated);
+  --color-surface: var(--cp-surface);
+  --color-surface-soft: var(--cp-surface-soft);
+  --color-border: var(--cp-border);
+  --color-border-strong: var(--cp-border-strong);
+  --color-ink: var(--cp-text);
+  --color-muted: var(--cp-text-muted);
+  --color-soft: var(--cp-text-soft);
+  --color-accent: var(--cp-accent);
+  --color-accent-hover: var(--cp-accent-hover);
+  --color-accent-soft: var(--cp-accent-soft);
+  --color-accent-fg: var(--cp-accent-fg);
+  --color-success: var(--cp-success);
+  --color-danger: var(--cp-danger);
+  --color-warning: var(--cp-warning);
+  --color-link: var(--cp-link);
+  --font-sans: "Segoe UI Variable Text", "Segoe UI", Aptos, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  --container-gallery: 88rem;
+}
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  color-scheme: light;
+  --cp-bg: #f5f5f5;
+  --cp-bg-elevated: #fafafa;
+  --cp-surface: #ffffff;
+  --cp-surface-soft: #f0f0f0;
+  --cp-border: #d1d1d1;
+  --cp-border-strong: #8a8886;
+  --cp-text: #242424;
+  --cp-text-muted: #616161;
+  --cp-text-soft: #707070;
+  --cp-accent: #5b5fc7;
+  --cp-accent-hover: #4f52b2;
+  --cp-accent-soft: #efefff;
+  --cp-accent-fg: #ffffff;
+  --cp-coral: #d84a4a;
+  --cp-violet: #8b5cf6;
+  --cp-magenta: #c94f9d;
+  --cp-success: #107c10;
+  --cp-danger: #c50f1f;
+  --cp-warning: #f7630c;
+  --cp-link: #115ea3;
+  --cp-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --cp-overlay: rgba(255, 255, 255, 0.82);
+  --cp-panel: rgba(255, 255, 255, 0.88);
+  --cp-panel-strong: rgba(255, 255, 255, 0.98);
+  --cp-sheen: rgba(255, 255, 255, 0.72);
+  --cp-highlight: rgba(91, 95, 199, 0.16);
+  --cp-canvas-glow: rgba(139, 92, 246, 0.12);
+  --cp-coral-glow: rgba(232, 110, 99, 0.12);
+  --cp-brand-gradient: linear-gradient(112deg, #4f6bed 4%, #7856d8 43%, #c94f9d 72%, #e86e63 100%);
+  --graph-trigger: #107c10;
+  --graph-ai: #5b5fc7;
+  --graph-decision: #c94f9d;
+  --graph-loop: #8b5cf6;
+  --graph-data: #115ea3;
+  --graph-communication: #0078d4;
+  --graph-approval: #c50f1f;
+  --graph-content: #8764b8;
+  --graph-action: #ca5010;
+  --graph-tool: #6b69d6;
+  --graph-skill: #008272;
+  --graph-end: #707070;
+  --graph-note: #986f0b;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cp-bg: #292929;
+  --cp-bg-elevated: #2f2f2f;
+  --cp-surface: #333333;
+  --cp-surface-soft: #3b3a39;
+  --cp-border: #484848;
+  --cp-border-strong: #707070;
+  --cp-text: #f5f5f5;
+  --cp-text-muted: #d1d1d1;
+  --cp-text-soft: #adadad;
+  --cp-accent: #9295f5;
+  --cp-accent-hover: #a7a9ff;
+  --cp-accent-soft: rgba(126, 129, 232, 0.2);
+  --cp-accent-fg: #171717;
+  --cp-coral: #ff7b78;
+  --cp-violet: #b69cff;
+  --cp-magenta: #ed86c5;
+  --cp-success: #4ade80;
+  --cp-danger: #f87171;
+  --cp-warning: #fce100;
+  --cp-link: #75b6e7;
+  --cp-shadow: 0 10px 28px rgba(0, 0, 0, 0.34);
+  --cp-overlay: rgba(41, 41, 41, 0.86);
+  --cp-panel: rgba(51, 51, 51, 0.9);
+  --cp-panel-strong: rgba(51, 51, 51, 0.98);
+  --cp-sheen: rgba(255, 255, 255, 0.04);
+  --cp-highlight: rgba(146, 149, 245, 0.2);
+  --cp-canvas-glow: rgba(139, 92, 246, 0.15);
+  --cp-coral-glow: rgba(255, 123, 120, 0.1);
+  --cp-brand-gradient: linear-gradient(112deg, #7890ff 4%, #9d7af2 43%, #e074b8 72%, #ff8178 100%);
+  --graph-trigger: #54b054;
+  --graph-ai: #9295f5;
+  --graph-decision: #ed86c5;
+  --graph-loop: #b69cff;
+  --graph-data: #75b6e7;
+  --graph-communication: #60a5fa;
+  --graph-approval: #ff7b78;
+  --graph-content: #c6a7e2;
+  --graph-action: #f0a15f;
+  --graph-tool: #aaa7ff;
+  --graph-skill: #5dd5c8;
+  --graph-end: #adadad;
+  --graph-note: #f5d47a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--cp-bg);
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 20rem;
+  margin: 0;
+  background: var(--cp-bg);
+  color: var(--cp-text);
+  font-family: "Segoe UI Variable Text", "Segoe UI", Aptos, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-feature-settings: "ss01" 1, "cv05" 1;
+}
+
+h1,
+h2 {
+  font-family: "Segoe UI Variable Display", "Segoe UI", Aptos, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cp-accent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--cp-highlight);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cp-surface-soft);
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid var(--cp-surface-soft);
+  border-radius: 9999px;
+  background: var(--cp-border-strong);
+}
+
+.card-shadow {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.studio-mark {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--cp-brand-gradient);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 2px 5px rgba(78, 70, 180, 0.24);
+}
+
+.studio-mark::before,
+.studio-mark::after {
+  position: absolute;
+  content: "";
+  border-radius: 38%;
+  background: rgba(255, 255, 255, 0.72);
+  mix-blend-mode: soft-light;
+  transform: rotate(32deg);
+}
+
+.studio-mark::before {
+  inset: 15% 48% 15% -8%;
+}
+
+.studio-mark::after {
+  inset: 15% -8% 15% 48%;
+}
+
+.studio-gradient-text {
+  background: var(--cp-brand-gradient);
+  background-clip: text;
+  color: transparent;
+  -webkit-background-clip: text;
+}
+
+.studio-primary-action {
+  background: var(--cp-accent);
+  color: var(--cp-accent-fg);
+}
+
+.studio-primary-action:hover {
+  background: var(--cp-accent-hover);
+  color: var(--cp-accent-fg);
+}
+
+.studio-canvas {
+  background:
+    radial-gradient(circle at 16% 88%, var(--cp-canvas-glow), transparent 35%),
+    radial-gradient(circle at 88% 8%, var(--cp-coral-glow), transparent 30%),
+    linear-gradient(145deg, var(--cp-surface), var(--cp-bg-elevated));
+}
+
+.studio-grid {
+  background-image: radial-gradient(var(--cp-border) 0.7px, transparent 0.7px);
+  background-size: 18px 18px;
+}
+
+.product-card {
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.featured-carousel {
+  scrollbar-width: none;
+}
+
+.featured-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.featured-slide {
+  width: 86%;
+  flex: 0 0 auto;
+}
+
+@media (min-width: 40rem) {
+  .featured-slide {
+    width: calc((100% - 1rem) / 2);
+  }
+}
+
+@media (min-width: 80rem) {
+  .featured-slide {
+    width: calc((100% - 3rem) / 4);
+  }
+}
+
+.product-card:hover {
+  border-color: var(--cp-border-strong);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.11);
+  transform: translateY(-2px);
+}
+
+html[data-theme="dark"] .product-card:hover {
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
+}
+
+input,
+select {
+  transition: border-color 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
+}
+
+input:hover,
+select:hover {
+  border-color: var(--cp-border-strong);
+}
+
+input:focus,
+select:focus {
+  border-color: var(--cp-accent);
+  box-shadow: 0 0 0 2px var(--cp-highlight);
+  outline: none;
+}
+
+.prose {
+  color: var(--cp-text-muted);
+}
+
+.prose :where(h1, h2, h3, h4, strong) {
+  color: var(--cp-text);
+}
+
+.prose :where(a) {
+  color: var(--cp-link);
+}
+
+.prose :where(code) {
+  color: var(--cp-accent);
+}
+
+.prose :where(pre) {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface-soft);
+  color: var(--cp-text);
+}
+
+.prose :where(table) {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "name": "Invoice Exception Handler",
+  "description": "Validates invoice data, resolves routine mismatches, and routes material exceptions for finance review.",
+  "tags": [
+    "finance",
+    "document-ops",
+    "automation",
+    "approval",
+    "demo"
+  ],
+  "author": "Noah Williams",
+  "authorGithub": "noahwilliams",
+  "createdAt": "2026-08-06",
+  "featured": false,
+  "uniqueName": "Demo_invoice_exception_handler",
+  "version": "1.0.0.0",
+  "publisher": "CAT Gallery Demos",
+  "bundle": "bundles/invoice-exception-handler.zip",
+  "agentCount": 0,
+  "workflowCount": 1,
+  "componentCount": 1,
+  "agents": [],
+  "agentGraph": {
+    "nodes": [],
+    "edges": []
+  },
+  "workflows": [
+    {
+      "id": "invoice-exception-handler-workflow",
+      "name": "Resolve invoice exception",
+      "trigger": "When invoice validation fails",
+      "nodeCount": 7,
+      "edgeCount": 6,
+      "graph": {
+        "nodes": [
+          {
+            "id": "node-1",
+            "name": "When invoice validation fails",
+            "type": "start",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-2",
+            "name": "Read invoice",
+            "type": "agent",
+            "position": {
+              "x": 240,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-3",
+            "name": "Match purchase order",
+            "type": "connector",
+            "position": {
+              "x": 480,
+              "y": 0
+            },
+            "details": {
+              "displayName": "Match purchase order",
+              "operationType": "action"
+            }
+          },
+          {
+            "id": "node-4",
+            "name": "Classify exception",
+            "type": "ifElse",
+            "position": {
+              "x": 720,
+              "y": 90
+            },
+            "details": {}
+          },
+          {
+            "id": "node-5",
+            "name": "Request approval",
+            "type": "connector",
+            "position": {
+              "x": 960,
+              "y": -70
+            },
+            "details": {
+              "displayName": "Request approval",
+              "operationType": "action"
+            }
+          },
+          {
+            "id": "node-6",
+            "name": "Post result",
+            "type": "end",
+            "position": {
+              "x": 1200,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-7",
+            "name": "Complete",
+            "type": "end",
+            "position": {
+              "x": 1440,
+              "y": 0
+            },
+            "details": {}
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-1",
+            "source": "node-1",
+            "target": "node-2"
+          },
+          {
+            "id": "edge-2",
+            "source": "node-2",
+            "target": "node-3"
+          },
+          {
+            "id": "edge-3",
+            "source": "node-3",
+            "target": "node-4"
+          },
+          {
+            "id": "edge-4",
+            "source": "node-4",
+            "target": "node-5"
+          },
+          {
+            "id": "edge-5",
+            "source": "node-5",
+            "target": "node-6"
+          },
+          {
+            "id": "edge-6",
+            "source": "node-6",
+            "target": "node-7"
+          }
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 219
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 448
+    },
+    {
+      "path": "Workflows/workflow.json",
+      "category": "workflow",
+      "size": 3851
+    }
+  ]
+}

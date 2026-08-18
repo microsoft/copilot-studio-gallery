@@ -1,0 +1,2257 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_agentnode": {
+        "api": {
+          "name": "shared_agentnode"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedagentnode_36bfd7b0"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-agentnode-0e6dddd0-d4fc-43e9-a95e-2406784e675f"
+      },
+      "shared_advancedapprovals": {
+        "api": {
+          "name": "shared_advancedapprovals"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedadvancedapprovals_00cb31fc"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "be923ac0d38a430a90ba2395510118d3"
+      },
+      "shared_office365": {
+        "api": {
+          "name": "shared_office365"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedoffice365_37c07"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-office365-b79141e6-d6f8-42c6-b914-3eb3d2491190"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "BlastBox Weekly Inventory Health",
+                "nodes": [
+                  {
+                    "id": "start-4b8f612e-9dcd-464b-996f-33cbbf8f4799",
+                    "name": "Start",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 248,
+                      "y": 461.54541015625
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "manual"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "required": []
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "canvasNote-4bf9bd4b-1e72-438a-add1-a13e7b9626e7",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 238,
+                      "y": 290
+                    },
+                    "width": 250,
+                    "height": 150,
+                    "style": {
+                      "width": 250,
+                      "height": 150
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "Set as manual and indicate users to turn on Recurrence to recreate real life scenario without risk of missing turning off the \"Enabled\" workflow toggle",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 250,
+                      "height": 150
+                    }
+                  },
+                  {
+                    "id": "agent-2d813f06-95ff-4a50-903b-ff36ee884cdc",
+                    "name": "Call Inventory & Fullfilment Agent",
+                    "type": "agent",
+                    "version": 1,
+                    "position": {
+                      "x": 534.45402091997823,
+                      "y": 461.3158195438242
+                    },
+                    "data": {
+                      "config": {
+                        "mode": "invoke",
+                        "instructions": "Extract the following information for all gaming related SKUs (games and consoles):\n- SKUName\n- State of SKU stock aging: Stale, fresh or other if unknown\n- State of inbound stock order: 'planned' if inbound entry is true, 'unplanned' if false or unknown, 'reorder' if a note to reorder inbound exists\n",
+                        "botSchemaName": "Default_InventoryFullfilmentAgent_X-w2GP",
+                        "isHitlEscalationEnabled": false,
+                        "webSearchEnabled": false,
+                        "inlineInstructions": "",
+                        "outputMode": "structured-simple",
+                        "inlineModel": "Sonnet5",
+                        "connectionName": "shared_agentnode",
+                        "instructionsRich": {
+                          "segments": [
+                            {
+                              "type": "static",
+                              "value": "Extract the following information for all gaming related SKUs (games and consoles):\n- SKUName\n- State of SKU stock aging: Stale, fresh or other if unknown\n- State of inbound stock order: 'planned' if inbound entry is true, 'unplanned' if false or unknown, 'reorder' if a note to reorder inbound exists\n"
+                            }
+                          ]
+                        },
+                        "simpleProperties": [
+                          {
+                            "id": "d8ac2073-974d-4008-a45a-8fff32483871",
+                            "name": "SKU",
+                            "type": "list",
+                            "description": "",
+                            "listItems": [
+                              {
+                                "id": "831c997a-d165-400a-8230-c59a6a5f2da9",
+                                "name": "SKUName",
+                                "type": "string",
+                                "description": "The name of the SKU"
+                              },
+                              {
+                                "id": "dfdbd413-a672-41bd-8d0b-84a2f6be5eb5",
+                                "name": "StockAge",
+                                "type": "enum",
+                                "description": "The state of SKU stock aging",
+                                "enumValues": [
+                                  "stale",
+                                  "fresh",
+                                  "other"
+                                ]
+                              },
+                              {
+                                "id": "9f767652-ba80-45e6-80ed-23d3e1c3e800",
+                                "name": "Inbound",
+                                "type": "enum",
+                                "description": "State of inbound order",
+                                "enumValues": [
+                                  "planned",
+                                  "unplanned",
+                                  "reorder"
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "jsonSchema": {
+                          "type": "object",
+                          "properties": {
+                            "SKU": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "SKUName": {
+                                    "type": "string",
+                                    "description": "The name of the SKU"
+                                  },
+                                  "StockAge": {
+                                    "type": "string",
+                                    "enum": [
+                                      "stale",
+                                      "fresh",
+                                      "other"
+                                    ],
+                                    "description": "The state of SKU stock aging"
+                                  },
+                                  "Inbound": {
+                                    "type": "string",
+                                    "enum": [
+                                      "planned",
+                                      "unplanned",
+                                      "reorder"
+                                    ],
+                                    "description": "State of inbound order"
+                                  }
+                                },
+                                "required": [
+                                  "SKUName",
+                                  "StockAge",
+                                  "Inbound"
+                                ]
+                              }
+                            }
+                          },
+                          "required": [
+                            "SKU"
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "result": {
+                                "type": "string",
+                                "description": "The agent response text"
+                              },
+                              "status": {
+                                "type": "string",
+                                "description": "The completion status (e.g., Completed)"
+                              },
+                              "conversationId": {
+                                "type": "string",
+                                "description": "Unique identifier for the conversation"
+                              },
+                              "structuredOutput": {
+                                "type": "object",
+                                "properties": {
+                                  "SKU": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "SKUName": {
+                                          "type": "string",
+                                          "description": "The name of the SKU"
+                                        },
+                                        "StockAge": {
+                                          "type": "string",
+                                          "enum": [
+                                            "stale",
+                                            "fresh",
+                                            "other"
+                                          ],
+                                          "description": "The state of SKU stock aging"
+                                        },
+                                        "Inbound": {
+                                          "type": "string",
+                                          "enum": [
+                                            "planned",
+                                            "unplanned",
+                                            "reorder"
+                                          ],
+                                          "description": "State of inbound order"
+                                        }
+                                      },
+                                      "required": [
+                                        "SKUName",
+                                        "StockAge",
+                                        "Inbound"
+                                      ]
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "SKU"
+                                ],
+                                "title": ""
+                              }
+                            },
+                            "required": [
+                              "result",
+                              "conversationId",
+                              "structuredOutput"
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 294,
+                      "height": 66
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "name": "Loop over each active SKU",
+                    "type": "loop",
+                    "version": 1,
+                    "position": {
+                      "x": 1248.5117621145687,
+                      "y": 301.8746192221007
+                    },
+                    "width": 1907,
+                    "height": 697,
+                    "style": {
+                      "width": 1907,
+                      "height": 697
+                    },
+                    "data": {
+                      "config": {
+                        "loopType": "foreach",
+                        "foreach": "@body('agent-2d813f06-95ff-4a50-903b-ff36ee884cdc')?['structuredOutput/SKU']",
+                        "foreachRich": {
+                          "segments": [
+                            {
+                              "type": "token",
+                              "value": "S K U",
+                              "tokenRef": {
+                                "type": "step",
+                                "stepId": "agent-2d813f06-95ff-4a50-903b-ff36ee884cdc",
+                                "stepName": "Call Inventory & Fullfilment Agent",
+                                "outputName": "structuredOutput/SKU",
+                                "outputDisplayName": "S K U",
+                                "outputType": "array"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 1907,
+                      "height": 697
+                    },
+                    "resizing": false,
+                    "selected": false
+                  },
+                  {
+                    "id": "ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8",
+                    "name": "Stock Aging Condition",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 68.393996096193177,
+                      "y": 172
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "66b1bc7d-62cb-4e20-869a-5c2b0000b523",
+                            "name": "If stale or aging",
+                            "expression": "{\n  \"and\": [\n    {\n      \"equals\": [\n        \"@items('Loop_over_each_active_SKU')?['StockAge']\",\n        \"stale\"\n      ]\n    }\n  ]\n}"
+                          },
+                          {
+                            "id": "e8648f23-63f8-4da1-a773-1c5b66317e52",
+                            "name": "If flagged to reorder inbound",
+                            "expression": "{\n  \"and\": [\n    {\n      \"equals\": [\n        \"@items('Loop_over_each_active_SKU')?['Inbound']\",\n        \"reorder\"\n      ]\n    }\n  ]\n}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:66b1bc7d-62cb-4e20-869a-5c2b0000b523",
+                          "label": "If stale or aging"
+                        },
+                        {
+                          "id": "condition:e8648f23-63f8-4da1-a773-1c5b66317e52",
+                          "label": "If flagged to reorder inbound"
+                        },
+                        {
+                          "id": "else",
+                          "label": "Else"
+                        }
+                      ]
+                    },
+                    "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "measured": {
+                      "width": 250,
+                      "height": 213
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9",
+                    "name": "Human Review: Discount Range",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 731.71649488352523,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_advancedapprovals",
+                        "operationName": "RequestForInformation",
+                        "displayName": "Human review",
+                        "paletteIconHint": "humanReview",
+                        "operationType": "OpenApiConnectionWebhook",
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1819/1.0.1819.4798/advancedapprovals/icon.png",
+                        "brandColor": "#109CD1",
+                        "parameters": {
+                          "RequestForInformationInput/channel": "Outlook",
+                          "RequestForInformationInput/title": "Action needed: SKU Pricing Adjustment",
+                          "RequestForInformationInput/message": "Dear store manager,\n\nThe following item has been nominated for a promotion or clearance application based on weekly findings.\nSKU: @{items('Loop_over_each_active_SKU')?['SKUName']} \nWeekly Findings: @{body('agent-7d5d1903-f892-41df-a546-95aef444dbd9')?['structuredOutput/Findings']} \n\nThe following options are to be reviewed:\n\nIf promotion is chosen, store employees will receive the following guidance:\nPromo: @{body('agent-7d5d1903-f892-41df-a546-95aef444dbd9')?['structuredOutput/Promo']} \n\nIf clearance is chosen, store employees will receive the following guidance:\nClearance: @{body('agent-7d5d1903-f892-41df-a546-95aef444dbd9')?['structuredOutput/Clearance']} \n\nPlease select your preferred option, as well as (if desired), maximum and minimum discount to be applied.\n\nThank you",
+                          "RequestForInformationInput/assignedTo": "email@email.com",
+                          "RequestForInformationInput/input": {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "title": "New Pricing",
+                                "type": "string",
+                                "x-ms-content-hint": "TEXT",
+                                "x-ms-dynamically-added": true,
+                                "description": "Please select an option",
+                                "enum": [
+                                  "Accept Promo",
+                                  "Accept Clearance"
+                                ]
+                              },
+                              "number": {
+                                "title": "Max",
+                                "type": "number",
+                                "x-ms-content-hint": "NUMBER",
+                                "x-ms-dynamically-added": true,
+                                "description": "Maximum discount"
+                              },
+                              "number_1": {
+                                "title": "Min",
+                                "type": "number",
+                                "x-ms-content-hint": "NUMBER",
+                                "x-ms-dynamically-added": true,
+                                "description": "Minimum discount"
+                              }
+                            },
+                            "required": [
+                              "text"
+                            ]
+                          }
+                        },
+                        "parametersSchema": {
+                          "type": "object",
+                          "properties": {
+                            "RequestForInformationInput": {
+                              "type": "object",
+                              "properties": {
+                                "title": {
+                                  "type": "string",
+                                  "title": "Title",
+                                  "description": "Specify the title of the request.",
+                                  "x-ms-visibility": "important",
+                                  "x-ms-property-name-alias": "RequestForInformationInput/title"
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "title": "Message",
+                                  "description": "Specify the message for the request.",
+                                  "x-ms-visibility": "important",
+                                  "x-ms-property-name-alias": "RequestForInformationInput/message"
+                                },
+                                "assignedTo": {
+                                  "type": "string",
+                                  "title": "Assigned to (first to respond)",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail",
+                                    "itemTitlePath": "displayName"
+                                  },
+                                  "format": "email",
+                                  "description": "Recipient email addresses, UPNs, or Microsoft Entra user ids separated by semicolons. The response from the first user to respond to the request is used.",
+                                  "x-ms-visibility": "important",
+                                  "x-ms-property-name-alias": "RequestForInformationInput/assignedTo"
+                                },
+                                "channel": {
+                                  "type": "string",
+                                  "title": "Channel",
+                                  "description": "Set this to the notification channel for the request based on user query. Choose one of: Outlook or Teams. Defaults to Outlook if not specified. Use Teams if the user mentions Teams, flow bot, or teams bot.",
+                                  "default": "Outlook",
+                                  "enum": [
+                                    "Outlook",
+                                    "Teams"
+                                  ],
+                                  "x-ms-visibility": "important",
+                                  "x-ms-enum-values": [
+                                    {
+                                      "displayName": "Outlook",
+                                      "value": "Outlook"
+                                    },
+                                    {
+                                      "displayName": "Teams",
+                                      "value": "Teams"
+                                    }
+                                  ],
+                                  "x-ms-property-name-alias": "RequestForInformationInput/channel"
+                                },
+                                "input": {
+                                  "type": "object",
+                                  "title": "Input",
+                                  "properties": {},
+                                  "required": [],
+                                  "description": "Input definition.",
+                                  "x-ms-visibility": "important",
+                                  "x-ms-property-name-alias": "RequestForInformationInput/input"
+                                }
+                              },
+                              "required": [
+                                "assignedTo",
+                                "channel",
+                                "input",
+                                "message",
+                                "title"
+                              ],
+                              "description": "Request information",
+                              "x-ms-property-name-alias": "RequestForInformationInput"
+                            }
+                          },
+                          "required": [
+                            "RequestForInformationInput"
+                          ]
+                        },
+                        "connectionName": "shared_advancedapprovals"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "title": "New Pricing",
+                                "type": "string",
+                                "x-ms-content-hint": "TEXT",
+                                "x-ms-dynamically-added": true,
+                                "description": "Please select an option",
+                                "enum": [
+                                  "Accept Promo",
+                                  "Accept Clearance"
+                                ]
+                              },
+                              "number": {
+                                "title": "Max",
+                                "type": "number",
+                                "x-ms-content-hint": "NUMBER",
+                                "x-ms-dynamically-added": true,
+                                "description": "Maximum discount"
+                              },
+                              "number_1": {
+                                "title": "Min",
+                                "type": "number",
+                                "x-ms-content-hint": "NUMBER",
+                                "x-ms-dynamically-added": true,
+                                "description": "Minimum discount"
+                              }
+                            },
+                            "required": [
+                              "text"
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "measured": {
+                      "width": 280,
+                      "height": 66
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "variable-44f7b1d2-15a0-473c-a3a8-3e8b43eba5c1",
+                    "name": "Initialize variables",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 896.50856596401627,
+                      "y": 461.53174408057924
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "4db06d92-ad0d-4aa3-912c-f661f45653bc",
+                            "variableName": "SKU Array",
+                            "mode": "initialize",
+                            "type": "array",
+                            "value": ""
+                          },
+                          {
+                            "id": "204918f0-d7f9-4f3a-bc64-8292a93d0b42",
+                            "variableName": "Email",
+                            "mode": "initialize",
+                            "type": "string",
+                            "value": ""
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "description": "Variables set by this node"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "variable-c0edc099-3a8a-41fd-bf72-c4c0204c6a28",
+                    "name": "Set SKU: Adjust price",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 1063.5857849535041,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "e7ae29a7-2af7-472a-8ae1-ddca76ff0c1d",
+                            "variableName": "SKU Array",
+                            "mode": "appendToArray",
+                            "value": "@{createArray(items('Loop_over_each_active_SKU')?['SKUName'],concat(\r\n  if(equals(body('connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9')?['text'], 'Accept Promo'), body('agent-7d5d1903-f892-41df-a546-95aef444dbd9')?['structuredOutput/Promo'], body('agent-7d5d1903-f892-41df-a546-95aef444dbd9')?['structuredOutput/Clearance']),\r\n  if(not(empty(body('connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9')?['number'])), concat(' Max Discount: ', string(body('connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9')?['number'])), ''),\r\n  if(not(empty(body('connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9')?['number_1'])), concat(' Min Discount: ', string(body('connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9')?['number_1'])), '')\r\n))}",
+                            "type": "array",
+                            "valueRich": {
+                              "segments": [
+                                {
+                                  "type": "token",
+                                  "value": "@{createArray(items('Loop_over_each_active_SKU')?['SKUName'],concat(\r\n  if(equals(body('connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9')?['text'], 'Accept Promo'), body('agent-7d5d1903-f892-41df-a546-95aef444dbd9')?['structuredOutput/Promo'], body('agent-7d5d1903-f892-41df-a546-95aef444dbd9')?['structuredOutput/Clearance']),\r\n  if(not(empty(body('connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9')?['number'])), concat(' Max Discount: ', string(body('connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9')?['number'])), ''),\r\n  if(not(empty(body('connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9')?['number_1'])), concat(' Min Discount: ', string(body('connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9')?['number_1'])), '')\r\n))}",
+                                  "tokenRef": {
+                                    "type": "function",
+                                    "stepId": "function",
+                                    "stepName": "Collection",
+                                    "outputName": "createArray",
+                                    "outputType": "array",
+                                    "functionName": "createArray",
+                                    "functionCategory": "collection",
+                                    "rawExpression": "createArray(items('Loop_over_each_active_SKU')?['SKUName'],concat(\r\n  if(equals(body('connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9')?['text'], 'Accept Promo'), body('agent-7d5d1903-f892-41df-a546-95aef444dbd9')?['structuredOutput/Promo'], body('agent-7d5d1903-f892-41df-a546-95aef444dbd9')?['structuredOutput/Clearance']),\r\n  if(not(empty(body('connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9')?['number'])), concat(' Max Discount: ', string(body('connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9')?['number'])), ''),\r\n  if(not(empty(body('connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9')?['number_1'])), concat(' Min Discount: ', string(body('connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9')?['number_1'])), '')\r\n))"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "description": "Variables set by this node"
+                          }
+                        }
+                      ]
+                    },
+                    "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "measured": {
+                      "width": 320,
+                      "height": 75
+                    },
+                    "selected": false,
+                    "dragging": false
+                  },
+                  {
+                    "id": "variable-5fa3e06a-8244-4ef1-8fb0-7d10f773f2d4",
+                    "name": "Set SKU: Keep price",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 396.22452074359171,
+                      "y": 439
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "879f7c7e-0218-450a-9834-7911bac71255",
+                            "variableName": "SKU Array",
+                            "mode": "appendToArray",
+                            "value": "@{createArray(items('Loop_over_each_active_SKU')?['SKUName'], 'This item has a good balance of supply and demand. Keep current pricing and store allocation. No action required.')}",
+                            "type": "array",
+                            "valueRich": {
+                              "segments": [
+                                {
+                                  "type": "token",
+                                  "value": "@{createArray(items('Loop_over_each_active_SKU')?['SKUName'], 'This item has a good balance of supply and demand. Keep current pricing and store allocation. No action required.')}",
+                                  "tokenRef": {
+                                    "type": "function",
+                                    "stepId": "function",
+                                    "stepName": "Collection",
+                                    "outputName": "createArray",
+                                    "outputType": "array",
+                                    "functionName": "createArray",
+                                    "functionCategory": "collection",
+                                    "rawExpression": "createArray(items('Loop_over_each_active_SKU')?['SKUName'], 'This item has a good balance of supply and demand. Keep current pricing and store allocation. No action required.')"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "description": "Variables set by this node"
+                          }
+                        }
+                      ]
+                    },
+                    "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "measured": {
+                      "width": 320,
+                      "height": 75
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "agent-7d5d1903-f892-41df-a546-95aef444dbd9",
+                    "name": "Review Order History & Policy",
+                    "type": "agent",
+                    "version": 1,
+                    "position": {
+                      "x": 393.35380312869643,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "mode": "inline",
+                        "instructions": "",
+                        "botSchemaName": "",
+                        "isHitlEscalationEnabled": false,
+                        "webSearchEnabled": false,
+                        "inlineInstructions": "Get the potential promo or clearance new price scheme for the SKU at hand:\n{items('Loop_over_each_active_SKU')?['SKUName']}\n\nCreate a ready-to-send two lines for store employees with the new potential pricing scheme and rationale. Propose a range of discount prices but do not fix a max and min discount or price, these will be specified by the store managers later. \n\nSummarize the findings in the SKU recent order history and its applicability for promotion or discount, for store manager review.",
+                        "outputMode": "structured-simple",
+                        "inlineModel": "claude-opus-5",
+                        "connectionName": "shared_agentnode",
+                        "inlineTools": [
+                          {
+                            "id": "09c34998-978b-47d6-9124-b78e42dda025",
+                            "connectorId": "shared_new-5forder-20management-20mcp-5f4fe69411b7a87261",
+                            "operationId": "InvokeMCP",
+                            "displayName": "Order Management MCP — Order Management MCP Server",
+                            "description": "MCP server for e-commerce order management. Tools: search_orders, get_order, get_shipment, request_return, get_return_status.",
+                            "connectionReferenceName": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
+                            "connectionId": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
+                            "authMode": "invoker",
+                            "isMcp": true,
+                            "iconUri": "https://defaulticons.powerapps.com/defaulticons/api-dedicated.png",
+                            "brandColor": "#007ee5",
+                            "mcpToolMode": "all",
+                            "mcpEnabledTools": []
+                          },
+                          {
+                            "id": "4a486297-d95a-4f64-8dc4-c0b94b470879",
+                            "connectorId": "shared_new-5fpolicy-20rag-20mcp-20v2-5f4fe69411b7a87261",
+                            "operationId": "InvokeMCP",
+                            "displayName": "Policy RAG MCP v2 — Policy RAG MCP v2 Server",
+                            "description": "MCP server for BlastBox Omega policy knowledge. Tools: search_policy, get_tier_refund_policy, get_markdown_policy.",
+                            "connectionReferenceName": "c028995b8824483d8f54bfb93b5b0092",
+                            "connectionId": "c028995b8824483d8f54bfb93b5b0092",
+                            "authMode": "invoker",
+                            "isMcp": true,
+                            "iconUri": "https://defaulticons.powerapps.com/defaulticons/api-dedicated.png",
+                            "brandColor": "#007ee5",
+                            "mcpToolMode": "all",
+                            "mcpEnabledTools": []
+                          }
+                        ],
+                        "simpleProperties": [
+                          {
+                            "id": "e1fb8d0a-5f24-48fb-9dee-0d07b588db43",
+                            "name": "Promo",
+                            "type": "string",
+                            "description": ""
+                          },
+                          {
+                            "id": "fdf09045-417d-4f09-953f-b435d58b4f69",
+                            "name": "Clearance",
+                            "type": "string",
+                            "description": ""
+                          },
+                          {
+                            "id": "ea9a0583-3443-41a9-9c93-2d56aa310ca6",
+                            "name": "Findings",
+                            "type": "string",
+                            "description": ""
+                          }
+                        ],
+                        "jsonSchema": {
+                          "type": "object",
+                          "properties": {
+                            "Promo": {
+                              "type": "string"
+                            },
+                            "Clearance": {
+                              "type": "string"
+                            },
+                            "Findings": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "Promo",
+                            "Clearance",
+                            "Findings"
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "type": "string",
+                                "title": "Agent Response",
+                                "description": "Aggregated message text emitted before the structured output (may be null)"
+                              },
+                              "activities": {
+                                "type": "array",
+                                "description": "Bot response activities (typing, message, and event types)"
+                              },
+                              "structuredOutput": {
+                                "type": "object",
+                                "properties": {
+                                  "Promo": {
+                                    "type": "string"
+                                  },
+                                  "Clearance": {
+                                    "type": "string"
+                                  },
+                                  "Findings": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "Promo",
+                                  "Clearance",
+                                  "Findings"
+                                ],
+                                "title": ""
+                              }
+                            },
+                            "required": [
+                              "activities",
+                              "structuredOutput"
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "measured": {
+                      "width": 268,
+                      "height": 66
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "builtinFunction-d5757215-ceed-4d57-ad4e-f2b376e681f9",
+                    "name": "Create HTML table",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 3252.3485818667941,
+                      "y": 617.143631857203
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "htmltable",
+                        "operationName": "htmltable",
+                        "displayName": "Create HTML table",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/compose.svg",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "columns": "Automatic",
+                          "from": "@variables('SKU Array')"
+                        },
+                        "description": "Create an HTML table from an array of objects.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "from"
+                          ],
+                          "properties": {
+                            "from": {
+                              "type": "array",
+                              "title": "From",
+                              "description": "Array to convert"
+                            },
+                            "columns": {
+                              "type": "string",
+                              "title": "Columns",
+                              "description": "Column selection",
+                              "enum": [
+                                "Automatic",
+                                "Custom"
+                              ],
+                              "default": "Automatic"
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "connector-45078208-58d3-45f1-ba7d-b45d24a551e6",
+                    "name": "Send an email",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 3557.8040401815115,
+                      "y": 617.143631857203
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_office365",
+                        "displayName": "Office 365 Outlook",
+                        "iconUri": "https://res-1.cdn.office.net/files/fabric-cdn-prod_20251008.001/assets/brand-icons/product/svg/outlook_48x1.svg",
+                        "brandColor": "#0078D4",
+                        "operationName": "SendEmailV2",
+                        "operationType": "OpenApiConnection",
+                        "parametersSchema": {
+                          "type": "object",
+                          "properties": {
+                            "emailMessage": {
+                              "type": "object",
+                              "title": "Email",
+                              "properties": {
+                                "To": {
+                                  "type": "string",
+                                  "title": "To",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-property-name-alias": "emailMessage/To"
+                                },
+                                "Subject": {
+                                  "type": "string",
+                                  "title": "Subject",
+                                  "description": "Specify the subject of the mail",
+                                  "x-ms-property-name-alias": "emailMessage/Subject"
+                                },
+                                "Body": {
+                                  "type": "string",
+                                  "title": "Body",
+                                  "format": "html",
+                                  "description": "Specify the body of the mail",
+                                  "x-ms-property-name-alias": "emailMessage/Body"
+                                },
+                                "From": {
+                                  "type": "string",
+                                  "title": "From (Send as)",
+                                  "format": "email",
+                                  "description": "Email address to send mail from (requires \"Send as\" or \"Send on behalf of\" permission for that mailbox). For more info on granting permissions please refer https://docs.microsoft.com/office365/admin/manage/send-email-as-distribution-list",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/From"
+                                },
+                                "Cc": {
+                                  "type": "string",
+                                  "title": "CC",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Cc"
+                                },
+                                "Bcc": {
+                                  "type": "string",
+                                  "title": "BCC",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Bcc"
+                                },
+                                "Attachments": {
+                                  "type": "array",
+                                  "title": "Attachments",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "Name": {
+                                        "type": "string",
+                                        "title": "Name",
+                                        "description": "Attachment name",
+                                        "x-ms-property-name-alias": "Name"
+                                      },
+                                      "ContentBytes": {
+                                        "type": "string",
+                                        "title": "Content",
+                                        "format": "byte",
+                                        "description": "Attachment content",
+                                        "x-ms-property-name-alias": "ContentBytes"
+                                      }
+                                    },
+                                    "required": [
+                                      "ContentBytes",
+                                      "Name"
+                                    ],
+                                    "description": "Attachment"
+                                  },
+                                  "description": "Attachments",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Attachments"
+                                },
+                                "Sensitivity": {
+                                  "type": "string",
+                                  "title": "Sensitivity",
+                                  "x-ms-dynamic-list": {
+                                    "operationId": "GetSensitivityLabels",
+                                    "parameters": {},
+                                    "itemValuePath": "Id",
+                                    "itemTitlePath": "DisplayName"
+                                  },
+                                  "description": "Sensitivity",
+                                  "x-ms-visibility": "important",
+                                  "x-ms-property-name-alias": "emailMessage/Sensitivity"
+                                },
+                                "ReplyTo": {
+                                  "type": "string",
+                                  "title": "Reply To",
+                                  "format": "email",
+                                  "description": "The email addresses to use when replying",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/ReplyTo"
+                                },
+                                "Importance": {
+                                  "type": "string",
+                                  "title": "Importance",
+                                  "description": "Importance",
+                                  "default": "Normal",
+                                  "enum": [
+                                    "Low",
+                                    "Normal",
+                                    "High"
+                                  ],
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Importance"
+                                }
+                              },
+                              "required": [
+                                "Body",
+                                "Subject",
+                                "To"
+                              ],
+                              "description": "Email.",
+                              "x-ms-property-name-alias": "emailMessage"
+                            }
+                          },
+                          "required": [
+                            "emailMessage"
+                          ]
+                        },
+                        "parameters": {
+                          "emailMessage/Importance": "Normal",
+                          "emailMessage/Body": "<div>Dear team,</div><div><br></div><div>Please notice and apply the following changes in our products in store, according to the latest review. Pay special attention to promotions, clearance, or high-visibility items to be reallocated:</div><div><br></div><div>@{body('builtinFunction-d5757215-ceed-4d57-ad4e-f2b376e681f9')}</div><div><br></div><div>Thank you</div>",
+                          "emailMessage/Subject": "Store Pricing - Weekly Update",
+                          "emailMessage/To": "@{variables('Email')}"
+                        },
+                        "connectionName": "shared_office365"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {}
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "connector-444913ae-a97d-4bea-9bc8-6a44d3acb365",
+                    "name": "Send email: Reorder inbound",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 395.77509778735748,
+                      "y": 245.8781549651269
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_office365",
+                        "displayName": "Office 365 Outlook",
+                        "iconUri": "https://res-1.cdn.office.net/files/fabric-cdn-prod_20251008.001/assets/brand-icons/product/svg/outlook_48x1.svg",
+                        "brandColor": "#0078D4",
+                        "operationName": "SendEmailV2",
+                        "operationType": "OpenApiConnection",
+                        "parametersSchema": {
+                          "type": "object",
+                          "properties": {
+                            "emailMessage": {
+                              "type": "object",
+                              "title": "Email",
+                              "properties": {
+                                "To": {
+                                  "type": "string",
+                                  "title": "To",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-property-name-alias": "emailMessage/To"
+                                },
+                                "Subject": {
+                                  "type": "string",
+                                  "title": "Subject",
+                                  "description": "Specify the subject of the mail",
+                                  "x-ms-property-name-alias": "emailMessage/Subject"
+                                },
+                                "Body": {
+                                  "type": "string",
+                                  "title": "Body",
+                                  "format": "html",
+                                  "description": "Specify the body of the mail",
+                                  "x-ms-property-name-alias": "emailMessage/Body"
+                                },
+                                "From": {
+                                  "type": "string",
+                                  "title": "From (Send as)",
+                                  "format": "email",
+                                  "description": "Email address to send mail from (requires \"Send as\" or \"Send on behalf of\" permission for that mailbox). For more info on granting permissions please refer https://docs.microsoft.com/office365/admin/manage/send-email-as-distribution-list",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/From"
+                                },
+                                "Cc": {
+                                  "type": "string",
+                                  "title": "CC",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Cc"
+                                },
+                                "Bcc": {
+                                  "type": "string",
+                                  "title": "BCC",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Bcc"
+                                },
+                                "Attachments": {
+                                  "type": "array",
+                                  "title": "Attachments",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "Name": {
+                                        "type": "string",
+                                        "title": "Name",
+                                        "description": "Attachment name",
+                                        "x-ms-property-name-alias": "Name"
+                                      },
+                                      "ContentBytes": {
+                                        "type": "string",
+                                        "title": "Content",
+                                        "format": "byte",
+                                        "description": "Attachment content",
+                                        "x-ms-property-name-alias": "ContentBytes"
+                                      }
+                                    },
+                                    "required": [
+                                      "ContentBytes",
+                                      "Name"
+                                    ],
+                                    "description": "Attachment"
+                                  },
+                                  "description": "Attachments",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Attachments"
+                                },
+                                "Sensitivity": {
+                                  "type": "string",
+                                  "title": "Sensitivity",
+                                  "x-ms-dynamic-list": {
+                                    "operationId": "GetSensitivityLabels",
+                                    "parameters": {},
+                                    "itemValuePath": "Id",
+                                    "itemTitlePath": "DisplayName"
+                                  },
+                                  "description": "Sensitivity",
+                                  "x-ms-visibility": "important",
+                                  "x-ms-property-name-alias": "emailMessage/Sensitivity"
+                                },
+                                "ReplyTo": {
+                                  "type": "string",
+                                  "title": "Reply To",
+                                  "format": "email",
+                                  "description": "The email addresses to use when replying",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/ReplyTo"
+                                },
+                                "Importance": {
+                                  "type": "string",
+                                  "title": "Importance",
+                                  "description": "Importance",
+                                  "default": "Normal",
+                                  "enum": [
+                                    "Low",
+                                    "Normal",
+                                    "High"
+                                  ],
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Importance"
+                                }
+                              },
+                              "required": [
+                                "Body",
+                                "Subject",
+                                "To"
+                              ],
+                              "description": "Email.",
+                              "x-ms-property-name-alias": "emailMessage"
+                            }
+                          },
+                          "required": [
+                            "emailMessage"
+                          ]
+                        },
+                        "parameters": {
+                          "emailMessage/Importance": "Normal",
+                          "emailMessage/Body": "<div>Dear team,</div><div><br></div><div>We require to reorder the last inbound pack of the following product, given demand increase:</div><div><br></div><div>@{items('Loop_over_each_active_SKU')?['SKUName']}</div><div><br></div><div>Please provide us with an invoice and ETA within the next 2 business days.</div><div><br></div><div>Thank you</div>",
+                          "emailMessage/To": "@{variables('Email')}",
+                          "emailMessage/Subject": "@{items('Loop_over_each_active_SKU')?['SKUName']} - Stock reorder"
+                        },
+                        "connectionName": "shared_office365"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {}
+                          }
+                        }
+                      ]
+                    },
+                    "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "measured": {
+                      "width": 262,
+                      "height": 66
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "variable-9c9fd0c3-899e-4645-89ad-fb9d7f14ee9a",
+                    "name": "Set SKU: Keep price, main shelf",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 732.78846443237126,
+                      "y": 245.54526527681014
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "bc5319cb-5ab8-4c74-abd4-e5a5ddeffbc4",
+                            "variableName": "SKU Array",
+                            "mode": "appendToArray",
+                            "value": "@{createArray(items('Loop_over_each_active_SKU')?['SKUName'], 'This is a high demand item. Please keep current pricing and ensure item is located in the main, visible shelf as per the latest store plan, to keep the momentum.')}",
+                            "type": "array",
+                            "valueRich": {
+                              "segments": [
+                                {
+                                  "type": "token",
+                                  "value": "@{createArray(items('Loop_over_each_active_SKU')?['SKUName'], 'This is a high demand item. Please keep current pricing and ensure item is located in the main, visible shelf as per the latest store plan, to keep the momentum.')}",
+                                  "tokenRef": {
+                                    "type": "function",
+                                    "stepId": "function",
+                                    "stepName": "Collection",
+                                    "outputName": "createArray",
+                                    "outputType": "array",
+                                    "functionName": "createArray",
+                                    "functionCategory": "collection",
+                                    "rawExpression": "createArray(items('Loop_over_each_active_SKU')?['SKUName'], 'This is a high demand item. Please keep current pricing and ensure item is located in the main, visible shelf as per the latest store plan, to keep the momentum.')"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "description": "Variables set by this node"
+                          }
+                        }
+                      ]
+                    },
+                    "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "measured": {
+                      "width": 320,
+                      "height": 75
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "canvasNote-4dbca523-4495-4732-a107-e7eb2ca4fd3d",
+                    "name": "Note 2",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 556.22309434606336,
+                      "y": 286.66306645688348
+                    },
+                    "width": 250,
+                    "height": 150,
+                    "style": {
+                      "width": 250,
+                      "height": 150
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "Extract basic inventory data for each gaming SKU in the inventory, leaving out discontinued SKUs: Stock aging state, inbound stock flag, status notes",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 250,
+                      "height": 150
+                    }
+                  },
+                  {
+                    "id": "canvasNote-ef40d563-4df7-4aff-b6ec-72bc9a0f5f07",
+                    "name": "Note 2 2",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 892.97616142978052,
+                      "y": 287.41249762435029
+                    },
+                    "width": 250,
+                    "height": 150,
+                    "style": {
+                      "width": 250,
+                      "height": 150
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "Initialize array of SKU notes related to store manager approved changes in pricing, to be communicated to employees",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 250,
+                      "height": 150
+                    }
+                  },
+                  {
+                    "id": "canvasNote-331b3285-c7e6-48a6-b6cb-306bd502888d",
+                    "name": "Note 2 2 2",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 3402.93884376098,
+                      "y": 447.143631857203
+                    },
+                    "width": 250,
+                    "height": 150,
+                    "style": {
+                      "width": 250,
+                      "height": 150
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "Create ready-to-send data table and communication draft, communicating relevant SKU updates to store employees",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 250,
+                      "height": 150
+                    }
+                  },
+                  {
+                    "id": "canvasNote-77809ff8-3725-4dbb-a6f5-aecd8d9518a7",
+                    "name": "Note 3",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 1424.345573133879,
+                      "y": 80
+                    },
+                    "width": 250,
+                    "height": 150,
+                    "style": {
+                      "width": 250,
+                      "height": 150
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "Ask store manager for promo or clearance choice and confirm desired price ceiling/floor for SKUs with stale stock",
+                        "color": "blue"
+                      },
+                      "outcomes": []
+                    },
+                    "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "measured": {
+                      "width": 250,
+                      "height": 150
+                    }
+                  },
+                  {
+                    "id": "canvasNote-5562054e-7d46-4bd8-83ed-b5b162183334",
+                    "name": "Note 3 2",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 1119.7247698711981,
+                      "y": 228.07204197032797
+                    },
+                    "width": 250,
+                    "height": 150,
+                    "style": {
+                      "width": 250,
+                      "height": 150
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "Request reorder inbound to provider when a good-selling item has been flagged. Note for store employees to keep price and item visible.",
+                        "color": "red"
+                      },
+                      "outcomes": []
+                    },
+                    "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "measured": {
+                      "width": 250,
+                      "height": 150
+                    },
+                    "dragging": false
+                  },
+                  {
+                    "id": "canvasNote-17b034a9-13e2-49dc-95c7-9dccaee7b587",
+                    "name": "Note 3 2 2",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 822.79770804712189,
+                      "y": 409.49507926698527
+                    },
+                    "width": 250,
+                    "height": 150,
+                    "style": {
+                      "width": 250,
+                      "height": 150
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "Note for store employees to keep price of other SKUs, until further notice",
+                        "color": "green"
+                      },
+                      "outcomes": []
+                    },
+                    "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "measured": {
+                      "width": 250,
+                      "height": 150
+                    },
+                    "dragging": false
+                  },
+                  {
+                    "id": "end-2c543046-775a-471f-ab3b-5cc5c32a18bf",
+                    "name": "End",
+                    "type": "end",
+                    "version": 1,
+                    "position": {
+                      "x": 3874,
+                      "y": 617
+                    },
+                    "data": {
+                      "config": {
+                        "runStatus": "Succeeded"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-4b8f612e-9dcd-464b-996f-33cbbf8f4799-agent-2d813f06-95ff-4a50-903b-ff36ee884cdc",
+                    "source": "start-4b8f612e-9dcd-464b-996f-33cbbf8f4799",
+                    "target": "agent-2d813f06-95ff-4a50-903b-ff36ee884cdc"
+                  },
+                  {
+                    "id": "edge-agent-2d813f06-95ff-4a50-903b-ff36ee884cdc-variable-44f7b1d2-15a0-473c-a3a8-3e8b43eba5c1",
+                    "source": "agent-2d813f06-95ff-4a50-903b-ff36ee884cdc",
+                    "target": "variable-44f7b1d2-15a0-473c-a3a8-3e8b43eba5c1"
+                  },
+                  {
+                    "id": "edge-variable-44f7b1d2-15a0-473c-a3a8-3e8b43eba5c1-loop-a4fc4348-44fb-49ea-8236-2acf87569028-external-input",
+                    "source": "variable-44f7b1d2-15a0-473c-a3a8-3e8b43eba5c1",
+                    "target": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "targetHandle": "external-input"
+                  },
+                  {
+                    "id": "edge-loop-a4fc4348-44fb-49ea-8236-2acf87569028-internal-source-ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8",
+                    "source": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "target": "ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8",
+                    "sourceHandle": "internal-source"
+                  },
+                  {
+                    "id": "edge-ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8-condition:66b1bc7d-62cb-4e20-869a-5c2b0000b523-agent-7d5d1903-f892-41df-a546-95aef444dbd9",
+                    "source": "ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8",
+                    "target": "agent-7d5d1903-f892-41df-a546-95aef444dbd9",
+                    "sourceHandle": "condition:66b1bc7d-62cb-4e20-869a-5c2b0000b523"
+                  },
+                  {
+                    "id": "edge-agent-7d5d1903-f892-41df-a546-95aef444dbd9-connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9",
+                    "source": "agent-7d5d1903-f892-41df-a546-95aef444dbd9",
+                    "target": "connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9"
+                  },
+                  {
+                    "id": "edge-ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8-else-variable-5fa3e06a-8244-4ef1-8fb0-7d10f773f2d4-input",
+                    "source": "ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8",
+                    "target": "variable-5fa3e06a-8244-4ef1-8fb0-7d10f773f2d4",
+                    "sourceHandle": "else",
+                    "targetHandle": "input"
+                  },
+                  {
+                    "id": "edge-connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9-variable-c0edc099-3a8a-41fd-bf72-c4c0204c6a28-input",
+                    "source": "connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9",
+                    "target": "variable-c0edc099-3a8a-41fd-bf72-c4c0204c6a28",
+                    "targetHandle": "input"
+                  },
+                  {
+                    "id": "edge-loop-a4fc4348-44fb-49ea-8236-2acf87569028-external-output-builtinFunction-d5757215-ceed-4d57-ad4e-f2b376e681f9",
+                    "source": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "target": "builtinFunction-d5757215-ceed-4d57-ad4e-f2b376e681f9",
+                    "sourceHandle": "external-output"
+                  },
+                  {
+                    "id": "edge-builtinFunction-d5757215-ceed-4d57-ad4e-f2b376e681f9-connector-45078208-58d3-45f1-ba7d-b45d24a551e6",
+                    "source": "builtinFunction-d5757215-ceed-4d57-ad4e-f2b376e681f9",
+                    "target": "connector-45078208-58d3-45f1-ba7d-b45d24a551e6"
+                  },
+                  {
+                    "id": "edge-ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8-condition:e8648f23-63f8-4da1-a773-1c5b66317e52-connector-444913ae-a97d-4bea-9bc8-6a44d3acb365",
+                    "source": "ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8",
+                    "target": "connector-444913ae-a97d-4bea-9bc8-6a44d3acb365",
+                    "sourceHandle": "condition:e8648f23-63f8-4da1-a773-1c5b66317e52"
+                  },
+                  {
+                    "id": "edge-variable-9c9fd0c3-899e-4645-89ad-fb9d7f14ee9a-loop-a4fc4348-44fb-49ea-8236-2acf87569028-internal-target",
+                    "source": "variable-9c9fd0c3-899e-4645-89ad-fb9d7f14ee9a",
+                    "target": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-connector-444913ae-a97d-4bea-9bc8-6a44d3acb365-variable-9c9fd0c3-899e-4645-89ad-fb9d7f14ee9a",
+                    "source": "connector-444913ae-a97d-4bea-9bc8-6a44d3acb365",
+                    "target": "variable-9c9fd0c3-899e-4645-89ad-fb9d7f14ee9a"
+                  },
+                  {
+                    "id": "edge-variable-5fa3e06a-8244-4ef1-8fb0-7d10f773f2d4-output-loop-a4fc4348-44fb-49ea-8236-2acf87569028-internal-target",
+                    "source": "variable-5fa3e06a-8244-4ef1-8fb0-7d10f773f2d4",
+                    "target": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "sourceHandle": "output",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-canvasNote-4bf9bd4b-1e72-438a-add1-a13e7b9626e7-canvasNote-4dbca523-4495-4732-a107-e7eb2ca4fd3d-input",
+                    "source": "canvasNote-4bf9bd4b-1e72-438a-add1-a13e7b9626e7",
+                    "target": "canvasNote-4dbca523-4495-4732-a107-e7eb2ca4fd3d",
+                    "targetHandle": "input"
+                  },
+                  {
+                    "id": "edge-canvasNote-4dbca523-4495-4732-a107-e7eb2ca4fd3d-canvasNote-ef40d563-4df7-4aff-b6ec-72bc9a0f5f07-input",
+                    "source": "canvasNote-4dbca523-4495-4732-a107-e7eb2ca4fd3d",
+                    "target": "canvasNote-ef40d563-4df7-4aff-b6ec-72bc9a0f5f07",
+                    "targetHandle": "input"
+                  },
+                  {
+                    "id": "edge-variable-c0edc099-3a8a-41fd-bf72-c4c0204c6a28-output-loop-a4fc4348-44fb-49ea-8236-2acf87569028-internal-target",
+                    "source": "variable-c0edc099-3a8a-41fd-bf72-c4c0204c6a28",
+                    "target": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+                    "sourceHandle": "output",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-connector-45078208-58d3-45f1-ba7d-b45d24a551e6-end-2c543046-775a-471f-ab3b-5cc5c32a18bf",
+                    "source": "connector-45078208-58d3-45f1-ba7d-b45d24a551e6",
+                    "target": "end-2c543046-775a-471f-ab3b-5cc5c32a18bf"
+                  }
+                ],
+                "connectionReferences": {
+                  "shared_agentnode": {
+                    "api": {
+                      "name": "shared_agentnode"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedagentnode_36bfd7b0"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-agentnode-0e6dddd0-d4fc-43e9-a95e-2406784e675f"
+                  },
+                  "shared_advancedapprovals": {
+                    "api": {
+                      "name": "shared_advancedapprovals"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedadvancedapprovals_00cb31fc"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "be923ac0d38a430a90ba2395510118d3"
+                  },
+                  "shared_office365": {
+                    "api": {
+                      "name": "shared_office365"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedoffice365_37c07"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-office365-b79141e6-d6f8-42c6-b914-3eb3d2491190"
+                  }
+                }
+              },
+              "nodeActionMapping": {
+                "agent-2d813f06-95ff-4a50-903b-ff36ee884cdc": [
+                  "Call_Inventory___Fullfilment_Agent"
+                ],
+                "variable-44f7b1d2-15a0-473c-a3a8-3e8b43eba5c1": [
+                  "Initialize_variables",
+                  "Initialize_variables_Init_Email"
+                ],
+                "agent-7d5d1903-f892-41df-a546-95aef444dbd9": [
+                  "Review_Order_History___Policy"
+                ],
+                "connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9": [
+                  "Human_Review__Discount_Range"
+                ],
+                "variable-c0edc099-3a8a-41fd-bf72-c4c0204c6a28": [
+                  "Set_SKU__Adjust_price"
+                ],
+                "connector-444913ae-a97d-4bea-9bc8-6a44d3acb365": [
+                  "Send_email__Reorder_inbound"
+                ],
+                "variable-9c9fd0c3-899e-4645-89ad-fb9d7f14ee9a": [
+                  "Set_SKU__Keep_price__main_shelf"
+                ],
+                "variable-5fa3e06a-8244-4ef1-8fb0-7d10f773f2d4": [
+                  "Set_SKU__Keep_price"
+                ],
+                "ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8": [
+                  "Stock_Aging_Condition"
+                ],
+                "loop-a4fc4348-44fb-49ea-8236-2acf87569028": [
+                  "Loop_over_each_active_SKU"
+                ],
+                "builtinFunction-d5757215-ceed-4d57-ad4e-f2b376e681f9": [
+                  "Create_HTML_table"
+                ],
+                "connector-45078208-58d3-45f1-ba7d-b45d24a551e6": [
+                  "Send_an_email"
+                ],
+                "end-2c543046-775a-471f-ab3b-5cc5c32a18bf": [
+                  "end-2c543046-775a-471f-ab3b-5cc5c32a18bf"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "actions": {
+        "Call_Inventory___Fullfilment_Agent": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "body/prompt": "Extract the following information for all gaming related SKUs (games and consoles):\n- SKUName\n- State of SKU stock aging: Stale, fresh or other if unknown\n- State of inbound stock order: 'planned' if inbound entry is true, 'unplanned' if false or unknown, 'reorder' if a note to reorder inbound exists\n",
+              "body/agentId": "Default_InventoryFullfilmentAgent_X-w2GP",
+              "body/outputSchema": {
+                "type": "object",
+                "properties": {
+                  "SKU": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "SKUName": {
+                          "type": "string",
+                          "description": "The name of the SKU"
+                        },
+                        "StockAge": {
+                          "type": "string",
+                          "enum": [
+                            "stale",
+                            "fresh",
+                            "other"
+                          ],
+                          "description": "The state of SKU stock aging"
+                        },
+                        "Inbound": {
+                          "type": "string",
+                          "enum": [
+                            "planned",
+                            "unplanned",
+                            "reorder"
+                          ],
+                          "description": "State of inbound order"
+                        }
+                      },
+                      "required": [
+                        "SKUName",
+                        "StockAge",
+                        "Inbound"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "SKU"
+                ]
+              }
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
+              "connectionName": "shared_agentnode",
+              "operationId": "InvokeAgent"
+            }
+          },
+          "metadata": {
+            "description": "Call Inventory & Fullfilment Agent",
+            "nodeId": "agent-2d813f06-95ff-4a50-903b-ff36ee884cdc"
+          }
+        },
+        "Initialize_variables": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "SKU Array",
+                "type": "Array",
+                "value": []
+              }
+            ]
+          },
+          "runAfter": {
+            "Call_Inventory___Fullfilment_Agent": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Initialize variables",
+            "nodeId": "variable-44f7b1d2-15a0-473c-a3a8-3e8b43eba5c1"
+          }
+        },
+        "Initialize_variables_Init_Email": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Email",
+                "type": "String",
+                "value": ""
+              }
+            ]
+          },
+          "runAfter": {
+            "Initialize_variables": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Loop_over_each_active_SKU": {
+          "type": "Foreach",
+          "foreach": "@coalesce(body('Call_Inventory___Fullfilment_Agent')?['structuredOutput/SKU'], json('[]'))",
+          "actions": {
+            "Stock_Aging_Condition": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@items('Loop_over_each_active_SKU')?['StockAge']",
+                      "stale"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Review_Order_History___Policy": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "body/definition": {
+                        "components": [
+                          {
+                            "diagnostics": [],
+                            "schemaName": "shared_new-5forder-20management-20mcp-5f4fe69411b7a87261_InvokeMCP",
+                            "displayName": "Order Management MCP — Order Management MCP Server",
+                            "description": "MCP server for e-commerce order management. Tools: search_orders, get_order, get_shipment, request_return, get_return_status.",
+                            "dialog": {
+                              "toolInputs": [],
+                              "allowedTools": [],
+                              "subToolSettings": [],
+                              "diagnostics": [],
+                              "connectorId": "/providers/Microsoft.PowerApps/apis/shared_new-5forder-20management-20mcp-5f4fe69411b7a87261",
+                              "authMode": "Maker",
+                              "connectionReference": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
+                              "operationId": "InvokeMCP",
+                              "$kind": "McpTool"
+                            },
+                            "$kind": "DialogComponent"
+                          },
+                          {
+                            "diagnostics": [],
+                            "schemaName": "shared_new-5fpolicy-20rag-20mcp-20v2-5f4fe69411b7a87261_InvokeMCP",
+                            "displayName": "Policy RAG MCP v2 — Policy RAG MCP v2 Server",
+                            "description": "MCP server for BlastBox Omega policy knowledge. Tools: search_policy, get_tier_refund_policy, get_markdown_policy.",
+                            "dialog": {
+                              "toolInputs": [],
+                              "allowedTools": [],
+                              "subToolSettings": [],
+                              "diagnostics": [],
+                              "connectorId": "/providers/Microsoft.PowerApps/apis/shared_new-5fpolicy-20rag-20mcp-20v2-5f4fe69411b7a87261",
+                              "authMode": "Maker",
+                              "connectionReference": "c028995b8824483d8f54bfb93b5b0092",
+                              "operationId": "InvokeMCP",
+                              "$kind": "McpTool"
+                            },
+                            "$kind": "DialogComponent"
+                          }
+                        ],
+                        "environmentVariables": [],
+                        "flows": [],
+                        "dataverseTableSearchs": [],
+                        "dataverseTableSearchGlossaryConfigurations": [],
+                        "dataverseTableSearchEntityConfigurations": [],
+                        "dataverseTableSearchEntityColumnSynonyms": [],
+                        "connectionReferences": [
+                          {
+                            "diagnostics": [],
+                            "connectionReferenceLogicalName": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
+                            "connectionId": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
+                            "connectorId": "/providers/Microsoft.PowerApps/apis/shared_new-5forder-20management-20mcp-5f4fe69411b7a87261",
+                            "$kind": "ConnectionReference"
+                          },
+                          {
+                            "diagnostics": [],
+                            "connectionReferenceLogicalName": "c028995b8824483d8f54bfb93b5b0092",
+                            "connectionId": "c028995b8824483d8f54bfb93b5b0092",
+                            "connectorId": "/providers/Microsoft.PowerApps/apis/shared_new-5fpolicy-20rag-20mcp-20v2-5f4fe69411b7a87261",
+                            "$kind": "ConnectionReference"
+                          }
+                        ],
+                        "connectorDefinitions": [],
+                        "aIModelDefinitions": [],
+                        "aIPluginOperations": [],
+                        "connectedAgentDefinitions": [],
+                        "componentCollections": [],
+                        "connectedBots": [],
+                        "diagnostics": [],
+                        "entity": {
+                          "authorizedSecurityGroupIds": [],
+                          "supportedLanguages": [],
+                          "diagnostics": [],
+                          "schemaName": "workflow_agentnode",
+                          "language": 1033,
+                          "accessControlPolicy": "Any",
+                          "authenticationMode": "Integrated",
+                          "authenticationTrigger": "Always",
+                          "synchronizationStatus": {
+                            "graphDriveItems": [],
+                            "diagnostics": [],
+                            "lastPublishedDetails": {
+                              "diagnosticDetails": [],
+                              "diagnostics": [],
+                              "authenticationMode": "Integrated",
+                              "$kind": "SuccessfulPublishResultDetails"
+                            },
+                            "$kind": "BotSynchronizationDetails"
+                          },
+                          "configuration": {
+                            "categories": [],
+                            "channels": [],
+                            "settings": {},
+                            "memoryParameters": [],
+                            "diagnostics": [],
+                            "recognizer": {
+                              "diagnostics": [],
+                              "$kind": "CLICopilotRecognizer"
+                            },
+                            "agentSettings": {
+                              "conversationStarters": [],
+                              "diagnostics": [],
+                              "model": {
+                                "diagnostics": [],
+                                "series": "claude-opus-5",
+                                "$kind": "ModelConfig"
+                              },
+                              "instructions": {
+                                "segments": [],
+                                "diagnostics": [],
+                                "$kind": "Instructions"
+                              },
+                              "output": {
+                                "diagnostics": [],
+                                "schema": "{\"type\":\"object\",\"properties\":{\"Promo\":{\"type\":\"string\"},\"Clearance\":{\"type\":\"string\"},\"Findings\":{\"type\":\"string\"}},\"required\":[\"Promo\",\"Clearance\",\"Findings\"]}",
+                                "$kind": "StructuredAgentOutput"
+                              },
+                              "$kind": "AgentSettings"
+                            },
+                            "$kind": "BotConfiguration"
+                          },
+                          "$kind": "BotEntity"
+                        },
+                        "$kind": "BotDefinition"
+                      },
+                      "body/message": "Get the potential promo or clearance new price scheme for the SKU at hand:\n@{items('Loop_over_each_active_SKU')?['SKUName']}\n\nCreate a ready-to-send two lines for store employees with the new potential pricing scheme and rationale. Propose a range of discount prices but do not fix a max and min discount or price, these will be specified by the store managers later. \n\nSummarize the findings in the SKU recent order history and its applicability for promotion or discount, for store manager review."
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
+                      "connectionName": "shared_agentnode",
+                      "operationId": "InvokeDefinition"
+                    }
+                  },
+                  "metadata": {
+                    "description": "Review Order History & Policy",
+                    "nodeId": "agent-7d5d1903-f892-41df-a546-95aef444dbd9"
+                  }
+                },
+                "Human_Review__Discount_Range": {
+                  "type": "OpenApiConnectionWebhook",
+                  "inputs": {
+                    "parameters": {
+                      "RequestForInformationInput/channel": "Outlook",
+                      "RequestForInformationInput/title": "Action needed: SKU Pricing Adjustment",
+                      "RequestForInformationInput/message": "Dear store manager,\n\nThe following item has been nominated for a promotion or clearance application based on weekly findings.\nSKU: @{items('Loop_over_each_active_SKU')?['SKUName']} \nWeekly Findings: @{body('Review_Order_History___Policy')?['structuredOutput/Findings']} \n\nThe following options are to be reviewed:\n\nIf promotion is chosen, store employees will receive the following guidance:\nPromo: @{body('Review_Order_History___Policy')?['structuredOutput/Promo']} \n\nIf clearance is chosen, store employees will receive the following guidance:\nClearance: @{body('Review_Order_History___Policy')?['structuredOutput/Clearance']} \n\nPlease select your preferred option, as well as (if desired), maximum and minimum discount to be applied.\n\nThank you",
+                      "RequestForInformationInput/assignedTo": "email@email.com",
+                      "RequestForInformationInput/input": {
+                        "type": "object",
+                        "properties": {
+                          "text": {
+                            "title": "New Pricing",
+                            "type": "string",
+                            "x-ms-content-hint": "TEXT",
+                            "x-ms-dynamically-added": true,
+                            "description": "Please select an option",
+                            "enum": [
+                              "Accept Promo",
+                              "Accept Clearance"
+                            ]
+                          },
+                          "number": {
+                            "title": "Max",
+                            "type": "number",
+                            "x-ms-content-hint": "NUMBER",
+                            "x-ms-dynamically-added": true,
+                            "description": "Maximum discount"
+                          },
+                          "number_1": {
+                            "title": "Min",
+                            "type": "number",
+                            "x-ms-content-hint": "NUMBER",
+                            "x-ms-dynamically-added": true,
+                            "description": "Minimum discount"
+                          }
+                        },
+                        "required": [
+                          "text"
+                        ]
+                      }
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_advancedapprovals",
+                      "connectionName": "shared_advancedapprovals",
+                      "operationId": "RequestForInformation"
+                    }
+                  },
+                  "runAfter": {
+                    "Review_Order_History___Policy": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "description": "Human Review: Discount Range",
+                    "nodeId": "connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9"
+                  }
+                },
+                "Set_SKU__Adjust_price": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "SKU Array",
+                    "value": "@createArray(items('Loop_over_each_active_SKU')?['SKUName'],concat(\r\n  if(equals(body('Human_Review__Discount_Range')?['text'], 'Accept Promo'), body('Review_Order_History___Policy')?['structuredOutput/Promo'], body('Review_Order_History___Policy')?['structuredOutput/Clearance']),\r\n  if(not(empty(body('Human_Review__Discount_Range')?['number'])), concat(' Max Discount: ', string(body('Human_Review__Discount_Range')?['number'])), ''),\r\n  if(not(empty(body('Human_Review__Discount_Range')?['number_1'])), concat(' Min Discount: ', string(body('Human_Review__Discount_Range')?['number_1'])), '')\r\n))"
+                  },
+                  "runAfter": {
+                    "Human_Review__Discount_Range": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "description": "Set SKU: Adjust price",
+                    "nodeId": "variable-c0edc099-3a8a-41fd-bf72-c4c0204c6a28"
+                  }
+                }
+              },
+              "else": {
+                "actions": {
+                  "Stock_Aging_Condition_NestedIf_1": {
+                    "type": "If",
+                    "expression": {
+                      "and": [
+                        {
+                          "equals": [
+                            "@items('Loop_over_each_active_SKU')?['Inbound']",
+                            "reorder"
+                          ]
+                        }
+                      ]
+                    },
+                    "actions": {
+                      "Send_email__Reorder_inbound": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "parameters": {
+                            "emailMessage/Importance": "Normal",
+                            "emailMessage/Body": "<div>Dear team,</div><div><br></div><div>We require to reorder the last inbound pack of the following product, given demand increase:</div><div><br></div><div>@{items('Loop_over_each_active_SKU')?['SKUName']}</div><div><br></div><div>Please provide us with an invoice and ETA within the next 2 business days.</div><div><br></div><div>Thank you</div>",
+                            "emailMessage/To": "@{variables('Email')}",
+                            "emailMessage/Subject": "@{items('Loop_over_each_active_SKU')?['SKUName']} - Stock reorder"
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                            "connectionName": "shared_office365",
+                            "operationId": "SendEmailV2"
+                          }
+                        },
+                        "metadata": {
+                          "description": "Send email: Reorder inbound",
+                          "nodeId": "connector-444913ae-a97d-4bea-9bc8-6a44d3acb365"
+                        }
+                      },
+                      "Set_SKU__Keep_price__main_shelf": {
+                        "type": "AppendToArrayVariable",
+                        "inputs": {
+                          "name": "SKU Array",
+                          "value": "@createArray(items('Loop_over_each_active_SKU')?['SKUName'], 'This is a high demand item. Please keep current pricing and ensure item is located in the main, visible shelf as per the latest store plan, to keep the momentum.')"
+                        },
+                        "runAfter": {
+                          "Send_email__Reorder_inbound": [
+                            "Succeeded"
+                          ]
+                        },
+                        "metadata": {
+                          "description": "Set SKU: Keep price, main shelf",
+                          "nodeId": "variable-9c9fd0c3-899e-4645-89ad-fb9d7f14ee9a"
+                        }
+                      }
+                    },
+                    "else": {
+                      "actions": {
+                        "Set_SKU__Keep_price": {
+                          "type": "AppendToArrayVariable",
+                          "inputs": {
+                            "name": "SKU Array",
+                            "value": "@createArray(items('Loop_over_each_active_SKU')?['SKUName'], 'This item has a good balance of supply and demand. Keep current pricing and store allocation. No action required.')"
+                          },
+                          "metadata": {
+                            "description": "Set SKU: Keep price",
+                            "nodeId": "variable-5fa3e06a-8244-4ef1-8fb0-7d10f773f2d4"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "metadata": {
+                "description": "Stock Aging Condition",
+                "nodeId": "ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8"
+              }
+            }
+          },
+          "metadata": {
+            "description": "Loop over each active SKU",
+            "nodeId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028"
+          },
+          "runAfter": {
+            "Initialize_variables_Init_Email": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Create_HTML_table": {
+          "type": "Table",
+          "inputs": {
+            "from": "@variables('SKU Array')",
+            "format": "HTML"
+          },
+          "runAfter": {
+            "Loop_over_each_active_SKU": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Create HTML table",
+            "nodeId": "builtinFunction-d5757215-ceed-4d57-ad4e-f2b376e681f9"
+          }
+        },
+        "Send_an_email": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "emailMessage/Importance": "Normal",
+              "emailMessage/Body": "<div>Dear team,</div><div><br></div><div>Please notice and apply the following changes in our products in store, according to the latest review. Pay special attention to promotions, clearance, or high-visibility items to be reallocated:</div><div><br></div><div>@{body('Create_HTML_table')}</div><div><br></div><div>Thank you</div>",
+              "emailMessage/Subject": "Store Pricing - Weekly Update",
+              "emailMessage/To": "@{variables('Email')}"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+              "connectionName": "shared_office365",
+              "operationId": "SendEmailV2"
+            }
+          },
+          "runAfter": {
+            "Create_HTML_table": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Send an email",
+            "nodeId": "connector-45078208-58d3-45f1-ba7d-b45d24a551e6"
+          }
+        },
+        "end-2c543046-775a-471f-ab3b-5cc5c32a18bf": {
+          "type": "Terminate",
+          "inputs": {
+            "runStatus": "Succeeded"
+          },
+          "runAfter": {
+            "Send_an_email": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "End",
+            "nodeId": "end-2c543046-775a-471f-ab3b-5cc5c32a18bf"
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "telemetryMetadata": {
+          "creationSource": "WorkflowDesigner",
+          "modifiedSources": "WorkflowDesigner"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

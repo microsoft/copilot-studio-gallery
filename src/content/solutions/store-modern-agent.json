@@ -1,0 +1,256 @@
+{
+  "name": "Store Modern Agent",
+  "description": "A compact retail assistant that delegates inventory and policy questions while keeping reusable store skills close at hand.",
+  "tags": [
+    "retail",
+    "customer-service",
+    "multi-agent",
+    "inventory",
+    "policy"
+  ],
+  "author": "BlastBox team",
+  "featured": false,
+  "uniqueName": "StoreModernAgent",
+  "version": "1.0.0.1",
+  "publisher": "CAT",
+  "bundle": "bundles/store-modern-agent.zip",
+  "agentCount": 3,
+  "workflowCount": 0,
+  "componentCount": 16,
+  "agents": [
+    {
+      "id": "Default_InventoryFullfilmentAgent_X-w2GP",
+      "schemaName": "Default_InventoryFullfilmentAgent_X-w2GP",
+      "name": "Inventory & Fullfilment Agent",
+      "model": "Sonnet46",
+      "channels": [],
+      "toolCount": 0,
+      "skillCount": 0,
+      "connectedAgentCount": 0
+    },
+    {
+      "id": "Default_StorePolicyAgent_s9s-u8",
+      "schemaName": "Default_StorePolicyAgent_s9s-u8",
+      "name": "Store Policy Agent",
+      "model": "Sonnet46",
+      "channels": [],
+      "toolCount": 0,
+      "skillCount": 0,
+      "connectedAgentCount": 0
+    },
+    {
+      "id": "Default_draft_IsBewO",
+      "schemaName": "Default_draft_IsBewO",
+      "name": "Returns & Service Assistant",
+      "model": "Sonnet46",
+      "channels": [],
+      "toolCount": 0,
+      "skillCount": 2,
+      "connectedAgentCount": 2
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:Default_InventoryFullfilmentAgent_X-w2GP",
+        "name": "Inventory & Fullfilment Agent",
+        "type": "agent",
+        "position": {
+          "x": -111.99999999999997,
+          "y": -396
+        },
+        "details": {
+          "model": "Sonnet46",
+          "channels": [],
+          "toolCount": 0,
+          "skillCount": 0,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "agent:Default_draft_IsBewO",
+        "name": "Returns & Service Assistant",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "Sonnet46",
+          "channels": [],
+          "toolCount": 0,
+          "skillCount": 2,
+          "connectedAgentCount": 2
+        }
+      },
+      {
+        "id": "agent:Default_StorePolicyAgent_s9s-u8",
+        "name": "Store Policy Agent",
+        "type": "agent",
+        "position": {
+          "x": 248,
+          "y": -36
+        },
+        "details": {
+          "model": "Sonnet46",
+          "channels": [],
+          "toolCount": 0,
+          "skillCount": 0,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:Default_draft_IsBewO.skill.skill1",
+        "name": "skill1",
+        "type": "skill",
+        "position": {
+          "x": -111.99999999999999,
+          "y": 184
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "Default_draft_IsBewO.skill.skill1",
+          "description": "skill1"
+        }
+      },
+      {
+        "id": "skill:Default_draft_IsBewO.skill.skill2",
+        "name": "skill2",
+        "type": "skill",
+        "position": {
+          "x": -332,
+          "y": -35.99999999999997
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "Default_draft_IsBewO.skill.skill2",
+          "description": "skill2"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:Default_draft_IsBewO-delegates-Default_draft_IsBewO.tool.connected-agent.Default_InventoryFullfilmentAgent_X-w2GP",
+        "source": "agent:Default_draft_IsBewO",
+        "target": "agent:Default_InventoryFullfilmentAgent_X-w2GP",
+        "label": "delegates"
+      },
+      {
+        "id": "agent:Default_draft_IsBewO-delegates-Default_draft_IsBewO.tool.connected-agent.Default_StorePolicyAgent_s9s-u8",
+        "source": "agent:Default_draft_IsBewO",
+        "target": "agent:Default_StorePolicyAgent_s9s-u8",
+        "label": "delegates"
+      },
+      {
+        "id": "agent:Default_draft_IsBewO-includes-Default_draft_IsBewO.skill.skill1",
+        "source": "agent:Default_draft_IsBewO",
+        "target": "skill:Default_draft_IsBewO.skill.skill1",
+        "label": "includes"
+      },
+      {
+        "id": "agent:Default_draft_IsBewO-includes-Default_draft_IsBewO.skill.skill2",
+        "source": "agent:Default_draft_IsBewO",
+        "target": "skill:Default_draft_IsBewO.skill.skill2",
+        "label": "includes"
+      }
+    ]
+  },
+  "workflows": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 811
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.skill.skill1/botcomponent.xml",
+      "category": "component",
+      "size": 356
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.skill.skill1/data",
+      "category": "component",
+      "size": 584
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.skill.skill2/botcomponent.xml",
+      "category": "component",
+      "size": 356
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.skill.skill2/data",
+      "category": "component",
+      "size": 584
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.tool.connected-agent.Default_InventoryFullfilmentAgent_X-w2GP/botcomponent.xml",
+      "category": "component",
+      "size": 459
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.tool.connected-agent.Default_InventoryFullfilmentAgent_X-w2GP/data",
+      "category": "component",
+      "size": 124
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.tool.connected-agent.Default_InventoryFullfilmentAgent_X-w2GP/dependencies.json",
+      "category": "component",
+      "size": 72
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.tool.connected-agent.Default_StorePolicyAgent_s9s-u8/botcomponent.xml",
+      "category": "component",
+      "size": 420
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.tool.connected-agent.Default_StorePolicyAgent_s9s-u8/data",
+      "category": "component",
+      "size": 115
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.tool.connected-agent.Default_StorePolicyAgent_s9s-u8/dependencies.json",
+      "category": "component",
+      "size": 63
+    },
+    {
+      "path": "bots/Default_draft_IsBewO/bot.xml",
+      "category": "bot",
+      "size": 35396
+    },
+    {
+      "path": "bots/Default_draft_IsBewO/configuration.json",
+      "category": "bot",
+      "size": 413
+    },
+    {
+      "path": "bots/Default_InventoryFullfilmentAgent_X-w2GP/bot.xml",
+      "category": "bot",
+      "size": 35418
+    },
+    {
+      "path": "bots/Default_InventoryFullfilmentAgent_X-w2GP/configuration.json",
+      "category": "bot",
+      "size": 300
+    },
+    {
+      "path": "bots/Default_StorePolicyAgent_s9s-u8/bot.xml",
+      "category": "bot",
+      "size": 35394
+    },
+    {
+      "path": "bots/Default_StorePolicyAgent_s9s-u8/configuration.json",
+      "category": "bot",
+      "size": 300
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 551
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 3971
+    }
+  ]
+}

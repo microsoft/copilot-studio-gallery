@@ -1,0 +1,1428 @@
+{
+  "name": "BlastBox Omega Store Operations",
+  "description": "A multi-agent retail solution pairing customer service and inventory agents with two human-aware operational workflows.",
+  "tags": [
+    "retail",
+    "customer-service",
+    "inventory",
+    "multi-agent",
+    "human-in-the-loop"
+  ],
+  "author": "Adriana Trujillo",
+  "createdAt": "2026-08-11",
+  "updatedAt": "2026-08-11",
+  "featured": true,
+  "uniqueName": "WorkflowsBlastbox",
+  "version": "1.0.0.3",
+  "publisher": "AdrianaTrujillo",
+  "bundle": "bundles/blastbox-omega.zip",
+  "agentCount": 3,
+  "workflowCount": 2,
+  "componentCount": 5,
+  "agents": [
+    {
+      "id": "Default_InventoryFullfilmentAgent_X-w2GP",
+      "schemaName": "Default_InventoryFullfilmentAgent_X-w2GP",
+      "name": "Inventory & Fullfilment Agent",
+      "model": "Sonnet46",
+      "instructions": "You are the Inventory & Fulfillment Agent for BlastBox Omega stores. You support the Returns & Service Assistant with stock, alternatives, restock, and game compatibility.​‌\n\nTools:​‌\n- check\\_stock(sku): quantity on hand, price, warehouse, and whether the item is in stock.​‌\n- - find\\_alternatives(sku): comparable in-stock products (e.g. a higher console model) with prices.​‌\n- - get\\_restock\\_date(sku): next restock date and supplier for an out-of-stock item.​‌\n- - check\\_game\\_compatibility(game\\_title): which BlastBox Omega console model a game requires.​‌\nRules:​‌\n- Always use the tools; never invent stock levels, prices, SKUs, or dates.​‌\n- - The base console is SKU-OMEGA ($399.99); the upgraded model is SKU-OMEGA-MEGA, the BlastBox Omega MEGA Edition ($499.99).​‌\n- - If the base console is out of stock, report the restock date AND surface the MEGA Edition as an in-stock alternative.​‌\n- - If a customer mentions a specific game, call check\\_game\\_compatibility and state which model it needs.​‌\nBe concise. Always include SKUs, prices, and quantities you looked up.​‌\n\n\nInventory aging (merchandising reviews):​‌\n- When the Merchandising Insights Assistant asks about inventory aging, weeks-of-cover, or how long slow-moving SKUs have been sitting, call get\\_inventory\\_aging.​‌\n- - Report, per SKU, the aging (days/weeks on hand) and weeks-of-cover so markdown decisions can be justified.​‌",
+      "channels": [],
+      "toolCount": 1,
+      "skillCount": 0,
+      "connectedAgentCount": 0
+    },
+    {
+      "id": "Default_StorePolicyAgent_s9s-u8",
+      "schemaName": "Default_StorePolicyAgent_s9s-u8",
+      "name": "Store Policy Agent",
+      "model": "Sonnet46",
+      "instructions": "You are the Store Policy Agent — the authority on BlastBox Omega store policy: returns, warranties, BlastPass membership rules, and merchandising markdown. You serve the Returns & Service Assistant and the Merchandising Insights Assistant.\n\nGround every answer in your tools; never invent policy numbers, fees, or percentages.\n\nDefective consoles: before ruling, ask whether the failure is a manufacturing fault (won't power on, no physical damage) or possible accidental/physical/liquid damage. Manufacturing fault inside 30 days is a free warranty swap, no restocking fee. Accidental damage is a standard return that may carry a restocking fee.\n\nBlastPass cancellations: return the tier refund rule; the Returns & Service Assistant computes the prorated amount.\n\nMarkdown: if the type isn't specified, relay the promo-vs-clearance clarification. Clearance needs manager sign-off.\n\nBe concise: state the window, the rule, and any fee applied.",
+      "channels": [],
+      "toolCount": 1,
+      "skillCount": 0,
+      "connectedAgentCount": 0
+    },
+    {
+      "id": "cr26e_storeassociateassistant_ZQHUx1",
+      "schemaName": "cr26e_storeassociateassistant_ZQHUx1",
+      "name": "Store Associate Assistant",
+      "model": "Sonnet46",
+      "instructions": "You are the Store Associate Assistant for BlastBox Omega, a retro-gaming store. You help store associates resolve a customer's whole visit - returns, warranty swaps, membership changes, trade-ups, and settlement.\n\nBe warm, concise, and decisive. Talk to the associate as a knowledgeable colleague: lead with the answer, lay out the options with their dollar impact, and end with a single clear question when a decision is needed.\n\nEstablish the facts before you act, ground every figure and ruling in your tools and skills rather than guessing, and confirm with the associate before making any change. When a teammate agent needs more information, relay its question and wait for the answer.",
+      "channels": [
+        "MsTeams"
+      ],
+      "toolCount": 2,
+      "skillCount": 3,
+      "connectedAgentCount": 2
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:Default_InventoryFullfilmentAgent_X-w2GP",
+        "name": "Inventory & Fullfilment Agent",
+        "type": "agent",
+        "position": {
+          "x": -111.99999999999997,
+          "y": -396
+        },
+        "details": {
+          "model": "Sonnet46",
+          "instructions": "You are the Inventory & Fulfillment Agent for BlastBox Omega stores. You support the Returns & Service Assistant with stock, alternatives, restock, and game compatibility.​‌\n\nTools:​‌\n- check\\_stock(sku): quantity on hand, price, warehouse, and whether the item is in stock.​‌\n- - find\\_alternatives(sku): comparable in-stock products (e.g. a higher console model) with prices.​‌\n- - get\\_restock\\_date(sku): next restock date and supplier for an out-of-stock item.​‌\n- - check\\_game\\_compatibility(game\\_title): which BlastBox Omega console model a game requires.​‌\nRules:​‌\n- Always use the tools; never invent stock levels, prices, SKUs, or dates.​‌\n- - The base console is SKU-OMEGA ($399.99); the upgraded model is SKU-OMEGA-MEGA, the BlastBox Omega MEGA Edition ($499.99).​‌\n- - If the base console is out of stock, report the restock date AND surface the MEGA Edition as an in-stock alternative.​‌\n- - If a customer mentions a specific game, call check\\_game\\_compatibility and state which model it needs.​‌\nBe concise. Always include SKUs, prices, and quantities you looked up.​‌\n\n\nInventory aging (merchandising reviews):​‌\n- When the Merchandising Insights Assistant asks about inventory aging, weeks-of-cover, or how long slow-moving SKUs have been sitting, call get\\_inventory\\_aging.​‌\n- - Report, per SKU, the aging (days/weeks on hand) and weeks-of-cover so markdown decisions can be justified.​‌",
+          "channels": [],
+          "toolCount": 1,
+          "skillCount": 0,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "name": "Store Associate Assistant",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "Sonnet46",
+          "instructions": "You are the Store Associate Assistant for BlastBox Omega, a retro-gaming store. You help store associates resolve a customer's whole visit - returns, warranty swaps, membership changes, trade-ups, and settlement.\n\nBe warm, concise, and decisive. Talk to the associate as a knowledgeable colleague: lead with the answer, lay out the options with their dollar impact, and end with a single clear question when a decision is needed.\n\nEstablish the facts before you act, ground every figure and ruling in your tools and skills rather than guessing, and confirm with the associate before making any change. When a teammate agent needs more information, relay its question and wait for the answer.",
+          "channels": [
+            "MsTeams"
+          ],
+          "toolCount": 2,
+          "skillCount": 3,
+          "connectedAgentCount": 2
+        }
+      },
+      {
+        "id": "agent:Default_StorePolicyAgent_s9s-u8",
+        "name": "Store Policy Agent",
+        "type": "agent",
+        "position": {
+          "x": 169.45933368849074,
+          "y": -260.45632866914406
+        },
+        "details": {
+          "model": "Sonnet46",
+          "instructions": "You are the Store Policy Agent — the authority on BlastBox Omega store policy: returns, warranties, BlastPass membership rules, and merchandising markdown. You serve the Returns & Service Assistant and the Merchandising Insights Assistant.\n\nGround every answer in your tools; never invent policy numbers, fees, or percentages.\n\nDefective consoles: before ruling, ask whether the failure is a manufacturing fault (won't power on, no physical damage) or possible accidental/physical/liquid damage. Manufacturing fault inside 30 days is a free warranty swap, no restocking fee. Accidental damage is a standard return that may carry a restocking fee.\n\nBlastPass cancellations: return the tier refund rule; the Returns & Service Assistant computes the prorated amount.\n\nMarkdown: if the type isn't specified, relay the promo-vs-clearance clarification. Clearance needs manager sign-off.\n\nBe concise: state the window, the rule, and any fee applied.",
+          "channels": [],
+          "toolCount": 1,
+          "skillCount": 0,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:cr26e_storeassociateassistant_ZQHUx1.skill.points-reconciliation__iK",
+        "name": "points-reconciliation",
+        "type": "skill",
+        "position": {
+          "x": 102.48414068000119,
+          "y": 12.954605470389168
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cr26e_storeassociateassistant_ZQHUx1.skill.points-reconciliation__iK",
+          "description": "Reconcile a customer's BlastPoints loyalty balance after a complex visit (purchases, returns, promo multipliers, expiry) and convert the net balance to store credit. Use when an associate asks about a member's points, or after a return that should claw back previously earned points. The skill runs a bundled Python script that applies the base earn rate, promo multipliers, tier bonus, clawbacks, and expiry, then prints a points ledger and the redeemable store-credit value."
+        }
+      },
+      {
+        "id": "skill:cr26e_storeassociateassistant_ZQHUx1.skill.prorated-refund-calculator_KZe",
+        "name": "prorated-refund-calculator",
+        "type": "skill",
+        "position": {
+          "x": -16.545577394137197,
+          "y": 162.2131509385322
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cr26e_storeassociateassistant_ZQHUx1.skill.prorated-refund-calculator_KZe",
+          "description": "Calculate the exact prorated refund when a customer cancels a BlastPass membership, and the net settlement when a defective unit is traded up to a pricier model. Use after the Store Policy Agent confirms the refund rule and the Membership MCP has returned the membership details. The skill runs a bundled Python script so the arithmetic is exact."
+        }
+      },
+      {
+        "id": "skill:cr26e_storeassociateassistant_ZQHUx1.skill.slip-pdf-generator_2i4",
+        "name": "slip-pdf-generator",
+        "type": "skill",
+        "position": {
+          "x": -207.45442260586276,
+          "y": 162.2131509385322
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cr26e_storeassociateassistant_ZQHUx1.skill.slip-pdf-generator_2i4",
+          "description": "Generate a printable BlastBox return / RMA / exchange slip as a PDF for the associate to hand to the customer. Use at the end of a return, warranty swap, membership cancellation, or upgrade once all amounts are final. The skill runs a bundled Python script that renders the confirmed slip values into a real PDF file."
+        }
+      },
+      {
+        "id": "tool:cr26e_storeassociateassistant_ZQHUx1.tool.MembershipMCPv2-MembershipMCPv2Server_9Ac",
+        "name": "Membership MCP v2 — Membership MCP v2 Server",
+        "type": "tool",
+        "position": {
+          "x": -326.4841406800012,
+          "y": 12.95460547038919
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cr26e_storeassociateassistant_ZQHUx1.tool.MembershipMCPv2-MembershipMCPv2Server_9Ac",
+          "operation": "InvokeMembershipMCPv2",
+          "description": "MCP server for BlastPass memberships. Tools: get_membership, cancel_membership, reissue_card."
+        }
+      },
+      {
+        "id": "tool:cr26e_storeassociateassistant_ZQHUx1.tool.OrderManagementMCP-OrderManagementMCPServer_LQG",
+        "name": "Order Management MCP — Order Management MCP Server",
+        "type": "tool",
+        "position": {
+          "x": -284.00292614296654,
+          "y": -173.16775640892135
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cr26e_storeassociateassistant_ZQHUx1.tool.OrderManagementMCP-OrderManagementMCPServer_LQG",
+          "operation": "InvokeMCP",
+          "description": "MCP server for e-commerce order management. Tools: search_orders, get_order, get_shipment, request_return, get_return_status."
+        }
+      },
+      {
+        "id": "tool:Default_StorePolicyAgent_s9s-u8.tool.PolicyRAGMCPv2-PolicyRAGMCPv2Server_14V",
+        "name": "Policy RAG MCP v2 — Policy RAG MCP v2 Server",
+        "type": "tool",
+        "position": {
+          "x": 302.3706857080558,
+          "y": -366.4495949851288
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_StorePolicyAgent_s9s-u8.tool.PolicyRAGMCPv2-PolicyRAGMCPv2Server_14V",
+          "operation": "InvokeMCP",
+          "description": "MCP server for BlastBox Omega policy knowledge. Tools: search_policy, get_tier_refund_policy, get_markdown_policy."
+        }
+      },
+      {
+        "id": "tool:Default_InventoryFullfilmentAgent_X-w2GP.tool.WarehouseMCP-WarehouseMCPServer_rcG",
+        "name": "Warehouse MCP — Warehouse MCP Server",
+        "type": "tool",
+        "position": {
+          "x": -111.99999999999993,
+          "y": -566
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_InventoryFullfilmentAgent_X-w2GP.tool.WarehouseMCP-WarehouseMCPServer_rcG",
+          "operation": "InvokeMCP",
+          "description": "MCP server for warehouse and fulfillment. Tools: check_stock, get_fulfillment_status, find_alternatives, get_restock_date."
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1-delegates-cr26e_storeassociateassistant_ZQHUx1.tool.connected-agent.Default_InventoryFullfilmentAgent_X-w2GP",
+        "source": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "target": "agent:Default_InventoryFullfilmentAgent_X-w2GP",
+        "label": "delegates"
+      },
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1-delegates-cr26e_storeassociateassistant_ZQHUx1.tool.connected-agent.Default_StorePolicyAgent_s9s-u8",
+        "source": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "target": "agent:Default_StorePolicyAgent_s9s-u8",
+        "label": "delegates"
+      },
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1-includes-cr26e_storeassociateassistant_ZQHUx1.skill.points-reconciliation__iK",
+        "source": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "target": "skill:cr26e_storeassociateassistant_ZQHUx1.skill.points-reconciliation__iK",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1-includes-cr26e_storeassociateassistant_ZQHUx1.skill.prorated-refund-calculator_KZe",
+        "source": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "target": "skill:cr26e_storeassociateassistant_ZQHUx1.skill.prorated-refund-calculator_KZe",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1-includes-cr26e_storeassociateassistant_ZQHUx1.skill.slip-pdf-generator_2i4",
+        "source": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "target": "skill:cr26e_storeassociateassistant_ZQHUx1.skill.slip-pdf-generator_2i4",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1-uses-cr26e_storeassociateassistant_ZQHUx1.tool.MembershipMCPv2-MembershipMCPv2Server_9Ac",
+        "source": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "target": "tool:cr26e_storeassociateassistant_ZQHUx1.tool.MembershipMCPv2-MembershipMCPv2Server_9Ac",
+        "label": "uses"
+      },
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1-uses-cr26e_storeassociateassistant_ZQHUx1.tool.OrderManagementMCP-OrderManagementMCPServer_LQG",
+        "source": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "target": "tool:cr26e_storeassociateassistant_ZQHUx1.tool.OrderManagementMCP-OrderManagementMCPServer_LQG",
+        "label": "uses"
+      },
+      {
+        "id": "agent:Default_InventoryFullfilmentAgent_X-w2GP-uses-Default_InventoryFullfilmentAgent_X-w2GP.tool.WarehouseMCP-WarehouseMCPServer_rcG",
+        "source": "agent:Default_InventoryFullfilmentAgent_X-w2GP",
+        "target": "tool:Default_InventoryFullfilmentAgent_X-w2GP.tool.WarehouseMCP-WarehouseMCPServer_rcG",
+        "label": "uses"
+      },
+      {
+        "id": "agent:Default_StorePolicyAgent_s9s-u8-uses-Default_StorePolicyAgent_s9s-u8.tool.PolicyRAGMCPv2-PolicyRAGMCPv2Server_14V",
+        "source": "agent:Default_StorePolicyAgent_s9s-u8",
+        "target": "tool:Default_StorePolicyAgent_s9s-u8.tool.PolicyRAGMCPv2-PolicyRAGMCPv2Server_14V",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [
+    {
+      "id": "{62d468f3-4a55-1ba5-2ec3-ae1a4b3a4b35}",
+      "name": "BlastBox Post Sales Service",
+      "trigger": "When a new email arrives",
+      "nodeCount": 23,
+      "edgeCount": 22,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-ee6d2ba4-6711-46df-873b-8ff4e5362436",
+            "name": "When a new email arrives",
+            "type": "start",
+            "position": {
+              "x": -173.36318146106169,
+              "y": 560.3551575805192
+            },
+            "details": {}
+          },
+          {
+            "id": "classifyOnInlineAgent-cf2f15e8-2660-4732-b934-7431240f433b",
+            "name": "Classify",
+            "type": "classifyOnInlineAgent",
+            "position": {
+              "x": 239.63619816708766,
+              "y": 478.71031516103835
+            },
+            "details": {
+              "model": "GPT55Chat"
+            }
+          },
+          {
+            "id": "canvasNote-a592e707-ed7b-4419-b23f-4a1265cb05c5",
+            "name": "Note",
+            "type": "canvasNote",
+            "position": {
+              "x": -184.00976257403167,
+              "y": 269.8319960199096
+            },
+            "details": {
+              "markdown": "Customer email arrives in Inbox with enquiry. Subject filter is \"BlastBox Customer Service\", a Post-Sales entry point",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "agent-c795e6ad-eef4-47c5-b492-88ca35dbef9c",
+            "name": "Review Order, Stock & Weather",
+            "type": "agent",
+            "position": {
+              "x": 667.6865691304283,
+              "y": 229.55219617704242
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "Explore the possible issues with the shipment of the order, such as lack of stock, as per the customer enquiry:\n\nEnquiry: {triggerOutputs()?['body/body']}\n\nEstimate a new ETA considering the weather conditions of the place of the destination address, and indicate if a substitute product exists that the customer can order instead. If no substitute exists, propose a refund of 100% of the original am"
+            }
+          },
+          {
+            "id": "agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b",
+            "name": "Review Order & Policy",
+            "type": "agent",
+            "position": {
+              "x": 671.7037587803834,
+              "y": 561.1407517560767
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "\nee",
+              "inlineInstructions": "Explore the complain of the customer and the options to help them according to our policy:\n\nComplain: {triggerOutputs()?['body/body']}\n\nOutput the following:\nReturn: 'applicable' if policy makes a return, refund or exchange applicable straightaway, 'exception' if the conditions are not fully covered by policy but the case is extreme, shows enough ambiguity or has grey areas not covered explicitly "
+            }
+          },
+          {
+            "id": "ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4",
+            "name": "Policy Condition",
+            "type": "ifElse",
+            "position": {
+              "x": 1041.2437396594803,
+              "y": 490
+            },
+            "details": {}
+          },
+          {
+            "id": "agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa",
+            "name": "Trigger Order Return/Exchange",
+            "type": "agent",
+            "position": {
+              "x": 1966.9371349815933,
+              "y": 459.85290511248394
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "Initiate a return request for the item(s) in the customer order below that have issues with shipment or that present defects:\n\n{body('connector-2b4cf3f7-936b-4139-bb61-ac0a14daae6e')}\n\nSend an email to the customer address indicated below (never other email) indicating that the return request has been initiated:\n\nCustomer email: {triggerOutputs()?['body/from']}\nSubject: 'BlastBox Service - Your en"
+            }
+          },
+          {
+            "id": "connector-7492932a-4693-4b1e-91dc-313e11fd221b",
+            "name": "Human Review: Exception",
+            "type": "connector",
+            "position": {
+              "x": 1342.2819165478081,
+              "y": 592.5812911489419
+            },
+            "details": {
+              "displayName": "Human review",
+              "apiName": "shared_advancedapprovals",
+              "operationName": "RequestForInformation",
+              "operationType": "OpenApiConnectionWebhook",
+              "parameters": {
+                "RequestForInformationInput/channel": "Outlook",
+                "RequestForInformationInput/title": "Action needed: Review Return Policy Exception",
+                "RequestForInformationInput/message": "Dear manager,\n\nPlease review the following case where return policy has been flagged as applicable.\n\nAssessment Summary:\n@{body('agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b')?['structuredOutput/Summary']}\n\nCustomer Email:\n@{triggerOutputs()?['body/body']}",
+                "RequestForInformationInput/assignedTo": "@{triggerOutputs()?['body/from']}"
+              }
+            }
+          },
+          {
+            "id": "ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339",
+            "name": "Approval Condition",
+            "type": "ifElse",
+            "position": {
+              "x": 1689.5534197048107,
+              "y": 562.7220352780549
+            },
+            "details": {}
+          },
+          {
+            "id": "connector-9ccb141c-3277-4402-b045-e4569768d047",
+            "name": "Send reply: No refund",
+            "type": "connector",
+            "position": {
+              "x": 1974.0114277344587,
+              "y": 777.9796628872746
+            },
+            "details": {
+              "displayName": "Office 365 Outlook",
+              "apiName": "shared_office365",
+              "operationName": "ReplyToV3",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "replyParameters/Importance": "Low",
+                "replyParameters/Body": "<div>Dear customer,</div><div><br></div><div>We have assessed your enquiry and have concluded that your case does not apply for a refund or exchange under our current policy.</div><div><br></div><div>Findings summary:@{body('agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b')?['structuredOutput/Summary']}​</div><div><br></div><div>We apologize for any inconvenience this may cause to you. If you need furt",
+                "replyParameters/Subject": "BlastBox Service - Your enquiry",
+                "replyParameters/To": "@{triggerOutputs()?['body/from']}"
+              }
+            }
+          },
+          {
+            "id": "connector-5f867ed3-6c32-4c2d-b747-251877850d50",
+            "name": "Send reply",
+            "type": "connector",
+            "position": {
+              "x": 1036.526545065823,
+              "y": 896.9996168290575
+            },
+            "details": {
+              "displayName": "Office 365 Outlook",
+              "apiName": "shared_office365",
+              "operationName": "ReplyToV3",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "replyParameters/Importance": "Low",
+                "replyParameters/Body": "<div>Dear customer,</div><div><br></div><div>Thank you for reaching out. We have assessed your enquiry. Here is some useful information for you:</div><div><br></div><div>@{body('agent-b6af16be-b502-4322-83cb-bf6f1c2ddf13')?['result']}</div><div><br></div><div>Further questions? Please reach out to us or visit our site.&nbsp;</div><div><br></div><div>Thank you​</div>",
+                "replyParameters/To": "@{triggerOutputs()?['body/from']}",
+                "replyParameters/Subject": "BlastBox Service - Your enquiry"
+              }
+            }
+          },
+          {
+            "id": "connector-2b4cf3f7-936b-4139-bb61-ac0a14daae6e",
+            "name": "Send context and options",
+            "type": "connector",
+            "position": {
+              "x": 1043.9965195642978,
+              "y": 228.67374640118007
+            },
+            "details": {
+              "displayName": "Office 365 Outlook",
+              "apiName": "shared_office365",
+              "operationName": "SendMailWithOptions",
+              "operationType": "OpenApiConnectionWebhook",
+              "parameters": {
+                "optionsEmailSubscription/Message/Importance": "Normal",
+                "optionsEmailSubscription/Message/Subject": "Action Needed: Your Delivery Enquiry",
+                "optionsEmailSubscription/Message/Options": "Wait, Return",
+                "optionsEmailSubscription/Message/To": "@{triggerOutputs()?['body/from']}",
+                "optionsEmailSubscription/Message/Body": "Dear customer,\n\nPlease find below the findings about your recent enquiry:\n@{body('agent-c795e6ad-eef4-47c5-b492-88ca35dbef9c')?['structuredOutput/Summary']} \n\nIndicate to us if you would be happy to wait for your order under its new ETA, or if you would prefer a refund (or exchange, if applicable).\n\nThank you\n"
+              }
+            }
+          },
+          {
+            "id": "ifElse-5d5fffd8-206d-45e5-bc24-6fc4f32b636c",
+            "name": "Choice Condition",
+            "type": "ifElse",
+            "position": {
+              "x": 1342.5961834690788,
+              "y": 224.4713489391661
+            },
+            "details": {}
+          },
+          {
+            "id": "agent-b6af16be-b502-4322-83cb-bf6f1c2ddf13",
+            "name": "Call Store Policy Agent",
+            "type": "agent",
+            "position": {
+              "x": 665.6063840283349,
+              "y": 898.3189906287583
+            },
+            "details": {
+              "botSchemaName": "Default_StorePolicyAgent_s9s-u8",
+              "mode": "invoke",
+              "instructions": "Review the customer query and craft a paragraph that summarizes the answer to the question, no greeting or comments, only the answer to the enquiry:\n\nEnquiry: @{triggerOutputs()?['body/body']} \n",
+              "inlineInstructions": ""
+            }
+          },
+          {
+            "id": "canvasNote-55701c44-ed9e-47e5-9956-8e4262503f3b",
+            "name": "Note 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 232.61791522643375,
+              "y": 263.65601320945666
+            },
+            "details": {
+              "markdown": "Email is classified as Order Shipment Issue, Order Defect Issue, or Other if this is a post-sale generic enquiry, not tied to a specific order",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-3eb5c945-0bd1-4cde-9a53-b43376917c23",
+            "name": "Note 4",
+            "type": "canvasNote",
+            "position": {
+              "x": 2312.1449513388206,
+              "y": 227
+            },
+            "details": {
+              "markdown": "Agent builds a contextualized answer, specifying if problem comes from delivery disruptions or stock unavailability and gets new ETA. Next steps options always include \"wait\" and \"cancel/return\", and may include \"exchange\" if substitute exists.",
+              "color": "blue"
+            }
+          },
+          {
+            "id": "canvasNote-c1d662dc-14df-43dc-a503-84fa55f357a4",
+            "name": "Note 5",
+            "type": "canvasNote",
+            "position": {
+              "x": 1714.3555743703328,
+              "y": 884.1696096472868
+            },
+            "details": {
+              "markdown": "General enquiries are checked by calling existing Store Policy Agent, followed by an email action to send a structured reply to the customer",
+              "color": "green"
+            }
+          },
+          {
+            "id": "connector-ef8cfaa6-a984-4216-b10a-3408c1c15675",
+            "name": "Send reply: Thanks for waiting",
+            "type": "connector",
+            "position": {
+              "x": 1965.0142830129066,
+              "y": 134.99388135688142
+            },
+            "details": {
+              "displayName": "Office 365 Outlook",
+              "apiName": "shared_office365",
+              "operationName": "ReplyToV3",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "replyParameters/Importance": "Low",
+                "replyParameters/Body": "<div>Dear customer,</div><div><br></div><div>Thanks for your patience.&nbsp;</div><div><br></div><div>You can keep track of your order in the separate email sent to you. If experiencing issues with your new ETA, please reach out to us.</div><div><br></div><div>Thank you</div>",
+                "replyParameters/To": "@{triggerOutputs()?['body/from']}",
+                "replyParameters/Subject": "BlastBox Service - Your enquiry"
+              }
+            }
+          },
+          {
+            "id": "canvasNote-258c5821-c40f-4722-8aaf-5467ce81b20f",
+            "name": "Note 4 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 2310.9852399919387,
+              "y": 534
+            },
+            "details": {
+              "markdown": "Agent assesses if case qualifies for an automatic return/replacement, if the conditions may still apply due to exceptional circumstances, or if these options are unapplicable. When exception is considered, a human approves/disapproves. ",
+              "color": "red"
+            }
+          },
+          {
+            "id": "end-2120af3d-79db-4382-8e87-bc95af0281b7",
+            "name": "End 2",
+            "type": "end",
+            "position": {
+              "x": 2319,
+              "y": 448
+            },
+            "details": {
+              "runStatus": "Succeeded"
+            }
+          },
+          {
+            "id": "end-59c4f94f-70bb-4161-ada6-11e1284ea27d",
+            "name": "End 1",
+            "type": "end",
+            "position": {
+              "x": 2311,
+              "y": 135
+            },
+            "details": {
+              "runStatus": "Succeeded"
+            }
+          },
+          {
+            "id": "end-120d8b37-4a78-416c-a48b-63bd0c976443",
+            "name": "End 3",
+            "type": "end",
+            "position": {
+              "x": 2290,
+              "y": 778
+            },
+            "details": {
+              "runStatus": "Succeeded"
+            }
+          },
+          {
+            "id": "end-5c7e1ace-643f-4e2d-bed7-8a71c340bc9b",
+            "name": "End 4",
+            "type": "end",
+            "position": {
+              "x": 1353,
+              "y": 897
+            },
+            "details": {
+              "runStatus": "Succeeded"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-ee6d2ba4-6711-46df-873b-8ff4e5362436-classifyOnInlineAgent-cf2f15e8-2660-4732-b934-7431240f433b",
+            "source": "start-ee6d2ba4-6711-46df-873b-8ff4e5362436",
+            "target": "classifyOnInlineAgent-cf2f15e8-2660-4732-b934-7431240f433b"
+          },
+          {
+            "id": "edge-agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b-ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4",
+            "source": "agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b",
+            "target": "ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4"
+          },
+          {
+            "id": "edge-classifyOnInlineAgent-cf2f15e8-2660-4732-b934-7431240f433b-category:1e11370e-7602-466a-904f-0242d972063c-agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b",
+            "source": "classifyOnInlineAgent-cf2f15e8-2660-4732-b934-7431240f433b",
+            "target": "agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b",
+            "sourceHandle": "category:1e11370e-7602-466a-904f-0242d972063c"
+          },
+          {
+            "id": "edge-ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4-condition:6f435d40-5285-416a-8ed1-0ad82cc517f4-agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa",
+            "source": "ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4",
+            "target": "agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa",
+            "sourceHandle": "condition:6f435d40-5285-416a-8ed1-0ad82cc517f4"
+          },
+          {
+            "id": "edge-ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4-condition:dcc6151b-4a09-43d6-b94a-d904a273f861-connector-7492932a-4693-4b1e-91dc-313e11fd221b",
+            "source": "ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4",
+            "target": "connector-7492932a-4693-4b1e-91dc-313e11fd221b",
+            "sourceHandle": "condition:dcc6151b-4a09-43d6-b94a-d904a273f861"
+          },
+          {
+            "id": "edge-connector-7492932a-4693-4b1e-91dc-313e11fd221b-ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339",
+            "source": "connector-7492932a-4693-4b1e-91dc-313e11fd221b",
+            "target": "ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339"
+          },
+          {
+            "id": "edge-ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339-condition:a1be36bb-5825-4ddd-88cd-142f82444df3-agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa-input",
+            "source": "ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339",
+            "target": "agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa",
+            "sourceHandle": "condition:a1be36bb-5825-4ddd-88cd-142f82444df3",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4-else-connector-9ccb141c-3277-4402-b045-e4569768d047",
+            "source": "ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4",
+            "target": "connector-9ccb141c-3277-4402-b045-e4569768d047",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339-else-connector-9ccb141c-3277-4402-b045-e4569768d047-input",
+            "source": "ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339",
+            "target": "connector-9ccb141c-3277-4402-b045-e4569768d047",
+            "sourceHandle": "else",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-agent-c795e6ad-eef4-47c5-b492-88ca35dbef9c-connector-2b4cf3f7-936b-4139-bb61-ac0a14daae6e",
+            "source": "agent-c795e6ad-eef4-47c5-b492-88ca35dbef9c",
+            "target": "connector-2b4cf3f7-936b-4139-bb61-ac0a14daae6e"
+          },
+          {
+            "id": "edge-connector-2b4cf3f7-936b-4139-bb61-ac0a14daae6e-ifElse-5d5fffd8-206d-45e5-bc24-6fc4f32b636c",
+            "source": "connector-2b4cf3f7-936b-4139-bb61-ac0a14daae6e",
+            "target": "ifElse-5d5fffd8-206d-45e5-bc24-6fc4f32b636c"
+          },
+          {
+            "id": "edge-classifyOnInlineAgent-cf2f15e8-2660-4732-b934-7431240f433b-default-category-agent-b6af16be-b502-4322-83cb-bf6f1c2ddf13",
+            "source": "classifyOnInlineAgent-cf2f15e8-2660-4732-b934-7431240f433b",
+            "target": "agent-b6af16be-b502-4322-83cb-bf6f1c2ddf13",
+            "sourceHandle": "default-category"
+          },
+          {
+            "id": "edge-agent-b6af16be-b502-4322-83cb-bf6f1c2ddf13-connector-5f867ed3-6c32-4c2d-b747-251877850d50",
+            "source": "agent-b6af16be-b502-4322-83cb-bf6f1c2ddf13",
+            "target": "connector-5f867ed3-6c32-4c2d-b747-251877850d50"
+          },
+          {
+            "id": "edge-classifyOnInlineAgent-cf2f15e8-2660-4732-b934-7431240f433b-category:f1efd1a5-76cc-4a05-a432-8d5b2fcc0839-agent-c795e6ad-eef4-47c5-b492-88ca35dbef9c",
+            "source": "classifyOnInlineAgent-cf2f15e8-2660-4732-b934-7431240f433b",
+            "target": "agent-c795e6ad-eef4-47c5-b492-88ca35dbef9c",
+            "sourceHandle": "category:f1efd1a5-76cc-4a05-a432-8d5b2fcc0839"
+          },
+          {
+            "id": "edge-canvasNote-a592e707-ed7b-4419-b23f-4a1265cb05c5-canvasNote-55701c44-ed9e-47e5-9956-8e4262503f3b-input",
+            "source": "canvasNote-a592e707-ed7b-4419-b23f-4a1265cb05c5",
+            "target": "canvasNote-55701c44-ed9e-47e5-9956-8e4262503f3b",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-ifElse-5d5fffd8-206d-45e5-bc24-6fc4f32b636c-condition:6c4633ad-a5c4-4c49-91ac-5a7d4fa0ee07-connector-ef8cfaa6-a984-4216-b10a-3408c1c15675",
+            "source": "ifElse-5d5fffd8-206d-45e5-bc24-6fc4f32b636c",
+            "target": "connector-ef8cfaa6-a984-4216-b10a-3408c1c15675",
+            "sourceHandle": "condition:6c4633ad-a5c4-4c49-91ac-5a7d4fa0ee07"
+          },
+          {
+            "id": "edge-ifElse-5d5fffd8-206d-45e5-bc24-6fc4f32b636c-else-agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa-input",
+            "source": "ifElse-5d5fffd8-206d-45e5-bc24-6fc4f32b636c",
+            "target": "agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa",
+            "sourceHandle": "else",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa-end-2120af3d-79db-4382-8e87-bc95af0281b7",
+            "source": "agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa",
+            "target": "end-2120af3d-79db-4382-8e87-bc95af0281b7"
+          },
+          {
+            "id": "edge-connector-ef8cfaa6-a984-4216-b10a-3408c1c15675-end-59c4f94f-70bb-4161-ada6-11e1284ea27d",
+            "source": "connector-ef8cfaa6-a984-4216-b10a-3408c1c15675",
+            "target": "end-59c4f94f-70bb-4161-ada6-11e1284ea27d"
+          },
+          {
+            "id": "edge-connector-9ccb141c-3277-4402-b045-e4569768d047-end-120d8b37-4a78-416c-a48b-63bd0c976443",
+            "source": "connector-9ccb141c-3277-4402-b045-e4569768d047",
+            "target": "end-120d8b37-4a78-416c-a48b-63bd0c976443"
+          },
+          {
+            "id": "edge-connector-5f867ed3-6c32-4c2d-b747-251877850d50-end-5c7e1ace-643f-4e2d-bed7-8a71c340bc9b",
+            "source": "connector-5f867ed3-6c32-4c2d-b747-251877850d50",
+            "target": "end-5c7e1ace-643f-4e2d-bed7-8a71c340bc9b"
+          },
+          {
+            "id": "edge-end-5c7e1ace-643f-4e2d-bed7-8a71c340bc9b-canvasNote-c1d662dc-14df-43dc-a503-84fa55f357a4",
+            "source": "end-5c7e1ace-643f-4e2d-bed7-8a71c340bc9b",
+            "target": "canvasNote-c1d662dc-14df-43dc-a503-84fa55f357a4"
+          }
+        ]
+      }
+    },
+    {
+      "id": "{44d64f96-1130-9b19-8209-34093d4416a3}",
+      "name": "BlastBox Weekly Inventory Health",
+      "trigger": "Start",
+      "nodeCount": 21,
+      "edgeCount": 18,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-4b8f612e-9dcd-464b-996f-33cbbf8f4799",
+            "name": "Start",
+            "type": "start",
+            "position": {
+              "x": 248,
+              "y": 461.54541015625
+            },
+            "details": {}
+          },
+          {
+            "id": "canvasNote-4bf9bd4b-1e72-438a-add1-a13e7b9626e7",
+            "name": "Note",
+            "type": "canvasNote",
+            "position": {
+              "x": 238,
+              "y": 290
+            },
+            "details": {
+              "markdown": "Set as manual and indicate users to turn on Recurrence to recreate real life scenario without risk of missing turning off the \"Enabled\" workflow toggle",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "agent-2d813f06-95ff-4a50-903b-ff36ee884cdc",
+            "name": "Call Inventory & Fullfilment Agent",
+            "type": "agent",
+            "position": {
+              "x": 534.4540209199782,
+              "y": 461.3158195438242
+            },
+            "details": {
+              "botSchemaName": "Default_InventoryFullfilmentAgent_X-w2GP",
+              "mode": "invoke",
+              "instructions": "Extract the following information for all gaming related SKUs (games and consoles):\n- SKUName\n- State of SKU stock aging: Stale, fresh or other if unknown\n- State of inbound stock order: 'planned' if inbound entry is true, 'unplanned' if false or unknown, 'reorder' if a note to reorder inbound exists\n",
+              "inlineInstructions": ""
+            }
+          },
+          {
+            "id": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+            "name": "Loop over each active SKU",
+            "type": "loop",
+            "position": {
+              "x": 1248.5117621145687,
+              "y": 301.8746192221007
+            },
+            "details": {}
+          },
+          {
+            "id": "ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8",
+            "name": "Stock Aging Condition",
+            "type": "ifElse",
+            "position": {
+              "x": 68.39399609619318,
+              "y": 172
+            },
+            "details": {}
+          },
+          {
+            "id": "connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9",
+            "name": "Human Review: Discount Range",
+            "type": "connector",
+            "position": {
+              "x": 731.7164948835252,
+              "y": 80
+            },
+            "details": {
+              "displayName": "Human review",
+              "apiName": "shared_advancedapprovals",
+              "operationName": "RequestForInformation",
+              "operationType": "OpenApiConnectionWebhook",
+              "parameters": {
+                "RequestForInformationInput/channel": "Outlook",
+                "RequestForInformationInput/title": "Action needed: SKU Pricing Adjustment",
+                "RequestForInformationInput/message": "Dear store manager,\n\nThe following item has been nominated for a promotion or clearance application based on weekly findings.\nSKU: @{items('Loop_over_each_active_SKU')?['SKUName']} \nWeekly Findings: @{body('agent-7d5d1903-f892-41df-a546-95aef444dbd9')?['structuredOutput/Findings']} \n\nThe following options are to be reviewed:\n\nIf promotion is chosen, store employees will receive the following guida",
+                "RequestForInformationInput/assignedTo": "email@email.com"
+              }
+            }
+          },
+          {
+            "id": "variable-44f7b1d2-15a0-473c-a3a8-3e8b43eba5c1",
+            "name": "Initialize variables",
+            "type": "variable",
+            "position": {
+              "x": 896.5085659640163,
+              "y": 461.53174408057924
+            },
+            "details": {}
+          },
+          {
+            "id": "variable-c0edc099-3a8a-41fd-bf72-c4c0204c6a28",
+            "name": "Set SKU: Adjust price",
+            "type": "variable",
+            "position": {
+              "x": 1063.5857849535041,
+              "y": 80
+            },
+            "details": {}
+          },
+          {
+            "id": "variable-5fa3e06a-8244-4ef1-8fb0-7d10f773f2d4",
+            "name": "Set SKU: Keep price",
+            "type": "variable",
+            "position": {
+              "x": 396.2245207435917,
+              "y": 439
+            },
+            "details": {}
+          },
+          {
+            "id": "agent-7d5d1903-f892-41df-a546-95aef444dbd9",
+            "name": "Review Order History & Policy",
+            "type": "agent",
+            "position": {
+              "x": 393.3538031286964,
+              "y": 80
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "Get the potential promo or clearance new price scheme for the SKU at hand:\n{items('Loop_over_each_active_SKU')?['SKUName']}\n\nCreate a ready-to-send two lines for store employees with the new potential pricing scheme and rationale. Propose a range of discount prices but do not fix a max and min discount or price, these will be specified by the store managers later. \n\nSummarize the findings in the S"
+            }
+          },
+          {
+            "id": "builtinFunction-d5757215-ceed-4d57-ad4e-f2b376e681f9",
+            "name": "Create HTML table",
+            "type": "builtinFunction",
+            "position": {
+              "x": 3252.348581866794,
+              "y": 617.143631857203
+            },
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+              "description": "Create an HTML table from an array of objects."
+            }
+          },
+          {
+            "id": "connector-45078208-58d3-45f1-ba7d-b45d24a551e6",
+            "name": "Send an email",
+            "type": "connector",
+            "position": {
+              "x": 3557.8040401815115,
+              "y": 617.143631857203
+            },
+            "details": {
+              "displayName": "Office 365 Outlook",
+              "apiName": "shared_office365",
+              "operationName": "SendEmailV2",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "emailMessage/Importance": "Normal",
+                "emailMessage/Body": "<div>Dear team,</div><div><br></div><div>Please notice and apply the following changes in our products in store, according to the latest review. Pay special attention to promotions, clearance, or high-visibility items to be reallocated:</div><div><br></div><div>@{body('builtinFunction-d5757215-ceed-4d57-ad4e-f2b376e681f9')}</div><div><br></div><div>Thank you</div>",
+                "emailMessage/Subject": "Store Pricing - Weekly Update",
+                "emailMessage/To": "@{variables('Email')}"
+              }
+            }
+          },
+          {
+            "id": "connector-444913ae-a97d-4bea-9bc8-6a44d3acb365",
+            "name": "Send email: Reorder inbound",
+            "type": "connector",
+            "position": {
+              "x": 395.7750977873575,
+              "y": 245.8781549651269
+            },
+            "details": {
+              "displayName": "Office 365 Outlook",
+              "apiName": "shared_office365",
+              "operationName": "SendEmailV2",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "emailMessage/Importance": "Normal",
+                "emailMessage/Body": "<div>Dear team,</div><div><br></div><div>We require to reorder the last inbound pack of the following product, given demand increase:</div><div><br></div><div>@{items('Loop_over_each_active_SKU')?['SKUName']}</div><div><br></div><div>Please provide us with an invoice and ETA within the next 2 business days.</div><div><br></div><div>Thank you</div>",
+                "emailMessage/To": "@{variables('Email')}",
+                "emailMessage/Subject": "@{items('Loop_over_each_active_SKU')?['SKUName']} - Stock reorder"
+              }
+            }
+          },
+          {
+            "id": "variable-9c9fd0c3-899e-4645-89ad-fb9d7f14ee9a",
+            "name": "Set SKU: Keep price, main shelf",
+            "type": "variable",
+            "position": {
+              "x": 732.7884644323713,
+              "y": 245.54526527681014
+            },
+            "details": {}
+          },
+          {
+            "id": "canvasNote-4dbca523-4495-4732-a107-e7eb2ca4fd3d",
+            "name": "Note 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 556.2230943460634,
+              "y": 286.6630664568835
+            },
+            "details": {
+              "markdown": "Extract basic inventory data for each gaming SKU in the inventory, leaving out discontinued SKUs: Stock aging state, inbound stock flag, status notes",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-ef40d563-4df7-4aff-b6ec-72bc9a0f5f07",
+            "name": "Note 2 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 892.9761614297805,
+              "y": 287.4124976243503
+            },
+            "details": {
+              "markdown": "Initialize array of SKU notes related to store manager approved changes in pricing, to be communicated to employees",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-331b3285-c7e6-48a6-b6cb-306bd502888d",
+            "name": "Note 2 2 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 3402.93884376098,
+              "y": 447.143631857203
+            },
+            "details": {
+              "markdown": "Create ready-to-send data table and communication draft, communicating relevant SKU updates to store employees",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-77809ff8-3725-4dbb-a6f5-aecd8d9518a7",
+            "name": "Note 3",
+            "type": "canvasNote",
+            "position": {
+              "x": 1424.345573133879,
+              "y": 80
+            },
+            "details": {
+              "markdown": "Ask store manager for promo or clearance choice and confirm desired price ceiling/floor for SKUs with stale stock",
+              "color": "blue"
+            }
+          },
+          {
+            "id": "canvasNote-5562054e-7d46-4bd8-83ed-b5b162183334",
+            "name": "Note 3 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 1119.724769871198,
+              "y": 228.07204197032797
+            },
+            "details": {
+              "markdown": "Request reorder inbound to provider when a good-selling item has been flagged. Note for store employees to keep price and item visible.",
+              "color": "red"
+            }
+          },
+          {
+            "id": "canvasNote-17b034a9-13e2-49dc-95c7-9dccaee7b587",
+            "name": "Note 3 2 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 822.7977080471219,
+              "y": 409.4950792669853
+            },
+            "details": {
+              "markdown": "Note for store employees to keep price of other SKUs, until further notice",
+              "color": "green"
+            }
+          },
+          {
+            "id": "end-2c543046-775a-471f-ab3b-5cc5c32a18bf",
+            "name": "End",
+            "type": "end",
+            "position": {
+              "x": 3874,
+              "y": 617
+            },
+            "details": {
+              "runStatus": "Succeeded"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-4b8f612e-9dcd-464b-996f-33cbbf8f4799-agent-2d813f06-95ff-4a50-903b-ff36ee884cdc",
+            "source": "start-4b8f612e-9dcd-464b-996f-33cbbf8f4799",
+            "target": "agent-2d813f06-95ff-4a50-903b-ff36ee884cdc"
+          },
+          {
+            "id": "edge-agent-2d813f06-95ff-4a50-903b-ff36ee884cdc-variable-44f7b1d2-15a0-473c-a3a8-3e8b43eba5c1",
+            "source": "agent-2d813f06-95ff-4a50-903b-ff36ee884cdc",
+            "target": "variable-44f7b1d2-15a0-473c-a3a8-3e8b43eba5c1"
+          },
+          {
+            "id": "edge-variable-44f7b1d2-15a0-473c-a3a8-3e8b43eba5c1-loop-a4fc4348-44fb-49ea-8236-2acf87569028-external-input",
+            "source": "variable-44f7b1d2-15a0-473c-a3a8-3e8b43eba5c1",
+            "target": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+            "targetHandle": "external-input"
+          },
+          {
+            "id": "edge-loop-a4fc4348-44fb-49ea-8236-2acf87569028-internal-source-ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8",
+            "source": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+            "target": "ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8",
+            "sourceHandle": "internal-source"
+          },
+          {
+            "id": "edge-ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8-condition:66b1bc7d-62cb-4e20-869a-5c2b0000b523-agent-7d5d1903-f892-41df-a546-95aef444dbd9",
+            "source": "ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8",
+            "target": "agent-7d5d1903-f892-41df-a546-95aef444dbd9",
+            "sourceHandle": "condition:66b1bc7d-62cb-4e20-869a-5c2b0000b523"
+          },
+          {
+            "id": "edge-agent-7d5d1903-f892-41df-a546-95aef444dbd9-connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9",
+            "source": "agent-7d5d1903-f892-41df-a546-95aef444dbd9",
+            "target": "connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9"
+          },
+          {
+            "id": "edge-ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8-else-variable-5fa3e06a-8244-4ef1-8fb0-7d10f773f2d4-input",
+            "source": "ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8",
+            "target": "variable-5fa3e06a-8244-4ef1-8fb0-7d10f773f2d4",
+            "sourceHandle": "else",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9-variable-c0edc099-3a8a-41fd-bf72-c4c0204c6a28-input",
+            "source": "connector-9dc5e271-f730-4189-8ec6-5dfd1d013fd9",
+            "target": "variable-c0edc099-3a8a-41fd-bf72-c4c0204c6a28",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-loop-a4fc4348-44fb-49ea-8236-2acf87569028-external-output-builtinFunction-d5757215-ceed-4d57-ad4e-f2b376e681f9",
+            "source": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+            "target": "builtinFunction-d5757215-ceed-4d57-ad4e-f2b376e681f9",
+            "sourceHandle": "external-output"
+          },
+          {
+            "id": "edge-builtinFunction-d5757215-ceed-4d57-ad4e-f2b376e681f9-connector-45078208-58d3-45f1-ba7d-b45d24a551e6",
+            "source": "builtinFunction-d5757215-ceed-4d57-ad4e-f2b376e681f9",
+            "target": "connector-45078208-58d3-45f1-ba7d-b45d24a551e6"
+          },
+          {
+            "id": "edge-ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8-condition:e8648f23-63f8-4da1-a773-1c5b66317e52-connector-444913ae-a97d-4bea-9bc8-6a44d3acb365",
+            "source": "ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8",
+            "target": "connector-444913ae-a97d-4bea-9bc8-6a44d3acb365",
+            "sourceHandle": "condition:e8648f23-63f8-4da1-a773-1c5b66317e52"
+          },
+          {
+            "id": "edge-variable-9c9fd0c3-899e-4645-89ad-fb9d7f14ee9a-loop-a4fc4348-44fb-49ea-8236-2acf87569028-internal-target",
+            "source": "variable-9c9fd0c3-899e-4645-89ad-fb9d7f14ee9a",
+            "target": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-connector-444913ae-a97d-4bea-9bc8-6a44d3acb365-variable-9c9fd0c3-899e-4645-89ad-fb9d7f14ee9a",
+            "source": "connector-444913ae-a97d-4bea-9bc8-6a44d3acb365",
+            "target": "variable-9c9fd0c3-899e-4645-89ad-fb9d7f14ee9a"
+          },
+          {
+            "id": "edge-variable-5fa3e06a-8244-4ef1-8fb0-7d10f773f2d4-output-loop-a4fc4348-44fb-49ea-8236-2acf87569028-internal-target",
+            "source": "variable-5fa3e06a-8244-4ef1-8fb0-7d10f773f2d4",
+            "target": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+            "sourceHandle": "output",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-canvasNote-4bf9bd4b-1e72-438a-add1-a13e7b9626e7-canvasNote-4dbca523-4495-4732-a107-e7eb2ca4fd3d-input",
+            "source": "canvasNote-4bf9bd4b-1e72-438a-add1-a13e7b9626e7",
+            "target": "canvasNote-4dbca523-4495-4732-a107-e7eb2ca4fd3d",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-canvasNote-4dbca523-4495-4732-a107-e7eb2ca4fd3d-canvasNote-ef40d563-4df7-4aff-b6ec-72bc9a0f5f07-input",
+            "source": "canvasNote-4dbca523-4495-4732-a107-e7eb2ca4fd3d",
+            "target": "canvasNote-ef40d563-4df7-4aff-b6ec-72bc9a0f5f07",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-variable-c0edc099-3a8a-41fd-bf72-c4c0204c6a28-output-loop-a4fc4348-44fb-49ea-8236-2acf87569028-internal-target",
+            "source": "variable-c0edc099-3a8a-41fd-bf72-c4c0204c6a28",
+            "target": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
+            "sourceHandle": "output",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-connector-45078208-58d3-45f1-ba7d-b45d24a551e6-end-2c543046-775a-471f-ab3b-5cc5c32a18bf",
+            "source": "connector-45078208-58d3-45f1-ba7d-b45d24a551e6",
+            "target": "end-2c543046-775a-471f-ab3b-5cc5c32a18bf"
+          }
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 1989
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 1585
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.skill.points-reconciliation__iK/botcomponent.xml",
+      "category": "component",
+      "size": 892
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.skill.points-reconciliation__iK/data",
+      "category": "component",
+      "size": 99
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.skill.prorated-refund-calculator_KZe/botcomponent.xml",
+      "category": "component",
+      "size": 772
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.skill.prorated-refund-calculator_KZe/data",
+      "category": "component",
+      "size": 104
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.skill.slip-pdf-generator_2i4/botcomponent.xml",
+      "category": "component",
+      "size": 727
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.skill.slip-pdf-generator_2i4/data",
+      "category": "component",
+      "size": 96
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.connected-agent.Default_InventoryFullfilmentAgent_X-w2GP/botcomponent.xml",
+      "category": "component",
+      "size": 797
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.connected-agent.Default_InventoryFullfilmentAgent_X-w2GP/data",
+      "category": "component",
+      "size": 122
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.connected-agent.Default_InventoryFullfilmentAgent_X-w2GP/dependencies.json",
+      "category": "component",
+      "size": 72
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.connected-agent.Default_StorePolicyAgent_s9s-u8/botcomponent.xml",
+      "category": "component",
+      "size": 784
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.connected-agent.Default_StorePolicyAgent_s9s-u8/data",
+      "category": "component",
+      "size": 113
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.connected-agent.Default_StorePolicyAgent_s9s-u8/dependencies.json",
+      "category": "component",
+      "size": 63
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.MembershipMCPv2-MembershipMCPv2Server_9Ac/botcomponent.xml",
+      "category": "component",
+      "size": 549
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.MembershipMCPv2-MembershipMCPv2Server_9Ac/data",
+      "category": "component",
+      "size": 288
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.OrderManagementMCP-OrderManagementMCPServer_LQG/botcomponent.xml",
+      "category": "component",
+      "size": 593
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.OrderManagementMCP-OrderManagementMCPServer_LQG/data",
+      "category": "component",
+      "size": 279
+    },
+    {
+      "path": "botcomponents/cra24a45_blastpass_refund_py_1aeb15fe988a/botcomponent.xml",
+      "category": "component",
+      "size": 594
+    },
+    {
+      "path": "botcomponents/cra24a45_blastpass_refund_py_1aeb15fe988a/filedata/blastpass_refund.py",
+      "category": "component",
+      "size": 4979
+    },
+    {
+      "path": "botcomponents/cra24a45_points_reconciliation_py_ae83bb1d3e6c/botcomponent.xml",
+      "category": "component",
+      "size": 604
+    },
+    {
+      "path": "botcomponents/cra24a45_points_reconciliation_py_ae83bb1d3e6c/filedata/points_reconciliation.py",
+      "category": "component",
+      "size": 3257
+    },
+    {
+      "path": "botcomponents/cra24a45_skill_md_30aa9a7b2b7c/botcomponent.xml",
+      "category": "component",
+      "size": 561
+    },
+    {
+      "path": "botcomponents/cra24a45_skill_md_30aa9a7b2b7c/filedata/SKILL.md",
+      "category": "component",
+      "size": 3791
+    },
+    {
+      "path": "botcomponents/cra24a45_skill_md_4e6ebf925ae8/botcomponent.xml",
+      "category": "component",
+      "size": 556
+    },
+    {
+      "path": "botcomponents/cra24a45_skill_md_4e6ebf925ae8/filedata/SKILL.md",
+      "category": "component",
+      "size": 3603
+    },
+    {
+      "path": "botcomponents/cra24a45_skill_md_d925ad573675/botcomponent.xml",
+      "category": "component",
+      "size": 553
+    },
+    {
+      "path": "botcomponents/cra24a45_skill_md_d925ad573675/filedata/SKILL.md",
+      "category": "component",
+      "size": 4152
+    },
+    {
+      "path": "botcomponents/cra24a45_slip_pdf_py_e55f2fee6a70/botcomponent.xml",
+      "category": "component",
+      "size": 562
+    },
+    {
+      "path": "botcomponents/cra24a45_slip_pdf_py_e55f2fee6a70/filedata/slip_pdf.py",
+      "category": "component",
+      "size": 5872
+    },
+    {
+      "path": "botcomponents/Default_InventoryFullfilmentAgent_X-w2GP.tool.WarehouseMCP-WarehouseMCPServer_rcG/botcomponent.xml",
+      "category": "component",
+      "size": 572
+    },
+    {
+      "path": "botcomponents/Default_InventoryFullfilmentAgent_X-w2GP.tool.WarehouseMCP-WarehouseMCPServer_rcG/data",
+      "category": "component",
+      "size": 274
+    },
+    {
+      "path": "botcomponents/Default_StorePolicyAgent_s9s-u8.tool.PolicyRAGMCPv2-PolicyRAGMCPv2Server_14V/botcomponent.xml",
+      "category": "component",
+      "size": 558
+    },
+    {
+      "path": "botcomponents/Default_StorePolicyAgent_s9s-u8.tool.PolicyRAGMCPv2-PolicyRAGMCPv2Server_14V/data",
+      "category": "component",
+      "size": 273
+    },
+    {
+      "path": "bots/cr26e_storeassociateassistant_ZQHUx1/bot.xml",
+      "category": "bot",
+      "size": 35406
+    },
+    {
+      "path": "bots/cr26e_storeassociateassistant_ZQHUx1/configuration.json",
+      "category": "bot",
+      "size": 1179
+    },
+    {
+      "path": "bots/Default_InventoryFullfilmentAgent_X-w2GP/bot.xml",
+      "category": "bot",
+      "size": 35418
+    },
+    {
+      "path": "bots/Default_InventoryFullfilmentAgent_X-w2GP/configuration.json",
+      "category": "bot",
+      "size": 2012
+    },
+    {
+      "path": "bots/Default_StorePolicyAgent_s9s-u8/bot.xml",
+      "category": "bot",
+      "size": 35394
+    },
+    {
+      "path": "bots/Default_StorePolicyAgent_s9s-u8/configuration.json",
+      "category": "bot",
+      "size": 1393
+    },
+    {
+      "path": "Connector/new_order-20management-20mcp_connectionparameters.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/new_order-20management-20mcp_customcodeblobcontent.csx",
+      "category": "other",
+      "size": 54856
+    },
+    {
+      "path": "Connector/new_order-20management-20mcp_openapidefinition.json",
+      "category": "other",
+      "size": 1027
+    },
+    {
+      "path": "Connector/new_order-20management-20mcp_policytemplateinstances.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/new_policy-20rag-20mcp-20v2_connectionparameters.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/new_policy-20rag-20mcp-20v2_customcodeblobcontent.csx",
+      "category": "other",
+      "size": 55320
+    },
+    {
+      "path": "Connector/new_policy-20rag-20mcp-20v2_openapidefinition.json",
+      "category": "other",
+      "size": 972
+    },
+    {
+      "path": "Connector/new_policy-20rag-20mcp-20v2_policytemplateinstances.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/new_warehouse-20mcp_connectionparameters.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/new_warehouse-20mcp_customcodeblobcontent.csx",
+      "category": "other",
+      "size": 61348
+    },
+    {
+      "path": "Connector/new_warehouse-20mcp_iconblob.Png",
+      "category": "asset",
+      "size": 2895
+    },
+    {
+      "path": "Connector/new_warehouse-20mcp_openapidefinition.json",
+      "category": "other",
+      "size": 1024
+    },
+    {
+      "path": "Connector/new_warehouse-20mcp_policytemplateinstances.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 5766
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 10584
+    },
+    {
+      "path": "Workflows/BlastBoxPostSalesService-62D468F3-4A55-1BA5-2EC3-AE1A4B3A4B35.json",
+      "category": "workflow",
+      "size": 206895
+    },
+    {
+      "path": "Workflows/BlastBoxWeeklyInventoryHealth-44D64F96-1130-9B19-8209-34093D4416A3.json",
+      "category": "workflow",
+      "size": 115281
+    }
+  ]
+}

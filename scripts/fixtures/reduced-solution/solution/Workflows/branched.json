@@ -1,0 +1,22 @@
+{
+  "trigger": {
+    "metadata": {
+      "associatedData": {
+        "graph": {
+          "name": "Saved workflow",
+          "nodes": [
+            { "id": "start", "name": "When a request arrives", "type": "trigger", "position": { "x": 0, "y": 0 }, "data": { "config": { "method": "POST" } } },
+            { "id": "route", "name": "Route request", "type": "condition", "position": { "x": 200, "y": 0 }, "data": { "config": { "expression": "priority" } } },
+            { "id": "respond", "name": "Respond", "type": "connector", "position": { "x": 400, "y": -80 }, "data": { "config": { "displayName": "Reply", "apiName": "shared_teams", "operationName": "postMessage", "operationType": "action", "parameters": { "message": "Done", "connectionName": "do-not-publish", "outputSchema": "omitted" } } } },
+            { "id": "escalate", "name": "Escalate", "type": "agent", "position": { "x": 400, "y": 80 }, "data": { "config": { "botSchemaName": "manager_agent", "mode": "delegate", "tools": [{ "name": "Search" }] } } }
+          ],
+          "edges": [
+            { "id": "one", "source": "start", "target": "route" },
+            { "id": "two", "source": "route", "target": "respond", "sourceHandle": "yes" },
+            { "id": "three", "source": "route", "target": "escalate", "sourceHandle": "no" }
+          ]
+        }
+      }
+    }
+  }
+}

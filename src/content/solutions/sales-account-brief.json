@@ -1,0 +1,194 @@
+{
+  "name": "Sales Account Brief Generator",
+  "description": "Turns CRM history, open opportunities, and recent news into a concise pre-meeting account brief.",
+  "tags": [
+    "sales",
+    "crm",
+    "research",
+    "productivity",
+    "demo"
+  ],
+  "author": "Jon Bell",
+  "authorGithub": "jonbell",
+  "createdAt": "2026-08-12",
+  "featured": true,
+  "uniqueName": "Demo_sales_account_brief",
+  "version": "1.0.0.0",
+  "publisher": "CAT Gallery Demos",
+  "bundle": "bundles/sales-account-brief.zip",
+  "agentCount": 1,
+  "workflowCount": 1,
+  "componentCount": 2,
+  "agents": [
+    {
+      "id": "sales_account_brief_agent",
+      "schemaName": "sales_account_brief_agent",
+      "name": "Account Research Agent",
+      "model": "Sonnet 4.6",
+      "instructions": "Turns CRM history, open opportunities, and recent news into a concise pre-meeting account brief.",
+      "channels": [
+        "MsTeams"
+      ],
+      "toolCount": 0,
+      "skillCount": 0,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:sales_account_brief_agent",
+        "name": "Account Research Agent",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "Sonnet 4.6",
+          "instructions": "Turns CRM history, open opportunities, and recent news into a concise pre-meeting account brief.",
+          "channels": [
+            "MsTeams"
+          ],
+          "toolCount": 0,
+          "skillCount": 0,
+          "connectedAgentCount": 0
+        }
+      }
+    ],
+    "edges": []
+  },
+  "workflows": [
+    {
+      "id": "sales-account-brief-workflow",
+      "name": "Prepare account brief",
+      "trigger": "Before a customer meeting",
+      "nodeCount": 6,
+      "edgeCount": 5,
+      "graph": {
+        "nodes": [
+          {
+            "id": "node-1",
+            "name": "Before a customer meeting",
+            "type": "start",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-2",
+            "name": "Load CRM account",
+            "type": "agent",
+            "position": {
+              "x": 240,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-3",
+            "name": "Find recent signals",
+            "type": "connector",
+            "position": {
+              "x": 480,
+              "y": 0
+            },
+            "details": {
+              "displayName": "Find recent signals",
+              "operationType": "action"
+            }
+          },
+          {
+            "id": "node-4",
+            "name": "Summarize risks",
+            "type": "ifElse",
+            "position": {
+              "x": 720,
+              "y": 90
+            },
+            "details": {}
+          },
+          {
+            "id": "node-5",
+            "name": "Create brief",
+            "type": "connector",
+            "position": {
+              "x": 960,
+              "y": -70
+            },
+            "details": {
+              "displayName": "Create brief",
+              "operationType": "action"
+            }
+          },
+          {
+            "id": "node-6",
+            "name": "Complete",
+            "type": "end",
+            "position": {
+              "x": 1200,
+              "y": 0
+            },
+            "details": {}
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-1",
+            "source": "node-1",
+            "target": "node-2"
+          },
+          {
+            "id": "edge-2",
+            "source": "node-2",
+            "target": "node-3"
+          },
+          {
+            "id": "edge-3",
+            "source": "node-3",
+            "target": "node-4"
+          },
+          {
+            "id": "edge-4",
+            "source": "node-4",
+            "target": "node-5"
+          },
+          {
+            "id": "edge-5",
+            "source": "node-5",
+            "target": "node-6"
+          }
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "bots/sales_account_brief_agent/bot.xml",
+      "category": "bot",
+      "size": 86
+    },
+    {
+      "path": "bots/sales_account_brief_agent/configuration.json",
+      "category": "bot",
+      "size": 346
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 209
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 511
+    },
+    {
+      "path": "Workflows/workflow.json",
+      "category": "workflow",
+      "size": 3307
+    }
+  ]
+}

@@ -1,0 +1,209 @@
+{
+  "name": "Incident Response Coordinator",
+  "description": "Collects service signals, assembles a response channel, and keeps stakeholders updated through resolution.",
+  "tags": [
+    "it-ops",
+    "incident-response",
+    "teams",
+    "automation",
+    "demo"
+  ],
+  "author": "Elliot Stone",
+  "authorGithub": "elliotstone",
+  "createdAt": "2026-08-09",
+  "featured": true,
+  "uniqueName": "Demo_incident_response_coordinator",
+  "version": "1.0.0.0",
+  "publisher": "CAT Gallery Demos",
+  "bundle": "bundles/incident-response-coordinator.zip",
+  "agentCount": 1,
+  "workflowCount": 1,
+  "componentCount": 2,
+  "agents": [
+    {
+      "id": "incident_response_coordinator_agent",
+      "schemaName": "incident_response_coordinator_agent",
+      "name": "Incident Coordinator",
+      "model": "GPT-5",
+      "instructions": "Collects service signals, assembles a response channel, and keeps stakeholders updated through resolution.",
+      "channels": [
+        "MsTeams"
+      ],
+      "toolCount": 0,
+      "skillCount": 0,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:incident_response_coordinator_agent",
+        "name": "Incident Coordinator",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "GPT-5",
+          "instructions": "Collects service signals, assembles a response channel, and keeps stakeholders updated through resolution.",
+          "channels": [
+            "MsTeams"
+          ],
+          "toolCount": 0,
+          "skillCount": 0,
+          "connectedAgentCount": 0
+        }
+      }
+    ],
+    "edges": []
+  },
+  "workflows": [
+    {
+      "id": "incident-response-coordinator-workflow",
+      "name": "Coordinate service incident",
+      "trigger": "When an alert is escalated",
+      "nodeCount": 7,
+      "edgeCount": 6,
+      "graph": {
+        "nodes": [
+          {
+            "id": "node-1",
+            "name": "When an alert is escalated",
+            "type": "start",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-2",
+            "name": "Collect telemetry",
+            "type": "agent",
+            "position": {
+              "x": 240,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-3",
+            "name": "Assess severity",
+            "type": "connector",
+            "position": {
+              "x": 480,
+              "y": 0
+            },
+            "details": {
+              "displayName": "Assess severity",
+              "operationType": "action"
+            }
+          },
+          {
+            "id": "node-4",
+            "name": "Open bridge",
+            "type": "ifElse",
+            "position": {
+              "x": 720,
+              "y": 90
+            },
+            "details": {}
+          },
+          {
+            "id": "node-5",
+            "name": "Post updates",
+            "type": "connector",
+            "position": {
+              "x": 960,
+              "y": -70
+            },
+            "details": {
+              "displayName": "Post updates",
+              "operationType": "action"
+            }
+          },
+          {
+            "id": "node-6",
+            "name": "Close incident",
+            "type": "end",
+            "position": {
+              "x": 1200,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-7",
+            "name": "Complete",
+            "type": "end",
+            "position": {
+              "x": 1440,
+              "y": 0
+            },
+            "details": {}
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-1",
+            "source": "node-1",
+            "target": "node-2"
+          },
+          {
+            "id": "edge-2",
+            "source": "node-2",
+            "target": "node-3"
+          },
+          {
+            "id": "edge-3",
+            "source": "node-3",
+            "target": "node-4"
+          },
+          {
+            "id": "edge-4",
+            "source": "node-4",
+            "target": "node-5"
+          },
+          {
+            "id": "edge-5",
+            "source": "node-5",
+            "target": "node-6"
+          },
+          {
+            "id": "edge-6",
+            "source": "node-6",
+            "target": "node-7"
+          }
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "bots/incident_response_coordinator_agent/bot.xml",
+      "category": "bot",
+      "size": 94
+    },
+    {
+      "path": "bots/incident_response_coordinator_agent/configuration.json",
+      "category": "bot",
+      "size": 351
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 225
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 541
+    },
+    {
+      "path": "Workflows/workflow.json",
+      "category": "workflow",
+      "size": 3831
+    }
+  ]
+}

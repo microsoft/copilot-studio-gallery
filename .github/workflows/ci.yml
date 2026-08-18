@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Validate, test, and build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout pull request branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run importer tests
+        run: npm test
+      - name: Import submissions
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        run: npm run import:submissions
+      - name: Validate submissions from forks
+        if: github.event.pull_request.head.repo.full_name != github.repository
+        run: npm run check:submissions
+      - name: Commit generated content
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          if [ -n "$(git status --porcelain src/content/solutions src/content/guides public/bundles)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add src/content/solutions src/content/guides public/bundles
+            git commit -m "chore: import solution submissions"
+            git push
+          else
+            echo "Generated content is current."
+          fi
+      - name: Type check
+        run: npm run check
+      - name: Build site
+        run: npm run build
+
+  guard-scope:
+    name: Guard pull request scope
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Reject mixed submission and site changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
+        run: |
+          set -euo pipefail
+          if printf '%s' "$LABELS" | grep -q '"allow-mixed-changes"'; then
+            echo "Scope override label present."
+            exit 0
+          fi
+          FILES="$(gh api --paginate "repos/$REPO/pulls/$PR/files" --jq '.[].filename')"
+          SUBMISSION="$(printf '%s\n' "$FILES" | grep -E '^submissions/' || true)"
+          SITE="$(printf '%s\n' "$FILES" \
+            | grep -vE '^submissions/' \
+            | grep -vE '^src/content/solutions/' \
+            | grep -vE '^src/content/guides/' \
+            | grep -vE '^public/bundles/' \
+            || true)"
+          if [ -n "$SUBMISSION" ] && [ -n "$SITE" ]; then
+            echo "::error::This pull request mixes submission content with site or repository changes. Split it into separate pull requests or add the allow-mixed-changes label."
+            exit 1
+          fi
+          echo "Pull request scope is valid."
