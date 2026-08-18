@@ -50,7 +50,9 @@ Consult these guides before working on related tasks:
 - Detail pages render the imported workflow and agent topology. Gallery cards
   instead show a fixed asset inventory for workflows, agents, tools, MCP
   servers, and skills so dense graphs are not compressed into unreadable
-  thumbnails.
+  thumbnails. Detail pages also use that inventory on phones; their interactive
+  graphs start at the 640px breakpoint, with compact agent and workflow lists
+  preserving the underlying information on smaller screens.
 - The browser receives compact allowlisted graph data. Raw schemas, icons,
   environment connection identifiers, and source blobs stay out of generated
   content.
@@ -58,3 +60,6 @@ Consult these guides before working on related tasks:
   root; gallery sidecars are excluded. Downloads stay locked until the visitor
   acknowledges that community solutions should be reviewed and imported only
   from a trusted source.
+- Shared links use the official Copilot Studio mark and the gallery's five asset
+  types in a dedicated 1200x630 social image. Keep Open Graph and X/Twitter
+  metadata aligned when changing the site's sharing identity.

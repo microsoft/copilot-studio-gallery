@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
+import AssetSummaryPreview from "../../components/AssetSummaryPreview.astro";
 import GraphCanvas from "../../components/graph/GraphCanvas";
 import WorkflowExplorer from "../../components/graph/WorkflowExplorer";
 import { authorKey, solutionMakeup } from "../../lib/schema";
@@ -49,13 +50,23 @@ const heroGraph = data.workflows[0]?.graph ?? data.agentGraph;
         </div>
       </div>
       <div class="solution-hero-preview relative overflow-hidden border-t border-border bg-elevated text-muted">
-        <GraphCanvas
-          graph={heroGraph}
-          label={`${data.name} topology preview`}
-          variant={data.workflows.length ? "workflow" : "agent"}
-          compact
-          client:load
-        />
+        <div class="h-32 px-4 sm:hidden">
+          <AssetSummaryPreview
+            agentCount={data.agentCount}
+            workflowCount={data.workflowCount}
+            agentGraph={data.agentGraph}
+            label={`${data.name} assets`}
+          />
+        </div>
+        <div class="hidden sm:block">
+          <GraphCanvas
+            graph={heroGraph}
+            label={`${data.name} topology preview`}
+            variant={data.workflows.length ? "workflow" : "agent"}
+            compact
+            client:media="(min-width: 640px)"
+          />
+        </div>
       </div>
       <div class="grid gap-px border-t border-border bg-border sm:grid-cols-4">
         <div class="bg-surface px-5 py-4"><p class="font-mono text-[10px] uppercase tracking-[0.12em] text-soft">Agents</p><p class="mt-1 text-xl font-semibold text-ink">{data.agentCount}</p></div>
@@ -98,8 +109,8 @@ const heroGraph = data.workflows[0]?.graph ?? data.agentGraph;
                   <h2 class="text-xl font-semibold text-ink">Agent architecture</h2>
                   <p class="mt-1 text-sm text-muted">Select an agent, tool, or skill to inspect the published configuration.</p>
                 </div>
-                <div class="overflow-hidden rounded-2xl border border-border bg-elevated card-shadow">
-                  <GraphCanvas graph={data.agentGraph} label={`${data.name} agent architecture`} variant="agent" client:load />
+                <div class="hidden overflow-hidden rounded-2xl border border-border bg-elevated card-shadow sm:block">
+                  <GraphCanvas graph={data.agentGraph} label={`${data.name} agent architecture`} variant="agent" client:media="(min-width: 640px)" />
                 </div>
                 <div class="mt-5 grid gap-3 md:grid-cols-2">
                   {data.agents.map((agent) => (
@@ -127,7 +138,24 @@ const heroGraph = data.workflows[0]?.graph ?? data.agentGraph;
             <h2 class="text-xl font-semibold text-ink">Workflow canvases</h2>
             <p class="mt-1 text-sm text-muted">These positions and connections come from the saved designer graph in the exported solution.</p>
           </div>
-          <WorkflowExplorer workflows={data.workflows} client:load />
+          <div class="grid gap-3 sm:hidden">
+            {
+              data.workflows.map((workflow) => (
+                <article class="rounded-2xl border border-border bg-surface p-4 card-shadow">
+                  <p class="font-mono text-[10px] uppercase tracking-[0.12em] text-soft">{workflow.id}</p>
+                  <h3 class="mt-1 font-semibold text-ink">{workflow.name}</h3>
+                  <div class="mt-3 flex flex-wrap gap-3 text-xs text-muted">
+                    {workflow.trigger && <span>Trigger: {workflow.trigger}</span>}
+                    <span>{workflow.nodeCount} steps</span>
+                    <span>{workflow.edgeCount} connections</span>
+                  </div>
+                </article>
+              ))
+            }
+          </div>
+          <div class="hidden sm:block">
+            <WorkflowExplorer workflows={data.workflows} client:media="(min-width: 640px)" />
+          </div>
         </section>
 
         <section id="panel-files" role="tabpanel" data-panel="files" class="hidden pt-7">
