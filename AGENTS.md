@@ -47,12 +47,14 @@ Consult these guides before working on related tasks:
 - Agent architecture is derived from `bots/**` and `botcomponents/**`; component
   ownership must be resolved per agent rather than applying every solution
   component to every bot.
-- Agent previews use a deterministic hub-and-spoke layout: primary agents are
-  centered, owned agents/tools/skills share radial rings, and straight edges
-  attach to the nearest node side. Node color is presentation-only and does not
-  alter the imported topology.
+- Detail pages render the imported workflow and agent topology. Gallery cards
+  instead show a fixed asset inventory for workflows, agents, tools, MCP
+  servers, and skills so dense graphs are not compressed into unreadable
+  thumbnails.
 - The browser receives compact allowlisted graph data. Raw schemas, icons,
   environment connection identifiers, and source blobs stay out of generated
   content.
 - Download ZIPs are deterministic rebuilds of the `solution/` contents at archive
-  root; gallery sidecars are excluded.
+  root; gallery sidecars are excluded. Downloads stay locked until the visitor
+  acknowledges that community solutions should be reviewed and imported only
+  from a trusted source.

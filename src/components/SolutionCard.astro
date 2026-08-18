@@ -2,7 +2,7 @@
 import type { CollectionEntry } from "astro:content";
 import { authorKey, solutionMakeup } from "../lib/schema";
 import { withBase } from "../lib/url";
-import TopologyPreview from "./TopologyPreview.astro";
+import AssetSummaryPreview from "./AssetSummaryPreview.astro";
 
 interface Props {
   solution: CollectionEntry<"solutions">;
@@ -11,7 +11,6 @@ interface Props {
 
 const { solution, compact = false } = Astro.props;
 const data = solution.data;
-const graph = data.workflows[0]?.graph ?? data.agentGraph;
 const makeup = solutionMakeup(data.agentCount, data.workflowCount);
 const isDemo = data.tags.includes("demo");
 const buildingBlocks = [
@@ -27,11 +26,11 @@ const buildingBlocks = [
   <div class:list={["studio-canvas relative m-3 mb-0 overflow-hidden rounded-xl border border-border/70 px-3 py-2 text-muted", compact ? "h-28" : "h-36"]}>
     <div class="studio-grid absolute inset-0 opacity-70"></div>
     <div class="relative h-full transition-transform duration-300 group-hover:scale-[1.02]">
-      <TopologyPreview
-        graph={graph}
-        label={`${data.name} topology`}
-        variant={data.workflowCount ? "workflow" : "agent"}
-        compact
+      <AssetSummaryPreview
+        agentCount={data.agentCount}
+        workflowCount={data.workflowCount}
+        agentGraph={data.agentGraph}
+        label={`${data.name} asset inventory`}
       />
     </div>
   </div>
