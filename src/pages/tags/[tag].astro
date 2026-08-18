@@ -1,0 +1,40 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+import SolutionCard from "../../components/SolutionCard.astro";
+import { collectTags } from "../../lib/catalog";
+import { withBase } from "../../lib/url";
+
+export async function getStaticPaths() {
+  const solutions = await getCollection("solutions");
+  return collectTags(solutions).map(([tag]) => ({
+    params: { tag },
+    props: {
+      tag,
+      solutions: solutions
+        .filter((solution) => solution.data.tags.includes(tag))
+        .sort((a, b) => Number(b.data.featured) - Number(a.data.featured) || a.data.name.localeCompare(b.data.name)),
+    },
+  }));
+}
+
+const { tag, solutions } = Astro.props;
+---
+
+<Layout title={`#${tag} solutions`} description={`Copilot Studio solutions tagged "${tag}".`}>
+  <main class="mx-auto w-full max-w-gallery px-4 py-10 sm:px-6">
+    <a href={withBase("/")} class="inline-flex items-center gap-1.5 text-sm text-muted transition hover:text-accent">
+      <span aria-hidden="true">←</span> All solutions
+    </a>
+    <p class="mt-7 text-xs font-semibold text-accent">Tag collection</p>
+    <h1 class="mt-1 text-3xl font-semibold tracking-[-0.025em] text-ink sm:text-4xl">
+      <span class="text-accent">#</span>{tag}
+    </h1>
+    <p class="mt-2 text-muted">
+      {solutions.length} solution{solutions.length === 1 ? "" : "s"} tagged “{tag}”.
+    </p>
+    <div class="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(18rem,1fr))]">
+      {solutions.map((solution) => <SolutionCard solution={solution} />)}
+    </div>
+  </main>
+</Layout>

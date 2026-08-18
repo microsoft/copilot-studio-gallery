@@ -1,0 +1,276 @@
+@import "@xyflow/react/dist/style.css";
+
+.catalog-flow {
+  --xy-background-color: var(--cp-bg-elevated);
+  --xy-background-pattern-color: var(--cp-border);
+  --xy-edge-stroke: var(--cp-border-strong);
+  --xy-edge-stroke-selected: var(--cp-violet);
+  --xy-minimap-background-color: var(--cp-surface);
+  --xy-minimap-mask-background-color: var(--cp-overlay);
+  --xy-minimap-node-background-color: var(--cp-border-strong);
+  --xy-controls-button-background-color: var(--cp-surface);
+  --xy-controls-button-background-color-hover: var(--cp-surface-soft);
+  --xy-controls-button-color: var(--cp-text);
+  --xy-controls-button-color-hover: var(--cp-accent);
+  --xy-controls-button-border-color: var(--cp-border);
+  --xy-controls-box-shadow: 0 0 2px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.14);
+  --xy-attribution-background-color: var(--cp-panel);
+  --xy-handle-background-color: var(--cp-violet);
+  --xy-handle-border-color: var(--cp-surface);
+  width: 100%;
+  height: 34rem;
+  background:
+    radial-gradient(circle at 80% 10%, var(--cp-coral-glow), transparent 28%),
+    radial-gradient(circle at 12% 88%, var(--cp-canvas-glow), transparent 32%),
+    var(--cp-bg-elevated);
+}
+
+.catalog-flow:fullscreen {
+  height: 100%;
+}
+
+.catalog-flow--compact {
+  height: 16rem;
+}
+
+.solution-hero-preview .catalog-flow--compact {
+  height: 21rem;
+}
+
+.catalog-flow .react-flow__minimap {
+  overflow: hidden;
+  border: 1px solid var(--cp-border);
+  border-radius: 0.625rem;
+}
+
+.catalog-flow .react-flow__edge-text {
+  fill: var(--cp-text-muted);
+  font-family: "Segoe UI Variable Text", "Segoe UI", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.catalog-flow .react-flow__edge-textbg {
+  fill: var(--cp-surface);
+}
+
+.catalog-node {
+  --node-color: var(--graph-action);
+  width: 14rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--node-color) 74%, var(--cp-border));
+  border-radius: 0.75rem;
+  background: var(--cp-surface);
+  color: var(--cp-text);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.1);
+}
+
+.catalog-node[data-selected="true"] {
+  border-color: var(--node-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--node-color) 18%, transparent);
+}
+
+.catalog-node[data-visual="trigger"] { --node-color: var(--graph-trigger); }
+.catalog-node[data-visual="ai"] { --node-color: var(--graph-ai); }
+.catalog-node[data-visual="decision"] { --node-color: var(--graph-decision); }
+.catalog-node[data-visual="loop"] { --node-color: var(--graph-loop); }
+.catalog-node[data-visual="data"] { --node-color: var(--graph-data); }
+.catalog-node[data-visual="communication"] { --node-color: var(--graph-communication); }
+.catalog-node[data-visual="approval"] { --node-color: var(--graph-approval); }
+.catalog-node[data-visual="content"] { --node-color: var(--graph-content); }
+.catalog-node[data-visual="action"] { --node-color: var(--graph-action); }
+.catalog-node[data-visual="tool"] { --node-color: var(--graph-tool); }
+.catalog-node[data-visual="skill"] { --node-color: var(--graph-skill); }
+.catalog-node[data-visual="end"] { --node-color: var(--graph-end); }
+.catalog-node[data-visual="note"] { --node-color: var(--graph-note); }
+
+.catalog-flow--agent .catalog-node[data-primary="true"] {
+  border-width: 2px;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--graph-ai) 12%, transparent),
+    0 6px 18px rgba(0, 0, 0, 0.13);
+}
+
+.catalog-flow--agent .catalog-node[data-primary="true"] .catalog-node__icon {
+  background: var(--graph-ai);
+  color: var(--cp-accent-fg);
+}
+
+.catalog-flow--agent .react-flow__handle {
+  opacity: 0;
+}
+
+.catalog-node[data-kind="start"],
+.catalog-node[data-kind="end"] {
+  width: 10rem;
+  border-radius: 9999px;
+}
+
+.catalog-node[data-kind="canvasNote"] {
+  border-style: dashed;
+  background: color-mix(in srgb, var(--cp-coral) 8%, var(--cp-surface));
+}
+
+.catalog-node__body {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.7rem 0.8rem;
+}
+
+.catalog-node__icon {
+  display: grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  flex: none;
+  place-items: center;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--node-color) 15%, var(--cp-surface));
+  color: var(--node-color);
+  font-family: "Segoe UI Variable Text", "Segoe UI", sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.catalog-node__copy {
+  min-width: 0;
+}
+
+.catalog-node__type {
+  overflow: hidden;
+  color: var(--cp-text-soft);
+  font-family: "Segoe UI Variable Text", "Segoe UI", sans-serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.catalog-node__name {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 0.12rem;
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.catalog-node .react-flow__handle {
+  width: 8px;
+  height: 8px;
+}
+
+.graph-toolbar {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 5;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.graph-toolbar button {
+  min-height: 2.25rem;
+  border: 1px solid var(--cp-border);
+  border-radius: 0.5rem;
+  background: var(--cp-surface);
+  color: var(--cp-text-muted);
+  padding: 0.4rem 0.65rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.graph-toolbar button:hover,
+.graph-toolbar button[aria-pressed="true"] {
+  border-color: var(--cp-accent);
+  color: var(--cp-accent);
+}
+
+.graph-detail {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 10;
+  width: min(23rem, calc(100% - 1.5rem));
+  max-height: calc(100% - 1.5rem);
+  overflow-y: auto;
+  border: 1px solid var(--cp-border);
+  border-radius: 1rem;
+  background: var(--cp-panel-strong);
+  color: var(--cp-text);
+  box-shadow: var(--cp-shadow);
+}
+
+.graph-detail__header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--cp-border);
+  background: var(--cp-panel-strong);
+  padding: 1rem;
+}
+
+.graph-detail__close {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--cp-border);
+  border-radius: 0.625rem;
+  background: var(--cp-surface);
+  color: var(--cp-text-muted);
+  cursor: pointer;
+}
+
+.graph-detail__content {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.graph-detail__field dt {
+  color: var(--cp-text-soft);
+  font-family: "Segoe UI Variable Text", "Segoe UI", sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.graph-detail__field dd {
+  margin: 0.3rem 0 0;
+  overflow-wrap: anywhere;
+  color: var(--cp-text-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 640px) {
+  .catalog-flow {
+    height: 30rem;
+  }
+
+  .solution-hero-preview .catalog-flow--compact {
+    height: 18rem;
+  }
+
+  .graph-detail {
+    top: auto;
+    bottom: 0.75rem;
+    max-height: 62%;
+  }
+
+  .catalog-flow .react-flow__minimap {
+    display: none;
+  }
+}

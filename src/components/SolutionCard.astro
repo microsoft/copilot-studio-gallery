@@ -1,0 +1,63 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { authorKey, solutionMakeup } from "../lib/schema";
+import { withBase } from "../lib/url";
+import TopologyPreview from "./TopologyPreview.astro";
+
+interface Props {
+  solution: CollectionEntry<"solutions">;
+  compact?: boolean;
+}
+
+const { solution, compact = false } = Astro.props;
+const data = solution.data;
+const graph = data.workflows[0]?.graph ?? data.agentGraph;
+const makeup = solutionMakeup(data.agentCount, data.workflowCount);
+const isDemo = data.tags.includes("demo");
+const buildingBlocks = [
+  ...data.agents.map((agent) => agent.name),
+  ...data.workflows.flatMap((workflow) => workflow.graph.nodes.filter((node) => node.type !== "canvasNote").map((node) => node.name)),
+];
+---
+
+<a
+  href={withBase(`/solutions/${solution.id}`)}
+  class="product-card group flex h-full flex-col overflow-hidden rounded-[1.125rem] border border-border bg-surface"
+>
+  <div class:list={["studio-canvas relative m-3 mb-0 overflow-hidden rounded-xl border border-border/70 px-3 py-2 text-muted", compact ? "h-28" : "h-36"]}>
+    <div class="studio-grid absolute inset-0 opacity-70"></div>
+    <div class="relative h-full transition-transform duration-300 group-hover:scale-[1.02]">
+      <TopologyPreview graph={graph} label={`${data.name} topology`} compact />
+    </div>
+  </div>
+  <div class="flex flex-1 flex-col p-4 pt-3">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="text-xs font-semibold text-muted">{makeup}</p>
+        <h3 class="mt-1.5 text-lg font-semibold leading-tight tracking-[-0.01em] text-ink">{data.name}</h3>
+      </div>
+      {
+        data.featured && (
+          <span class="shrink-0 rounded-full bg-accent-soft px-2.5 py-1 text-[11px] font-semibold text-accent">
+            Featured
+          </span>
+        )
+      }
+    </div>
+    {!compact && <p class="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-muted">{data.description}</p>}
+    <div class="mt-3 flex min-h-6 flex-wrap items-center gap-1.5">
+      {(compact ? buildingBlocks.slice(0, 3) : data.tags.filter((tag) => tag !== "demo").slice(0, 3)).map((label) => (
+        <span class="max-w-28 truncate rounded-md bg-surface-soft px-2 py-1 text-[11px] font-medium text-muted">{label}</span>
+      ))}
+      {compact && buildingBlocks.length > 3 && <span class="text-[11px] text-soft">+{buildingBlocks.length - 3}</span>}
+      {isDemo && <span class="rounded-md border border-dashed border-border px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-soft">Demo</span>}
+    </div>
+    <div class="mt-4 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs text-soft">
+      <span class="truncate" data-author-key={authorKey(data.authorGithub, data.author)}>by {data.author}</span>
+      <span class="flex shrink-0 items-center gap-3">
+        <span title={`${data.agentCount} agents`}>{data.agentCount} agent{data.agentCount === 1 ? "" : "s"}</span>
+        <span title={`${data.workflowCount} workflows`}>{data.workflowCount} workflow{data.workflowCount === 1 ? "" : "s"}</span>
+      </span>
+    </div>
+  </div>
+</a>

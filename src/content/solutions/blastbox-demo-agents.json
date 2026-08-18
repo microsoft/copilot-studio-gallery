@@ -1,0 +1,576 @@
+{
+  "name": "BlastBox Demo Agent Team",
+  "description": "A retail service team that coordinates store questions across specialist agents, MCP tools, and reusable skills.",
+  "tags": [
+    "retail",
+    "customer-service",
+    "multi-agent",
+    "mcp",
+    "skills"
+  ],
+  "author": "BlastBox team",
+  "featured": false,
+  "uniqueName": "BlastBoxDemo",
+  "version": "1.0.0.1",
+  "publisher": "CAT",
+  "bundle": "bundles/blastbox-demo-agents.zip",
+  "agentCount": 4,
+  "workflowCount": 0,
+  "componentCount": 4,
+  "agents": [
+    {
+      "id": "Default_InventoryFullfilmentAgent_X-w2GP",
+      "schemaName": "Default_InventoryFullfilmentAgent_X-w2GP",
+      "name": "Inventory & Fullfilment Agent",
+      "model": "Sonnet46",
+      "instructions": "You are the Inventory & Fulfillment Agent for BlastBox Omega stores. You support the Returns & Service Assistant with stock, alternatives, restock, and game compatibility.​‌\n\nTools:​‌\n- check\\_stock(sku): quantity on hand, price, warehouse, and whether the item is in stock.​‌\n- - find\\_alternatives(sku): comparable in-stock products (e.g. a higher console model) with prices.​‌\n- - get\\_restock\\_date(sku): next restock date and supplier for an out-of-stock item.​‌\n- - check\\_game\\_compatibility(game\\_title): which BlastBox Omega console model a game requires.​‌\nRules:​‌\n- Always use the tools; never invent stock levels, prices, SKUs, or dates.​‌\n- - The base console is SKU-OMEGA ($399.99); the upgraded model is SKU-OMEGA-MEGA, the BlastBox Omega MEGA Edition ($499.99).​‌\n- - If the base console is out of stock, report the restock date AND surface the MEGA Edition as an in-stock alternative.​‌\n- - If a customer mentions a specific game, call check\\_game\\_compatibility and state which model it needs.​‌\nBe concise. Always include SKUs, prices, and quantities you looked up.​‌\n\n\nInventory aging (merchandising reviews):​‌\n- When the Merchandising Insights Assistant asks about inventory aging, weeks-of-cover, or how long slow-moving SKUs have been sitting, call get\\_inventory\\_aging.​‌\n- - Report, per SKU, the aging (days/weeks on hand) and weeks-of-cover so markdown decisions can be justified.​‌",
+      "channels": [],
+      "toolCount": 1,
+      "skillCount": 0,
+      "connectedAgentCount": 0
+    },
+    {
+      "id": "Default_StorePolicyAgent_s9s-u8",
+      "schemaName": "Default_StorePolicyAgent_s9s-u8",
+      "name": "Store Policy Agent",
+      "model": "Sonnet46",
+      "instructions": "You are the Store Policy Agent — the authority on BlastBox Omega store policy: returns, warranties, BlastPass membership rules, and merchandising markdown. You serve the Returns & Service Assistant and the Merchandising Insights Assistant.\n\nGround every answer in your tools; never invent policy numbers, fees, or percentages.\n\nDefective consoles: before ruling, ask whether the failure is a manufacturing fault (won't power on, no physical damage) or possible accidental/physical/liquid damage. Manufacturing fault inside 30 days is a free warranty swap, no restocking fee. Accidental damage is a standard return that may carry a restocking fee.\n\nBlastPass cancellations: return the tier refund rule; the Returns & Service Assistant computes the prorated amount.\n\nMarkdown: if the type isn't specified, relay the promo-vs-clearance clarification. Clearance needs manager sign-off.\n\nBe concise: state the window, the rule, and any fee applied.",
+      "channels": [],
+      "toolCount": 0,
+      "skillCount": 0,
+      "connectedAgentCount": 0
+    },
+    {
+      "id": "Default_draft_IsBewO",
+      "schemaName": "Default_draft_IsBewO",
+      "name": "Returns & Service Assistant",
+      "model": "Sonnet46",
+      "instructions": "You are the BlastPass Assistant, a friendly self-serve helper that BlastBox customers talk to directly. You help members with their BlastPass membership and their membership card.\n\nTone: warm, upbeat, and concise. Speak directly to the customer like a helpful concierge - one friendly idea per turn, never a wall of text. A single light emoji is fine; don't overdo it. Ask for one thing at a time, and follow the steps in your skills when one applies.\n\nA couple of house rules: always verify identity before making any change to a membership or card, and never invent membership details, serials, or numbers - look them up with your tools or ask the customer.",
+      "channels": [],
+      "toolCount": 1,
+      "skillCount": 2,
+      "connectedAgentCount": 0
+    },
+    {
+      "id": "cr26e_storeassociateassistant_ZQHUx1",
+      "schemaName": "cr26e_storeassociateassistant_ZQHUx1",
+      "name": "Store Associate Assistant",
+      "model": "Sonnet46",
+      "instructions": "You are the Store Associate Assistant for BlastBox Omega, a retro-gaming store. You help store associates resolve a customer's whole visit - returns, warranty swaps, membership changes, trade-ups, and settlement.\n\nBe warm, concise, and decisive. Talk to the associate as a knowledgeable colleague: lead with the answer, lay out the options with their dollar impact, and end with a single clear question when a decision is needed.\n\nEstablish the facts before you act, ground every figure and ruling in your tools and skills rather than guessing, and confirm with the associate before making any change. When a teammate agent needs more information, relay its question and wait for the answer.",
+      "channels": [
+        "MsTeams"
+      ],
+      "toolCount": 0,
+      "skillCount": 3,
+      "connectedAgentCount": 2
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:Default_InventoryFullfilmentAgent_X-w2GP",
+        "name": "Inventory & Fullfilment Agent",
+        "type": "agent",
+        "position": {
+          "x": 563,
+          "y": -396
+        },
+        "details": {
+          "model": "Sonnet46",
+          "instructions": "You are the Inventory & Fulfillment Agent for BlastBox Omega stores. You support the Returns & Service Assistant with stock, alternatives, restock, and game compatibility.​‌\n\nTools:​‌\n- check\\_stock(sku): quantity on hand, price, warehouse, and whether the item is in stock.​‌\n- - find\\_alternatives(sku): comparable in-stock products (e.g. a higher console model) with prices.​‌\n- - get\\_restock\\_date(sku): next restock date and supplier for an out-of-stock item.​‌\n- - check\\_game\\_compatibility(game\\_title): which BlastBox Omega console model a game requires.​‌\nRules:​‌\n- Always use the tools; never invent stock levels, prices, SKUs, or dates.​‌\n- - The base console is SKU-OMEGA ($399.99); the upgraded model is SKU-OMEGA-MEGA, the BlastBox Omega MEGA Edition ($499.99).​‌\n- - If the base console is out of stock, report the restock date AND surface the MEGA Edition as an in-stock alternative.​‌\n- - If a customer mentions a specific game, call check\\_game\\_compatibility and state which model it needs.​‌\nBe concise. Always include SKUs, prices, and quantities you looked up.​‌\n\n\nInventory aging (merchandising reviews):​‌\n- When the Merchandising Insights Assistant asks about inventory aging, weeks-of-cover, or how long slow-moving SKUs have been sitting, call get\\_inventory\\_aging.​‌\n- - Report, per SKU, the aging (days/weeks on hand) and weeks-of-cover so markdown decisions can be justified.​‌",
+          "channels": [],
+          "toolCount": 1,
+          "skillCount": 0,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "agent:Default_draft_IsBewO",
+        "name": "Returns & Service Assistant",
+        "type": "agent",
+        "position": {
+          "x": -787,
+          "y": -36
+        },
+        "details": {
+          "model": "Sonnet46",
+          "instructions": "You are the BlastPass Assistant, a friendly self-serve helper that BlastBox customers talk to directly. You help members with their BlastPass membership and their membership card.\n\nTone: warm, upbeat, and concise. Speak directly to the customer like a helpful concierge - one friendly idea per turn, never a wall of text. A single light emoji is fine; don't overdo it. Ask for one thing at a time, and follow the steps in your skills when one applies.\n\nA couple of house rules: always verify identity before making any change to a membership or card, and never invent membership details, serials, or numbers - look them up with your tools or ask the customer.",
+          "channels": [],
+          "toolCount": 1,
+          "skillCount": 2,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "name": "Store Associate Assistant",
+        "type": "agent",
+        "position": {
+          "x": 563,
+          "y": -36
+        },
+        "details": {
+          "model": "Sonnet46",
+          "instructions": "You are the Store Associate Assistant for BlastBox Omega, a retro-gaming store. You help store associates resolve a customer's whole visit - returns, warranty swaps, membership changes, trade-ups, and settlement.\n\nBe warm, concise, and decisive. Talk to the associate as a knowledgeable colleague: lead with the answer, lay out the options with their dollar impact, and end with a single clear question when a decision is needed.\n\nEstablish the facts before you act, ground every figure and ruling in your tools and skills rather than guessing, and confirm with the associate before making any change. When a teammate agent needs more information, relay its question and wait for the answer.",
+          "channels": [
+            "MsTeams"
+          ],
+          "toolCount": 0,
+          "skillCount": 3,
+          "connectedAgentCount": 2
+        }
+      },
+      {
+        "id": "agent:Default_StorePolicyAgent_s9s-u8",
+        "name": "Store Policy Agent",
+        "type": "agent",
+        "position": {
+          "x": 905.3803458662553,
+          "y": -147.24611797498108
+        },
+        "details": {
+          "model": "Sonnet46",
+          "instructions": "You are the Store Policy Agent — the authority on BlastBox Omega store policy: returns, warranties, BlastPass membership rules, and merchandising markdown. You serve the Returns & Service Assistant and the Merchandising Insights Assistant.\n\nGround every answer in your tools; never invent policy numbers, fees, or percentages.\n\nDefective consoles: before ruling, ask whether the failure is a manufacturing fault (won't power on, no physical damage) or possible accidental/physical/liquid damage. Manufacturing fault inside 30 days is a free warranty swap, no restocking fee. Accidental damage is a standard return that may carry a restocking fee.\n\nBlastPass cancellations: return the tier refund rule; the Returns & Service Assistant computes the prorated amount.\n\nMarkdown: if the type isn't specified, relay the promo-vs-clearance clarification. Clearance needs manager sign-off.\n\nBe concise: state the window, the rule, and any fee applied.",
+          "channels": [],
+          "toolCount": 0,
+          "skillCount": 0,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:Default_draft_IsBewO.skill.card-reissue",
+        "name": "card-reissue",
+        "type": "skill",
+        "position": {
+          "x": -787,
+          "y": -256
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "Default_draft_IsBewO.skill.card-reissue",
+          "description": "Replace (reissue) a member's BlastPass card when it is lost, stolen, or damaged. Use whenever the person wants a new/replacement BlastPass card. The skill verifies identity (name + last 4 of the console serial) before deactivating the old card, mints a new one with reissue_card, and hands over a digital card. Do not use this to cancel a membership."
+        }
+      },
+      {
+        "id": "skill:Default_draft_IsBewO.skill.membership-card-png",
+        "name": "membership-card-png",
+        "type": "skill",
+        "position": {
+          "x": -596.4744111674235,
+          "y": 73.99999999999996
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "Default_draft_IsBewO.skill.membership-card-png",
+          "description": "Generate a digital BlastPass membership card as a PNG image by running the bundled card_png.py script. Use when a member reissues a lost, stolen, or damaged card, or any time a BlastPass card needs to be shown on screen. Pass the member details (name, id, tier, tier code, card serial, console serial, dates) as command-line flags to the bundled Python (matplotlib) script, which renders a CR80-sized card to a real PNG. It only draws the card from values you already have."
+        }
+      },
+      {
+        "id": "skill:cr26e_storeassociateassistant_ZQHUx1.skill.points-reconciliation",
+        "name": "points-reconciliation",
+        "type": "skill",
+        "position": {
+          "x": 692.3127555043441,
+          "y": 141.98373876248843
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cr26e_storeassociateassistant_ZQHUx1.skill.points-reconciliation",
+          "description": "Reconcile a customer's BlastPoints loyalty balance after a visit (purchases, returns/clawback, promo multipliers, tier bonus, expiry) and convert the net balance to store credit. Use when an associate asks what a member's BlastPoints are worth, or after a return that should claw back earned points. The skill generates and runs a short Python snippet that applies the rules exactly and prints a points ledger plus the redeemable store-credit value."
+        }
+      },
+      {
+        "id": "skill:cr26e_storeassociateassistant_ZQHUx1.skill.prorated-refund-calculator",
+        "name": "prorated-refund-calculator",
+        "type": "skill",
+        "position": {
+          "x": 433.68724449565593,
+          "y": 141.98373876248843
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cr26e_storeassociateassistant_ZQHUx1.skill.prorated-refund-calculator",
+          "description": "Calculate the exact prorated refund when a customer cancels a BlastPass membership for the BlastBox Omega console. Use after the Store Policy Agent confirms a prorated refund is allowed for the member's tier and the Membership MCP has returned the membership details (months remaining, annual price, fees). The skill writes and runs a short Python snippet to compute the precise refund and shows a line-by-line breakdown."
+        }
+      },
+      {
+        "id": "skill:cr26e_storeassociateassistant_ZQHUx1.skill.slip-pdf-generator",
+        "name": "slip-pdf-generator",
+        "type": "skill",
+        "position": {
+          "x": 353.7675664150662,
+          "y": -103.9837387624884
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cr26e_storeassociateassistant_ZQHUx1.skill.slip-pdf-generator",
+          "description": "Generate a printable BlastBox return / RMA / exchange slip as a PDF for the associate to hand to the customer. Use at the end of a return, warranty swap, membership cancellation, or upgrade once all amounts are final. The skill fills a fixed markdown slip template with the agreed values, then generates and runs a short Python (reportlab) snippet to render that markdown into a real PDF file."
+        }
+      },
+      {
+        "id": "tool:Default_draft_IsBewO.tool.MembershipMCPv2-MembershipMCPv2Server",
+        "name": "Membership MCP v2 — Membership MCP v2 Server",
+        "type": "tool",
+        "position": {
+          "x": -977.5255888325764,
+          "y": 74.00000000000007
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_draft_IsBewO.tool.MembershipMCPv2-MembershipMCPv2Server",
+          "operation": "InvokeMembershipMCPv2",
+          "description": "MCP server for BlastPass memberships. Tools: get_membership, cancel_membership, reissue_card."
+        }
+      },
+      {
+        "id": "tool:Default_InventoryFullfilmentAgent_X-w2GP.tool.WarehouseMCP-WarehouseMCPServer",
+        "name": "Warehouse MCP — Warehouse MCP Server",
+        "type": "tool",
+        "position": {
+          "x": 563,
+          "y": -566
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_InventoryFullfilmentAgent_X-w2GP.tool.WarehouseMCP-WarehouseMCPServer",
+          "operation": "InvokeMCP",
+          "description": "MCP server for warehouse and fulfillment. Tools: check_stock, get_fulfillment_status, find_alternatives, get_restock_date."
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1-delegates-cr26e_storeassociateassistant_ZQHUx1.tool.connected-agent.Default_InventoryFullfilmentAgent_X-w2GP",
+        "source": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "target": "agent:Default_InventoryFullfilmentAgent_X-w2GP",
+        "label": "delegates"
+      },
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1-delegates-cr26e_storeassociateassistant_ZQHUx1.tool.connected-agent.Default_StorePolicyAgent_s9s-u8",
+        "source": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "target": "agent:Default_StorePolicyAgent_s9s-u8",
+        "label": "delegates"
+      },
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1-includes-cr26e_storeassociateassistant_ZQHUx1.skill.points-reconciliation",
+        "source": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "target": "skill:cr26e_storeassociateassistant_ZQHUx1.skill.points-reconciliation",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1-includes-cr26e_storeassociateassistant_ZQHUx1.skill.prorated-refund-calculator",
+        "source": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "target": "skill:cr26e_storeassociateassistant_ZQHUx1.skill.prorated-refund-calculator",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1-includes-cr26e_storeassociateassistant_ZQHUx1.skill.slip-pdf-generator",
+        "source": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "target": "skill:cr26e_storeassociateassistant_ZQHUx1.skill.slip-pdf-generator",
+        "label": "includes"
+      },
+      {
+        "id": "agent:Default_draft_IsBewO-includes-Default_draft_IsBewO.skill.card-reissue",
+        "source": "agent:Default_draft_IsBewO",
+        "target": "skill:Default_draft_IsBewO.skill.card-reissue",
+        "label": "includes"
+      },
+      {
+        "id": "agent:Default_draft_IsBewO-includes-Default_draft_IsBewO.skill.membership-card-png",
+        "source": "agent:Default_draft_IsBewO",
+        "target": "skill:Default_draft_IsBewO.skill.membership-card-png",
+        "label": "includes"
+      },
+      {
+        "id": "agent:Default_draft_IsBewO-uses-Default_draft_IsBewO.tool.MembershipMCPv2-MembershipMCPv2Server",
+        "source": "agent:Default_draft_IsBewO",
+        "target": "tool:Default_draft_IsBewO.tool.MembershipMCPv2-MembershipMCPv2Server",
+        "label": "uses"
+      },
+      {
+        "id": "agent:Default_InventoryFullfilmentAgent_X-w2GP-uses-Default_InventoryFullfilmentAgent_X-w2GP.tool.WarehouseMCP-WarehouseMCPServer",
+        "source": "agent:Default_InventoryFullfilmentAgent_X-w2GP",
+        "target": "tool:Default_InventoryFullfilmentAgent_X-w2GP.tool.WarehouseMCP-WarehouseMCPServer",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 2030
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.skill.points-reconciliation/botcomponent.xml",
+      "category": "component",
+      "size": 861
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.skill.points-reconciliation/data",
+      "category": "component",
+      "size": 4358
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.skill.prorated-refund-calculator/botcomponent.xml",
+      "category": "component",
+      "size": 843
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.skill.prorated-refund-calculator/data",
+      "category": "component",
+      "size": 6783
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.skill.slip-pdf-generator/botcomponent.xml",
+      "category": "component",
+      "size": 799
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.skill.slip-pdf-generator/data",
+      "category": "component",
+      "size": 7632
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.connected-agent.Default_InventoryFullfilmentAgent_X-w2GP/botcomponent.xml",
+      "category": "component",
+      "size": 797
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.connected-agent.Default_InventoryFullfilmentAgent_X-w2GP/data",
+      "category": "component",
+      "size": 122
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.connected-agent.Default_InventoryFullfilmentAgent_X-w2GP/dependencies.json",
+      "category": "component",
+      "size": 72
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.connected-agent.Default_StorePolicyAgent_s9s-u8/botcomponent.xml",
+      "category": "component",
+      "size": 784
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.connected-agent.Default_StorePolicyAgent_s9s-u8/data",
+      "category": "component",
+      "size": 113
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.connected-agent.Default_StorePolicyAgent_s9s-u8/dependencies.json",
+      "category": "component",
+      "size": 63
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.file.card_png.py/botcomponent.xml",
+      "category": "component",
+      "size": 629
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.file.card_png.py/filedata/card_png.py",
+      "category": "component",
+      "size": 6809
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.file.SKILL.md/botcomponent.xml",
+      "category": "component",
+      "size": 617
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.file.SKILL.md/filedata/SKILL.md",
+      "category": "component",
+      "size": 4575
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.skill.card-reissue/botcomponent.xml",
+      "category": "component",
+      "size": 712
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.skill.card-reissue/data",
+      "category": "component",
+      "size": 2372
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.skill.membership-card-png/botcomponent.xml",
+      "category": "component",
+      "size": 849
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.skill.membership-card-png/data",
+      "category": "component",
+      "size": 98
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.tool.MembershipMCPv2-MembershipMCPv2Server/botcomponent.xml",
+      "category": "component",
+      "size": 513
+    },
+    {
+      "path": "botcomponents/Default_draft_IsBewO.tool.MembershipMCPv2-MembershipMCPv2Server/data",
+      "category": "component",
+      "size": 285
+    },
+    {
+      "path": "botcomponents/Default_InventoryFullfilmentAgent_X-w2GP.tool.WarehouseMCP-WarehouseMCPServer/botcomponent.xml",
+      "category": "component",
+      "size": 568
+    },
+    {
+      "path": "botcomponents/Default_InventoryFullfilmentAgent_X-w2GP.tool.WarehouseMCP-WarehouseMCPServer/data",
+      "category": "component",
+      "size": 255
+    },
+    {
+      "path": "botcomponents/Default_StorePolicyAgent_s9s-u8.action.PolicyRAGMCPv2-PolicyRAGMCPv2Server/botcomponent.xml",
+      "category": "component",
+      "size": 409
+    },
+    {
+      "path": "botcomponents/Default_StorePolicyAgent_s9s-u8.action.PolicyRAGMCPv2-PolicyRAGMCPv2Server/data",
+      "category": "component",
+      "size": 524
+    },
+    {
+      "path": "bots/cr26e_storeassociateassistant_ZQHUx1/bot.xml",
+      "category": "bot",
+      "size": 35406
+    },
+    {
+      "path": "bots/cr26e_storeassociateassistant_ZQHUx1/configuration.json",
+      "category": "bot",
+      "size": 1328
+    },
+    {
+      "path": "bots/Default_draft_IsBewO/bot.xml",
+      "category": "bot",
+      "size": 35396
+    },
+    {
+      "path": "bots/Default_draft_IsBewO/configuration.json",
+      "category": "bot",
+      "size": 1083
+    },
+    {
+      "path": "bots/Default_InventoryFullfilmentAgent_X-w2GP/bot.xml",
+      "category": "bot",
+      "size": 35418
+    },
+    {
+      "path": "bots/Default_InventoryFullfilmentAgent_X-w2GP/configuration.json",
+      "category": "bot",
+      "size": 2012
+    },
+    {
+      "path": "bots/Default_StorePolicyAgent_s9s-u8/bot.xml",
+      "category": "bot",
+      "size": 35394
+    },
+    {
+      "path": "bots/Default_StorePolicyAgent_s9s-u8/configuration.json",
+      "category": "bot",
+      "size": 1393
+    },
+    {
+      "path": "Connector/cat_membership-20mcp-20v2_connectionparameters.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/cat_membership-20mcp-20v2_customcodeblobcontent.csx",
+      "category": "other",
+      "size": 52839
+    },
+    {
+      "path": "Connector/cat_membership-20mcp-20v2_iconblob.Png",
+      "category": "asset",
+      "size": 2895
+    },
+    {
+      "path": "Connector/cat_membership-20mcp-20v2_openapidefinition.json",
+      "category": "other",
+      "size": 840
+    },
+    {
+      "path": "Connector/cat_membership-20mcp-20v2_policytemplateinstances.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/new_order-20management-20mcp_connectionparameters.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/new_order-20management-20mcp_customcodeblobcontent.csx",
+      "category": "other",
+      "size": 54856
+    },
+    {
+      "path": "Connector/new_order-20management-20mcp_openapidefinition.json",
+      "category": "other",
+      "size": 1027
+    },
+    {
+      "path": "Connector/new_order-20management-20mcp_policytemplateinstances.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/new_policy-20rag-20mcp_connectionparameters.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/new_policy-20rag-20mcp_customcodeblobcontent.csx",
+      "category": "other",
+      "size": 55320
+    },
+    {
+      "path": "Connector/new_policy-20rag-20mcp_openapidefinition.json",
+      "category": "other",
+      "size": 1064
+    },
+    {
+      "path": "Connector/new_policy-20rag-20mcp_policytemplateinstances.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/new_warehouse-20mcp_connectionparameters.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/new_warehouse-20mcp_customcodeblobcontent.csx",
+      "category": "other",
+      "size": 61348
+    },
+    {
+      "path": "Connector/new_warehouse-20mcp_iconblob.Png",
+      "category": "asset",
+      "size": 2895
+    },
+    {
+      "path": "Connector/new_warehouse-20mcp_openapidefinition.json",
+      "category": "other",
+      "size": 1024
+    },
+    {
+      "path": "Connector/new_warehouse-20mcp_policytemplateinstances.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 4441
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4504
+    }
+  ]
+}

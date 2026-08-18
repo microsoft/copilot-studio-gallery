@@ -1,0 +1,209 @@
+{
+  "name": "Campaign Content Engine",
+  "description": "Builds a channel-ready campaign kit from one brief with brand, audience, and approval controls.",
+  "tags": [
+    "marketing",
+    "content",
+    "brand",
+    "approval",
+    "demo"
+  ],
+  "author": "Maya Chen",
+  "authorGithub": "mayachen",
+  "createdAt": "2026-08-07",
+  "featured": false,
+  "uniqueName": "Demo_campaign_content_engine",
+  "version": "1.0.0.0",
+  "publisher": "CAT Gallery Demos",
+  "bundle": "bundles/campaign-content-engine.zip",
+  "agentCount": 1,
+  "workflowCount": 1,
+  "componentCount": 2,
+  "agents": [
+    {
+      "id": "campaign_content_engine_agent",
+      "schemaName": "campaign_content_engine_agent",
+      "name": "Campaign Content Agent",
+      "model": "GPT-5",
+      "instructions": "Builds a channel-ready campaign kit from one brief with brand, audience, and approval controls.",
+      "channels": [
+        "MsTeams"
+      ],
+      "toolCount": 0,
+      "skillCount": 0,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:campaign_content_engine_agent",
+        "name": "Campaign Content Agent",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "GPT-5",
+          "instructions": "Builds a channel-ready campaign kit from one brief with brand, audience, and approval controls.",
+          "channels": [
+            "MsTeams"
+          ],
+          "toolCount": 0,
+          "skillCount": 0,
+          "connectedAgentCount": 0
+        }
+      }
+    ],
+    "edges": []
+  },
+  "workflows": [
+    {
+      "id": "campaign-content-engine-workflow",
+      "name": "Create campaign content kit",
+      "trigger": "When a campaign brief is approved",
+      "nodeCount": 7,
+      "edgeCount": 6,
+      "graph": {
+        "nodes": [
+          {
+            "id": "node-1",
+            "name": "When a campaign brief is approved",
+            "type": "start",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-2",
+            "name": "Read brief",
+            "type": "agent",
+            "position": {
+              "x": 240,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-3",
+            "name": "Load brand voice",
+            "type": "connector",
+            "position": {
+              "x": 480,
+              "y": 0
+            },
+            "details": {
+              "displayName": "Load brand voice",
+              "operationType": "action"
+            }
+          },
+          {
+            "id": "node-4",
+            "name": "Draft channels",
+            "type": "ifElse",
+            "position": {
+              "x": 720,
+              "y": 90
+            },
+            "details": {}
+          },
+          {
+            "id": "node-5",
+            "name": "Review content",
+            "type": "connector",
+            "position": {
+              "x": 960,
+              "y": -70
+            },
+            "details": {
+              "displayName": "Review content",
+              "operationType": "action"
+            }
+          },
+          {
+            "id": "node-6",
+            "name": "Publish kit",
+            "type": "end",
+            "position": {
+              "x": 1200,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-7",
+            "name": "Complete",
+            "type": "end",
+            "position": {
+              "x": 1440,
+              "y": 0
+            },
+            "details": {}
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-1",
+            "source": "node-1",
+            "target": "node-2"
+          },
+          {
+            "id": "edge-2",
+            "source": "node-2",
+            "target": "node-3"
+          },
+          {
+            "id": "edge-3",
+            "source": "node-3",
+            "target": "node-4"
+          },
+          {
+            "id": "edge-4",
+            "source": "node-4",
+            "target": "node-5"
+          },
+          {
+            "id": "edge-5",
+            "source": "node-5",
+            "target": "node-6"
+          },
+          {
+            "id": "edge-6",
+            "source": "node-6",
+            "target": "node-7"
+          }
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "bots/campaign_content_engine_agent/bot.xml",
+      "category": "bot",
+      "size": 90
+    },
+    {
+      "path": "bots/campaign_content_engine_agent/configuration.json",
+      "category": "bot",
+      "size": 340
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 219
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 517
+    },
+    {
+      "path": "Workflows/workflow.json",
+      "category": "workflow",
+      "size": 3837
+    }
+  ]
+}

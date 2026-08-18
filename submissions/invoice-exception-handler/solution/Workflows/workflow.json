@@ -1,0 +1,150 @@
+{
+  "trigger": {
+    "metadata": {
+      "associatedData": {
+        "graph": {
+          "name": "Resolve invoice exception",
+          "nodes": [
+            {
+              "id": "node-1",
+              "name": "When invoice validation fails",
+              "type": "start",
+              "position": {
+                "x": 0,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "When invoice validation fails",
+                  "operationType": "trigger"
+                }
+              }
+            },
+            {
+              "id": "node-2",
+              "name": "Read invoice",
+              "type": "agent",
+              "position": {
+                "x": 240,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "Read invoice",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-3",
+              "name": "Match purchase order",
+              "type": "connector",
+              "position": {
+                "x": 480,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "Match purchase order",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-4",
+              "name": "Classify exception",
+              "type": "ifElse",
+              "position": {
+                "x": 720,
+                "y": 90
+              },
+              "data": {
+                "config": {
+                  "displayName": "Classify exception",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-5",
+              "name": "Request approval",
+              "type": "connector",
+              "position": {
+                "x": 960,
+                "y": -70
+              },
+              "data": {
+                "config": {
+                  "displayName": "Request approval",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-6",
+              "name": "Post result",
+              "type": "end",
+              "position": {
+                "x": 1200,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "Post result",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-7",
+              "name": "Complete",
+              "type": "end",
+              "position": {
+                "x": 1440,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "Complete",
+                  "operationType": "end"
+                }
+              }
+            }
+          ],
+          "edges": [
+            {
+              "id": "edge-1",
+              "source": "node-1",
+              "target": "node-2"
+            },
+            {
+              "id": "edge-2",
+              "source": "node-2",
+              "target": "node-3"
+            },
+            {
+              "id": "edge-3",
+              "source": "node-3",
+              "target": "node-4"
+            },
+            {
+              "id": "edge-4",
+              "source": "node-4",
+              "target": "node-5"
+            },
+            {
+              "id": "edge-5",
+              "source": "node-5",
+              "target": "node-6"
+            },
+            {
+              "id": "edge-6",
+              "source": "node-6",
+              "target": "node-7"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,194 @@
+{
+  "name": "Employee Onboarding Guide",
+  "description": "Coordinates a new hire checklist and answers policy, benefits, and first-week questions.",
+  "tags": [
+    "hr",
+    "onboarding",
+    "knowledge",
+    "beginner",
+    "demo"
+  ],
+  "author": "Priya Raman",
+  "authorGithub": "priyaraman",
+  "createdAt": "2026-08-10",
+  "featured": false,
+  "uniqueName": "Demo_employee_onboarding_guide",
+  "version": "1.0.0.0",
+  "publisher": "CAT Gallery Demos",
+  "bundle": "bundles/employee-onboarding-guide.zip",
+  "agentCount": 1,
+  "workflowCount": 1,
+  "componentCount": 2,
+  "agents": [
+    {
+      "id": "employee_onboarding_guide_agent",
+      "schemaName": "employee_onboarding_guide_agent",
+      "name": "Onboarding Guide",
+      "model": "GPT-4.1",
+      "instructions": "Coordinates a new hire checklist and answers policy, benefits, and first-week questions.",
+      "channels": [
+        "MsTeams"
+      ],
+      "toolCount": 0,
+      "skillCount": 0,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:employee_onboarding_guide_agent",
+        "name": "Onboarding Guide",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "GPT-4.1",
+          "instructions": "Coordinates a new hire checklist and answers policy, benefits, and first-week questions.",
+          "channels": [
+            "MsTeams"
+          ],
+          "toolCount": 0,
+          "skillCount": 0,
+          "connectedAgentCount": 0
+        }
+      }
+    ],
+    "edges": []
+  },
+  "workflows": [
+    {
+      "id": "employee-onboarding-guide-workflow",
+      "name": "New hire onboarding",
+      "trigger": "When an employee joins",
+      "nodeCount": 6,
+      "edgeCount": 5,
+      "graph": {
+        "nodes": [
+          {
+            "id": "node-1",
+            "name": "When an employee joins",
+            "type": "start",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-2",
+            "name": "Create checklist",
+            "type": "agent",
+            "position": {
+              "x": 240,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-3",
+            "name": "Provision access",
+            "type": "connector",
+            "position": {
+              "x": 480,
+              "y": 0
+            },
+            "details": {
+              "displayName": "Provision access",
+              "operationType": "action"
+            }
+          },
+          {
+            "id": "node-4",
+            "name": "Send welcome plan",
+            "type": "ifElse",
+            "position": {
+              "x": 720,
+              "y": 90
+            },
+            "details": {}
+          },
+          {
+            "id": "node-5",
+            "name": "Check progress",
+            "type": "connector",
+            "position": {
+              "x": 960,
+              "y": -70
+            },
+            "details": {
+              "displayName": "Check progress",
+              "operationType": "action"
+            }
+          },
+          {
+            "id": "node-6",
+            "name": "Complete",
+            "type": "end",
+            "position": {
+              "x": 1200,
+              "y": 0
+            },
+            "details": {}
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-1",
+            "source": "node-1",
+            "target": "node-2"
+          },
+          {
+            "id": "edge-2",
+            "source": "node-2",
+            "target": "node-3"
+          },
+          {
+            "id": "edge-3",
+            "source": "node-3",
+            "target": "node-4"
+          },
+          {
+            "id": "edge-4",
+            "source": "node-4",
+            "target": "node-5"
+          },
+          {
+            "id": "edge-5",
+            "source": "node-5",
+            "target": "node-6"
+          }
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "bots/employee_onboarding_guide_agent/bot.xml",
+      "category": "bot",
+      "size": 86
+    },
+    {
+      "path": "bots/employee_onboarding_guide_agent/configuration.json",
+      "category": "bot",
+      "size": 335
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 213
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 525
+    },
+    {
+      "path": "Workflows/workflow.json",
+      "category": "workflow",
+      "size": 3301
+    }
+  ]
+}

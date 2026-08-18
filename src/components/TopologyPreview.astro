@@ -1,0 +1,138 @@
+---
+import type { GraphData } from "../lib/schema";
+import { graphVisualColor, graphVisualKind } from "../lib/graphVisuals";
+
+interface Props {
+  graph?: GraphData;
+  label?: string;
+  compact?: boolean;
+}
+
+const { graph, label = "Solution topology", compact = false } = Astro.props;
+const nodes = graph?.nodes.filter((node) => node.type !== "canvasNote").slice(0, compact ? 9 : 18) ?? [];
+const nodeIds = new Set(nodes.map((node) => node.id));
+const edges = graph?.edges.filter((edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target)) ?? [];
+const nodeById = new Map(nodes.map((node) => [node.id, node]));
+const xs = nodes.map((node) => node.position.x);
+const ys = nodes.map((node) => node.position.y);
+const minX = xs.length ? Math.min(...xs) : 0;
+const maxX = xs.length ? Math.max(...xs) : 1;
+const minY = ys.length ? Math.min(...ys) : 0;
+const maxY = ys.length ? Math.max(...ys) : 1;
+const width = 540;
+const height = compact ? 116 : 210;
+const pad = compact ? 18 : 28;
+const gradientId = `topology-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${compact ? "compact" : "full"}`;
+const scaleX = (x: number) => pad + ((x - minX) / Math.max(maxX - minX, 1)) * (width - pad * 2);
+const scaleY = (y: number) => pad + ((y - minY) / Math.max(maxY - minY, 1)) * (height - pad * 2);
+const fallback = [
+  { x: 35, y: height / 2 },
+  { x: 145, y: height / 2 },
+  { x: 270, y: height / 3 },
+  { x: 270, y: (height * 2) / 3 },
+  { x: 405, y: height / 2 },
+  { x: 505, y: height / 2 },
+];
+---
+
+<svg
+  viewBox={`0 0 ${width} ${height}`}
+  role="img"
+  aria-label={nodes.length ? `${label}: ${nodes.length} visible nodes and ${edges.length} connections` : label}
+  class="h-full w-full"
+  preserveAspectRatio="xMidYMid meet"
+>
+  <defs>
+    <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="var(--cp-accent)" />
+      <stop offset="48%" stop-color="var(--cp-violet)" />
+      <stop offset="78%" stop-color="var(--cp-magenta)" />
+      <stop offset="100%" stop-color="var(--cp-coral)" />
+    </linearGradient>
+  </defs>
+  {
+    nodes.length ? (
+      <>
+        {edges.map((edge) => {
+          const source = nodeById.get(edge.source);
+          const target = nodeById.get(edge.target);
+          if (!source || !target) return null;
+          const x1 = scaleX(source.position.x);
+          const y1 = scaleY(source.position.y);
+          const x2 = scaleX(target.position.x);
+          const y2 = scaleY(target.position.y);
+          const bend = Math.max(24, Math.abs(x2 - x1) * 0.35);
+          const color = graphVisualColor(graphVisualKind(source));
+          return (
+            <path
+              d={`M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`}
+              fill="none"
+              stroke={color}
+              stroke-width={compact ? "1.8" : "2.2"}
+              stroke-opacity="0.82"
+              vector-effect="non-scaling-stroke"
+            />
+          );
+        })}
+        {nodes.map((node) => {
+          const x = scaleX(node.position.x);
+          const y = scaleY(node.position.y);
+          const kind = graphVisualKind(node);
+          const color = graphVisualColor(kind);
+          const isTerminal = node.type === "start" || node.type === "end";
+          if (isTerminal) return (
+            <circle
+              cx={x}
+              cy={y}
+              r={compact ? 6 : 8}
+              fill="var(--cp-surface)"
+              stroke={color}
+              stroke-width="2.5"
+            />
+          );
+          if (kind === "decision") return (
+            <polygon
+              points={`${x},${y - (compact ? 10 : 13)} ${x + (compact ? 14 : 19)},${y} ${x},${y + (compact ? 10 : 13)} ${x - (compact ? 14 : 19)},${y}`}
+              fill={`color-mix(in srgb, ${color} 14%, var(--cp-surface))`}
+              stroke={color}
+              stroke-width="2"
+            />
+          );
+          return (
+            <rect
+              x={x - (compact ? 12 : 17)}
+              y={y - (compact ? 7 : 10)}
+              width={compact ? 24 : 34}
+              height={compact ? 14 : 20}
+              rx={kind === "loop" ? "10" : "5"}
+              fill={`color-mix(in srgb, ${color} 14%, var(--cp-surface))`}
+              stroke={color}
+              stroke-width="2"
+            />
+          );
+        })}
+      </>
+    ) : (
+      <>
+        {fallback.slice(0, -1).map((point, i) => {
+          const next = fallback[i + 1];
+          return (
+            <path
+              d={`M ${point.x} ${point.y} C ${point.x + 40} ${point.y}, ${next.x - 40} ${next.y}, ${next.x} ${next.y}`}
+              fill="none"
+              stroke={`url(#${gradientId})`}
+              stroke-width="2"
+            />
+          );
+        })}
+        {fallback.map((point, i) =>
+          i === 0 || i === fallback.length - 1 ? (
+            <circle cx={point.x} cy={point.y} r="7" fill="var(--cp-surface)" stroke="var(--cp-coral)" stroke-width="2.5" />
+          ) : (
+            <rect x={point.x - 16} y={point.y - 9} width="32" height="18" rx="5" fill="var(--cp-surface)" stroke="var(--cp-border-strong)" stroke-width="2" />
+          )
+        )}
+      </>
+    )
+  }
+</svg>

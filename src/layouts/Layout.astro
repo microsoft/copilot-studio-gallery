@@ -1,0 +1,79 @@
+---
+import "../styles/global.css";
+import { withBase } from "../lib/url";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "CAT Agents & Workflows Gallery",
+  description = "Discover community-built Copilot Studio solutions through their agents and workflow canvases.",
+} = Astro.props;
+const fullTitle =
+  title === "CAT Agents & Workflows Gallery"
+    ? title
+    : `${title} · CAT Agents & Workflows Gallery`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <script>
+      (() => {
+        const param = new URLSearchParams(window.location.search).get("scoutTheme");
+        const theme =
+          param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href={withBase("/favicon.svg")} />
+  </head>
+  <body class="flex min-h-screen flex-col antialiased">
+    <header class="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur-xl">
+      <div class="mx-auto flex h-[3.75rem] w-full max-w-gallery items-center justify-between gap-4 px-4 sm:px-6">
+        <a href={withBase("/")} class="flex min-w-0 items-center gap-3 text-[0.9375rem] font-semibold tracking-[-0.01em]">
+          <span class="studio-mark grid h-8 w-8 shrink-0 place-items-center rounded-lg" aria-hidden="true">
+            <span class="h-3.5 w-3.5 rounded-[0.3rem] border border-white/70"></span>
+          </span>
+          <span class="truncate">Copilot Studio Gallery</span>
+        </a>
+        <nav class="flex shrink-0 items-center gap-1 text-sm text-muted">
+          <a href={withBase("/contributors")} class="hidden rounded-lg px-3 py-2 hover:bg-surface-soft hover:text-ink sm:block">Contributors</a>
+          <a href="https://github.com/microsoft/copilot-studio-gallery/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener" class="studio-primary-action rounded-lg px-3.5 py-2 font-semibold">
+            Share a solution
+          </a>
+          <button id="theme-toggle" type="button" class="ml-1 grid h-9 w-9 place-items-center rounded-lg text-muted hover:bg-surface-soft hover:text-ink" aria-label="Toggle color theme" title="Toggle color theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-4 w-4">
+              <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"></path>
+            </svg>
+          </button>
+        </nav>
+      </div>
+    </header>
+    <main class="flex-1">
+      <slot />
+    </main>
+    <footer class="border-t border-border bg-surface">
+      <div class="mx-auto flex w-full max-w-gallery flex-col gap-2 px-4 py-7 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <p>Preview community-built Copilot Studio solutions before you import them.</p>
+        <a href="https://github.com/microsoft/copilot-studio-gallery" target="_blank" rel="noopener" class="text-link hover:underline">View on GitHub</a>
+      </div>
+    </footer>
+    <script>
+      document.getElementById("theme-toggle")?.addEventListener("click", () => {
+        const root = document.documentElement;
+        root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+      });
+    </script>
+  </body>
+</html>
