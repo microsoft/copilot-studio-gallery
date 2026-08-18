@@ -42,7 +42,7 @@ const MAX_SOLUTIONS = 8;
             data-search={`${contributor.name} ${contributor.github ?? ""} ${contributor.solutions.map((solution) => solution.data.name).join(" ")}`.toLowerCase()}
           >
             <div class="flex items-center gap-3">
-              <a href={withBase(`/?author=${encodeURIComponent(contributor.key)}`)} class="shrink-0" aria-label={`Browse ${contributor.name}'s solutions`}>
+              <a href={withBase(`/contributors/${contributor.key}`)} class="shrink-0" aria-label={`View ${contributor.name}'s contributor profile`}>
                 <span class="grid h-12 w-12 place-items-center overflow-hidden rounded-full border border-border bg-accent-soft text-sm font-bold text-accent">
                   {contributor.github
                     ? <img src={`https://github.com/${contributor.github}.png?size=96`} alt="" class="h-full w-full object-cover" loading="lazy" />
@@ -50,10 +50,10 @@ const MAX_SOLUTIONS = 8;
                 </span>
               </a>
               <div class="min-w-0 flex-1">
-                <a href={withBase(`/?author=${encodeURIComponent(contributor.key)}`)} class="block truncate font-semibold text-ink hover:text-accent">{contributor.name}</a>
+                <a href={withBase(`/contributors/${contributor.key}`)} class="block truncate font-semibold text-ink hover:text-accent">{contributor.name}</a>
                 {contributor.github && <a href={`https://github.com/${contributor.github}`} target="_blank" rel="noopener" class="mt-0.5 block truncate text-sm text-muted hover:text-accent">@{contributor.github}</a>}
               </div>
-              <a href={withBase(`/?author=${encodeURIComponent(contributor.key)}`)} class="shrink-0 text-right text-accent">
+              <a href={withBase(`/contributors/${contributor.key}`)} class="shrink-0 text-right text-accent" aria-label={`View ${contributor.name}'s contributor profile`}>
                 <span class="block text-xl font-semibold">{contributor.count}</span>
                 <span class="block text-[11px] text-soft">solution{contributor.count === 1 ? "" : "s"}</span>
               </a>

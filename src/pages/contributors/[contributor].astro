@@ -1,0 +1,105 @@
+---
+import { getCollection } from "astro:content";
+import SolutionCard from "../../components/SolutionCard.astro";
+import Layout from "../../layouts/Layout.astro";
+import { collectContributors, collectTags } from "../../lib/catalog";
+import { withBase } from "../../lib/url";
+
+export async function getStaticPaths() {
+  const contributors = collectContributors(await getCollection("solutions"));
+  return contributors.map((contributor) => ({
+    params: { contributor: contributor.key },
+    props: { contributor },
+  }));
+}
+
+const { contributor } = Astro.props;
+const tags = collectTags(contributor.solutions);
+const externalUrl = contributor.github
+  ? `https://github.com/${contributor.github}`
+  : contributor.url;
+---
+
+<Layout
+  title={contributor.name}
+  description={`Copilot Studio agents and workflows shared by ${contributor.name}.`}
+>
+  <main class="mx-auto w-full max-w-gallery px-4 py-10 sm:px-6">
+    <a href={withBase("/contributors")} class="inline-flex items-center gap-1.5 text-sm text-muted transition hover:text-accent">
+      <span aria-hidden="true">←</span> All contributors
+    </a>
+
+    <header class="mt-7 overflow-hidden rounded-2xl border border-border bg-surface card-shadow">
+      <div class="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:p-8">
+        <span class="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full border border-border bg-accent-soft text-xl font-bold text-accent">
+          {contributor.github
+            ? <img src={`https://github.com/${contributor.github}.png?size=160`} alt="" class="h-full w-full object-cover" />
+            : contributor.name.slice(0, 2).toUpperCase()}
+        </span>
+        <div class="min-w-0 flex-1">
+          <p class="font-mono text-xs font-bold uppercase tracking-[0.14em] text-accent">Contributor</p>
+          <h1 class="mt-2 text-3xl font-semibold tracking-[-0.025em] text-ink sm:text-4xl">{contributor.name}</h1>
+          <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted">
+            {contributor.github && <span>@{contributor.github}</span>}
+            {externalUrl && (
+              <a href={externalUrl} target="_blank" rel="noopener" class="font-semibold text-accent hover:underline">
+                View profile <span aria-hidden="true">↗</span>
+              </a>
+            )}
+            {contributor.latest && <span>Latest contribution {contributor.latest}</span>}
+          </div>
+        </div>
+        <a
+          href={withBase(`/?author=${encodeURIComponent(contributor.key)}#solution-catalog`)}
+          class="studio-primary-action inline-flex shrink-0 items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold"
+        >
+          Filter in gallery
+        </a>
+      </div>
+      <dl class="grid gap-px border-t border-border bg-border sm:grid-cols-4">
+        <div class="bg-surface px-5 py-4">
+          <dt class="font-mono text-[10px] uppercase tracking-[0.12em] text-soft">Solutions</dt>
+          <dd class="mt-1 text-xl font-semibold text-ink">{contributor.count}</dd>
+        </div>
+        <div class="bg-surface px-5 py-4">
+          <dt class="font-mono text-[10px] uppercase tracking-[0.12em] text-soft">Agents</dt>
+          <dd class="mt-1 text-xl font-semibold text-ink">{contributor.agents}</dd>
+        </div>
+        <div class="bg-surface px-5 py-4">
+          <dt class="font-mono text-[10px] uppercase tracking-[0.12em] text-soft">Workflows</dt>
+          <dd class="mt-1 text-xl font-semibold text-ink">{contributor.workflows}</dd>
+        </div>
+        <div class="bg-surface px-5 py-4">
+          <dt class="font-mono text-[10px] uppercase tracking-[0.12em] text-soft">Editor’s picks</dt>
+          <dd class="mt-1 text-xl font-semibold text-ink">{contributor.featured}</dd>
+        </div>
+      </dl>
+    </header>
+
+    <section class="mt-9" aria-labelledby="contributor-solutions">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="text-xs font-semibold text-accent">Shared with the community</p>
+          <h2 id="contributor-solutions" class="mt-1 text-2xl font-semibold tracking-tight text-ink">
+            {contributor.count === 1 ? "Solution" : "Solutions"}
+          </h2>
+        </div>
+        <p class="text-sm text-muted">{contributor.count} published solution{contributor.count === 1 ? "" : "s"}</p>
+      </div>
+      <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(18rem,1fr))]">
+        {contributor.solutions.map((solution) => <SolutionCard solution={solution} />)}
+      </div>
+    </section>
+
+    <section class="mt-10 border-t border-border pt-7" aria-labelledby="contributor-topics">
+      <h2 id="contributor-topics" class="text-lg font-semibold text-ink">Topics</h2>
+      <div class="mt-3 flex flex-wrap gap-2">
+        {tags.map(([tag, count]) => (
+          <a href={withBase(`/tags/${encodeURIComponent(tag)}`)} class="rounded-full border border-border bg-surface px-3 py-1.5 text-sm text-muted hover:border-accent hover:text-ink">
+            {tag} <span class="ml-1 text-soft">{count}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  </main>
+</Layout>
