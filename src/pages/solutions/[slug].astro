@@ -54,7 +54,7 @@ const heroGraph = data.workflows[0]?.graph ?? data.agentGraph;
           label={`${data.name} topology preview`}
           variant={data.workflows.length ? "workflow" : "agent"}
           compact
-          client:visible
+          client:load
         />
       </div>
       <div class="grid gap-px border-t border-border bg-border sm:grid-cols-4">
@@ -99,7 +99,7 @@ const heroGraph = data.workflows[0]?.graph ?? data.agentGraph;
                   <p class="mt-1 text-sm text-muted">Select an agent, tool, or skill to inspect the published configuration.</p>
                 </div>
                 <div class="overflow-hidden rounded-2xl border border-border bg-elevated card-shadow">
-                  <GraphCanvas graph={data.agentGraph} label={`${data.name} agent architecture`} variant="agent" client:visible />
+                  <GraphCanvas graph={data.agentGraph} label={`${data.name} agent architecture`} variant="agent" client:load />
                 </div>
                 <div class="mt-5 grid gap-3 md:grid-cols-2">
                   {data.agents.map((agent) => (
@@ -127,7 +127,7 @@ const heroGraph = data.workflows[0]?.graph ?? data.agentGraph;
             <h2 class="text-xl font-semibold text-ink">Workflow canvases</h2>
             <p class="mt-1 text-sm text-muted">These positions and connections come from the saved designer graph in the exported solution.</p>
           </div>
-          <WorkflowExplorer workflows={data.workflows} client:visible />
+          <WorkflowExplorer workflows={data.workflows} client:load />
         </section>
 
         <section id="panel-files" role="tabpanel" data-panel="files" class="hidden pt-7">

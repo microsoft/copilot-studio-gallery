@@ -3,6 +3,7 @@ import { cp, lstat, mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import test from "node:test";
 import AdmZip from "adm-zip";
+import { isMcpNode } from "../src/lib/graphVisuals";
 import {
   SubmissionImportError,
   deriveSolutionFields,
@@ -114,6 +115,23 @@ test("maps XML components and normalizes tools, skills, and delegation", () => {
   assert.equal(normalized.skills.length, 1);
   assert.equal(normalized.connected.length, 1);
   assert.deepEqual(normalized.edges.map((edge) => edge.label), ["uses", "includes"]);
+});
+
+test("distinguishes MCP servers from ordinary tools and connectors", () => {
+  assert.equal(isMcpNode({
+    id: "tool:mcp",
+    name: "Warehouse MCP Server",
+    type: "tool",
+    position: { x: 0, y: 0 },
+    details: { operation: "InvokeMCP" },
+  }), true);
+  assert.equal(isMcpNode({
+    id: "connector:email",
+    name: "Send email",
+    type: "connector",
+    position: { x: 0, y: 0 },
+    details: { operation: "send" },
+  }), false);
 });
 
 test("centers primary agents and arranges capabilities around them", () => {

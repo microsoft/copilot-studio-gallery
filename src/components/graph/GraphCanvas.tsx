@@ -12,7 +12,7 @@ import {
   type NodeProps,
 } from "@xyflow/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { graphVisualColor, graphVisualKind } from "../../lib/graphVisuals";
+import { graphVisualColor, graphVisualKind, isMcpNode, MCP_ICON_PATHS } from "../../lib/graphVisuals";
 import type { GraphData, GraphNode } from "../../lib/schema";
 import "./GraphCanvas.css";
 
@@ -22,14 +22,12 @@ type CatalogNodeData = {
 };
 
 type CatalogNode = Node<CatalogNodeData, "catalog">;
+const WORKFLOW_LAYOUT_SCALE_X = 1.7;
+const WORKFLOW_LAYOUT_SCALE_Y = 1.5;
 
 const ICONS: Record<string, string> = {
-  agent: "AI",
-  tool: "TL",
-  skill: "SK",
   start: "IN",
   end: "OUT",
-  connector: "CN",
   ifElse: "IF",
   loop: "LP",
   variable: "VR",
@@ -38,8 +36,52 @@ const ICONS: Record<string, string> = {
   canvasNote: "NT",
 };
 
+function GraphNodeIcon({ source }: { source: GraphNode }) {
+  const { type } = source;
+  if (isMcpNode(source)) {
+    return (
+      <svg viewBox="0 0 195 195" aria-hidden="true">
+        {MCP_ICON_PATHS.map((path) => (
+          <path key={path} d={path} fill="none" stroke="currentColor" strokeWidth="12" strokeLinecap="round" />
+        ))}
+      </svg>
+    );
+  }
+  if (type === "agent" || type === "classifyOnInlineAgent") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 11H2v4h2M18 11h2v4h-2" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <rect x="4" y="7" width="14" height="11" rx="4" fill="none" stroke="currentColor" strokeWidth="1.8" />
+        <rect x="7" y="10" width="8" height="5" rx="2.5" fill="currentColor" />
+        <circle cx="9.5" cy="12.5" r="0.75" fill="var(--cp-surface)" />
+        <circle cx="12.5" cy="12.5" r="0.75" fill="var(--cp-surface)" />
+        <path d="m18.5 1 .8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8Z" fill="currentColor" />
+      </svg>
+    );
+  }
+  if (type === "tool" || type === "connector") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="2.5" y="8" width="7" height="8" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+        <rect x="14.5" y="8" width="7" height="8" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M9.5 12h5M5 5.5V8m2.5-2.5V8M17 16v2.5m2.5-2.5v2.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (type === "skill") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m12 2.5 8 4.6v9.8l-8 4.6-8-4.6V7.1l8-4.6Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="m12 7 .9 2.6 2.6.9-2.6.9L12 14l-.9-2.6-2.6-.9 2.6-.9L12 7Z" fill="currentColor" />
+      </svg>
+    );
+  }
+  return <>{ICONS[type] ?? type.slice(0, 2)}</>;
+}
+
 function CatalogNodeView({ data, selected }: NodeProps<CatalogNode>) {
   const source = data.source;
+  const typeLabel = isMcpNode(source) ? "MCP server" : humanize(source.type);
   return (
     <div
       className="catalog-node"
@@ -54,10 +96,10 @@ function CatalogNodeView({ data, selected }: NodeProps<CatalogNode>) {
       <Handle type="target" id="target-left" position={Position.Left} />
       <div className="catalog-node__body">
         <span className="catalog-node__icon" aria-hidden="true">
-          {ICONS[source.type] ?? source.type.slice(0, 2)}
+          <GraphNodeIcon source={source} />
         </span>
         <span className="catalog-node__copy">
-          <span className="catalog-node__type">{humanize(source.type)}</span>
+          <span className="catalog-node__type">{typeLabel}</span>
           <span className="catalog-node__name">{source.name}</span>
         </span>
       </div>
@@ -144,6 +186,21 @@ function Canvas({
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
+  useEffect(() => {
+    const element = wrapper.current;
+    if (!element) return;
+    let hasFittedVisibleCanvas = false;
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (!hasFittedVisibleCanvas && width > 0 && height > 0) {
+        hasFittedVisibleCanvas = true;
+        requestAnimationFrame(() => void fitView({ padding: 0.18, duration: 0 }));
+      }
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [fitView, graph]);
+
   const hiddenIds = useMemo(
     () => new Set(showNotes ? [] : graph.nodes.filter((node) => node.type === "canvasNote").map((node) => node.id)),
     [graph.nodes, showNotes],
@@ -165,14 +222,19 @@ function Canvas({
         .map((node) => ({
           id: node.id,
           type: "catalog",
-          position: node.position,
+          position: variant === "workflow"
+            ? {
+                x: node.position.x * WORKFLOW_LAYOUT_SCALE_X,
+                y: node.position.y * WORKFLOW_LAYOUT_SCALE_Y,
+              }
+            : node.position,
           data: { source: node, primary: primaryAgentIds.has(node.id) },
           width: node.type === "start" || node.type === "end" ? 160 : 224,
           height: 72,
           draggable: false,
           selectable: !compact,
         })),
-    [compact, graph.nodes, hiddenIds, primaryAgentIds],
+    [compact, graph.nodes, hiddenIds, primaryAgentIds, variant],
   );
   const graphNodeById = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
   const edges = useMemo<Edge[]>(
@@ -185,7 +247,7 @@ function Canvas({
             ? graphVisualColor(graphVisualKind(sourceNode))
             : "var(--cp-border-strong)";
           const targetNode = graphNodeById.get(edge.target);
-          const handles = variant === "agent" && sourceNode && targetNode
+          const handles = sourceNode && targetNode
             ? nearestHandles(sourceNode, targetNode)
             : {};
           return {
@@ -193,9 +255,9 @@ function Canvas({
             source: edge.source,
             target: edge.target,
             label: edge.label ?? branchLabel(edge.sourceHandle),
-            type: variant === "agent" ? "straight" : "smoothstep",
+            type: "smoothstep",
             ...handles,
-            markerEnd: { type: MarkerType.ArrowClosed, color },
+            markerEnd: { type: MarkerType.ArrowClosed, color, width: 18, height: 18 },
             style: { strokeWidth: 1.8, stroke: color },
           };
         }),

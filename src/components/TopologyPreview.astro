@@ -1,14 +1,15 @@
 ---
 import type { GraphData } from "../lib/schema";
-import { graphVisualColor, graphVisualKind } from "../lib/graphVisuals";
+import { graphVisualColor, graphVisualKind, isMcpNode, MCP_ICON_PATHS } from "../lib/graphVisuals";
 
 interface Props {
   graph?: GraphData;
   label?: string;
   compact?: boolean;
+  variant?: "workflow" | "agent";
 }
 
-const { graph, label = "Solution topology", compact = false } = Astro.props;
+const { graph, label = "Solution topology", compact = false, variant = "workflow" } = Astro.props;
 const nodes = graph?.nodes.filter((node) => node.type !== "canvasNote").slice(0, compact ? 9 : 18) ?? [];
 const nodeIds = new Set(nodes.map((node) => node.id));
 const edges = graph?.edges.filter((edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target)) ?? [];
@@ -23,8 +24,14 @@ const width = 540;
 const height = compact ? 116 : 210;
 const pad = compact ? 18 : 28;
 const gradientId = `topology-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${compact ? "compact" : "full"}`;
-const scaleX = (x: number) => pad + ((x - minX) / Math.max(maxX - minX, 1)) * (width - pad * 2);
-const scaleY = (y: number) => pad + ((y - minY) / Math.max(maxY - minY, 1)) * (height - pad * 2);
+const arrowId = `${gradientId}-arrow`;
+const singleAgent = variant === "agent" && nodes.length === 1 && nodes[0].type === "agent" ? nodes[0] : undefined;
+const sparklePath = (x: number, y: number, size: number) =>
+  `M ${x} ${y - size} L ${x + size * 0.28} ${y - size * 0.28} L ${x + size} ${y} L ${x + size * 0.28} ${y + size * 0.28} L ${x} ${y + size} L ${x - size * 0.28} ${y + size * 0.28} L ${x - size} ${y} L ${x - size * 0.28} ${y - size * 0.28} Z`;
+const scaleX = (x: number) =>
+  maxX === minX ? width / 2 : pad + ((x - minX) / (maxX - minX)) * (width - pad * 2);
+const scaleY = (y: number) =>
+  maxY === minY ? height / 2 : pad + ((y - minY) / (maxY - minY)) * (height - pad * 2);
 const fallback = [
   { x: 35, y: height / 2 },
   { x: 145, y: height / 2 },
@@ -49,11 +56,14 @@ const fallback = [
       <stop offset="78%" stop-color="var(--cp-magenta)" />
       <stop offset="100%" stop-color="var(--cp-coral)" />
     </linearGradient>
+    <marker id={arrowId} viewBox="0 0 7 7" refX="6" refY="3.5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 0 L 7 3.5 L 0 7 Z" fill="var(--cp-text-soft)" />
+    </marker>
   </defs>
   {
     nodes.length ? (
       <>
-        {edges.map((edge) => {
+        {!singleAgent && edges.map((edge) => {
           const source = nodeById.get(edge.source);
           const target = nodeById.get(edge.target);
           if (!source || !target) return null;
@@ -61,24 +71,278 @@ const fallback = [
           const y1 = scaleY(source.position.y);
           const x2 = scaleX(target.position.x);
           const y2 = scaleY(target.position.y);
-          const bend = Math.max(24, Math.abs(x2 - x1) * 0.35);
+          const distance = Math.hypot(x2 - x1, y2 - y1) || 1;
+          const unitX = (x2 - x1) / distance;
+          const unitY = (y2 - y1) / distance;
+          const sourceInset = compact ? 11 : 15;
+          const targetInset = compact ? 16 : 21;
+          const startX = x1 + unitX * sourceInset;
+          const startY = y1 + unitY * sourceInset;
+          const endX = x2 - unitX * targetInset;
+          const endY = y2 - unitY * targetInset;
           const color = graphVisualColor(graphVisualKind(source));
+          const path = variant === "agent"
+            ? `M ${startX} ${startY} L ${endX} ${endY}`
+            : `M ${startX} ${startY} C ${startX + Math.max(24, Math.abs(endX - startX) * 0.35)} ${startY}, ${endX - Math.max(24, Math.abs(endX - startX) * 0.35)} ${endY}, ${endX} ${endY}`;
           return (
             <path
-              d={`M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`}
+              d={path}
               fill="none"
               stroke={color}
               stroke-width={compact ? "1.8" : "2.2"}
               stroke-opacity="0.82"
+              marker-end={`url(#${arrowId})`}
               vector-effect="non-scaling-stroke"
             />
           );
         })}
-        {nodes.map((node) => {
+        {singleAgent ? (() => {
+         const x = width / 2;
+         const y = height / 2 + (compact ? 4 : 6);
+         const color = graphVisualColor(graphVisualKind(singleAgent));
+         const headWidth = compact ? 58 : 76;
+         const headHeight = compact ? 40 : 52;
+         const headTop = y - headHeight / 2;
+         const visorWidth = compact ? 34 : 44;
+         const visorHeight = compact ? 14 : 18;
+         return (
+           <g>
+             <ellipse
+               cx={x}
+               cy={y + 2}
+               rx={compact ? 47 : 61}
+               ry={compact ? 32 : 42}
+               fill={`color-mix(in srgb, ${color} 8%, transparent)`}
+             />
+             <rect
+               x={x - headWidth / 2 - (compact ? 6 : 8)}
+               y={headTop + headHeight * 0.3}
+               width={compact ? 9 : 12}
+               height={headHeight * 0.44}
+               rx={compact ? 4 : 5}
+               fill={`color-mix(in srgb, ${color} 42%, var(--cp-surface))`}
+             />
+             <rect
+               x={x + headWidth / 2 - (compact ? 3 : 4)}
+               y={headTop + headHeight * 0.3}
+               width={compact ? 9 : 12}
+               height={headHeight * 0.44}
+               rx={compact ? 4 : 5}
+               fill={`color-mix(in srgb, ${color} 42%, var(--cp-surface))`}
+             />
+             <rect
+               x={x - headWidth / 2}
+               y={headTop}
+               width={headWidth}
+               height={headHeight}
+               rx={compact ? 14 : 18}
+               fill={`color-mix(in srgb, ${color} 14%, var(--cp-surface))`}
+               stroke={color}
+               stroke-width={compact ? 2.5 : 3}
+             />
+             <rect
+               x={x - visorWidth / 2}
+               y={headTop + (headHeight - visorHeight) / 2 - 1}
+               width={visorWidth}
+               height={visorHeight}
+               rx={visorHeight / 2}
+               fill={color}
+             />
+             <circle
+               cx={x - visorWidth * 0.2}
+               cy={headTop + headHeight / 2 - 1}
+               r={compact ? 2.25 : 3}
+               fill="var(--cp-surface)"
+             />
+             <circle
+               cx={x + visorWidth * 0.2}
+               cy={headTop + headHeight / 2 - 1}
+               r={compact ? 2.25 : 3}
+               fill="var(--cp-surface)"
+             />
+             <path
+               d={sparklePath(
+                 x + headWidth * 0.48,
+                 headTop - (compact ? 2 : 3),
+                 compact ? 11 : 14,
+               )}
+               fill={`url(#${gradientId})`}
+               stroke="var(--cp-surface)"
+               stroke-width={compact ? 2 : 2.5}
+               stroke-linejoin="round"
+             />
+             <path
+               d={sparklePath(
+                 x - headWidth * 0.57,
+                 headTop + headHeight * 0.2,
+                 compact ? 4 : 5,
+               )}
+               fill={color}
+               opacity="0.7"
+             />
+           </g>
+         );
+        })() : nodes.map((node) => {
           const x = scaleX(node.position.x);
           const y = scaleY(node.position.y);
           const kind = graphVisualKind(node);
           const color = graphVisualColor(kind);
+          if (node.type === "agent") {
+            const headWidth = compact ? 22 : 28;
+            const headHeight = compact ? 16 : 20;
+            const headTop = y - headHeight / 2 + 2;
+            const earWidth = compact ? 3 : 4;
+            const visorWidth = compact ? 13 : 17;
+            const visorHeight = compact ? 6 : 8;
+            const beaconSize = compact ? 3.5 : 4.5;
+            return (
+              <g>
+                <rect
+                  x={x - headWidth / 2 - earWidth}
+                  y={headTop + headHeight * 0.32}
+                  width={earWidth + 2}
+                  height={headHeight * 0.42}
+                  rx={earWidth / 2}
+                  fill={`color-mix(in srgb, ${color} 40%, var(--cp-surface))`}
+                />
+                <rect
+                  x={x + headWidth / 2 - 2}
+                  y={headTop + headHeight * 0.32}
+                  width={earWidth + 2}
+                  height={headHeight * 0.42}
+                  rx={earWidth / 2}
+                  fill={`color-mix(in srgb, ${color} 40%, var(--cp-surface))`}
+                />
+                <path
+                  d={`M ${x} ${headTop} V ${headTop - (compact ? 4 : 5)}`}
+                  fill="none"
+                  stroke={color}
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+                <rect
+                  x={x - beaconSize / 2}
+                  y={headTop - (compact ? 5.75 : 7.25)}
+                  width={beaconSize}
+                  height={beaconSize}
+                  rx="1"
+                  transform={`rotate(45 ${x} ${headTop - (compact ? 4 : 5)})`}
+                  fill={color}
+                />
+                <rect
+                  x={x - headWidth / 2}
+                  y={headTop}
+                  width={headWidth}
+                  height={headHeight}
+                  rx={compact ? 6 : 7}
+                  fill={`color-mix(in srgb, ${color} 16%, var(--cp-surface))`}
+                  stroke={color}
+                  stroke-width="2"
+                />
+                <rect
+                  x={x - visorWidth / 2}
+                  y={headTop + (headHeight - visorHeight) / 2}
+                  width={visorWidth}
+                  height={visorHeight}
+                  rx={visorHeight / 2}
+                  fill={color}
+                />
+                <circle
+                  cx={x - visorWidth * 0.2}
+                  cy={headTop + headHeight / 2}
+                  r={compact ? 1.15 : 1.5}
+                  fill="var(--cp-surface)"
+                />
+                <circle
+                  cx={x + visorWidth * 0.2}
+                  cy={headTop + headHeight / 2}
+                  r={compact ? 1.15 : 1.5}
+                  fill="var(--cp-surface)"
+                />
+              </g>
+            );
+          }
+          if (isMcpNode(node)) {
+            const tileSize = compact ? 30 : 38;
+            const iconScale = compact ? 0.105 : 0.135;
+            return (
+              <g>
+                <rect
+                  x={x - tileSize / 2}
+                  y={y - tileSize / 2}
+                  width={tileSize}
+                  height={tileSize}
+                  rx={compact ? 8 : 10}
+                  fill={`color-mix(in srgb, ${color} 14%, var(--cp-surface))`}
+                  stroke={color}
+                  stroke-width="2"
+                />
+                <g transform={`translate(${x - 97.5 * iconScale} ${y - 97.5 * iconScale}) scale(${iconScale})`}>
+                  {MCP_ICON_PATHS.map((path) => (
+                    <path d={path} fill="none" stroke={color} stroke-width="12" stroke-linecap="round" />
+                  ))}
+                </g>
+              </g>
+            );
+          }
+          if (node.type === "tool" || node.type === "connector") {
+            const moduleWidth = compact ? 11 : 14;
+            const moduleHeight = compact ? 15 : 19;
+            const gap = compact ? 4 : 5;
+            return (
+              <g>
+                <path
+                  d={`M ${x - gap} ${y} H ${x + gap}`}
+                  fill="none"
+                  stroke={color}
+                  stroke-width={compact ? 2.5 : 3}
+                  stroke-linecap="round"
+                />
+                <rect
+                  x={x - gap - moduleWidth}
+                  y={y - moduleHeight / 2}
+                  width={moduleWidth}
+                  height={moduleHeight}
+                  rx={compact ? 4 : 5}
+                  fill={`color-mix(in srgb, ${color} 14%, var(--cp-surface))`}
+                  stroke={color}
+                  stroke-width="2"
+                />
+                <rect
+                  x={x + gap}
+                  y={y - moduleHeight / 2}
+                  width={moduleWidth}
+                  height={moduleHeight}
+                  rx={compact ? 4 : 5}
+                  fill={`color-mix(in srgb, ${color} 14%, var(--cp-surface))`}
+                  stroke={color}
+                  stroke-width="2"
+                />
+                <path
+                  d={`M ${x - gap - moduleWidth * 0.72} ${y - moduleHeight / 2} V ${y - moduleHeight / 2 - (compact ? 3 : 4)} M ${x - gap - moduleWidth * 0.28} ${y - moduleHeight / 2} V ${y - moduleHeight / 2 - (compact ? 3 : 4)} M ${x + gap + moduleWidth * 0.28} ${y + moduleHeight / 2} V ${y + moduleHeight / 2 + (compact ? 3 : 4)} M ${x + gap + moduleWidth * 0.72} ${y + moduleHeight / 2} V ${y + moduleHeight / 2 + (compact ? 3 : 4)}`}
+                  fill="none"
+                  stroke={color}
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </g>
+            );
+          }
+          if (node.type === "skill") {
+            const size = compact ? 13 : 17;
+            return (
+              <g>
+                <polygon
+                  points={`${x},${y - size} ${x + size * 0.86},${y - size * 0.5} ${x + size * 0.86},${y + size * 0.5} ${x},${y + size} ${x - size * 0.86},${y + size * 0.5} ${x - size * 0.86},${y - size * 0.5}`}
+                  fill={`color-mix(in srgb, ${color} 14%, var(--cp-surface))`}
+                  stroke={color}
+                  stroke-width="2"
+                  stroke-linejoin="round"
+                />
+                <path d={sparklePath(x, y, compact ? 5 : 6.5)} fill={color} />
+              </g>
+            );
+          }
           const isTerminal = node.type === "start" || node.type === "end";
           if (isTerminal) return (
             <circle
@@ -122,6 +386,7 @@ const fallback = [
               fill="none"
               stroke={`url(#${gradientId})`}
               stroke-width="2"
+              marker-end={`url(#${arrowId})`}
             />
           );
         })}
