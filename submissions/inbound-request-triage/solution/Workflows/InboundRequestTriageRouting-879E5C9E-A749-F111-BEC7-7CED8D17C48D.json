@@ -9,17 +9,17 @@
           "connectionReferenceLogicalName": "new_sharedagentnode_d38e148f"
         },
         "runtimeSource": "embedded",
-        "connectionName": "3ec63849f2cc4d90bb0fcf5cc3fb79b4"
+        "connectionName": "shared-agentnode-cc3b0d47-6b9e-464d-b295-e6a165b487e9"
       },
-      "shared_office365-1": {
+      "shared_office365": {
         "api": {
           "name": "shared_office365"
         },
         "connection": {
-          "connectionReferenceLogicalName": "new_sharedoffice365_a9b57bf1"
+          "connectionReferenceLogicalName": "a3p_sharedoffice365_e0241_pwihj"
         },
         "runtimeSource": "embedded",
-        "connectionName": "shared-office365-52f1c6a2-f32a-47f0-8cb4-2e0b7cfa9a7a"
+        "connectionName": "shared-office365-3c2dbe36-07e0-4bc1-8a10-8b2274789da4"
       }
     },
     "definition": {
@@ -41,13 +41,13 @@
           "inputs": {
             "parameters": {
               "folderPath": "Inbox",
-              "subjectFilter": "Email Triage",
+              "subjectFilter": "",
               "importance": "Any"
             },
             "host": {
               "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
               "operationId": "OnNewEmailV3",
-              "connectionName": "shared_office365-1"
+              "connectionName": "shared_office365"
             }
           },
           "splitOn": "@triggerOutputs()?['body/value']",
@@ -62,8 +62,8 @@
                     "type": "start",
                     "version": 1,
                     "position": {
-                      "x": 100,
-                      "y": 351.5
+                      "x": 97.702603290005925,
+                      "y": 351.648698354997
                     },
                     "data": {
                       "config": {
@@ -71,10 +71,10 @@
                         "connector": {
                           "apiName": "shared_office365",
                           "operationName": "OnNewEmailV3",
-                          "connectionName": "shared_office365-1",
+                          "connectionName": "shared_office365",
                           "inputs": {
                             "folderPath": "Inbox",
-                            "subjectFilter": "Email Triage",
+                            "subjectFilter": "",
                             "importance": "Any"
                           },
                           "displayName": "When a new email arrives",
@@ -843,56 +843,13 @@
                     "ariaLabel": "Action node: Note"
                   },
                   {
-                    "id": "ifElse-f1e8e333-e42e-4c6e-b4c8-0a3abb378811",
-                    "name": "Condition-Is Valid Request?",
-                    "type": "ifElse",
-                    "version": 1,
-                    "position": {
-                      "x": 383,
-                      "y": 300
-                    },
-                    "data": {
-                      "config": {
-                        "conditions": [
-                          {
-                            "id": "f354f7f0-4bc8-4962-a425-e3d753aba645",
-                            "name": "If",
-                            "expression": "{\n  \"and\": [\n    {\n      \"not\": [\n        {\n          \"contains\": [\n            \"@{triggerOutputs()?['body/subject']}@{triggerOutputs()?['body/subject']}\",\n            \"unsubscribe\\n\"\n          ]\n        }\n      ]\n    },\n    {\n      \"not\": [\n        {\n          \"contains\": [\n            \"@{triggerOutputs()?['body/body']}\",\n            \"unsubscribe\"\n          ]\n        }\n      ]\n    },\n    {\n      \"not\": [\n        {\n          \"contains\": [\n            \"@{triggerOutputs()?['body/subject']}\",\n            \"out of office\"\n          ]\n        }\n      ]\n    },\n    {\n      \"not\": [\n        {\n          \"contains\": [\n            \"@{triggerOutputs()?['body/subject']}\",\n            \"auto reply\"\n          ]\n        }\n      ]\n    }\n  ]\n}"
-                          }
-                        ]
-                      },
-                      "outcomes": [
-                        {
-                          "id": "condition:f354f7f0-4bc8-4962-a425-e3d753aba645",
-                          "label": "If"
-                        },
-                        {
-                          "id": "else",
-                          "label": "Else"
-                        }
-                      ]
-                    },
-                    "measured": {
-                      "width": 250,
-                      "height": 169
-                    },
-                    "ariaLabel": "Action node: Condition-Is Valid Request?, disconnected from workflow",
-                    "domAttributes": {
-                      "id": "workflow-canvas-node-22ifElse-f1e8e333-e42e-4c6e-b4c8-0a3abb378811",
-                      "data-testid": "canvas-node",
-                      "data-node-id": "ifElse-f1e8e333-e42e-4c6e-b4c8-0a3abb378811",
-                      "role": "group",
-                      "aria-roledescription": "Workflow node"
-                    }
-                  },
-                  {
                     "id": "canvasNote-01e48b7e-28e8-4f8a-a24c-e2232de600f5",
                     "name": "Note 3",
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 379.360539584912,
-                      "y": 94.328601975799927
+                      "x": 744.24905144511376,
+                      "y": 91.611000595076518
                     },
                     "width": 250,
                     "height": 152,
@@ -902,7 +859,7 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "Template Note: Modify the spam keywords in this expression based on the common noise in your shared mailbox.",
+                        "markdown": "Template Note: You can modify the categories based on the common noise in your shared mailbox.",
                         "color": "yellow"
                       },
                       "outcomes": []
@@ -918,7 +875,8 @@
                       "role": "group",
                       "aria-roledescription": "Workflow node"
                     },
-                    "ariaLabel": "Action node: Note 3"
+                    "ariaLabel": "Action node: Note 3",
+                    "dragging": false
                   },
                   {
                     "id": "canvasNote-5d4657e7-dadd-48b3-9d0b-f32d1afc7d12",
@@ -926,25 +884,25 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 691.13585357355748,
-                      "y": -88.50636137524566
+                      "x": 1055.4565739187703,
+                      "y": -42.666324603410459
                     },
-                    "width": 250,
-                    "height": 418,
+                    "width": 247,
+                    "height": 289,
                     "style": {
-                      "width": 250,
-                      "height": 418
+                      "width": 247,
+                      "height": 289
                     },
                     "data": {
                       "config": {
-                        "markdown": "Main brain of the flow. Analyzes the request, decides category & routingTeamEmail, drafts acknowledgment and internal summary.\n\nSends polite acknowledgment to the person who submitted the request.\n\nDynamically sends the internal alert to the correct team using the routingTeamEmail from the Agent Node (no Switch needed).\n\nTemplate Note: Please update the email addresses for all relevant categories before using this template.\n\n\n\n\n",
+                        "markdown": "Main brain of the flow. Analyzes the request, decides category & routingTeamEmail, drafts acknowledgment and internal summary.\n\nSends polite acknowledgment to the person who submitted the request.\n\nDynamically sends the internal alert to the correct team using the routingTeamEmail from the Agent Node (no Switch needed).\n\n\n\n\n",
                         "color": "yellow"
                       },
                       "outcomes": []
                     },
                     "measured": {
-                      "width": 250,
-                      "height": 418
+                      "width": 247,
+                      "height": 289
                     },
                     "domAttributes": {
                       "id": "workflow-canvas-node-22canvasNote-5d4657e7-dadd-48b3-9d0b-f32d1afc7d12",
@@ -953,7 +911,9 @@
                       "role": "group",
                       "aria-roledescription": "Workflow node"
                     },
-                    "ariaLabel": "Action node: Note 5"
+                    "ariaLabel": "Action node: Note 5",
+                    "resizing": false,
+                    "dragging": false
                   },
                   {
                     "id": "agent-3e0ef057-51af-4d8b-966a-1d3a7be8ceb2",
@@ -961,8 +921,8 @@
                     "type": "agent",
                     "version": 1,
                     "position": {
-                      "x": 678,
-                      "y": 351.5
+                      "x": 1061.0823953083564,
+                      "y": 356.61191020657128
                     },
                     "data": {
                       "config": {
@@ -970,40 +930,120 @@
                         "instructions": "",
                         "botSchemaName": "",
                         "isHitlEscalationEnabled": false,
-                        "inlineInstructions": "You are an expert Inbound Request Orchestrator.\n\nExtracted information from the email:\n{triggerOutputs()?['body/subject']}{triggerOutputs()?['body/body']}\n\n\nCRITICAL CLASSIFICATION RULES - Follow this priority order STRICTLY:\n1. HR / Onboarding: \"new joiner\", \"new hire\", \"onboarding\", \"new employee\", \"start date\", \"joining\", \"maternity leave\", \"resignation\"\n2. Finance: \"invoice\", \"payment\", \"billing\", \"vendor\", \"PO\", \"budget\", \"expense report\", \"tax\", \"reimbursement\"\n3. Sales: \"lead\", \"opportunity\", \"RFP\", \"proposal\", \"demo\", \"pricing\", \"enterprise solution\", \"new business\"\n4. IT / Technical Support: \"VPN\", \"login\", \"password reset\", \"account locked\", \"cannot connect\", \"error\", \"connection timed out\", \"software installation\", \"hardware failure\", \"laptop\", \"phishing\", \"security\", \"access issue\", \"system down\"\n5. Facilities: \"conference room\", \"book room\", \"meeting room\", \"workshop\"\n6. Other: everything else\nYour tasks:\n- Analyze the request using the rules above\n- Decide finalCategory and routingTeamEmail amd urgency\n- Draft acknowledgmentText\n- Draft internalSummary\n- Build internalEmailBody\n- **Send exactly two emails using the \"Send an Email\" tool**:\n- First: Send **Acknowledgment Email** to the original requester.\n- Second: Send **Internal Routing Email** to the correct team.\nUse these email mappings:\n- HR → routing-team@example.com\n- Finance → routing-team@example.com\n- Sales → routing-team@example.com\n- IT → routing-team@example.com\n- Facilities → routing-team@example.com\n- Other → routing-team@example.com\n\n**Tool Usage Instructions (Very Important):**\n- You **must** use the Send an Email tool for both emails.\n- Send the acknowledgment email **first**, then the internal email.\n- Use the requester's email address from the original trigger for the acknowledgment.\n- Use HTML format for the internal email body for better readability.\n- Neither the acknowledgement email nor the routing email should contain 'email triage' in their subject lines.\n**After successfully sending both emails, return ONLY this valid JSON:**",
-                        "outputMode": "structured",
-                        "inlineModel": "Opus47",
+                        "inlineInstructions": "You are an expert Inbound Request Orchestrator.\n\nExtracted information from the email:\nsubject: {triggerOutputs()?['body/subject']}\nbody: {triggerOutputs()?['body/body']}\nrequestor: {triggerOutputs()?['body/from']}\n\nCRITICAL CLASSIFICATION RULES - Follow this priority order STRICTLY:\n1. HR / Onboarding: \"new joiner\", \"new hire\", \"onboarding\", \"new employee\", \"start date\", \"joining\", \"maternity leave\", \"resignation\"\n2. Finance: \"invoice\", \"payment\", \"billing\", \"vendor\", \"PO\", \"budget\", \"expense report\", \"tax\", \"reimbursement\"\n3. Sales: \"lead\", \"opportunity\", \"RFP\", \"proposal\", \"demo\", \"pricing\", \"enterprise solution\", \"new business\"\n4. IT / Technical Support: \"VPN\", \"login\", \"password reset\", \"account locked\", \"cannot connect\", \"error\", \"connection timed out\", \"software installation\", \"hardware failure\", \"laptop\", \"phishing\", \"security\", \"access issue\", \"system down\"\n5. Facilities: \"conference room\", \"book room\", \"meeting room\", \"workshop\"\n6. Other: everything else\nYour tasks:\n- Analyze the request using the rules above\n- Decide finalCategory and routingTeamEmail amd urgency\n- Draft acknowledgmentText\n- Draft internalSummary\n- Build internalEmailBody\n- **Send exactly two emails using the \"Send an Email\" tool**:\n- First: Send **Acknowledgment Email** to the original requester.\n- Second: Send **Internal Routing Email** to the correct team.\nThe routing email mapping can be found here: {variables('RoutingEmails')}\n\n**Tool Usage Instructions (Very Important):**\n- You **must** use the Send an Email tool for both emails.\n- Send the acknowledgment email **first**, then the internal email.\n- Use the requester's email address from the original trigger for the acknowledgment.\n- Use HTML format for the internal email body for better readability.\n- Neither the acknowledgement email nor the routing email should contain 'email triage' in their subject lines.\n**After successfully sending both emails, return ONLY this valid JSON:**",
+                        "outputMode": "structured-simple",
+                        "inlineModel": "GPT5Chat",
                         "connectionName": "shared_agentnode",
-                        "jsonSchemaText": "{\n  \"finalCategory\": \"IT\",\n  \"routingTeamEmail\": \"routing-team@example.com\",\n  \"urgency\": \"High\",\n  \"acknowledgmentSent\": true,\n  \"internalEmailSent\": true,\n  \"status\": \"Both emails sent successfully\"\n}",
+                        "jsonSchemaText": "",
                         "jsonSchema": {
-                          "finalCategory": "IT",
-                          "routingTeamEmail": "routing-team@example.com",
-                          "urgency": "High",
-                          "acknowledgmentSent": true,
-                          "internalEmailSent": true,
-                          "status": "Both emails sent successfully"
+                          "type": "object",
+                          "properties": {
+                            "finalCategory": {
+                              "type": "string",
+                              "enum": [
+                                "HR",
+                                "Finance",
+                                "Sales",
+                                "IT",
+                                "Facilities",
+                                "Other"
+                              ]
+                            },
+                            "routingTeamEmail": {
+                              "type": "string"
+                            },
+                            "urgency": {
+                              "type": "string",
+                              "enum": [
+                                "low",
+                                "medium",
+                                "high"
+                              ]
+                            },
+                            "acknowledgmentSent": {
+                              "type": "boolean"
+                            },
+                            "internalEmailSent": {
+                              "type": "boolean"
+                            },
+                            "status": {
+                              "type": "string",
+                              "description": "Single line status message if the emails were routed successfully."
+                            }
+                          },
+                          "required": [
+                            "finalCategory",
+                            "routingTeamEmail",
+                            "urgency",
+                            "acknowledgmentSent",
+                            "internalEmailSent",
+                            "status"
+                          ]
                         },
                         "inlineTools": [
                           {
-                            "id": "8dc8ee7b-29be-46ca-909b-8c87b5b7fb6c",
+                            "id": "4f486e17-13af-4007-978b-1480b6babb62",
                             "connectorId": "shared_office365",
                             "operationId": "SendEmailV2",
                             "displayName": "Send an email",
                             "description": "This operation sends an email message.",
-                            "connectionReferenceName": "shared-office365-52f1c6a2-f32a-47f0-8cb4-2e0b7cfa9a7a",
+                            "connectionReferenceName": "shared-office365-3c2dbe36-07e0-4bc1-8a10-8b2274789da4",
                             "authMode": "invoker",
                             "isMcp": false,
                             "iconUri": "https://res-1.cdn.office.net/files/fabric-cdn-prod_20251008.001/assets/brand-icons/product/svg/outlook_48x1.svg",
                             "brandColor": "#0078D4",
-                            "connectionId": "shared-office365-52f1c6a2-f32a-47f0-8cb4-2e0b7cfa9a7a"
+                            "connectionId": "shared-office365-3c2dbe36-07e0-4bc1-8a10-8b2274789da4"
                           }
                         ],
                         "simpleProperties": [
                           {
                             "id": "8cdfb288-1ee8-40e3-a537-82ecff26cc89",
-                            "name": "",
+                            "name": "finalCategory",
+                            "type": "enum",
+                            "description": "",
+                            "enumValues": [
+                              "HR",
+                              "Finance",
+                              "Sales",
+                              "IT",
+                              "Facilities",
+                              "Other"
+                            ]
+                          },
+                          {
+                            "id": "4e0036cc-64e9-47c3-9bbb-c77d958cf670",
+                            "name": "routingTeamEmail",
                             "type": "string",
                             "description": ""
+                          },
+                          {
+                            "id": "79611c40-0be0-45ea-b1ae-5f9371bafe33",
+                            "name": "urgency",
+                            "type": "enum",
+                            "description": "",
+                            "enumValues": [
+                              "low",
+                              "medium",
+                              "high"
+                            ]
+                          },
+                          {
+                            "id": "e48a15ec-b374-4af1-a9e8-72eb55a50b27",
+                            "name": "acknowledgmentSent",
+                            "type": "boolean",
+                            "description": ""
+                          },
+                          {
+                            "id": "57157f74-6745-4c46-b023-b0d7f220576a",
+                            "name": "internalEmailSent",
+                            "type": "boolean",
+                            "description": ""
+                          },
+                          {
+                            "id": "25ab2bea-ce16-44fc-a445-69b559ce4d26",
+                            "name": "status",
+                            "type": "string",
+                            "description": "Single line status message if the emails were routed successfully."
                           }
                         ]
                       },
@@ -1024,12 +1064,49 @@
                                 "description": "Bot response activities (typing, message, and event types)"
                               },
                               "structuredOutput": {
-                                "finalCategory": "IT",
-                                "routingTeamEmail": "routing-team@example.com",
-                                "urgency": "High",
-                                "acknowledgmentSent": true,
-                                "internalEmailSent": true,
-                                "status": "Both emails sent successfully",
+                                "type": "object",
+                                "properties": {
+                                  "finalCategory": {
+                                    "type": "string",
+                                    "enum": [
+                                      "HR",
+                                      "Finance",
+                                      "Sales",
+                                      "IT",
+                                      "Facilities",
+                                      "Other"
+                                    ]
+                                  },
+                                  "routingTeamEmail": {
+                                    "type": "string"
+                                  },
+                                  "urgency": {
+                                    "type": "string",
+                                    "enum": [
+                                      "low",
+                                      "medium",
+                                      "high"
+                                    ]
+                                  },
+                                  "acknowledgmentSent": {
+                                    "type": "boolean"
+                                  },
+                                  "internalEmailSent": {
+                                    "type": "boolean"
+                                  },
+                                  "status": {
+                                    "type": "string",
+                                    "description": "Single line status message if the emails were routed successfully."
+                                  }
+                                },
+                                "required": [
+                                  "finalCategory",
+                                  "routingTeamEmail",
+                                  "urgency",
+                                  "acknowledgmentSent",
+                                  "internalEmailSent",
+                                  "status"
+                                ],
                                 "title": ""
                               }
                             },
@@ -1053,7 +1130,200 @@
                       "role": "group",
                       "aria-roledescription": "Workflow node"
                     },
-                    "selected": true
+                    "selected": false
+                  },
+                  {
+                    "id": "variable-74eca6db-182d-487b-acb4-8b99af7ec4ca",
+                    "name": "Configuration",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 426.65053748988737,
+                      "y": 348.20260329000592
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "b440f6ae-f554-4a08-9e72-88410f81c96b",
+                            "variableName": "RoutingEmails",
+                            "mode": "initialize",
+                            "type": "object",
+                            "value": "{\"HR\":\"hr@contoso.com\",\n\"Finance\":\"finance@contoso.com\",\n\"Sales\":\"sales@contoso.com\",\n\"IT\":\"it@contoso.com\",\n\"Facilities\":\"facilities@contoso.com\",\n\"Other\":\"other@contoso.com\"}",
+                            "valueRich": {
+                              "segments": [
+                                {
+                                  "type": "static",
+                                  "value": "{\"HR\":\"hr@contoso.com\",\n\"Finance\":\"finance@contoso.com\",\n\"Sales\":\"sales@contoso.com\",\n\"IT\":\"it@contoso.com\",\n\"Facilities\":\"facilities@contoso.com\",\n\"Other\":\"other@contoso.com\"}"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "description": "Variables set by this node"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "canvasNote-f89b746f-bbd1-4ab1-9d86-4432aeb25c3f",
+                    "name": "Note 3 2",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 425.62607722281075,
+                      "y": 56.304895755352732
+                    },
+                    "width": 250,
+                    "height": 192,
+                    "style": {
+                      "width": 250,
+                      "height": 192
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "Template Note: Configure the required variables:\n\nRoutingEmails: Email ids for the respective routing team. If you are modifying the categories themselves, make sure to update the agent prompt as well to match the categories.",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 250,
+                      "height": 192
+                    },
+                    "domAttributes": {
+                      "id": "workflow-canvas-node-22canvasNote-01e48b7e-28e8-4f8a-a24c-e2232de600f5",
+                      "data-testid": "canvas-node",
+                      "data-node-id": "canvasNote-01e48b7e-28e8-4f8a-a24c-e2232de600f5",
+                      "role": "group",
+                      "aria-roledescription": "Workflow node"
+                    },
+                    "ariaLabel": "Action node: Note 3",
+                    "selected": false,
+                    "dragging": false
+                  },
+                  {
+                    "id": "classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8",
+                    "name": "Classify",
+                    "type": "classifyOnInlineAgent",
+                    "version": 1,
+                    "position": {
+                      "x": 743,
+                      "y": 348
+                    },
+                    "data": {
+                      "config": {
+                        "input": "Subject: @{triggerOutputs()?['body/subject']} \nFrom: @{triggerOutputs()?['body/from']} \nBody: @{triggerOutputs()?['body/body']} ",
+                        "categories": [
+                          {
+                            "id": "400ba2f5-34fd-4448-b1a0-b8ff25bfcc83",
+                            "name": "Actionable request",
+                            "description": "A genuine human-authored request that requires review or action. Includes requests for help, access, onboarding, invoices, payments, sales inquiries, technical support, facilities, approvals, questions, or other business services. Select this category only when the sender is asking for information, assistance, or an action. Do not select it for automated messages, acknowledgments, notifications, newsletters, delivery reports, or unsubscribe requests."
+                          },
+                          {
+                            "id": "9c41a3b3-3723-4fa2-ba20-950e4bbede5a",
+                            "name": "Noise",
+                            "description": "An automated, non-actionable, or irrelevant email that should not enter request triage. Includes out-of-office or absence notices; automatic replies and acknowledgments; vacation responses; delivery status notifications, bounce messages, and undeliverable reports; read receipts; mailbox notifications; system-generated alerts with no request for action; newsletters, marketing, promotions, and mailing-list messages; unsubscribe or subscription-management requests; spam; empty messages; and messages that merely confirm receipt. Select this category when the email does not contain a genuine human request requiring business action."
+                          }
+                        ],
+                        "examples": [],
+                        "model": "GPT5Chat",
+                        "connectionName": "shared_agentnode",
+                        "inputRich": {
+                          "segments": [
+                            {
+                              "type": "static",
+                              "value": "Subject: "
+                            },
+                            {
+                              "type": "token",
+                              "value": "Subject",
+                              "tokenRef": {
+                                "type": "step",
+                                "stepId": "start-4a2b4084-f46a-4102-a7c2-d15a56b3ebcd",
+                                "stepName": "When a new email arrives",
+                                "outputName": "body/subject",
+                                "outputDisplayName": "Subject",
+                                "outputType": "string",
+                                "outputAlias": "body/subject"
+                              }
+                            },
+                            {
+                              "type": "static",
+                              "value": " \nFrom: "
+                            },
+                            {
+                              "type": "token",
+                              "value": "From",
+                              "tokenRef": {
+                                "type": "step",
+                                "stepId": "start-4a2b4084-f46a-4102-a7c2-d15a56b3ebcd",
+                                "stepName": "When a new email arrives",
+                                "outputName": "body/from",
+                                "outputDisplayName": "From",
+                                "outputType": "string",
+                                "outputFormat": "email",
+                                "outputAlias": "body/from"
+                              }
+                            },
+                            {
+                              "type": "static",
+                              "value": " \nBody: "
+                            },
+                            {
+                              "type": "token",
+                              "value": "Body",
+                              "tokenRef": {
+                                "type": "step",
+                                "stepId": "start-4a2b4084-f46a-4102-a7c2-d15a56b3ebcd",
+                                "stepName": "When a new email arrives",
+                                "outputName": "body/body",
+                                "outputDisplayName": "Body",
+                                "outputType": "string",
+                                "outputAlias": "body/body"
+                              }
+                            },
+                            {
+                              "type": "static",
+                              "value": " "
+                            }
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "category:400ba2f5-34fd-4448-b1a0-b8ff25bfcc83",
+                          "label": "Actionable request"
+                        },
+                        {
+                          "id": "category:9c41a3b3-3723-4fa2-ba20-950e4bbede5a",
+                          "label": "Noise"
+                        },
+                        {
+                          "id": "default-category",
+                          "label": "Other"
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 214
+                    },
+                    "selected": false
                   }
                 ],
                 "edges": [
@@ -1064,21 +1334,26 @@
                     "targetHandle": "input"
                   },
                   {
-                    "id": "edge-start-4a2b4084-f46a-4102-a7c2-d15a56b3ebcd-ifElse-f1e8e333-e42e-4c6e-b4c8-0a3abb378811-input",
-                    "source": "start-4a2b4084-f46a-4102-a7c2-d15a56b3ebcd",
-                    "target": "ifElse-f1e8e333-e42e-4c6e-b4c8-0a3abb378811",
-                    "targetHandle": "input"
-                  },
-                  {
-                    "id": "edge-ifElse-f1e8e333-e42e-4c6e-b4c8-0a3abb378811-condition:f354f7f0-4bc8-4962-a425-e3d753aba645-agent-3e0ef057-51af-4d8b-966a-1d3a7be8ceb2",
-                    "source": "ifElse-f1e8e333-e42e-4c6e-b4c8-0a3abb378811",
-                    "target": "agent-3e0ef057-51af-4d8b-966a-1d3a7be8ceb2",
-                    "sourceHandle": "condition:f354f7f0-4bc8-4962-a425-e3d753aba645"
-                  },
-                  {
                     "id": "edge-canvasNote-01e48b7e-28e8-4f8a-a24c-e2232de600f5-canvasNote-5d4657e7-dadd-48b3-9d0b-f32d1afc7d12-input",
                     "source": "canvasNote-01e48b7e-28e8-4f8a-a24c-e2232de600f5",
                     "target": "canvasNote-5d4657e7-dadd-48b3-9d0b-f32d1afc7d12",
+                    "targetHandle": "input"
+                  },
+                  {
+                    "id": "edge-start-4a2b4084-f46a-4102-a7c2-d15a56b3ebcd-variable-74eca6db-182d-487b-acb4-8b99af7ec4ca",
+                    "source": "start-4a2b4084-f46a-4102-a7c2-d15a56b3ebcd",
+                    "target": "variable-74eca6db-182d-487b-acb4-8b99af7ec4ca"
+                  },
+                  {
+                    "id": "edge-variable-74eca6db-182d-487b-acb4-8b99af7ec4ca-classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8",
+                    "source": "variable-74eca6db-182d-487b-acb4-8b99af7ec4ca",
+                    "target": "classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8"
+                  },
+                  {
+                    "id": "edge-classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8-category:400ba2f5-34fd-4448-b1a0-b8ff25bfcc83-agent-3e0ef057-51af-4d8b-966a-1d3a7be8ceb2-input",
+                    "source": "classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8",
+                    "target": "agent-3e0ef057-51af-4d8b-966a-1d3a7be8ceb2",
+                    "sourceHandle": "category:400ba2f5-34fd-4448-b1a0-b8ff25bfcc83",
                     "targetHandle": "input"
                   }
                 ],
@@ -1091,26 +1366,30 @@
                       "connectionReferenceLogicalName": "new_sharedagentnode_d38e148f"
                     },
                     "runtimeSource": "embedded",
-                    "connectionName": "3ec63849f2cc4d90bb0fcf5cc3fb79b4"
+                    "connectionName": "shared-agentnode-cc3b0d47-6b9e-464d-b295-e6a165b487e9"
                   },
-                  "shared_office365-1": {
+                  "shared_office365": {
                     "api": {
                       "name": "shared_office365"
                     },
                     "connection": {
-                      "connectionReferenceLogicalName": "new_sharedoffice365_a9b57bf1"
+                      "connectionReferenceLogicalName": "a3p_sharedoffice365_e0241_pwihj"
                     },
                     "runtimeSource": "embedded",
-                    "connectionName": "shared-office365-52f1c6a2-f32a-47f0-8cb4-2e0b7cfa9a7a"
+                    "connectionName": "shared-office365-3c2dbe36-07e0-4bc1-8a10-8b2274789da4"
                   }
                 }
               },
               "nodeActionMapping": {
+                "variable-74eca6db-182d-487b-acb4-8b99af7ec4ca": [
+                  "Configuration"
+                ],
                 "agent-3e0ef057-51af-4d8b-966a-1d3a7be8ceb2": [
                   "Agent-Request_Handler"
                 ],
-                "ifElse-f1e8e333-e42e-4c6e-b4c8-0a3abb378811": [
-                  "Condition-Is_Valid_Request_"
+                "classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8": [
+                  "Classify",
+                  "Classify_Switch"
                 ]
               }
             }
@@ -1118,78 +1397,162 @@
         }
       },
       "actions": {
-        "Condition-Is_Valid_Request_": {
-          "type": "If",
-          "expression": {
-            "and": [
+        "Configuration": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
               {
-                "not": [
-                  {
-                    "contains": [
-                      "@{triggerOutputs()?['body/subject']}@{triggerOutputs()?['body/subject']}",
-                      "unsubscribe\n"
-                    ]
-                  }
-                ]
-              },
-              {
-                "not": [
-                  {
-                    "contains": [
-                      "@{triggerOutputs()?['body/body']}",
-                      "unsubscribe"
-                    ]
-                  }
-                ]
-              },
-              {
-                "not": [
-                  {
-                    "contains": [
-                      "@{triggerOutputs()?['body/subject']}",
-                      "out of office"
-                    ]
-                  }
-                ]
-              },
-              {
-                "not": [
-                  {
-                    "contains": [
-                      "@{triggerOutputs()?['body/subject']}",
-                      "auto reply"
-                    ]
-                  }
-                ]
+                "name": "RoutingEmails",
+                "type": "Object",
+                "value": {
+                  "HR": "hr@contoso.com",
+                  "Finance": "finance@contoso.com",
+                  "Sales": "sales@contoso.com",
+                  "IT": "it@contoso.com",
+                  "Facilities": "facilities@contoso.com",
+                  "Other": "other@contoso.com"
+                }
               }
             ]
           },
-          "actions": {
-            "Agent-Request_Handler": {
-              "type": "OpenApiConnection",
-              "inputs": {
-                "parameters": {
-                  "body/botDefinition": "{\"model\":\"Opus47\",\"tools\":[{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_office365\",\"connectionId\":\"shared-office365-52f1c6a2-f32a-47f0-8cb4-2e0b7cfa9a7a\",\"operationId\":\"SendEmailV2\",\"connectionMode\":\"Maker\",\"displayName\":\"Send an email\",\"description\":\"This operation sends an email message.\"}],\"outputFormat\":\"JsonSchema\",\"structuredOutputSchema\":\"{\\\"finalCategory\\\":\\\"IT\\\",\\\"routingTeamEmail\\\":\\\"routing-team@example.com\\\",\\\"urgency\\\":\\\"High\\\",\\\"acknowledgmentSent\\\":true,\\\"internalEmailSent\\\":true,\\\"status\\\":\\\"Both emails sent successfully\\\"}\"}",
-                  "body/message": "You are an expert Inbound Request Orchestrator.\n\nExtracted information from the email:\n@{triggerOutputs()?['body/subject']}@{triggerOutputs()?['body/body']}\n\n\nCRITICAL CLASSIFICATION RULES - Follow this priority order STRICTLY:\n1. HR / Onboarding: \"new joiner\", \"new hire\", \"onboarding\", \"new employee\", \"start date\", \"joining\", \"maternity leave\", \"resignation\"\n2. Finance: \"invoice\", \"payment\", \"billing\", \"vendor\", \"PO\", \"budget\", \"expense report\", \"tax\", \"reimbursement\"\n3. Sales: \"lead\", \"opportunity\", \"RFP\", \"proposal\", \"demo\", \"pricing\", \"enterprise solution\", \"new business\"\n4. IT / Technical Support: \"VPN\", \"login\", \"password reset\", \"account locked\", \"cannot connect\", \"error\", \"connection timed out\", \"software installation\", \"hardware failure\", \"laptop\", \"phishing\", \"security\", \"access issue\", \"system down\"\n5. Facilities: \"conference room\", \"book room\", \"meeting room\", \"workshop\"\n6. Other: everything else\nYour tasks:\n- Analyze the request using the rules above\n- Decide finalCategory and routingTeamEmail amd urgency\n- Draft acknowledgmentText\n- Draft internalSummary\n- Build internalEmailBody\n- **Send exactly two emails using the \"Send an Email\" tool**:\n- First: Send **Acknowledgment Email** to the original requester.\n- Second: Send **Internal Routing Email** to the correct team.\nUse these email mappings:\n- HR → routing-team@example.com\n- Finance → routing-team@example.com\n- Sales → routing-team@example.com\n- IT → routing-team@example.com\n- Facilities → routing-team@example.com\n- Other → routing-team@example.com\n\n**Tool Usage Instructions (Very Important):**\n- You **must** use the Send an Email tool for both emails.\n- Send the acknowledgment email **first**, then the internal email.\n- Use the requester's email address from the original trigger for the acknowledgment.\n- Use HTML format for the internal email body for better readability.\n- Neither the acknowledgement email nor the routing email should contain 'email triage' in their subject lines.\n**After successfully sending both emails, return ONLY this valid JSON:**"
+          "metadata": {
+            "description": "Configuration",
+            "nodeId": "variable-74eca6db-182d-487b-acb4-8b99af7ec4ca"
+          }
+        },
+        "Classify": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
+              "connectionName": "shared_agentnode",
+              "operationId": "InvokeDefinition"
+            },
+            "parameters": {
+              "body/definition": {
+                "components": [],
+                "environmentVariables": [],
+                "flows": [],
+                "dataverseTableSearchs": [],
+                "dataverseTableSearchGlossaryConfigurations": [],
+                "dataverseTableSearchEntityConfigurations": [],
+                "dataverseTableSearchEntityColumnSynonyms": [],
+                "connectionReferences": [],
+                "connectorDefinitions": [],
+                "aIModelDefinitions": [],
+                "aIPluginOperations": [],
+                "connectedAgentDefinitions": [],
+                "componentCollections": [],
+                "connectedBots": [],
+                "diagnostics": [],
+                "entity": {
+                  "authorizedSecurityGroupIds": [],
+                  "supportedLanguages": [],
+                  "diagnostics": [],
+                  "schemaName": "workflow_classifyoninlineagent",
+                  "language": 1033,
+                  "accessControlPolicy": "Any",
+                  "authenticationMode": "Integrated",
+                  "authenticationTrigger": "Always",
+                  "synchronizationStatus": {
+                    "graphDriveItems": [],
+                    "diagnostics": [],
+                    "lastPublishedDetails": {
+                      "diagnosticDetails": [],
+                      "diagnostics": [],
+                      "authenticationMode": "Integrated",
+                      "$kind": "SuccessfulPublishResultDetails"
+                    },
+                    "$kind": "BotSynchronizationDetails"
+                  },
+                  "configuration": {
+                    "categories": [],
+                    "channels": [],
+                    "settings": {},
+                    "memoryParameters": [],
+                    "diagnostics": [],
+                    "recognizer": {
+                      "diagnostics": [],
+                      "$kind": "CLICopilotRecognizer"
+                    },
+                    "agentSettings": {
+                      "conversationStarters": [],
+                      "diagnostics": [],
+                      "model": {
+                        "diagnostics": [],
+                        "series": "GPT5Chat",
+                        "$kind": "ModelConfig"
+                      },
+                      "instructions": {
+                        "segments": [],
+                        "diagnostics": [],
+                        "$kind": "Instructions"
+                      },
+                      "output": {
+                        "diagnostics": [],
+                        "schema": "{\"type\":\"object\",\"properties\":{\"predictedCategory\":{\"type\":\"string\",\"enum\":[\"Actionable request\",\"Noise\",\"Other\"]}},\"required\":[\"predictedCategory\"]}",
+                        "$kind": "StructuredAgentOutput"
+                      },
+                      "$kind": "AgentSettings"
+                    },
+                    "$kind": "BotConfiguration"
+                  },
+                  "$kind": "BotEntity"
                 },
-                "host": {
-                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
-                  "connectionName": "shared_agentnode",
-                  "operationId": "InvokeDefinition"
-                }
+                "$kind": "BotDefinition"
               },
-              "metadata": {
-                "description": "Agent-Request Handler",
-                "nodeId": "agent-3e0ef057-51af-4d8b-966a-1d3a7be8ceb2"
-              }
+              "body/message": "Classify the following input into one of these categories: Actionable request, Noise, Other\n\nCategory definitions:\n- Actionable request: A genuine human-authored request that requires review or action. Includes requests for help, access, onboarding, invoices, payments, sales inquiries, technical support, facilities, approvals, questions, or other business services. Select this category only when the sender is asking for information, assistance, or an action. Do not select it for automated messages, acknowledgments, notifications, newsletters, delivery reports, or unsubscribe requests.\n- Noise: An automated, non-actionable, or irrelevant email that should not enter request triage. Includes out-of-office or absence notices; automatic replies and acknowledgments; vacation responses; delivery status notifications, bounce messages, and undeliverable reports; read receipts; mailbox notifications; system-generated alerts with no request for action; newsletters, marketing, promotions, and mailing-list messages; unsubscribe or subscription-management requests; spam; empty messages; and messages that merely confirm receipt. Select this category when the email does not contain a genuine human request requiring business action.\n\nInput to classify: Subject: @{triggerOutputs()?['body/subject']} \nFrom: @{triggerOutputs()?['body/from']} \nBody: @{triggerOutputs()?['body/body']} \n\nRespond with only the category name. If the input does not clearly match any of the categories, respond with \"Other\"."
             }
           },
-          "else": {
-            "actions": {}
+          "runAfter": {
+            "Configuration": [
+              "Succeeded"
+            ]
           },
           "metadata": {
-            "description": "Condition-Is Valid Request?",
-            "nodeId": "ifElse-f1e8e333-e42e-4c6e-b4c8-0a3abb378811"
+            "description": "Classify",
+            "nodeId": "classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8"
+          }
+        },
+        "Classify_Switch": {
+          "type": "Switch",
+          "expression": "@outputs('Classify')?['body']?['structuredOutput']?['predictedCategory']",
+          "cases": {
+            "Actionable request": {
+              "case": "Actionable request",
+              "actions": {
+                "Agent-Request_Handler": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "body/botDefinition": "{\"model\":\"GPT5Chat\",\"tools\":[{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_office365\",\"connectionId\":\"shared-office365-3c2dbe36-07e0-4bc1-8a10-8b2274789da4\",\"operationId\":\"SendEmailV2\",\"connectionMode\":\"Maker\",\"displayName\":\"Send an email\",\"description\":\"This operation sends an email message.\"}],\"outputFormat\":\"JsonSchema\",\"structuredOutputSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"finalCategory\\\":{\\\"type\\\":\\\"string\\\",\\\"enum\\\":[\\\"HR\\\",\\\"Finance\\\",\\\"Sales\\\",\\\"IT\\\",\\\"Facilities\\\",\\\"Other\\\"]},\\\"routingTeamEmail\\\":{\\\"type\\\":\\\"string\\\"},\\\"urgency\\\":{\\\"type\\\":\\\"string\\\",\\\"enum\\\":[\\\"low\\\",\\\"medium\\\",\\\"high\\\"]},\\\"acknowledgmentSent\\\":{\\\"type\\\":\\\"boolean\\\"},\\\"internalEmailSent\\\":{\\\"type\\\":\\\"boolean\\\"},\\\"status\\\":{\\\"type\\\":\\\"string\\\",\\\"description\\\":\\\"Single line status message if the emails were routed successfully.\\\"}},\\\"required\\\":[\\\"finalCategory\\\",\\\"routingTeamEmail\\\",\\\"urgency\\\",\\\"acknowledgmentSent\\\",\\\"internalEmailSent\\\",\\\"status\\\"]}\"}",
+                      "body/message": "You are an expert Inbound Request Orchestrator.\n\nExtracted information from the email:\nsubject: @{triggerOutputs()?['body/subject']}\nbody: @{triggerOutputs()?['body/body']}\nrequestor: @{triggerOutputs()?['body/from']}\n\nCRITICAL CLASSIFICATION RULES - Follow this priority order STRICTLY:\n1. HR / Onboarding: \"new joiner\", \"new hire\", \"onboarding\", \"new employee\", \"start date\", \"joining\", \"maternity leave\", \"resignation\"\n2. Finance: \"invoice\", \"payment\", \"billing\", \"vendor\", \"PO\", \"budget\", \"expense report\", \"tax\", \"reimbursement\"\n3. Sales: \"lead\", \"opportunity\", \"RFP\", \"proposal\", \"demo\", \"pricing\", \"enterprise solution\", \"new business\"\n4. IT / Technical Support: \"VPN\", \"login\", \"password reset\", \"account locked\", \"cannot connect\", \"error\", \"connection timed out\", \"software installation\", \"hardware failure\", \"laptop\", \"phishing\", \"security\", \"access issue\", \"system down\"\n5. Facilities: \"conference room\", \"book room\", \"meeting room\", \"workshop\"\n6. Other: everything else\nYour tasks:\n- Analyze the request using the rules above\n- Decide finalCategory and routingTeamEmail amd urgency\n- Draft acknowledgmentText\n- Draft internalSummary\n- Build internalEmailBody\n- **Send exactly two emails using the \"Send an Email\" tool**:\n- First: Send **Acknowledgment Email** to the original requester.\n- Second: Send **Internal Routing Email** to the correct team.\nThe routing email mapping can be found here: @{variables('RoutingEmails')}\n\n**Tool Usage Instructions (Very Important):**\n- You **must** use the Send an Email tool for both emails.\n- Send the acknowledgment email **first**, then the internal email.\n- Use the requester's email address from the original trigger for the acknowledgment.\n- Use HTML format for the internal email body for better readability.\n- Neither the acknowledgement email nor the routing email should contain 'email triage' in their subject lines.\n**After successfully sending both emails, return ONLY this valid JSON:**"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
+                      "connectionName": "shared_agentnode",
+                      "operationId": "InvokeDefinition"
+                    }
+                  },
+                  "metadata": {
+                    "description": "Agent-Request Handler",
+                    "nodeId": "agent-3e0ef057-51af-4d8b-966a-1d3a7be8ceb2"
+                  }
+                }
+              }
+            },
+            "Noise": {
+              "case": "Noise",
+              "actions": {}
+            }
+          },
+          "default": {
+            "actions": {}
+          },
+          "runAfter": {
+            "Classify": [
+              "Succeeded"
+            ]
           }
         }
       },
