@@ -1,0 +1,109 @@
+{
+  "name": "Sales Lead Qualifier",
+  "description": "Qualifies inbound sales enquiries from a shared mailbox using BANT, logs every lead by tier, and notifies the sales team only for Hot leads.",
+  "tags": [
+    "sales",
+    "lead-qualification",
+    "email",
+    "ai",
+    "automation"
+  ],
+  "author": "Isha",
+  "createdAt": "2026-08-31",
+  "updatedAt": "2026-08-31",
+  "featured": false,
+  "uniqueName": "SalesLeadQualifier",
+  "version": "1.0.0.1",
+  "publisher": "A3P",
+  "bundle": "bundles/sales-lead-qualifier.zip",
+  "agentCount": 0,
+  "workflowCount": 1,
+  "componentCount": 1,
+  "agents": [],
+  "agentGraph": {
+    "nodes": [],
+    "edges": []
+  },
+  "workflows": [
+    {
+      "id": "{cac4398c-780f-3334-8f5c-e1cc29371ab0}",
+      "name": "Sales Lead Qualifier",
+      "trigger": "When a new email arrives in a shared mailbox",
+      "nodeCount": 3,
+      "edgeCount": 2,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-4134db40-3744-4142-92ca-471f4de9d774",
+            "name": "When a new email arrives in a shared mailbox",
+            "type": "start",
+            "position": {
+              "x": 250,
+              "y": 314.8000183105469
+            },
+            "details": {}
+          },
+          {
+            "id": "agent-9a937ec1-6e7c-40b7-b1e2-b2053f0c8a41",
+            "name": "Agent",
+            "type": "agent",
+            "position": {
+              "x": 996,
+              "y": 315
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are the Sales Lead Qualifier. You process one inbound sales enquiry email at a time from the shared sales alias.\nEMAIL FOR THIS RUN\nFrom: {triggerOutputs()?['body/from']}\nSubject: {triggerOutputs()?['body/subject']}\nBody: {triggerOutputs()?['body/body']}\nCONFIGURATION\nNotify address for Hot leads: {variables('NotifyEmail')}\nGOAL\nRead the enquiry above, decide if it is a genuine sales enquiry, "
+            }
+          },
+          {
+            "id": "variable-6badf871-93fd-45bb-bb9b-213ecc4dee09",
+            "name": "Configuration",
+            "type": "variable",
+            "position": {
+              "x": 646,
+              "y": 315
+            },
+            "details": {}
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-4134db40-3744-4142-92ca-471f4de9d774-variable-6badf871-93fd-45bb-bb9b-213ecc4dee09",
+            "source": "start-4134db40-3744-4142-92ca-471f4de9d774",
+            "target": "variable-6badf871-93fd-45bb-bb9b-213ecc4dee09"
+          },
+          {
+            "id": "edge-variable-6badf871-93fd-45bb-bb9b-213ecc4dee09-agent-9a937ec1-6e7c-40b7-b1e2-b2053f0c8a41",
+            "source": "variable-6badf871-93fd-45bb-bb9b-213ecc4dee09",
+            "target": "agent-9a937ec1-6e7c-40b7-b1e2-b2053f0c8a41"
+          }
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 258
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 2706
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4172
+    },
+    {
+      "path": "Workflows/SalesLeadQualifier-CAC4398C-780F-3334-8F5C-E1CC29371AB0.json",
+      "category": "workflow",
+      "size": 64561
+    }
+  ]
+}
