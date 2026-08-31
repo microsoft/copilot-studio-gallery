@@ -1,0 +1,192 @@
+{
+  "name": "Inbound Request Triage and Routing",
+  "description": "Filters inbound email, classifies valid requests, and routes acknowledgments and internal notifications through an AI agent.",
+  "tags": [
+    "email",
+    "triage",
+    "routing",
+    "ai",
+    "automation"
+  ],
+  "author": "Isha",
+  "createdAt": "2026-08-26",
+  "updatedAt": "2026-08-27",
+  "featured": false,
+  "uniqueName": "InboundRequestTriageandRouting",
+  "version": "1.0.0.4",
+  "publisher": "Default Publisher for orgef3b0de5",
+  "bundle": "bundles/inbound-request-triage.zip",
+  "agentCount": 0,
+  "workflowCount": 1,
+  "componentCount": 1,
+  "agents": [],
+  "agentGraph": {
+    "nodes": [],
+    "edges": []
+  },
+  "workflows": [
+    {
+      "id": "{879e5c9e-a749-f111-bec7-7ced8d17c48d}",
+      "name": "Inbound Request Triage Routing",
+      "trigger": "When a new email arrives",
+      "nodeCount": 8,
+      "edgeCount": 5,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-4a2b4084-f46a-4102-a7c2-d15a56b3ebcd",
+            "name": "When a new email arrives",
+            "type": "start",
+            "position": {
+              "x": 97.70260329000592,
+              "y": 351.648698354997
+            },
+            "details": {}
+          },
+          {
+            "id": "canvasNote-cd005ded-b43b-4123-8ed6-af8b6c3ca64d",
+            "name": "Note",
+            "type": "canvasNote",
+            "position": {
+              "x": 88.46150013700063,
+              "y": 97.78741039020997
+            },
+            "details": {
+              "markdown": "Triggers when any new email arrives in the shared request inbox",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-01e48b7e-28e8-4f8a-a24c-e2232de600f5",
+            "name": "Note 3",
+            "type": "canvasNote",
+            "position": {
+              "x": 744.2490514451138,
+              "y": 91.61100059507652
+            },
+            "details": {
+              "markdown": "Template Note: You can modify the categories based on the common noise in your shared mailbox.",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-5d4657e7-dadd-48b3-9d0b-f32d1afc7d12",
+            "name": "Note 5",
+            "type": "canvasNote",
+            "position": {
+              "x": 1055.4565739187703,
+              "y": -42.66632460341046
+            },
+            "details": {
+              "markdown": "Main brain of the flow. Analyzes the request, decides category & routingTeamEmail, drafts acknowledgment and internal summary.\n\nSends polite acknowledgment to the person who submitted the request.\n\nDynamically sends the internal alert to the correct team using the routingTeamEmail from the Agent Node (no Switch needed).\n\n\n\n\n",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "agent-3e0ef057-51af-4d8b-966a-1d3a7be8ceb2",
+            "name": "Agent-Request Handler",
+            "type": "agent",
+            "position": {
+              "x": 1061.0823953083564,
+              "y": 356.6119102065713
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are an expert Inbound Request Orchestrator.\n\nExtracted information from the email:\nsubject: {triggerOutputs()?['body/subject']}\nbody: {triggerOutputs()?['body/body']}\nrequestor: {triggerOutputs()?['body/from']}\n\nCRITICAL CLASSIFICATION RULES - Follow this priority order STRICTLY:\n1. HR / Onboarding: \"new joiner\", \"new hire\", \"onboarding\", \"new employee\", \"start date\", \"joining\", \"maternity lea"
+            }
+          },
+          {
+            "id": "variable-74eca6db-182d-487b-acb4-8b99af7ec4ca",
+            "name": "Configuration",
+            "type": "variable",
+            "position": {
+              "x": 426.65053748988737,
+              "y": 348.2026032900059
+            },
+            "details": {}
+          },
+          {
+            "id": "canvasNote-f89b746f-bbd1-4ab1-9d86-4432aeb25c3f",
+            "name": "Note 3 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 425.62607722281075,
+              "y": 56.30489575535273
+            },
+            "details": {
+              "markdown": "Template Note: Configure the required variables:\n\nRoutingEmails: Email ids for the respective routing team. If you are modifying the categories themselves, make sure to update the agent prompt as well to match the categories.",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8",
+            "name": "Classify",
+            "type": "classifyOnInlineAgent",
+            "position": {
+              "x": 743,
+              "y": 348
+            },
+            "details": {
+              "model": "GPT5Chat"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-canvasNote-cd005ded-b43b-4123-8ed6-af8b6c3ca64d-canvasNote-01e48b7e-28e8-4f8a-a24c-e2232de600f5-input",
+            "source": "canvasNote-cd005ded-b43b-4123-8ed6-af8b6c3ca64d",
+            "target": "canvasNote-01e48b7e-28e8-4f8a-a24c-e2232de600f5",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-canvasNote-01e48b7e-28e8-4f8a-a24c-e2232de600f5-canvasNote-5d4657e7-dadd-48b3-9d0b-f32d1afc7d12-input",
+            "source": "canvasNote-01e48b7e-28e8-4f8a-a24c-e2232de600f5",
+            "target": "canvasNote-5d4657e7-dadd-48b3-9d0b-f32d1afc7d12",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-start-4a2b4084-f46a-4102-a7c2-d15a56b3ebcd-variable-74eca6db-182d-487b-acb4-8b99af7ec4ca",
+            "source": "start-4a2b4084-f46a-4102-a7c2-d15a56b3ebcd",
+            "target": "variable-74eca6db-182d-487b-acb4-8b99af7ec4ca"
+          },
+          {
+            "id": "edge-variable-74eca6db-182d-487b-acb4-8b99af7ec4ca-classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8",
+            "source": "variable-74eca6db-182d-487b-acb4-8b99af7ec4ca",
+            "target": "classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8"
+          },
+          {
+            "id": "edge-classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8-category:400ba2f5-34fd-4448-b1a0-b8ff25bfcc83-agent-3e0ef057-51af-4d8b-966a-1d3a7be8ceb2-input",
+            "source": "classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8",
+            "target": "agent-3e0ef057-51af-4d8b-966a-1d3a7be8ceb2",
+            "sourceHandle": "category:400ba2f5-34fd-4448-b1a0-b8ff25bfcc83",
+            "targetHandle": "input"
+          }
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 258
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 4151
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4344
+    },
+    {
+      "path": "Workflows/InboundRequestTriageRouting-879E5C9E-A749-F111-BEC7-7CED8D17C48D.json",
+      "category": "workflow",
+      "size": 90565
+    }
+  ]
+}
