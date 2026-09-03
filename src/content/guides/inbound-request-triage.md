@@ -10,7 +10,8 @@ internal summary to the appropriate team.
 
 The **Inbound Request Triage Routing** cloud flow:
 
-1. Starts when an email arrives in the connected Microsoft 365 Outlook Inbox.
+1. Starts when an email with `email triage` in its subject arrives in the
+  connected Microsoft 365 Outlook Inbox.
 2. Uses an AI classifier to label the email as `Actionable request`, `Noise`,
   or `Other` based on its subject, sender, and body.
 3. Ignores noise such as out-of-office responses, automatic acknowledgments,
@@ -23,7 +24,9 @@ The **Inbound Request Triage Routing** cloud flow:
 
 ## Import notes
 
-- Configure the Microsoft 365 Outlook connection used by the email trigger.
+- Configure the Microsoft 365 Outlook connection used by the email trigger,
+  and adjust the trigger's `email triage` subject filter if your mailbox uses
+  a different intake convention.
 - Configure the Agent connection used by the classifier and request handler.
 - Review the Outlook connection embedded in the agent's **Send an email** tool.
 - In the **Configuration** action, replace the `hr@contoso.com`,
