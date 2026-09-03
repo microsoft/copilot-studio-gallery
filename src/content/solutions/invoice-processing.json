@@ -10,10 +10,10 @@
   ],
   "author": "Isha",
   "createdAt": "2026-09-01",
-  "updatedAt": "2026-09-01",
+  "updatedAt": "2026-09-04",
   "featured": false,
   "uniqueName": "Invoiceprocessing",
-  "version": "1.0.0.5",
+  "version": "1.0.0.6",
   "publisher": "A3P",
   "bundle": "bundles/invoice-processing.zip",
   "agentCount": 0,
@@ -75,7 +75,7 @@
               "botSchemaName": "",
               "mode": "inline",
               "instructions": "",
-              "inlineInstructions": "You are an invoice data extraction agent. You will process one email attachment at a time.\n\nAttachment name: {items('Loop')?['name']}\n\nAttachment content: {items('Loop')?['contentBytes']}\n\nEmail subject (context only): {triggerOutputs()?['body/subject']}\n\nEmail body (context only): {triggerOutputs()?['body/body']}\n\nThe attachment is a document (commonly a PDF or image) that may or may not be an in"
+              "inlineInstructions": "You are an invoice data extraction agent. You will process one email attachment at a time.\n\nAttachment name: {items('Loop')?['name']}\n\nAttachment content:  {items('Loop')}\n\nEmail subject (context only): {triggerOutputs()?['body/subject']}\n\nEmail body (context only): {triggerOutputs()?['body/body']}\n\nThe attachment is a document (commonly a PDF or image) that may or may not be an invoice. Read and "
             }
           },
           {
@@ -90,7 +90,7 @@
               "botSchemaName": "",
               "mode": "inline",
               "instructions": "",
-              "inlineInstructions": "You are the Logging Agent for Invoice Processing. You run immediately after the Extraction Agent and own all Excel and OneDrive actions. There is no separate If or Else step in this workflow: all existence checking and auto-creation must be handled entirely by your own reasoning and tool calls, following the steps below exactly.​‌\n\nEXTRACTED INVOICE DATA FROM THE PREVIOUS STEP​‌\nInvoice number: {b"
+              "inlineInstructions": "You are the Logging Agent for Invoice Processing. You run immediately after the Extraction Agent and own all Excel and OneDrive actions. There is no separate If or Else step in this workflow: all existence checking and auto-creation must be handled entirely by your own reasoning and tool calls, following the steps below exactly.\n\nEXTRACTED INVOICE DATA FROM THE PREVIOUS STEP\nInvoice number: {body("
             }
           },
           {
@@ -223,7 +223,7 @@
     {
       "path": "Workflows/InvoiceProcessing-73A18326-0588-1CB1-8ADA-D1C7DE919DD5.json",
       "category": "workflow",
-      "size": 88821
+      "size": 89261
     }
   ]
 }
