@@ -3,45 +3,60 @@ title: Invoice Processing
 slug: invoice-processing
 solution: Invoiceprocessing
 ---
-Reads invoice attachments from incoming email, extracts key invoice fields
-using AI, and logs each invoice to an Excel workbook.
+Invoice Processing watches a mailbox for incoming invoices, reads every
+attachment, extracts the fields an accounts-payable team needs, and appends them
+to a running Excel ledger.
 
-## Workflow
+A loop handles one attachment at a time, so an email carrying five invoices
+produces five rows rather than one blended summary.
 
-The **Invoice Processing** cloud flow uses two chained agents inside a loop
-over each email's attachments:
+## Agents
 
-1. Starts when an email with `invoice` in its subject arrives with at least
-   one attachment.
-2. Loops over every attachment in the email. For each attachment:
-   - The **Extraction Agent** (no tools, reasoning only) reads the attachment
-     content and extracts `InvoiceNumber`, `Vendor`, `InvoiceDate`, and
-     `AmountDue`. It only extracts values that are clearly present, returning
-     "Not found" for anything uncertain or for non-invoice attachments. It
-     treats the attachment and email content as untrusted and ignores any
-     instructions embedded within them.
-   - The **Logging Agent** reads the Extraction Agent's output. If every field
-     came back "Not found", it stops without logging. Otherwise it checks
-     whether the configured log workbook and `Invoices` table exist via Excel
-     **Get tables**, auto-creating the file (OneDrive **Create file**) and
-     table (Excel **Create table**) if missing, then logs one row via **Add a
-     row into a table**.
+- **Extraction Agent** reads the attachment plus the email subject and body for
+  context, and extracts **InvoiceNumber**, **Vendor**, **InvoiceDate**, and
+  **AmountDue**. Missing fields fall back to `Not found` rather than being
+  guessed. It has no tools and treats the email and attachment as untrusted.
+- **Logging Agent** owns the Excel and OneDrive tools and writes one row per
+  attachment from the Extraction Agent's structured output.
 
-## Import notes
+## How the workflow runs
 
-- Configure the Microsoft 365 Outlook connection used by the email trigger,
-  and adjust the trigger's `invoice` subject filter and folder if your inbox
-  uses a different intake convention.
-- Configure the Agent connection used by both the Extraction and Logging
-  agents.
-- In the **Configuration** action, confirm the `InvoiceLogFileName` variable
-  (`Invoice Log.xlsx`) matches the workbook name you want created/used at the
-  root of your OneDrive.
-- The Logging Agent's **Create file**, **Get tables**, **Create table**, and
-  **Add a row into a table** tools have connection IDs hardcoded from the
-  original authoring environment. Solution import does not remap these values,
-  so open the Logging Agent node after import and re-select all tool
-  connections (OneDrive and Excel Online Business) before enabling the flow.
+The trigger fires on new Inbox mail with **invoice** in the subject and at least
+one attachment. The loop then runs the two agents per attachment. On each run the
+Logging Agent checks for the workbook and an **Invoices** table, auto-creating
+either if missing, so a first run works against an empty OneDrive.
 
-The solution is exported as unmanaged and includes a saved modern-designer
-canvas for its workflow preview.
+## Configuration
+
+| Variable | Purpose |
+| --- | --- |
+| `InvoiceLogFileName` | Workbook the Logging Agent creates and logs to in the OneDrive root, for example `Invoice Log.xlsx`. |
+
+## Customizations
+
+Adjust the trigger first — suppliers rarely agree on subject lines, so the
+subject filter, monitored folder, and attachment requirement usually need edits.
+Then consider:
+
+- **Extracted fields** such as PO number, currency, tax, or due date. Extend the
+  Extraction Agent's output and the Logging Agent's headers together.
+- **Attachment filtering** if suppliers attach cover sheets or logos alongside
+  the invoice.
+- **Storage location** if AP needs SharePoint or a shared folder.
+- **An approval step** before logging when `AmountDue` exceeds a threshold.
+- **Duplicate detection** on `InvoiceNumber` to catch resubmitted invoices.
+
+Keep the Extraction Agent tool-less and keep the loop — an attacker-supplied PDF
+is exactly what the tool-less design guards against.
+
+## Prerequisites
+
+Office 365 Outlook, Excel Online (Business), and OneDrive for Business
+connections, plus write access to the OneDrive root.
+
+## Import
+
+Download the rebuilt solution ZIP from this page and import it through Power
+Platform. Review and replace environment-specific connections during import,
+then set `InvoiceLogFileName` and confirm the trigger filter before turning the
+workflow on.

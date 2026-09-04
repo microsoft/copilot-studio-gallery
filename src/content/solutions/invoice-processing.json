@@ -1,19 +1,19 @@
 {
   "name": "Invoice Processing",
-  "description": "Extracts invoice data from emailed attachments using AI and logs each invoice to an Excel workbook, auto-creating the log file and table on first use.",
+  "description": "A per-attachment invoice workflow that extracts invoice number, vendor, date, and amount due from email attachments and appends them to a self-provisioning Excel ledger.",
   "tags": [
     "finance",
-    "invoice",
+    "accounts-payable",
     "document-extraction",
-    "ai",
-    "automation"
+    "multi-agent",
+    "excel"
   ],
-  "author": "Isha Gautam",
-  "createdAt": "2026-09-01",
+  "author": "Jasmita Lamba and Isha Gautam",
+  "createdAt": "2026-09-03",
   "updatedAt": "2026-09-04",
-  "featured": true,
+  "featured": false,
   "uniqueName": "Invoiceprocessing",
-  "version": "1.0.0.6",
+  "version": "1.0.0.7",
   "publisher": "A3P",
   "bundle": "bundles/invoice-processing.zip",
   "agentCount": 0,
@@ -29,8 +29,8 @@
       "id": "{73a18326-0588-1cb1-8ada-d1c7de919dd5}",
       "name": "Invoice Processing",
       "trigger": "When a new email arrives",
-      "nodeCount": 10,
-      "edgeCount": 7,
+      "nodeCount": 11,
+      "edgeCount": 8,
       "graph": {
         "nodes": [
           {
@@ -59,7 +59,7 @@
             "type": "loop",
             "position": {
               "x": 882,
-              "y": 334
+              "y": 337.8131085027847
             },
             "details": {}
           },
@@ -116,7 +116,7 @@
             },
             "details": {
               "markdown": "Configuration: set InvoiceLogFileName to the exact Excel file name the Logging Agent should auto-create and log to in OneDrive root (e.g. Invoice Log.xlsx). Change this if you want a different workbook name.",
-              "color": "yellow"
+              "color": "red"
             }
           },
           {
@@ -156,6 +156,19 @@
             "details": {
               "markdown": "Logging Agent: owns all Excel and OneDrive tools. On each run it checks for the InvoiceLogFileName workbook and an Invoices table, auto-creating the file and/or table with the correct headers if either is missing, then logs one row per attachment using the Extraction Agent's fields. Trusts the Extraction Agent's output and does not re-evaluate the original untrusted email or attachment content.",
               "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-2898f4db-8761-471c-936b-eddb3df3f152",
+            "name": "Note 3 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 1264.4629730472666,
+              "y": 71.07058900936364
+            },
+            "details": {
+              "markdown": "In case the tool usage returns 404 tool not found, remove and add the tools again:\n1. One Drive (Business): Create file\n2. Excel Online (Business):\n    a. Create table\n    b. Get tables\n    c. Add a row into a table",
+              "color": "red"
             }
           }
         ],
@@ -199,6 +212,12 @@
             "source": "canvasNote-583d6eaf-9746-45c8-82ee-fddc06867183",
             "target": "canvasNote-8f68b3fc-52a1-4c3c-b390-9ca1c4c89584",
             "targetHandle": "input"
+          },
+          {
+            "id": "edge-canvasNote-a84f2d36-882f-4e3c-870f-ed4891987877-canvasNote-2898f4db-8761-471c-936b-eddb3df3f152-input",
+            "source": "canvasNote-a84f2d36-882f-4e3c-870f-ed4891987877",
+            "target": "canvasNote-2898f4db-8761-471c-936b-eddb3df3f152",
+            "targetHandle": "input"
           }
         ]
       }
@@ -213,17 +232,17 @@
     {
       "path": "customizations.xml",
       "category": "solution",
-      "size": 2641
+      "size": 2701
     },
     {
       "path": "solution.xml",
       "category": "solution",
-      "size": 4084
+      "size": 4169
     },
     {
       "path": "Workflows/InvoiceProcessing-73A18326-0588-1CB1-8ADA-D1C7DE919DD5.json",
       "category": "workflow",
-      "size": 87829
+      "size": 91129
     }
   ]
 }
