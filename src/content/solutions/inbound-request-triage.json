@@ -1,19 +1,19 @@
 {
-  "name": "Inbound Request Triage and Routing",
-  "description": "Filters inbound email, classifies valid requests, and routes acknowledgments and internal notifications through an AI agent.",
+  "name": "Inbound Request Triage",
+  "description": "A shared mailbox workflow that classifies inbound requests, acknowledges the sender, and routes an internal summary to the owning team using an agent-selected address.",
   "tags": [
-    "email",
-    "triage",
+    "operations",
+    "email-triage",
     "routing",
-    "ai",
-    "automation"
+    "classification",
+    "shared-mailbox"
   ],
-  "author": "Isha Gautam",
-  "createdAt": "2026-08-26",
+  "author": "Jasmita Lamba and Isha Gautam",
+  "createdAt": "2026-09-03",
   "updatedAt": "2026-09-04",
-  "featured": true,
+  "featured": false,
   "uniqueName": "InboundRequestTriageandRouting",
-  "version": "1.0.0.5",
+  "version": "1.0.0.6",
   "publisher": "Default Publisher for orgef3b0de5",
   "bundle": "bundles/inbound-request-triage.zip",
   "agentCount": 0,
@@ -29,7 +29,7 @@
       "id": "{879e5c9e-a749-f111-bec7-7ced8d17c48d}",
       "name": "Inbound Request Triage Routing",
       "trigger": "When a new email arrives",
-      "nodeCount": 8,
+      "nodeCount": 9,
       "edgeCount": 5,
       "graph": {
         "nodes": [
@@ -52,7 +52,7 @@
               "y": 97.78741039020997
             },
             "details": {
-              "markdown": "Triggers when any new email arrives in the shared request inbox",
+              "markdown": "Triggers when any new email arrives in the shared request inbox with the subject filter \"email triage\".\nMake sure that the correct folder is selected.",
               "color": "yellow"
             }
           },
@@ -117,7 +117,7 @@
             },
             "details": {
               "markdown": "Template Note: Configure the required variables:\n\nRoutingEmails: Email ids for the respective routing team. If you are modifying the categories themselves, make sure to update the agent prompt as well to match the categories.",
-              "color": "yellow"
+              "color": "red"
             }
           },
           {
@@ -130,6 +130,19 @@
             },
             "details": {
               "model": "GPT5Chat"
+            }
+          },
+          {
+            "id": "canvasNote-df30cc97-9540-4d53-b309-3d1650b7bb73",
+            "name": "Note 5 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 1071.4643096599866,
+              "y": 484.1642013822442
+            },
+            "details": {
+              "markdown": "In case tool usage return 404 tool not found, remove and add the tools again:\n\nOffice 365 Outlook: Send an email",
+              "color": "red"
             }
           }
         ],
@@ -176,17 +189,17 @@
     {
       "path": "customizations.xml",
       "category": "solution",
-      "size": 4068
+      "size": 4151
     },
     {
       "path": "solution.xml",
       "category": "solution",
-      "size": 4259
+      "size": 4344
     },
     {
       "path": "Workflows/InboundRequestTriageRouting-879E5C9E-A749-F111-BEC7-7CED8D17C48D.json",
       "category": "workflow",
-      "size": 88786
+      "size": 92142
     }
   ]
 }

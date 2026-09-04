@@ -1,44 +1,61 @@
 ---
-title: Inbound Request Triage and Routing
+title: Inbound Request Triage
 slug: inbound-request-triage
 solution: InboundRequestTriageandRouting
 ---
-Classifies inbound email requests, acknowledges the sender, and routes an
-internal summary to the appropriate team.
+Inbound Request Triage separates real work from noise in a busy shared mailbox.
+Messages are classified, actionable requests are routed to the team that owns
+them, the sender gets an acknowledgment, and the team gets a summary instead of
+a forwarded thread.
 
-## Workflow
+Routing is decided by the agent rather than hard-coded, so adding or retiring a
+team is a configuration change — no Switch node and no per-team branch.
 
-The **Inbound Request Triage Routing** cloud flow:
+## Agents
 
-1. Starts when an email with `email triage` in its subject arrives in the
-  connected Microsoft 365 Outlook Inbox.
-2. Uses an AI classifier to label the email as `Actionable request`, `Noise`,
-  or `Other` based on its subject, sender, and body.
-3. Ignores noise such as out-of-office responses, automatic acknowledgments,
-  delivery reports, newsletters, unsubscribe messages, and spam. Ambiguous
-  messages classified as `Other` are also left unprocessed.
-4. Sends actionable requests to an AI agent that classifies them as HR,
-  Finance, Sales, IT, Facilities, or Other and assigns an urgency.
-5. Uses the agent's Outlook tool to send an acknowledgment to the requester and
-  an internal routing email.
+- **Agent - Request Handler** analyzes the request, decides the category and the
+  `routingTeamEmail`, sends a polite acknowledgment to the requester, and
+  dispatches an internal summary to the correct team.
 
-## Import notes
+## How the workflow runs
 
-- Configure the Microsoft 365 Outlook connection used by the email trigger,
-  and adjust the trigger's `email triage` subject filter if your mailbox uses
-  a different intake convention.
-- Configure the Agent connection used by the classifier and request handler.
-- Review the Outlook connection embedded in the agent's **Send an email** tool.
-- In the **Configuration** action, replace the `hr@contoso.com`,
-  `finance@contoso.com`, `sales@contoso.com`, `it@contoso.com`,
-  `facilities@contoso.com`, and `other@contoso.com` values in the
-  `RoutingEmails` object with the appropriate team mailboxes.
-- Review the classifier category descriptions against the target mailbox's
-  expected traffic before enabling the flow.
-- The Agent-Request Handler's **Send an email** tool has a connection ID
-  hardcoded from the original authoring environment. Solution import does not
-  remap this value, so open the node after import and re-select the Outlook
-  connection to bind the tool to your own connection before enabling the flow.
+Mail arriving in the shared request inbox starts the run. A **Classify** node
+sorts it into **Actionable request**, **Noise**, or **Other**. Actionable
+requests continue to the Request Handler, which acknowledges and routes in the
+same step. Noise and Other drop out, so routed teams only see real work.
 
-The solution is exported as unmanaged and includes a saved modern-designer
-canvas for its workflow preview.
+## Configuration
+
+| Variable | Purpose |
+| --- | --- |
+| `RoutingEmails` | Team addresses the agent chooses from when sending the internal alert. |
+
+## Customizations
+
+Point the trigger at your own shared mailbox and replace the sample addresses in
+`RoutingEmails`. Then tune the classify categories to the noise in your mailbox —
+and update the agent prompt to match, since those two always travel together.
+
+Also worth adjusting:
+
+- **Team descriptions** in the agent prompt. Routing quality depends almost
+  entirely on how clearly these distinguish one team from another.
+- **Acknowledgment and summary wording**, both agent-drafted.
+- **What happens to Noise and Other** — consider a catch-all alias so ambiguous
+  mail still reaches a human.
+- **Destination channel** if teams prefer Teams posts or tickets over email.
+
+Review the Noise category against a week of real mail before going live.
+Anything classified as Noise is dropped silently.
+
+## Prerequisites
+
+An Office 365 Outlook connection with permission to send on behalf of the shared
+mailbox, plus the team addresses used in `RoutingEmails`.
+
+## Import
+
+Download the rebuilt solution ZIP from this page and import it through Power
+Platform. Review and replace environment-specific connections during import,
+then set `RoutingEmails` and review the classify categories before turning the
+workflow on.
