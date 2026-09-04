@@ -1,19 +1,19 @@
 {
   "name": "Sales Lead Qualifier",
-  "description": "Qualifies inbound sales enquiries from a shared mailbox using BANT, logs every lead by tier, and notifies the sales team only for Hot leads.",
+  "description": "A shared sales inbox workflow that qualifies inbound enquiries with BANT, logs them to tiered Excel tables, and escalates hot leads by email.",
   "tags": [
     "sales",
     "lead-qualification",
-    "email",
-    "ai",
-    "automation"
+    "email-triage",
+    "multi-agent",
+    "excel"
   ],
-  "author": "Isha Gautam",
-  "createdAt": "2026-08-31",
+  "author": "Jasmita Lamba and Isha Gautam",
+  "createdAt": "2026-09-03",
   "updatedAt": "2026-09-04",
-  "featured": true,
+  "featured": false,
   "uniqueName": "SalesLeadQualifier",
-  "version": "1.0.0.4",
+  "version": "1.0.0.5",
   "publisher": "A3P",
   "bundle": "bundles/sales-lead-qualifier.zip",
   "agentCount": 0,
@@ -29,7 +29,7 @@
       "id": "{cac4398c-780f-3334-8f5c-e1cc29371ab0}",
       "name": "Sales Lead Qualifier",
       "trigger": "When a new email arrives in a shared mailbox",
-      "nodeCount": 8,
+      "nodeCount": 9,
       "edgeCount": 5,
       "graph": {
         "nodes": [
@@ -91,7 +91,7 @@
             },
             "details": {
               "markdown": "Configuration: \n\nNotifyEmail = the email address that receives the Hot lead notification (used by the Logging Agent in STEP 3). \n\nSalesLogFileName = the exact file name of the Excel workbook the Logging Agent auto-creates and logs to (e.g. Sales Lead Log.xlsx), stored at the root of OneDrive.",
-              "color": "yellow"
+              "color": "red"
             }
           },
           {
@@ -133,6 +133,19 @@
             "details": {
               "markdown": "Logging Agent (owns Excel, OneDrive, Outlook tools): if Tier is Filtered, does nothing. Otherwise it auto-creates the log workbook and its HotLeads, WarmLeads, and ColdLeads tables if they do not already exist (no separate If or Else node - this logic lives entirely in its own instructions), logs the row, and emails NotifyEmail only for Hot leads.",
               "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-928ea360-68d2-4de7-aec4-a74ceaec54c3",
+            "name": "Note 4 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 1316.1999999999998,
+              "y": -68.5
+            },
+            "details": {
+              "markdown": "If the tool usage returns 404 tool not found, remove and add the tools again.\n1. OneDrive (Business): Create file\n2. Excel Onlined (Business):\n    a. Get tables\n    b. Create table\n    c. Add a row to a table\n3. Office 365 Outlook: Send an email",
+              "color": "red"
             }
           }
         ],
@@ -187,7 +200,7 @@
     {
       "path": "Workflows/SalesLeadQualifier-CAC4398C-780F-3334-8F5C-E1CC29371AB0.json",
       "category": "workflow",
-      "size": 89501
+      "size": 90863
     }
   ]
 }

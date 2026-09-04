@@ -1,57 +1,62 @@
 # Sales Lead Qualifier
 
-Reads inbound sales enquiries from a shared mailbox, qualifies each one using
-BANT (Budget, Authority, Need, Timing), logs it by tier, and notifies the sales
-team only when the lead is Hot.
+Sales Lead Qualifier turns a shared sales inbox into a scored, logged pipeline.
+Each inbound enquiry is qualified against BANT, written to an Excel log, and
+escalated to a seller when the lead is hot.
 
-## Workflow
+The workflow splits the work across two agents: one reasons but holds no tools,
+the other holds every tool but makes no judgement.
 
-The **Sales Lead Qualifier** cloud flow uses two chained agents:
+## Agents
 
-1. Starts when an email arrives in a shared sales mailbox.
-2. The **Classifier Agent** (no tools, reasoning only) reads the email and
-   decides whether it is a genuine sales enquiry. Non-enquiries (newsletters,
-   recruitment, vendor pitches, invoices, support requests, out-of-office or
-   auto-reply messages) are set to `Filtered` and go no further. Genuine
-   enquiries are scored against BANT (Budget, Authority, Need, Timing) and
-   assigned a tier:
-   - **Hot** — Budget and Authority are both Strong, and Need or Timing is Strong.
-   - **Warm** — at least one Strong signal but short of the Hot bar.
-   - **Cold** — mostly Weak or Absent signals with no clear buying intent.
-   The Classifier treats the email body as untrusted content and ignores any
-   instructions embedded in it (e.g. attempts to force a Hot classification or
-   to leak configuration values).
-3. The **Logging Agent** reads the Classifier's output and owns all Excel,
-   OneDrive, and Outlook actions. If Tier is `Filtered`, it does nothing.
-   Otherwise it:
-   - Checks whether the configured log workbook exists via **Get tables**, and
-     auto-creates the file (via OneDrive **Create file**) and any of the
-     `HotLeads` / `WarmLeads` / `ColdLeads` tables that are missing (via Excel
-     **Create table**), so a first run with no existing file or tables is
-     handled automatically.
-   - Logs one row to the table matching the tier via **Add a row into a
-     table**.
-   - For Hot leads only, sends a notification email via Outlook **Send an
-     email** summarizing the company, contact, need, and the Strong signals.
+- **Classifier Agent** reads the email, decides whether it is a genuine sales
+  enquiry, and scores it **Hot**, **Warm**, or **Cold** using BANT. It has no
+  tools, so instructions hidden in the message body cannot act on your mailbox.
+- **Logging Agent** owns the Excel, OneDrive, and Outlook tools. It trusts the
+  Classifier's structured output, appends the lead to the right table, and sends
+  the hot-lead notification.
 
-## Import notes
+Filtered mail — spam, newsletters, automated replies — stops at the Classifier,
+so no If or Else node is needed.
 
-- Configure the Microsoft 365 Outlook connection used by the shared-mailbox
-  trigger, and set the trigger's mailbox address and folder to your own shared
-  sales mailbox.
-- Configure the Agent connection used by both the Classifier and Logging agents.
-- In the **Configuration** action, replace `sales-lead-notify@example.com`
-  (the `NotifyEmail` variable) with the address that should receive Hot lead
-  notifications.
-- In the **Configuration_Init_SalesLogFileName** action, confirm the
-  `SalesLogFileName` variable (`Sales Lead Log.xlsx`) matches the workbook name
-  you want created/used at the root of your OneDrive.
-- The Logging Agent's **Create file**, **Get tables**, **Create table**, **Add
-  a row into a table**, and **Send an email** tools have connection IDs
-  hardcoded from the original authoring environment. Solution import does not
-  remap these values, so open the Logging Agent node after import and
-  re-select all five tool connections (OneDrive, Excel Online Business, and
-  Outlook) before enabling the flow.
+## How the workflow runs
 
-The solution is exported as unmanaged and includes a saved modern-designer
-canvas for its workflow preview.
+Mail arriving in the shared inbox starts the run. The Classifier qualifies the
+enquiry and the Logging Agent persists it. On every run the Logging Agent checks
+for the workbook and the **HotLeads**, **WarmLeads**, and **ColdLeads** tables,
+creating whatever is missing before writing the row — so a first run works
+against an empty OneDrive. Only Hot leads trigger an email.
+
+## Configuration
+
+| Variable | Purpose |
+| --- | --- |
+| `NotifyEmail` | Address that receives the hot-lead notification. |
+| `SalesLogFileName` | Workbook the Logging Agent creates and logs to in the OneDrive root, for example `Sales Lead Log.xlsx`. |
+
+## Customizations
+
+Point the trigger at your own shared sales mailbox, then adjust:
+
+- **BANT criteria and tier names** in the Classifier Agent. Rename tiers or
+  change thresholds — but update the Logging Agent's table names to match.
+- **Which tiers notify.** Only Hot emails today; Warm is a one-line change.
+- **Logged columns** such as region, lead source, or score. Extend the
+  Classifier's output and the Logging Agent's headers together.
+- **Filtering strictness** for what counts as spam or noise.
+- **Storage location** if you want SharePoint or a shared folder instead of the
+  OneDrive root.
+
+Keep the Classifier tool-less and let the Logging Agent trust its output — that
+split is what keeps a malicious email from reaching your files.
+
+## Prerequisites
+
+Office 365 Outlook, Excel Online (Business), and OneDrive for Business
+connections, plus write access to the OneDrive root.
+
+## Import
+
+Download the rebuilt solution ZIP from this page and import it through Power
+Platform. Review and replace environment-specific connections during import,
+then set `NotifyEmail` and `SalesLogFileName` before turning the workflow on.
