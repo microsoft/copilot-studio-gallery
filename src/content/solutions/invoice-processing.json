@@ -1,0 +1,248 @@
+{
+  "name": "Invoice Processing",
+  "description": "A per-attachment invoice workflow that extracts invoice number, vendor, date, and amount due from email attachments and appends them to a self-provisioning Excel ledger.",
+  "tags": [
+    "finance",
+    "accounts-payable",
+    "document-extraction",
+    "multi-agent",
+    "excel"
+  ],
+  "author": "Jasmita Lamba and Isha Gautam",
+  "createdAt": "2026-09-03",
+  "updatedAt": "2026-09-04",
+  "featured": false,
+  "uniqueName": "Invoiceprocessing",
+  "version": "1.0.0.7",
+  "publisher": "A3P",
+  "bundle": "bundles/invoice-processing.zip",
+  "agentCount": 0,
+  "workflowCount": 1,
+  "componentCount": 1,
+  "agents": [],
+  "agentGraph": {
+    "nodes": [],
+    "edges": []
+  },
+  "workflows": [
+    {
+      "id": "{73a18326-0588-1cb1-8ada-d1c7de919dd5}",
+      "name": "Invoice Processing",
+      "trigger": "When a new email arrives",
+      "nodeCount": 11,
+      "edgeCount": 8,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-1aa026b8-5080-4653-b6da-bd26b12b8f7f",
+            "name": "When a new email arrives",
+            "type": "start",
+            "position": {
+              "x": 250,
+              "y": 334
+            },
+            "details": {}
+          },
+          {
+            "id": "variable-b4a948dd-32a2-49c7-9337-4ba6e7f30966",
+            "name": "Configuration",
+            "type": "variable",
+            "position": {
+              "x": 566,
+              "y": 334
+            },
+            "details": {}
+          },
+          {
+            "id": "loop-628a88b9-e53f-449f-b6d9-df0cb3c8b9a7",
+            "name": "Loop",
+            "type": "loop",
+            "position": {
+              "x": 882,
+              "y": 337.8131085027847
+            },
+            "details": {}
+          },
+          {
+            "id": "agent-e1fcf273-7f71-4c1e-8485-1241c17ba2df",
+            "name": "Extraction Agent",
+            "type": "agent",
+            "position": {
+              "x": 60,
+              "y": 80
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are an invoice data extraction agent. You will process one email attachment at a time.\n\nAttachment name: {items('Loop')?['name']}\n\nAttachment content:  {items('Loop')}\n\nEmail subject (context only): {triggerOutputs()?['body/subject']}\n\nEmail body (context only): {triggerOutputs()?['body/body']}\n\nThe attachment is a document (commonly a PDF or image) that may or may not be an invoice. Read and "
+            }
+          },
+          {
+            "id": "agent-deacd806-935a-4fa2-9d96-7cf38acc1b24",
+            "name": "Logging Agent",
+            "type": "agent",
+            "position": {
+              "x": 376,
+              "y": 80
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are the Logging Agent for Invoice Processing. You run immediately after the Extraction Agent and own all Excel and OneDrive actions. There is no separate If or Else step in this workflow: all existence checking and auto-creation must be handled entirely by your own reasoning and tool calls, following the steps below exactly.\n\nEXTRACTED INVOICE DATA FROM THE PREVIOUS STEP\nInvoice number: {body("
+            }
+          },
+          {
+            "id": "canvasNote-6afc3dac-4a48-4622-8c44-924b1bd41258",
+            "name": "Note",
+            "type": "canvasNote",
+            "position": {
+              "x": 242.87907954818547,
+              "y": 754.1622566690697
+            },
+            "details": {
+              "markdown": "Trigger: fires when a new email arrives in Inbox with \"invoice\" in the subject and at least one attachment. Configure the subject filter, folder, and attachment requirements here if your invoices arrive differently.",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-023ad290-f6d9-4757-9104-a313d65c2cff",
+            "name": "Note 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 569.3814828166306,
+              "y": 753.6924417207401
+            },
+            "details": {
+              "markdown": "Configuration: set InvoiceLogFileName to the exact Excel file name the Logging Agent should auto-create and log to in OneDrive root (e.g. Invoice Log.xlsx). Change this if you want a different workbook name.",
+              "color": "red"
+            }
+          },
+          {
+            "id": "canvasNote-a84f2d36-882f-4e3c-870f-ed4891987877",
+            "name": "Note 3",
+            "type": "canvasNote",
+            "position": {
+              "x": 926.8745493972003,
+              "y": 95.31189817992544
+            },
+            "details": {
+              "markdown": "Loop: iterates once per attachment on the incoming email so the Extraction Agent and Logging Agent process each attachment separately, one invoice at a time.",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-583d6eaf-9746-45c8-82ee-fddc06867183",
+            "name": "Note 4",
+            "type": "canvasNote",
+            "position": {
+              "x": 948.6951352785006,
+              "y": 750.6428687229316
+            },
+            "details": {
+              "markdown": "Extraction Agent: no tools. Reads the attachment name and content plus the email subject and body for context, and extracts InvoiceNumber, Vendor, InvoiceDate, and AmountDue as structured output (falls back to \"Not found\" per field). Treats attachment and email content as untrusted data and ignores any instructions embedded in it.",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-8f68b3fc-52a1-4c3c-b390-9ca1c4c89584",
+            "name": "Note 5",
+            "type": "canvasNote",
+            "position": {
+              "x": 1290.0832679067587,
+              "y": 753.1130008562805
+            },
+            "details": {
+              "markdown": "Logging Agent: owns all Excel and OneDrive tools. On each run it checks for the InvoiceLogFileName workbook and an Invoices table, auto-creating the file and/or table with the correct headers if either is missing, then logs one row per attachment using the Extraction Agent's fields. Trusts the Extraction Agent's output and does not re-evaluate the original untrusted email or attachment content.",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-2898f4db-8761-471c-936b-eddb3df3f152",
+            "name": "Note 3 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 1264.4629730472666,
+              "y": 71.07058900936364
+            },
+            "details": {
+              "markdown": "In case the tool usage returns 404 tool not found, remove and add the tools again:\n1. One Drive (Business): Create file\n2. Excel Online (Business):\n    a. Create table\n    b. Get tables\n    c. Add a row into a table",
+              "color": "red"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-1aa026b8-5080-4653-b6da-bd26b12b8f7f-variable-b4a948dd-32a2-49c7-9337-4ba6e7f30966",
+            "source": "start-1aa026b8-5080-4653-b6da-bd26b12b8f7f",
+            "target": "variable-b4a948dd-32a2-49c7-9337-4ba6e7f30966"
+          },
+          {
+            "id": "edge-variable-b4a948dd-32a2-49c7-9337-4ba6e7f30966-loop-628a88b9-e53f-449f-b6d9-df0cb3c8b9a7-external-input",
+            "source": "variable-b4a948dd-32a2-49c7-9337-4ba6e7f30966",
+            "target": "loop-628a88b9-e53f-449f-b6d9-df0cb3c8b9a7",
+            "targetHandle": "external-input"
+          },
+          {
+            "id": "edge-loop-628a88b9-e53f-449f-b6d9-df0cb3c8b9a7-internal-source-agent-e1fcf273-7f71-4c1e-8485-1241c17ba2df",
+            "source": "loop-628a88b9-e53f-449f-b6d9-df0cb3c8b9a7",
+            "target": "agent-e1fcf273-7f71-4c1e-8485-1241c17ba2df",
+            "sourceHandle": "internal-source"
+          },
+          {
+            "id": "edge-agent-e1fcf273-7f71-4c1e-8485-1241c17ba2df-agent-deacd806-935a-4fa2-9d96-7cf38acc1b24",
+            "source": "agent-e1fcf273-7f71-4c1e-8485-1241c17ba2df",
+            "target": "agent-deacd806-935a-4fa2-9d96-7cf38acc1b24"
+          },
+          {
+            "id": "edge-agent-deacd806-935a-4fa2-9d96-7cf38acc1b24-loop-628a88b9-e53f-449f-b6d9-df0cb3c8b9a7-internal-target",
+            "source": "agent-deacd806-935a-4fa2-9d96-7cf38acc1b24",
+            "target": "loop-628a88b9-e53f-449f-b6d9-df0cb3c8b9a7",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-canvasNote-023ad290-f6d9-4757-9104-a313d65c2cff-canvasNote-a84f2d36-882f-4e3c-870f-ed4891987877-input",
+            "source": "canvasNote-023ad290-f6d9-4757-9104-a313d65c2cff",
+            "target": "canvasNote-a84f2d36-882f-4e3c-870f-ed4891987877",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-canvasNote-583d6eaf-9746-45c8-82ee-fddc06867183-canvasNote-8f68b3fc-52a1-4c3c-b390-9ca1c4c89584-input",
+            "source": "canvasNote-583d6eaf-9746-45c8-82ee-fddc06867183",
+            "target": "canvasNote-8f68b3fc-52a1-4c3c-b390-9ca1c4c89584",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-canvasNote-a84f2d36-882f-4e3c-870f-ed4891987877-canvasNote-2898f4db-8761-471c-936b-eddb3df3f152-input",
+            "source": "canvasNote-a84f2d36-882f-4e3c-870f-ed4891987877",
+            "target": "canvasNote-2898f4db-8761-471c-936b-eddb3df3f152",
+            "targetHandle": "input"
+          }
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 258
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 2641
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4084
+    },
+    {
+      "path": "Workflows/InvoiceProcessing-73A18326-0588-1CB1-8ADA-D1C7DE919DD5.json",
+      "category": "workflow",
+      "size": 89657
+    }
+  ]
+}
