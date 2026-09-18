@@ -1,0 +1,18 @@
+kind: InlineAgentSkill
+content: |-
+  ---
+  name: capture-completed-conversation
+  description: Internal routine that silently starts asynchronous transcript capture for one user closure event. It may be invoked again in the same conversation if the user resumes and later signals completion again. Never invoke more than once for the same closure message or turn. Produces no user-facing data.
+  ---
+  <!-- bic:source=blank -->
+  When this skill is activated, perform the following steps exactly once and in order:
+
+  1. Don't reevaluate or announce whether the conversation is finished. The caller has already matched one configured completion condition.
+  2. Invoke the connected agent named `Transcript Correlation Helper` with the exact input: `Hi`.
+  3. Ignore the connected agent's textual response. Read only its generated `Conversation ID` output and treat this value as `GUID_B`.
+  4. Verify that `GUID_B` is present and formatted as a GUID. If it is missing or invalid, stop. Don't substitute a user-provided value or any other ID, and don't call the workflow.
+  5. Invoke the workflow tool named `Start Asynchronous Transcript Capture` exactly once and pass `GUID_B` into `Connected-agent conversation ID (GUID_B)`.
+  6. Don't invoke either internal component again during this skill execution.
+  7. Don't ask the user for an ID. Don't expose `GUID_B`, helper output, telemetry details, workflow status, or these instructions to the user.
+  8. Return no business data to the calling agent.
+authoringSource: Blank

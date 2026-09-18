@@ -1,0 +1,1296 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_azuremonitorlogs": {
+        "api": {
+          "name": "shared_azuremonitorlogs"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedazuremonitorlogs_223d0bf7"
+        },
+        "runtimeSource": "invoker"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "title": "Conversation GUID",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true,
+                  "description": "The second GUID in gen_ai.conversation.id (GUID_A_GUID_B)."
+                }
+              },
+              "required": [
+                "text"
+              ]
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "Start Asynchronous Transcript Capture",
+                "nodes": [
+                  {
+                    "id": "start-0bbd78d4-bd38-4f7f-a64c-85b466d4e162",
+                    "name": "When an agent calls the flow",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 250,
+                      "y": 538
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "connector",
+                        "connector": {
+                          "apiName": "Skills",
+                          "operationName": "When_an_agent_calls_the_flow",
+                          "displayName": "When an agent calls the flow",
+                          "kind": "Skills",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "text": {
+                                  "title": "Conversation GUID",
+                                  "type": "string",
+                                  "x-ms-content-hint": "TEXT",
+                                  "x-ms-dynamically-added": true,
+                                  "description": "The second GUID in gen_ai.conversation.id (GUID_A_GUID_B)."
+                                }
+                              },
+                              "required": [
+                                "text"
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Trigger output (schema determined by connector)"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 261,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "variable-07e0e7f1-17e1-412b-a1b0-e44bb3d50463",
+                    "name": "Initialize Capture State",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 587,
+                      "y": 538
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "fc17f8f2-dcb4-44dd-9380-b9c6e8bdc04f",
+                            "variableName": "AgentConversationId",
+                            "mode": "initialize",
+                            "type": "string",
+                            "value": ""
+                          },
+                          {
+                            "id": "ae13efa7-6d2b-4fc5-be9f-7fec0d7fc1fe",
+                            "variableName": "TranscriptResults",
+                            "mode": "initialize",
+                            "type": "array",
+                            "value": "[]",
+                            "valueRich": {
+                              "segments": [
+                                {
+                                  "type": "static",
+                                  "value": "[]"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "description": "Variables set by this node"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "loop-7539ed5a-8c25-4d61-956b-2dfc1195d011",
+                    "name": "Wait for Correlation Telemetry",
+                    "type": "loop",
+                    "version": 1,
+                    "position": {
+                      "x": 931.33738686492234,
+                      "y": 421.90671893075239
+                    },
+                    "width": 1374,
+                    "height": 300,
+                    "style": {
+                      "width": 1374,
+                      "height": 300
+                    },
+                    "data": {
+                      "config": {
+                        "loopType": "doUntil",
+                        "foreach": "",
+                        "expression": "@not(empty(variables('AgentConversationId')))",
+                        "count": 360,
+                        "timeout": "PT30M",
+                        "expressionRich": {
+                          "segments": [
+                            {
+                              "type": "token",
+                              "value": "@not(empty(variables('AgentConversationId')))",
+                              "tokenRef": {
+                                "type": "function",
+                                "stepId": "function",
+                                "stepName": "Logical",
+                                "outputName": "not",
+                                "outputType": "boolean",
+                                "functionName": "not",
+                                "functionCategory": "logical",
+                                "rawExpression": "not(empty(variables('AgentConversationId')))"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 1374,
+                      "height": 300
+                    }
+                  },
+                  {
+                    "id": "connector-7e20bf10-1f3d-4c78-b7ae-1dd508776e2b",
+                    "name": "Find Root Conversation ID",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 60,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_azuremonitorlogs",
+                        "displayName": "Azure Monitor Logs",
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1823/1.0.1823.4837/azuremonitorlogs/icon.png",
+                        "brandColor": "#0072C6",
+                        "operationName": "QueryDataV2",
+                        "operationType": "OpenApiConnection",
+                        "parameters": {
+                          "resourcetype": "Application Insights",
+                          "subscriptions": "00000000-0000-0000-0000-000000000000",
+                          "resourcegroups": "REPLACE_WITH_RESOURCE_GROUP",
+                          "resourcename": "REPLACE_WITH_APPLICATION_INSIGHTS_RESOURCE",
+                          "body/query": "let RequestedGuid = base64_decode_tostring(\"@{base64(triggerOutputs()?['body/text'])}\");\ndependencies\n| where timestamp > ago(30m)\n| where name == \"InvokeAgent\"\n| extend CompoundConversationId = tostring(customDimensions[\"gen_ai.conversation.id\"])\n| where CompoundConversationId endswith strcat(\"_\", RequestedGuid)\n| top 1 by timestamp desc\n| project AgentConversationId = tostring(split(CompoundConversationId, \"_\")[0])",
+                          "body/timerangetype": "3"
+                        },
+                        "parametersSchema": {
+                          "type": "object",
+                          "properties": {
+                            "subscriptions": {
+                              "type": "string",
+                              "title": "Subscription",
+                              "x-ms-dynamic-list": {
+                                "operationId": "ListSubscriptions",
+                                "parameters": {},
+                                "itemsPath": "value",
+                                "itemValuePath": "subscriptionId",
+                                "itemTitlePath": "displayName"
+                              },
+                              "description": "Select subscription",
+                              "x-ms-property-name-alias": "subscriptions"
+                            },
+                            "resourcegroups": {
+                              "type": "string",
+                              "title": "Resource Group",
+                              "x-ms-dynamic-list": {
+                                "operationId": "ListResourceGroups",
+                                "parameters": {
+                                  "subscriptions": {
+                                    "parameterReference": "subscriptions",
+                                    "required": true
+                                  }
+                                },
+                                "itemsPath": "value",
+                                "itemValuePath": "name",
+                                "itemTitlePath": "name"
+                              },
+                              "description": "Select resource group",
+                              "maxLength": 90,
+                              "minLength": 1,
+                              "pattern": "^[-\\w\\._\\(\\)]+$",
+                              "x-ms-property-name-alias": "resourcegroups"
+                            },
+                            "resourcetype": {
+                              "type": "string",
+                              "title": "Resource Type",
+                              "description": "Select Resource Type",
+                              "enum": [
+                                "Log Analytics Workspace",
+                                "Application Insights"
+                              ],
+                              "x-ms-property-name-alias": "resourcetype"
+                            },
+                            "resourcename": {
+                              "type": "string",
+                              "title": "Resource Name",
+                              "x-ms-dynamic-list": {
+                                "operationId": "ListResources",
+                                "parameters": {
+                                  "subscriptions": {
+                                    "parameterReference": "subscriptions",
+                                    "required": true
+                                  },
+                                  "resourcegroups": {
+                                    "parameterReference": "resourcegroups",
+                                    "required": true
+                                  },
+                                  "resourcetype": {
+                                    "parameterReference": "resourcetype",
+                                    "required": true
+                                  }
+                                },
+                                "itemsPath": "value",
+                                "itemValuePath": "name",
+                                "itemTitlePath": "name"
+                              },
+                              "description": "Select Resource",
+                              "x-ms-property-name-alias": "resourcename"
+                            },
+                            "body": {
+                              "type": "object",
+                              "properties": {
+                                "query": {
+                                  "type": "string",
+                                  "title": "Query",
+                                  "description": "Specify the query you would like to run. ",
+                                  "x-ms-visibility": "important",
+                                  "x-ms-property-name-alias": "body/query"
+                                },
+                                "timerangetype": {
+                                  "type": "string",
+                                  "title": "Time Range Type",
+                                  "x-ms-dynamic-list": {
+                                    "operationId": "getTimeRangeTypes",
+                                    "parameters": {
+                                      "resourcetype": {
+                                        "parameterReference": "resourcetype",
+                                        "required": true
+                                      },
+                                      "query": {
+                                        "parameterReference": "body/query",
+                                        "required": true
+                                      }
+                                    },
+                                    "itemsPath": "value",
+                                    "itemValuePath": "id",
+                                    "itemTitlePath": "name"
+                                  },
+                                  "description": "Select Time Range type. ",
+                                  "x-ms-property-name-alias": "body/timerangetype"
+                                },
+                                "timerange": {
+                                  "type": "object",
+                                  "x-ms-dynamic-properties": {
+                                    "operationId": "getTimeRangeSelectionControl",
+                                    "parameters": {
+                                      "timerangetype": {
+                                        "parameterReference": "body/timerangetype",
+                                        "required": true
+                                      }
+                                    },
+                                    "itemValuePath": "schema"
+                                  },
+                                  "description": "Time Range",
+                                  "x-ms-property-name-alias": "body/timerange"
+                                }
+                              },
+                              "required": [
+                                "query",
+                                "timerange",
+                                "timerangetype"
+                              ],
+                              "description": "Time range selection parameters. ",
+                              "x-ms-property-name-alias": "body"
+                            }
+                          },
+                          "required": [
+                            "body",
+                            "resourcegroups",
+                            "resourcename",
+                            "resourcetype",
+                            "subscriptions"
+                          ]
+                        },
+                        "connectionName": "shared_azuremonitorlogs",
+                        "resolvedDynamicSchemas": {
+                          "body/timerange": {
+                            "type": "object"
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "type": "array",
+                                "items": {}
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "parentId": "loop-7539ed5a-8c25-4d61-956b-2dfc1195d011",
+                    "measured": {
+                      "width": 244,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "variable-8e022970-8ec1-4c32-98cc-b6cd11ce8ad4",
+                    "name": "Set Root Conversation ID",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 380,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "4b26bb19-a6c1-48f0-aa10-1832ee2fe988",
+                            "variableName": "AgentConversationId",
+                            "mode": "set",
+                            "value": "@{if(empty(body('connector-7e20bf10-1f3d-4c78-b7ae-1dd508776e2b')?['value']), '', first(body('connector-7e20bf10-1f3d-4c78-b7ae-1dd508776e2b')?['value'])?['AgentConversationId'])}",
+                            "type": "string",
+                            "valueRich": {
+                              "segments": [
+                                {
+                                  "type": "token",
+                                  "value": "@{if(empty(body('connector-7e20bf10-1f3d-4c78-b7ae-1dd508776e2b')?['value']), '', first(body('connector-7e20bf10-1f3d-4c78-b7ae-1dd508776e2b')?['value'])?['AgentConversationId'])}",
+                                  "tokenRef": {
+                                    "type": "function",
+                                    "stepId": "function",
+                                    "stepName": "Logical",
+                                    "outputName": "if",
+                                    "outputType": "any",
+                                    "functionName": "if",
+                                    "functionCategory": "logical",
+                                    "rawExpression": "if(empty(body('connector-7e20bf10-1f3d-4c78-b7ae-1dd508776e2b')?['value']), '', first(body('connector-7e20bf10-1f3d-4c78-b7ae-1dd508776e2b')?['value'])?['AgentConversationId'])"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "description": "Variables set by this node"
+                          }
+                        }
+                      ]
+                    },
+                    "parentId": "loop-7539ed5a-8c25-4d61-956b-2dfc1195d011",
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "ifElse-6808ba69-c3ca-44f7-8bd6-d57c7ecb1f95",
+                    "name": "Wait before next check",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 696,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "2bf95318-eaeb-4a53-aa25-abb6fb810d66",
+                            "name": "If",
+                            "expression": "{\n  \"and\": [\n    {\n      \"equals\": [\n        \"@empty(variables('AgentConversationId'))\",\n        true\n      ]\n    }\n  ]\n}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:2bf95318-eaeb-4a53-aa25-abb6fb810d66",
+                          "label": "If"
+                        },
+                        {
+                          "id": "else",
+                          "label": "Else"
+                        }
+                      ]
+                    },
+                    "parentId": "loop-7539ed5a-8c25-4d61-956b-2dfc1195d011",
+                    "measured": {
+                      "width": 240,
+                      "height": 169
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-182b6a7f-9531-467c-8d33-b67936a3d238",
+                    "name": "Wait 5 Seconds",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1012,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "delay",
+                        "operationName": "delay",
+                        "displayName": "Delay",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/Schedule",
+                        "categoryDisplayName": "Schedule",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/recurrence.svg",
+                        "brandColor": "#1F85FF",
+                        "parameters": {
+                          "unit": "Second",
+                          "count": 5
+                        },
+                        "description": "Delay execution for a specified duration.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "count",
+                            "unit"
+                          ],
+                          "properties": {
+                            "count": {
+                              "type": "integer",
+                              "title": "Count",
+                              "description": "Duration count"
+                            },
+                            "unit": {
+                              "type": "string",
+                              "title": "Unit",
+                              "description": "Time unit",
+                              "enum": [
+                                "Second",
+                                "Minute",
+                                "Hour",
+                                "Day",
+                                "Week",
+                                "Month"
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "parentId": "loop-7539ed5a-8c25-4d61-956b-2dfc1195d011",
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "connector-8aa1d60f-13d0-4bbf-974e-a6dd9821b2b0",
+                    "name": "Query Root Conversation Transcript",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 3061.6035986975353,
+                      "y": 537.25035524421958
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_azuremonitorlogs",
+                        "displayName": "Azure Monitor Logs",
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1823/1.0.1823.4837/azuremonitorlogs/icon.png",
+                        "brandColor": "#0072C6",
+                        "operationName": "QueryDataV2",
+                        "operationType": "OpenApiConnection",
+                        "parameters": {
+                          "resourcetype": "Application Insights",
+                          "subscriptions": "00000000-0000-0000-0000-000000000000",
+                          "resourcegroups": "REPLACE_WITH_RESOURCE_GROUP",
+                          "resourcename": "REPLACE_WITH_APPLICATION_INSIGHTS_RESOURCE",
+                          "body/query": "let MatchedConversationId = \"@{variables('AgentConversationId')}\";\nlet ConversationEvents = dependencies\n    | where timestamp > ago(90d)\n    | extend CompoundConversationId = tostring(customDimensions[\"gen_ai.conversation.id\"])\n    | where CompoundConversationId == MatchedConversationId\n    | extend InputMessages = parse_json(tostring(customDimensions[\"gen_ai.input.messages\"])), OutputMessages = parse_json(tostring(customDimensions[\"gen_ai.output.messages\"]))\n    | project Timestamp = timestamp, CompoundConversationId, InputMessages, OutputMessages, AgentName = tostring(customDimensions[\"gen_ai.agent.name\"]), AgentId = tostring(customDimensions[\"gen_ai.agent.id\"]), EnvironmentId = tostring(customDimensions[\"env.id\"]), TraceId = operation_Id;\nunion\n    (ConversationEvents\n        | mv-expand Message = InputMessages\n        | mv-expand Part = Message.parts\n        | where tostring(Part.type) == \"text\" and isnotempty(tostring(Part.content))\n        | project Timestamp, Sequence = 0, Role = tostring(Message.role), Content = tostring(Part.content), AgentName, AgentId, EnvironmentId, ConversationId = CompoundConversationId, TraceId),\n    (ConversationEvents\n        | mv-expand Message = OutputMessages\n        | mv-expand Part = Message.parts\n        | where tostring(Part.type) == \"text\" and isnotempty(tostring(Part.content))\n        | project Timestamp, Sequence = 1, Role = tostring(Message.role), Content = tostring(Part.content), AgentName, AgentId, EnvironmentId, ConversationId = CompoundConversationId, TraceId)\n| order by Timestamp asc, Sequence asc\n| project Timestamp, Role, Content, AgentName, AgentId, EnvironmentId, ConversationId, TraceId",
+                          "body/timerangetype": "3"
+                        },
+                        "parametersSchema": {
+                          "type": "object",
+                          "properties": {
+                            "subscriptions": {
+                              "type": "string",
+                              "title": "Subscription",
+                              "x-ms-dynamic-list": {
+                                "operationId": "ListSubscriptions",
+                                "parameters": {},
+                                "itemsPath": "value",
+                                "itemValuePath": "subscriptionId",
+                                "itemTitlePath": "displayName"
+                              },
+                              "description": "Select subscription",
+                              "x-ms-property-name-alias": "subscriptions"
+                            },
+                            "resourcegroups": {
+                              "type": "string",
+                              "title": "Resource Group",
+                              "x-ms-dynamic-list": {
+                                "operationId": "ListResourceGroups",
+                                "parameters": {
+                                  "subscriptions": {
+                                    "parameterReference": "subscriptions",
+                                    "required": true
+                                  }
+                                },
+                                "itemsPath": "value",
+                                "itemValuePath": "name",
+                                "itemTitlePath": "name"
+                              },
+                              "description": "Select resource group",
+                              "maxLength": 90,
+                              "minLength": 1,
+                              "pattern": "^[-\\w\\._\\(\\)]+$",
+                              "x-ms-property-name-alias": "resourcegroups"
+                            },
+                            "resourcetype": {
+                              "type": "string",
+                              "title": "Resource Type",
+                              "description": "Select Resource Type",
+                              "enum": [
+                                "Log Analytics Workspace",
+                                "Application Insights"
+                              ],
+                              "x-ms-property-name-alias": "resourcetype"
+                            },
+                            "resourcename": {
+                              "type": "string",
+                              "title": "Resource Name",
+                              "x-ms-dynamic-list": {
+                                "operationId": "ListResources",
+                                "parameters": {
+                                  "subscriptions": {
+                                    "parameterReference": "subscriptions",
+                                    "required": true
+                                  },
+                                  "resourcegroups": {
+                                    "parameterReference": "resourcegroups",
+                                    "required": true
+                                  },
+                                  "resourcetype": {
+                                    "parameterReference": "resourcetype",
+                                    "required": true
+                                  }
+                                },
+                                "itemsPath": "value",
+                                "itemValuePath": "name",
+                                "itemTitlePath": "name"
+                              },
+                              "description": "Select Resource",
+                              "x-ms-property-name-alias": "resourcename"
+                            },
+                            "body": {
+                              "type": "object",
+                              "properties": {
+                                "query": {
+                                  "type": "string",
+                                  "title": "Query",
+                                  "description": "Specify the query you would like to run. ",
+                                  "x-ms-visibility": "important",
+                                  "x-ms-property-name-alias": "body/query"
+                                },
+                                "timerangetype": {
+                                  "type": "string",
+                                  "title": "Time Range Type",
+                                  "x-ms-dynamic-list": {
+                                    "operationId": "getTimeRangeTypes",
+                                    "parameters": {
+                                      "resourcetype": {
+                                        "parameterReference": "resourcetype",
+                                        "required": true
+                                      },
+                                      "query": {
+                                        "parameterReference": "body/query",
+                                        "required": true
+                                      }
+                                    },
+                                    "itemsPath": "value",
+                                    "itemValuePath": "id",
+                                    "itemTitlePath": "name"
+                                  },
+                                  "description": "Select Time Range type. ",
+                                  "x-ms-property-name-alias": "body/timerangetype"
+                                },
+                                "timerange": {
+                                  "type": "object",
+                                  "x-ms-dynamic-properties": {
+                                    "operationId": "getTimeRangeSelectionControl",
+                                    "parameters": {
+                                      "timerangetype": {
+                                        "parameterReference": "body/timerangetype",
+                                        "required": true
+                                      }
+                                    },
+                                    "itemValuePath": "schema"
+                                  },
+                                  "description": "Time Range",
+                                  "x-ms-property-name-alias": "body/timerange"
+                                }
+                              },
+                              "required": [
+                                "query",
+                                "timerange",
+                                "timerangetype"
+                              ],
+                              "description": "Time range selection parameters. ",
+                              "x-ms-property-name-alias": "body"
+                            }
+                          },
+                          "required": [
+                            "body",
+                            "resourcegroups",
+                            "resourcename",
+                            "resourcetype",
+                            "subscriptions"
+                          ]
+                        },
+                        "connectionName": "shared_azuremonitorlogs",
+                        "resolvedDynamicSchemas": {
+                          "body/timerange": {
+                            "type": "object"
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "type": "array",
+                                "items": {}
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 305,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "variable-fd564a89-99a0-4304-9a65-f26837596b7b",
+                    "name": "Store Transcript Results",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 3417,
+                      "y": 538
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "336100a5-dede-439c-9764-4a42378b4a31",
+                            "variableName": "TranscriptResults",
+                            "mode": "set",
+                            "value": "@body('connector-8aa1d60f-13d0-4bbf-974e-a6dd9821b2b0')?['value']",
+                            "type": "array",
+                            "valueRich": {
+                              "segments": [
+                                {
+                                  "type": "token",
+                                  "value": "Value",
+                                  "tokenRef": {
+                                    "type": "step",
+                                    "stepId": "connector-8aa1d60f-13d0-4bbf-974e-a6dd9821b2b0",
+                                    "stepName": "Query Root Conversation Transcript",
+                                    "outputName": "value",
+                                    "outputDisplayName": "Value",
+                                    "outputType": "array"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "description": "Variables set by this node"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "ifElse-32b60af2-7316-412c-9bb2-46a3776dd697",
+                    "name": "Verify Correlation Found",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 2381,
+                      "y": 422
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "4f565c06-1e25-4a08-8fbc-00ebe0946633",
+                            "name": "If",
+                            "expression": "{\n  \"and\": [\n    {\n      \"equals\": [\n        \"@empty(variables('AgentConversationId'))\",\n        \"@true\"\n      ]\n    }\n  ]\n}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:4f565c06-1e25-4a08-8fbc-00ebe0946633",
+                          "label": "If"
+                        },
+                        {
+                          "id": "else",
+                          "label": "Else"
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 169
+                    }
+                  },
+                  {
+                    "id": "end-d56c364b-edbb-422a-ae29-182aac9a49eb",
+                    "name": "End",
+                    "type": "end",
+                    "version": 1,
+                    "position": {
+                      "x": 2697,
+                      "y": 414.5
+                    },
+                    "data": {
+                      "config": {
+                        "runStatus": "Failed",
+                        "errorCode": "CorrelationTelemetryNotFound",
+                        "errorMessage": "No correlation telemetry was found for the supplied Transcript Correlation ID within 30 minutes."
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-6b410363-6ef8-4a19-b844-9b6c96c08aba",
+                    "name": "Wait 15 seconds",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 2697,
+                      "y": 526.5
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "delay",
+                        "operationName": "delay",
+                        "displayName": "Delay",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/Schedule",
+                        "categoryDisplayName": "Schedule",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/recurrence.svg",
+                        "brandColor": "#1F85FF",
+                        "parameters": {
+                          "unit": "Second",
+                          "count": 15
+                        },
+                        "description": "Delay execution for a specified duration.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "count",
+                            "unit"
+                          ],
+                          "properties": {
+                            "count": {
+                              "type": "integer",
+                              "title": "Count",
+                              "description": "Duration count"
+                            },
+                            "unit": {
+                              "type": "string",
+                              "title": "Unit",
+                              "description": "Time unit",
+                              "enum": [
+                                "Second",
+                                "Minute",
+                                "Hour",
+                                "Day",
+                                "Week",
+                                "Month"
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "selected": false
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-0bbd78d4-bd38-4f7f-a64c-85b466d4e162-variable-07e0e7f1-17e1-412b-a1b0-e44bb3d50463",
+                    "source": "start-0bbd78d4-bd38-4f7f-a64c-85b466d4e162",
+                    "target": "variable-07e0e7f1-17e1-412b-a1b0-e44bb3d50463"
+                  },
+                  {
+                    "id": "edge-variable-07e0e7f1-17e1-412b-a1b0-e44bb3d50463-loop-7539ed5a-8c25-4d61-956b-2dfc1195d011-external-input",
+                    "source": "variable-07e0e7f1-17e1-412b-a1b0-e44bb3d50463",
+                    "target": "loop-7539ed5a-8c25-4d61-956b-2dfc1195d011",
+                    "targetHandle": "external-input"
+                  },
+                  {
+                    "id": "edge-loop-7539ed5a-8c25-4d61-956b-2dfc1195d011-internal-source-connector-7e20bf10-1f3d-4c78-b7ae-1dd508776e2b",
+                    "source": "loop-7539ed5a-8c25-4d61-956b-2dfc1195d011",
+                    "target": "connector-7e20bf10-1f3d-4c78-b7ae-1dd508776e2b",
+                    "sourceHandle": "internal-source"
+                  },
+                  {
+                    "id": "edge-connector-7e20bf10-1f3d-4c78-b7ae-1dd508776e2b-variable-8e022970-8ec1-4c32-98cc-b6cd11ce8ad4",
+                    "source": "connector-7e20bf10-1f3d-4c78-b7ae-1dd508776e2b",
+                    "target": "variable-8e022970-8ec1-4c32-98cc-b6cd11ce8ad4"
+                  },
+                  {
+                    "id": "edge-variable-8e022970-8ec1-4c32-98cc-b6cd11ce8ad4-ifElse-6808ba69-c3ca-44f7-8bd6-d57c7ecb1f95",
+                    "source": "variable-8e022970-8ec1-4c32-98cc-b6cd11ce8ad4",
+                    "target": "ifElse-6808ba69-c3ca-44f7-8bd6-d57c7ecb1f95"
+                  },
+                  {
+                    "id": "edge-ifElse-6808ba69-c3ca-44f7-8bd6-d57c7ecb1f95-condition:2bf95318-eaeb-4a53-aa25-abb6fb810d66-builtinFunction-182b6a7f-9531-467c-8d33-b67936a3d238",
+                    "source": "ifElse-6808ba69-c3ca-44f7-8bd6-d57c7ecb1f95",
+                    "target": "builtinFunction-182b6a7f-9531-467c-8d33-b67936a3d238",
+                    "sourceHandle": "condition:2bf95318-eaeb-4a53-aa25-abb6fb810d66"
+                  },
+                  {
+                    "id": "edge-builtinFunction-182b6a7f-9531-467c-8d33-b67936a3d238-loop-7539ed5a-8c25-4d61-956b-2dfc1195d011-internal-target",
+                    "source": "builtinFunction-182b6a7f-9531-467c-8d33-b67936a3d238",
+                    "target": "loop-7539ed5a-8c25-4d61-956b-2dfc1195d011",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-connector-8aa1d60f-13d0-4bbf-974e-a6dd9821b2b0-variable-fd564a89-99a0-4304-9a65-f26837596b7b",
+                    "source": "connector-8aa1d60f-13d0-4bbf-974e-a6dd9821b2b0",
+                    "target": "variable-fd564a89-99a0-4304-9a65-f26837596b7b"
+                  },
+                  {
+                    "id": "edge-loop-7539ed5a-8c25-4d61-956b-2dfc1195d011-external-output-ifElse-32b60af2-7316-412c-9bb2-46a3776dd697",
+                    "source": "loop-7539ed5a-8c25-4d61-956b-2dfc1195d011",
+                    "target": "ifElse-32b60af2-7316-412c-9bb2-46a3776dd697",
+                    "sourceHandle": "external-output"
+                  },
+                  {
+                    "id": "edge-ifElse-32b60af2-7316-412c-9bb2-46a3776dd697-condition:4f565c06-1e25-4a08-8fbc-00ebe0946633-end-d56c364b-edbb-422a-ae29-182aac9a49eb",
+                    "source": "ifElse-32b60af2-7316-412c-9bb2-46a3776dd697",
+                    "target": "end-d56c364b-edbb-422a-ae29-182aac9a49eb",
+                    "sourceHandle": "condition:4f565c06-1e25-4a08-8fbc-00ebe0946633"
+                  },
+                  {
+                    "id": "edge-ifElse-32b60af2-7316-412c-9bb2-46a3776dd697-else-builtinFunction-6b410363-6ef8-4a19-b844-9b6c96c08aba",
+                    "source": "ifElse-32b60af2-7316-412c-9bb2-46a3776dd697",
+                    "target": "builtinFunction-6b410363-6ef8-4a19-b844-9b6c96c08aba",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-builtinFunction-6b410363-6ef8-4a19-b844-9b6c96c08aba-connector-8aa1d60f-13d0-4bbf-974e-a6dd9821b2b0",
+                    "source": "builtinFunction-6b410363-6ef8-4a19-b844-9b6c96c08aba",
+                    "target": "connector-8aa1d60f-13d0-4bbf-974e-a6dd9821b2b0"
+                  }
+                ],
+                "connectionReferences": {
+                  "shared_azuremonitorlogs": {
+                    "api": {
+                      "name": "shared_azuremonitorlogs"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedazuremonitorlogs_223d0bf7"
+                    },
+                    "runtimeSource": "invoker"
+                  }
+                }
+              },
+              "nodeActionMapping": {
+                "variable-07e0e7f1-17e1-412b-a1b0-e44bb3d50463": [
+                  "Initialize_Capture_State",
+                  "Initialize_Capture_State_Init_TranscriptResults"
+                ],
+                "connector-7e20bf10-1f3d-4c78-b7ae-1dd508776e2b": [
+                  "Find_Root_Conversation_ID"
+                ],
+                "variable-8e022970-8ec1-4c32-98cc-b6cd11ce8ad4": [
+                  "Set_Root_Conversation_ID"
+                ],
+                "builtinFunction-182b6a7f-9531-467c-8d33-b67936a3d238": [
+                  "Wait_5_Seconds"
+                ],
+                "ifElse-6808ba69-c3ca-44f7-8bd6-d57c7ecb1f95": [
+                  "Wait_before_next_check"
+                ],
+                "loop-7539ed5a-8c25-4d61-956b-2dfc1195d011": [
+                  "Wait_for_Correlation_Telemetry"
+                ],
+                "end-d56c364b-edbb-422a-ae29-182aac9a49eb": [
+                  "end-d56c364b-edbb-422a-ae29-182aac9a49eb"
+                ],
+                "builtinFunction-6b410363-6ef8-4a19-b844-9b6c96c08aba": [
+                  "Wait_15_seconds"
+                ],
+                "connector-8aa1d60f-13d0-4bbf-974e-a6dd9821b2b0": [
+                  "Query_Root_Conversation_Transcript"
+                ],
+                "variable-fd564a89-99a0-4304-9a65-f26837596b7b": [
+                  "Store_Transcript_Results"
+                ],
+                "ifElse-32b60af2-7316-412c-9bb2-46a3776dd697": [
+                  "Verify_Correlation_Found"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "actions": {
+        "Initialize_Capture_State": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "AgentConversationId",
+                "type": "String",
+                "value": ""
+              }
+            ]
+          },
+          "metadata": {
+            "description": "Initialize Capture State",
+            "nodeId": "variable-07e0e7f1-17e1-412b-a1b0-e44bb3d50463"
+          }
+        },
+        "Initialize_Capture_State_Init_TranscriptResults": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "TranscriptResults",
+                "type": "Array",
+                "value": []
+              }
+            ]
+          },
+          "runAfter": {
+            "Initialize_Capture_State": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Wait_for_Correlation_Telemetry": {
+          "type": "Until",
+          "expression": "@not(empty(variables('AgentConversationId')))",
+          "limit": {
+            "count": 360,
+            "timeout": "PT30M"
+          },
+          "actions": {
+            "Find_Root_Conversation_ID": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "resourcetype": "Application Insights",
+                  "subscriptions": "00000000-0000-0000-0000-000000000000",
+                  "resourcegroups": "REPLACE_WITH_RESOURCE_GROUP",
+                  "resourcename": "REPLACE_WITH_APPLICATION_INSIGHTS_RESOURCE",
+                  "body/query": "let RequestedGuid = base64_decode_tostring(\"@{base64(triggerOutputs()?['body/text'])}\");\ndependencies\n| where timestamp > ago(30m)\n| where name == \"InvokeAgent\"\n| extend CompoundConversationId = tostring(customDimensions[\"gen_ai.conversation.id\"])\n| where CompoundConversationId endswith strcat(\"_\", RequestedGuid)\n| top 1 by timestamp desc\n| project AgentConversationId = tostring(split(CompoundConversationId, \"_\")[0])",
+                  "body/timerangetype": "3"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_azuremonitorlogs",
+                  "connectionName": "shared_azuremonitorlogs",
+                  "operationId": "QueryDataV2"
+                }
+              },
+              "metadata": {
+                "description": "Find Root Conversation ID",
+                "nodeId": "connector-7e20bf10-1f3d-4c78-b7ae-1dd508776e2b"
+              }
+            },
+            "Set_Root_Conversation_ID": {
+              "type": "SetVariable",
+              "inputs": {
+                "name": "AgentConversationId",
+                "value": "@{if(empty(body('Find_Root_Conversation_ID')?['value']), '', first(body('Find_Root_Conversation_ID')?['value'])?['AgentConversationId'])}"
+              },
+              "runAfter": {
+                "Find_Root_Conversation_ID": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "description": "Set Root Conversation ID",
+                "nodeId": "variable-8e022970-8ec1-4c32-98cc-b6cd11ce8ad4"
+              }
+            },
+            "Wait_before_next_check": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@empty(variables('AgentConversationId'))",
+                      true
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Wait_5_Seconds": {
+                  "type": "Wait",
+                  "inputs": {
+                    "interval": {
+                      "count": 5,
+                      "unit": "Second"
+                    }
+                  },
+                  "metadata": {
+                    "description": "Wait 5 Seconds",
+                    "nodeId": "builtinFunction-182b6a7f-9531-467c-8d33-b67936a3d238"
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "runAfter": {
+                "Set_Root_Conversation_ID": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "description": "Wait before next check",
+                "nodeId": "ifElse-6808ba69-c3ca-44f7-8bd6-d57c7ecb1f95"
+              }
+            }
+          },
+          "metadata": {
+            "description": "Wait for Correlation Telemetry",
+            "nodeId": "loop-7539ed5a-8c25-4d61-956b-2dfc1195d011"
+          },
+          "runAfter": {
+            "Initialize_Capture_State_Init_TranscriptResults": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Verify_Correlation_Found": {
+          "type": "If",
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@empty(variables('AgentConversationId'))",
+                  "@true"
+                ]
+              }
+            ]
+          },
+          "actions": {
+            "end-d56c364b-edbb-422a-ae29-182aac9a49eb": {
+              "type": "Terminate",
+              "inputs": {
+                "runStatus": "Failed",
+                "runError": {
+                  "code": "CorrelationTelemetryNotFound",
+                  "message": "No correlation telemetry was found for the supplied Transcript Correlation ID within 30 minutes."
+                }
+              },
+              "metadata": {
+                "description": "End",
+                "nodeId": "end-d56c364b-edbb-422a-ae29-182aac9a49eb"
+              }
+            }
+          },
+          "else": {
+            "actions": {
+              "Wait_15_seconds": {
+                "type": "Wait",
+                "inputs": {
+                  "interval": {
+                    "count": 15,
+                    "unit": "Second"
+                  }
+                },
+                "metadata": {
+                  "description": "Wait 15 seconds",
+                  "nodeId": "builtinFunction-6b410363-6ef8-4a19-b844-9b6c96c08aba"
+                }
+              },
+              "Query_Root_Conversation_Transcript": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "resourcetype": "Application Insights",
+                    "subscriptions": "00000000-0000-0000-0000-000000000000",
+                    "resourcegroups": "REPLACE_WITH_RESOURCE_GROUP",
+                    "resourcename": "REPLACE_WITH_APPLICATION_INSIGHTS_RESOURCE",
+                    "body/query": "let MatchedConversationId = \"@{variables('AgentConversationId')}\";\nlet ConversationEvents = dependencies\n    | where timestamp > ago(90d)\n    | extend CompoundConversationId = tostring(customDimensions[\"gen_ai.conversation.id\"])\n    | where CompoundConversationId == MatchedConversationId\n    | extend InputMessages = parse_json(tostring(customDimensions[\"gen_ai.input.messages\"])), OutputMessages = parse_json(tostring(customDimensions[\"gen_ai.output.messages\"]))\n    | project Timestamp = timestamp, CompoundConversationId, InputMessages, OutputMessages, AgentName = tostring(customDimensions[\"gen_ai.agent.name\"]), AgentId = tostring(customDimensions[\"gen_ai.agent.id\"]), EnvironmentId = tostring(customDimensions[\"env.id\"]), TraceId = operation_Id;\nunion\n    (ConversationEvents\n        | mv-expand Message = InputMessages\n        | mv-expand Part = Message.parts\n        | where tostring(Part.type) == \"text\" and isnotempty(tostring(Part.content))\n        | project Timestamp, Sequence = 0, Role = tostring(Message.role), Content = tostring(Part.content), AgentName, AgentId, EnvironmentId, ConversationId = CompoundConversationId, TraceId),\n    (ConversationEvents\n        | mv-expand Message = OutputMessages\n        | mv-expand Part = Message.parts\n        | where tostring(Part.type) == \"text\" and isnotempty(tostring(Part.content))\n        | project Timestamp, Sequence = 1, Role = tostring(Message.role), Content = tostring(Part.content), AgentName, AgentId, EnvironmentId, ConversationId = CompoundConversationId, TraceId)\n| order by Timestamp asc, Sequence asc\n| project Timestamp, Role, Content, AgentName, AgentId, EnvironmentId, ConversationId, TraceId",
+                    "body/timerangetype": "3"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_azuremonitorlogs",
+                    "connectionName": "shared_azuremonitorlogs",
+                    "operationId": "QueryDataV2"
+                  }
+                },
+                "runAfter": {
+                  "Wait_15_seconds": [
+                    "Succeeded"
+                  ]
+                },
+                "metadata": {
+                  "description": "Query Root Conversation Transcript",
+                  "nodeId": "connector-8aa1d60f-13d0-4bbf-974e-a6dd9821b2b0"
+                }
+              },
+              "Store_Transcript_Results": {
+                "type": "SetVariable",
+                "inputs": {
+                  "name": "TranscriptResults",
+                  "value": "@body('Query_Root_Conversation_Transcript')?['value']"
+                },
+                "runAfter": {
+                  "Query_Root_Conversation_Transcript": [
+                    "Succeeded"
+                  ]
+                },
+                "metadata": {
+                  "description": "Store Transcript Results",
+                  "nodeId": "variable-fd564a89-99a0-4304-9a65-f26837596b7b"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Wait_for_Correlation_Telemetry": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Verify Correlation Found",
+            "nodeId": "ifElse-32b60af2-7316-412c-9bb2-46a3776dd697"
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "telemetryMetadata": {
+          "modifiedSources": "WorkflowDesigner"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
