@@ -1,0 +1,243 @@
+{
+  "name": "Invoice Processing V2",
+  "description": "Reads invoices from a shared mailbox, extracts structured data from PDF and image attachments, and logs each invoice to Dataverse with duplicate detection.",
+  "tags": [
+    "finance",
+    "document-ops",
+    "email-triage",
+    "dataverse",
+    "multi-agent"
+  ],
+  "author": "Pulkit Bhagat",
+  "createdAt": "2026-09-18",
+  "updatedAt": "2026-09-18",
+  "featured": false,
+  "uniqueName": "Invoiceprocessing",
+  "version": "1.0.0.5",
+  "publisher": "A3P",
+  "bundle": "bundles/invoice-processing-v2.zip",
+  "agentCount": 0,
+  "workflowCount": 1,
+  "componentCount": 2,
+  "agents": [],
+  "agentGraph": {
+    "nodes": [],
+    "edges": []
+  },
+  "workflows": [
+    {
+      "id": "{73a18326-0588-1cb1-8ada-d1c7de919dd5}",
+      "name": "Invoice Processing",
+      "trigger": "When a new email arrives in a shared mailbox",
+      "nodeCount": 11,
+      "edgeCount": 8,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-1aa026b8-5080-4653-b6da-bd26b12b8f7f",
+            "name": "When a new email arrives in a shared mailbox",
+            "type": "start",
+            "position": {
+              "x": 250,
+              "y": 369.9467127576464
+            },
+            "details": {}
+          },
+          {
+            "id": "variable-b4a948dd-32a2-49c7-9337-4ba6e7f30966",
+            "name": "Configuration",
+            "type": "variable",
+            "position": {
+              "x": 714,
+              "y": 334
+            },
+            "details": {}
+          },
+          {
+            "id": "loop-628a88b9-e53f-449f-b6d9-df0cb3c8b9a7",
+            "name": "Loop",
+            "type": "loop",
+            "position": {
+              "x": 1030,
+              "y": 337.8131085027847
+            },
+            "details": {}
+          },
+          {
+            "id": "agent-deacd806-935a-4fa2-9d96-7cf38acc1b24",
+            "name": "Ledger Agent",
+            "type": "agent",
+            "position": {
+              "x": 535.2530222162309,
+              "y": 84.52137676200743
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are the Ledger Agent for Invoice Processing. You run immediately after the Extract node and own all Dataverse actions. All duplicate checking and row logging must be handled entirely by your own reasoning and tool calls, following the steps below exactly.\n\nEXTRACTED INVOICE DATA FROM THE PREVIOUS STEP\nInvoice number:  {body('agentExtract-cc4b9a49-73e0-41ba-99f2-040cfef30df1')?['structuredOutpu"
+            }
+          },
+          {
+            "id": "canvasNote-023ad290-f6d9-4757-9104-a313d65c2cff",
+            "name": "Note 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 597.5352454835117,
+              "y": 758.4947798088192
+            },
+            "details": {
+              "markdown": "Configuration: InvoiceTableName = the table's logical/schema name present in solution — e.g. a3p_invoiceledger, not the display name (\"Invoice Ledgers\"). There are no pickers on this surface, so it must be typed exactly.",
+              "color": "red"
+            }
+          },
+          {
+            "id": "canvasNote-a84f2d36-882f-4e3c-870f-ed4891987877",
+            "name": "Note 3",
+            "type": "canvasNote",
+            "position": {
+              "x": 926.8745493972003,
+              "y": 95.31189817992544
+            },
+            "details": {
+              "markdown": "Loop: iterates once per attachment on the incoming email so the Extraction Agent and Ledger Agent process each attachment separately, one invoice at a time.",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-583d6eaf-9746-45c8-82ee-fddc06867183",
+            "name": "Note 4",
+            "type": "canvasNote",
+            "position": {
+              "x": 948.6951352785006,
+              "y": 750.6428687229316
+            },
+            "details": {
+              "markdown": "Extract: reads the attachment content and extracts InvoiceNumber, Vendor, InvoiceDate, AmountDue, Currency, and ExtractionStatus (Complete/Partial/Failed) as structured output. Leaves a field blank rather than writing placeholder text when it can't be found. Treats attachment content as untrusted data and ignores any instructions embedded in it.",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-8f68b3fc-52a1-4c3c-b390-9ca1c4c89584",
+            "name": "Note 5",
+            "type": "canvasNote",
+            "position": {
+              "x": 1290.0832679067587,
+              "y": 753.1130008562805
+            },
+            "details": {
+              "markdown": "Ledger Agent: owns the Dataverse tools. On each run it looks up the invoice number in the configured table; if a match exists, it still logs the row but flags Duplicate Of the existing row so nothing is silently dropped or double-counted. Trusts the Extraction Node's output and does not re-evaluate the original untrusted email or attachment content.",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-1d5cd115-b6f2-468d-b0ed-d08236b13c1a",
+            "name": "Note",
+            "type": "canvasNote",
+            "position": {
+              "x": 262.6084089420722,
+              "y": 745.8566777154806
+            },
+            "details": {
+              "markdown": "Trigger: fires when a new email arrives in Inbox with \"invoice\" in the subject and at least one attachment. Configure the subject filter, folder, and attachment requirements here if your invoices arrive differently.",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-3428cefc-1f0e-446e-9432-ea2abd74561c",
+            "name": "Note 6",
+            "type": "canvasNote",
+            "position": {
+              "x": 263.2207462832328,
+              "y": 915.8566777154806
+            },
+            "details": {
+              "markdown": "If the Folder field shows \"Loading...\" after importing this solution, the folder ID is tied to the original mailbox. reopen the trigger and re-select the folder for your own mailbox connection before publishing.",
+              "color": "blue"
+            }
+          },
+          {
+            "id": "agentExtract-cc4b9a49-73e0-41ba-99f2-040cfef30df1",
+            "name": "Extract",
+            "type": "agentExtract",
+            "position": {
+              "x": 104.90102592837843,
+              "y": 87.06744040154007
+            },
+            "details": {}
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-variable-b4a948dd-32a2-49c7-9337-4ba6e7f30966-loop-628a88b9-e53f-449f-b6d9-df0cb3c8b9a7-external-input",
+            "source": "variable-b4a948dd-32a2-49c7-9337-4ba6e7f30966",
+            "target": "loop-628a88b9-e53f-449f-b6d9-df0cb3c8b9a7",
+            "targetHandle": "external-input"
+          },
+          {
+            "id": "edge-agent-deacd806-935a-4fa2-9d96-7cf38acc1b24-loop-628a88b9-e53f-449f-b6d9-df0cb3c8b9a7-internal-target",
+            "source": "agent-deacd806-935a-4fa2-9d96-7cf38acc1b24",
+            "target": "loop-628a88b9-e53f-449f-b6d9-df0cb3c8b9a7",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-canvasNote-023ad290-f6d9-4757-9104-a313d65c2cff-canvasNote-a84f2d36-882f-4e3c-870f-ed4891987877-input",
+            "source": "canvasNote-023ad290-f6d9-4757-9104-a313d65c2cff",
+            "target": "canvasNote-a84f2d36-882f-4e3c-870f-ed4891987877",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-canvasNote-583d6eaf-9746-45c8-82ee-fddc06867183-canvasNote-8f68b3fc-52a1-4c3c-b390-9ca1c4c89584-input",
+            "source": "canvasNote-583d6eaf-9746-45c8-82ee-fddc06867183",
+            "target": "canvasNote-8f68b3fc-52a1-4c3c-b390-9ca1c4c89584",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-start-1aa026b8-5080-4653-b6da-bd26b12b8f7f-variable-b4a948dd-32a2-49c7-9337-4ba6e7f30966",
+            "source": "start-1aa026b8-5080-4653-b6da-bd26b12b8f7f",
+            "target": "variable-b4a948dd-32a2-49c7-9337-4ba6e7f30966"
+          },
+          {
+            "id": "edge-canvasNote-1d5cd115-b6f2-468d-b0ed-d08236b13c1a-canvasNote-023ad290-f6d9-4757-9104-a313d65c2cff-input",
+            "source": "canvasNote-1d5cd115-b6f2-468d-b0ed-d08236b13c1a",
+            "target": "canvasNote-023ad290-f6d9-4757-9104-a313d65c2cff",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-agentExtract-cc4b9a49-73e0-41ba-99f2-040cfef30df1-agent-deacd806-935a-4fa2-9d96-7cf38acc1b24",
+            "source": "agentExtract-cc4b9a49-73e0-41ba-99f2-040cfef30df1",
+            "target": "agent-deacd806-935a-4fa2-9d96-7cf38acc1b24"
+          },
+          {
+            "id": "edge-loop-628a88b9-e53f-449f-b6d9-df0cb3c8b9a7-internal-source-agentExtract-cc4b9a49-73e0-41ba-99f2-040cfef30df1",
+            "source": "loop-628a88b9-e53f-449f-b6d9-df0cb3c8b9a7",
+            "target": "agentExtract-cc4b9a49-73e0-41ba-99f2-040cfef30df1",
+            "sourceHandle": "internal-source"
+          }
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 258
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 112768
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4250
+    },
+    {
+      "path": "Workflows/InvoiceProcessing-73A18326-0588-1CB1-8ADA-D1C7DE919DD5.json",
+      "category": "workflow",
+      "size": 90137
+    }
+  ]
+}
