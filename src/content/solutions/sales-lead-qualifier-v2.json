@@ -1,0 +1,212 @@
+{
+  "name": "Sales Lead Qualifier V2",
+  "description": "Reads inbound sales enquiries from a shared mailbox, qualifies them Hot/Warm/Cold using BANT, and logs qualified leads to the native Dataverse Lead table with an email alert for Hot leads.",
+  "tags": [
+    "sales",
+    "lead-qualification",
+    "email-triage",
+    "dataverse",
+    "multi-agent"
+  ],
+  "author": "Pulkit Bhagat",
+  "createdAt": "2026-09-21",
+  "updatedAt": "2026-09-21",
+  "featured": false,
+  "uniqueName": "SalesLeadQualifier",
+  "version": "1.0.0.10",
+  "publisher": "A3P",
+  "bundle": "bundles/sales-lead-qualifier-v2.zip",
+  "agentCount": 0,
+  "workflowCount": 1,
+  "componentCount": 2,
+  "agents": [],
+  "agentGraph": {
+    "nodes": [],
+    "edges": []
+  },
+  "workflows": [
+    {
+      "id": "{cac4398c-780f-3334-8f5c-e1cc29371ab0}",
+      "name": "Sales Lead Qualifier",
+      "trigger": "When a new email arrives in a shared mailbox",
+      "nodeCount": 9,
+      "edgeCount": 6,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-4134db40-3744-4142-92ca-471f4de9d774",
+            "name": "When a new email arrives in a shared mailbox",
+            "type": "start",
+            "position": {
+              "x": 250,
+              "y": 314.8000183105469
+            },
+            "details": {}
+          },
+          {
+            "id": "agent-9a937ec1-6e7c-40b7-b1e2-b2053f0c8a41",
+            "name": "Classifier Agent",
+            "type": "agent",
+            "position": {
+              "x": 996,
+              "y": 229
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are the Classifier Agent for the Sales Lead Qualifier. You process one inbound sales enquiry email at a time from the shared sales alias. You have no tools - you only read and reason. Your text output is consumed by the Lead Agent that runs immediately after you, so it must always follow the exact OUTPUT FORMAT below.\n\nEMAIL FOR THIS RUN\n\nFrom: {triggerOutputs()?['body/from']}\n\nSubject: {trigg"
+            }
+          },
+          {
+            "id": "variable-6badf871-93fd-45bb-bb9b-213ecc4dee09",
+            "name": "Configuration",
+            "type": "variable",
+            "position": {
+              "x": 646,
+              "y": 315
+            },
+            "details": {}
+          },
+          {
+            "id": "canvasNote-9019ace9-0809-4bdc-8f83-c6a7f443c5ff",
+            "name": "Note",
+            "type": "canvasNote",
+            "position": {
+              "x": 648.2825480541065,
+              "y": 463.5093518065945
+            },
+            "details": {
+              "markdown": "Configuration:\nLeadTableName = the logical/schema name of the Dataverse table the Lead Agent creates records in, not the display name, which is present in solution.\nNotifyEmail = the email address that receives the Hot lead notification.",
+              "color": "red"
+            }
+          },
+          {
+            "id": "canvasNote-161be3a8-d54c-48c9-9406-c21b7c20c707",
+            "name": "Note 3",
+            "type": "canvasNote",
+            "position": {
+              "x": 999.7405704389325,
+              "y": 463.40570438932434
+            },
+            "details": {
+              "markdown": "Classifier Agent: reads the incoming email and classifies it against BANT (Budget, Authority, Need, Timing) into a Tier (Hot, Warm, Cold, or Filtered), extracting Company, ContactName, ContactEmail, Phone, Need, and an EmailSubject. Outputs a structured text block that the Lead Agent consumes next.",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "agent-0b3e520f-0bc7-4130-8200-1f2c2dfb80ba",
+            "name": "Lead Agent",
+            "type": "agent",
+            "position": {
+              "x": 1346,
+              "y": 229
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are the Lead Agent for the Sales Lead Qualifier. You run immediately after the Classifier Agent and own all Dataverse and Outlook actions. There is no separate If or Else step in this workflow - all logic must be handled entirely by your own reasoning and tool calls, following the steps below exactly.\n\nCLASSIFICATION FROM THE PREVIOUS STEP\n\n{body('agent-9a937ec1-6e7c-40b7-b1e2-b2053f0c8a41')?["
+            }
+          },
+          {
+            "id": "canvasNote-f3863bd3-d169-484d-862a-e324bfae63d9",
+            "name": "Note 4",
+            "type": "canvasNote",
+            "position": {
+              "x": 1345.0651339503918,
+              "y": 472.48913197111386
+            },
+            "details": {
+              "markdown": "Lead Agent (owns Dataverse and Outlook tools): if Tier is Filtered, does nothing, no record, no notification. Otherwise it creates one Lead record in Dataverse (subject, firstname, lastname, emailaddress1, companyname, telephone1, leadsourcecode, leadqualitycode, description, budgetamount, purchasetimeframe) and emails NotifyEmail only for Hot leads.",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-2407d29f-6e98-4314-b34e-722a4caa84ff",
+            "name": "Note 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 267.6078976063061,
+              "y": 455.91996536263514
+            },
+            "details": {
+              "markdown": "Trigger: fires when a new email arrives in the shared mailbox. No subject filter — every incoming email is passed to the Classifier Agent to decide if it's a genuine sales enquiry.",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-0313c274-bac1-408a-a1eb-5ceb007c5d04",
+            "name": "Note 5",
+            "type": "canvasNote",
+            "position": {
+              "x": 268.48082985997297,
+              "y": 625.9199653626351
+            },
+            "details": {
+              "markdown": "If the Folder field shows \"Loading...\" after importing this solution, the folder ID is tied to the original mailbox. reopen the trigger and re-select the folder for your own mailbox connection before publishing or use clear to point to default Inbox.",
+              "color": "blue"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-4134db40-3744-4142-92ca-471f4de9d774-variable-6badf871-93fd-45bb-bb9b-213ecc4dee09",
+            "source": "start-4134db40-3744-4142-92ca-471f4de9d774",
+            "target": "variable-6badf871-93fd-45bb-bb9b-213ecc4dee09"
+          },
+          {
+            "id": "edge-variable-6badf871-93fd-45bb-bb9b-213ecc4dee09-agent-9a937ec1-6e7c-40b7-b1e2-b2053f0c8a41",
+            "source": "variable-6badf871-93fd-45bb-bb9b-213ecc4dee09",
+            "target": "agent-9a937ec1-6e7c-40b7-b1e2-b2053f0c8a41"
+          },
+          {
+            "id": "edge-canvasNote-161be3a8-d54c-48c9-9406-c21b7c20c707-canvasNote-f3863bd3-d169-484d-862a-e324bfae63d9-input",
+            "source": "canvasNote-161be3a8-d54c-48c9-9406-c21b7c20c707",
+            "target": "canvasNote-f3863bd3-d169-484d-862a-e324bfae63d9",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-canvasNote-f3863bd3-d169-484d-862a-e324bfae63d9-canvasNote-2407d29f-6e98-4314-b34e-722a4caa84ff-input",
+            "source": "canvasNote-f3863bd3-d169-484d-862a-e324bfae63d9",
+            "target": "canvasNote-2407d29f-6e98-4314-b34e-722a4caa84ff",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-agent-9a937ec1-6e7c-40b7-b1e2-b2053f0c8a41-agent-0b3e520f-0bc7-4130-8200-1f2c2dfb80ba",
+            "source": "agent-9a937ec1-6e7c-40b7-b1e2-b2053f0c8a41",
+            "target": "agent-0b3e520f-0bc7-4130-8200-1f2c2dfb80ba"
+          },
+          {
+            "id": "edge-canvasNote-9019ace9-0809-4bdc-8f83-c6a7f443c5ff-canvasNote-161be3a8-d54c-48c9-9406-c21b7c20c707-input",
+            "source": "canvasNote-9019ace9-0809-4bdc-8f83-c6a7f443c5ff",
+            "target": "canvasNote-161be3a8-d54c-48c9-9406-c21b7c20c707",
+            "targetHandle": "input"
+          }
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 258
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 117434
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4245
+    },
+    {
+      "path": "Workflows/SalesLeadQualifier-CAC4398C-780F-3334-8F5C-E1CC29371AB0.json",
+      "category": "workflow",
+      "size": 88138
+    }
+  ]
+}
