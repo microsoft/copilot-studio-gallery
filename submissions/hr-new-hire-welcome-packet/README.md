@@ -34,6 +34,11 @@ per-audience branching logic to maintain.
 
 ## Import notes
 
+- Connections don't carry over to a new user or environment. On the
+  **Match Audience** and **Onboarding Agent** nodes, delete and re-add each
+  tool (SharePoint `Get items`/`Update item`, Office 365 Outlook `Send an
+  email`) so they authenticate against your own account — the canvas has a
+  note on each node listing exactly which tools to re-add.
 - The trigger and the `Get items`/`Update item` tools are bound to a specific
   SharePoint site and list on export. Reopen each SharePoint action after
   importing and re-point it at your own `New Hires` and `Welcome Links` lists.
