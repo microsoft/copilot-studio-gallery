@@ -36,6 +36,11 @@ Failed`) are skipped rather than logged.
 
 ## Import notes
 
+- The workflow is named "Invoice Processing V2" (distinct from any V1 you may
+  have imported) — Copilot Studio prefers the latest version when two
+  workflows share a display name, which previously made V1 untestable
+  alongside this one. If you still hit a naming collision, delete the older
+  version before importing this one.
 - Point the trigger at your own shared mailbox. If the **Folder** field shows
   "Loading..." after importing this solution, the folder ID is tied to the
   original mailbox — reopen the trigger and re-select the folder for your own
