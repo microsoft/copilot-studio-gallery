@@ -1,0 +1,425 @@
+{
+  "name": "RFP Response Manager",
+  "description": "Drafts grounded RFP responses, routes them through iterative human review, and publishes approved proposals to SharePoint.",
+  "tags": [
+    "sales",
+    "document-ops",
+    "sharepoint",
+    "human-in-the-loop",
+    "automation"
+  ],
+  "author": "Isha Gautam",
+  "createdAt": "2026-09-23",
+  "featured": false,
+  "uniqueName": "RFPResponseManager",
+  "version": "1.0.0.5",
+  "publisher": "A3P",
+  "bundle": "bundles/rfp-response-manager.zip",
+  "agentCount": 0,
+  "workflowCount": 1,
+  "componentCount": 1,
+  "agents": [],
+  "agentGraph": {
+    "nodes": [],
+    "edges": []
+  },
+  "workflows": [
+    {
+      "id": "{84fd5cf3-c01a-c1cf-9685-c0c3789ce47d}",
+      "name": "RFP Response Manager Final",
+      "trigger": "When a file is created (properties only)",
+      "nodeCount": 20,
+      "edgeCount": 18,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-ff9ef7ff-98ac-4785-a58d-31c68228e72d",
+            "name": "When a file is created (properties only)",
+            "type": "start",
+            "position": {
+              "x": 100,
+              "y": 454.5
+            },
+            "details": {}
+          },
+          {
+            "id": "agent-9674c9fd-3ad2-4c35-856a-b41009c14ac7",
+            "name": "Agent - Drafting",
+            "type": "agent",
+            "position": {
+              "x": 1618,
+              "y": 454.5
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are the Drafting Agent for the RFP Response Manager. You run after the Extraction Agent and own both writing the proposal AND saving it to SharePoint yourself using your own tools - there is no separate file-creation step in this workflow.\n\nINPUT\nThe RFP document text extracted by the Extraction Agent is provided below. If it is empty or the Extraction Agent noted a failure reading the source "
+            }
+          },
+          {
+            "id": "variable-4ad6bd6b-5c7b-4f85-9851-877306c3cb98",
+            "name": "Customisation Variables",
+            "type": "variable",
+            "position": {
+              "x": 478,
+              "y": 454.5
+            },
+            "details": {}
+          },
+          {
+            "id": "variable-bb898e35-ad33-4bda-842d-b2d4bbc1988f",
+            "name": "Workflow Variables",
+            "type": "variable",
+            "position": {
+              "x": 761,
+              "y": 454.5
+            },
+            "details": {}
+          },
+          {
+            "id": "loop-1ad66f7a-ed59-46bb-a527-2dc60324015b",
+            "name": "Loop",
+            "type": "loop",
+            "position": {
+              "x": 2184,
+              "y": 300
+            },
+            "details": {
+              "expression": "@equals(variables('maxIterations'),variables('tempItr'))"
+            }
+          },
+          {
+            "id": "connector-e16d400b-b0a4-45be-b0ad-d25b2c73c1fd",
+            "name": "Ask for human review",
+            "type": "connector",
+            "position": {
+              "x": 60,
+              "y": 80
+            },
+            "details": {
+              "displayName": "Human review",
+              "apiName": "shared_advancedapprovals",
+              "operationName": "RequestForInformation",
+              "operationType": "OpenApiConnectionWebhook",
+              "parameters": {
+                "RequestForInformationInput/channel": "Teams",
+                "RequestForInformationInput/title": "Validate the draft proposal to @{triggerOutputs()?['body/{Name}']} \n",
+                "RequestForInformationInput/message": "The draft proposal for  your request is ready for review. View it here: @{body('agent-9674c9fd-3ad2-4c35-856a-b41009c14ac7')?['structuredOutput/draft_file_link']} ",
+                "RequestForInformationInput/assignedTo": "@variables('approverAlias')"
+              }
+            }
+          },
+          {
+            "id": "canvasNote-3f8e3ac3-bd4a-4556-938e-bfad43cd7a28",
+            "name": "Note",
+            "type": "canvasNote",
+            "position": {
+              "x": 128.05566385757186,
+              "y": 700.6300980465007
+            },
+            "details": {
+              "markdown": "Gets triggered whenever a file is created in the specified SharePoint location",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-bd609a2b-3343-46a0-998e-6ffc790c5787",
+            "name": "Note 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 485.31163090145594,
+              "y": 698.360157411663
+            },
+            "details": {
+              "markdown": "Update these variables before running:\n1. Alias of the approver/reviewer\n\n2. SharePoint Folder draft: Folder to store draft proposals. Ex: /Shared Documents/RFP Response Manager/Proposal Draft\n\n3. SharePoint Folder Final: Folder to store final proposals. Ex: /Shared Documents/RFP Response Manager/Proposal Final\n\n4. maxIterations: Maximum number of iterations with the agent to refine the proposal d",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-583985c1-b82e-4071-8033-c5beeb7d6886",
+            "name": "Note 2 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 755.063619916084,
+              "y": 701.8781090318728
+            },
+            "details": {
+              "markdown": "** Do not update these **",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-56339db1-d090-4c6e-a979-8dd1a8de038d",
+            "name": "Note 3",
+            "type": "canvasNote",
+            "position": {
+              "x": 132.6165340656915,
+              "y": 150.82379549546732
+            },
+            "details": {
+              "markdown": "** BEFORE TRIGGERING THE WORKFLOW **\n\nMake sure to update the grounding knowledge in the Agent actions.",
+              "color": "red"
+            }
+          },
+          {
+            "id": "canvasNote-1734799e-c3e4-4350-982b-9bdf7d91cab8",
+            "name": "Note 4",
+            "type": "canvasNote",
+            "position": {
+              "x": 1647.7459850303792,
+              "y": 707.8532145910101
+            },
+            "details": {
+              "markdown": "Add your grounding knowledge in this Agent node",
+              "color": "red"
+            }
+          },
+          {
+            "id": "agent-848e51f3-9cb5-46cd-80ac-255e39595f77",
+            "name": "Agent - Extraction",
+            "type": "agent",
+            "position": {
+              "x": 1335,
+              "y": 454.5
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are the Extraction Agent for the RFP Response Manager. You run immediately after a new RFP file is created in SharePoint, and you own reading that file yourself using your SharePoint tool.\n\nGOAL\n\nRead the triggering file's content and extract its full text verbatim, so the Drafting Agent that runs after you has clean source text to work from.\n\nINPUTS\n\nFile path (verbatim, from the trigger): {t"
+            }
+          },
+          {
+            "id": "agent-aa43f5e2-05ee-4b6e-aaf5-29b5bf1a4a9c",
+            "name": "Agent - Review",
+            "type": "agent",
+            "position": {
+              "x": 343,
+              "y": 80
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are the Review Agent for the RFP Response Manager. You run after every human review response and own deciding whether the proposal is approved or needs another round of refinement - there is no separate If/Else step in this workflow for that decision.\n\nINPUTS\nReviewer's structured Approve answer: {body('connector-e16d400b-b0a4-45be-b0ad-d25b2c73c1fd')?['boolean']}\nReviewer's free-text feedback"
+            }
+          },
+          {
+            "id": "variable-56c98fea-75aa-4cd3-878b-3f385ce908fb",
+            "name": "Init agentResponse",
+            "type": "variable",
+            "position": {
+              "x": 1901,
+              "y": 454.5
+            },
+            "details": {}
+          },
+          {
+            "id": "variable-b89b6746-ed6d-4b9f-9d58-f1635196cfd0",
+            "name": "Update agentResponse",
+            "type": "variable",
+            "position": {
+              "x": 626,
+              "y": 80
+            },
+            "details": {}
+          },
+          {
+            "id": "ifElse-b68c5181-67c4-4da2-84cc-84070737ac18",
+            "name": "If/Else",
+            "type": "ifElse",
+            "position": {
+              "x": 909,
+              "y": 80
+            },
+            "details": {}
+          },
+          {
+            "id": "variable-33527315-290e-4301-a82c-cc53b66fb04b",
+            "name": "Force loop exit (approved)",
+            "type": "variable",
+            "position": {
+              "x": 1192,
+              "y": 80
+            },
+            "details": {}
+          },
+          {
+            "id": "variable-8f9fc022-0757-434e-8981-3f6ca033be8c",
+            "name": "Increment tempItr",
+            "type": "variable",
+            "position": {
+              "x": 1192,
+              "y": 289
+            },
+            "details": {}
+          },
+          {
+            "id": "agent-6cc9de38-806e-407c-8295-7219833e6645",
+            "name": "Agent - Finalization",
+            "type": "agent",
+            "position": {
+              "x": 4008,
+              "y": 454.5
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You finalize the RFP response after the review loop ends. You run once, after the review loop completes.\n\nContext available to you:\n- Approved (last Agent-Review : {variables('finalApproved')}\n- Current proposal text (agentResponse):  {variables('agentResponse')}\n- Draft file name:  {body('agent-9674c9fd-3ad2-4c35-856a-b41009c14ac7')?['structuredOutput/draft_file_name']}\n- Draft file link:  {body("
+            }
+          },
+          {
+            "id": "connector-c1bbcf23-bd0f-4301-859d-6c3a137115ce",
+            "name": "Get file content using path",
+            "type": "connector",
+            "position": {
+              "x": 1044,
+              "y": 454.5
+            },
+            "details": {
+              "displayName": "SharePoint",
+              "apiName": "shared_sharepointonline",
+              "operationName": "GetFileContentByPath",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "inferContentType": "true",
+                "dataset": "@variables('SharePoint Site Address')",
+                "path": "@triggerOutputs()?['body/{FullPath}']"
+              }
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-ff9ef7ff-98ac-4785-a58d-31c68228e72d-variable-4ad6bd6b-5c7b-4f85-9851-877306c3cb98",
+            "source": "start-ff9ef7ff-98ac-4785-a58d-31c68228e72d",
+            "target": "variable-4ad6bd6b-5c7b-4f85-9851-877306c3cb98"
+          },
+          {
+            "id": "edge-variable-4ad6bd6b-5c7b-4f85-9851-877306c3cb98-variable-bb898e35-ad33-4bda-842d-b2d4bbc1988f",
+            "source": "variable-4ad6bd6b-5c7b-4f85-9851-877306c3cb98",
+            "target": "variable-bb898e35-ad33-4bda-842d-b2d4bbc1988f"
+          },
+          {
+            "id": "edge-loop-1ad66f7a-ed59-46bb-a527-2dc60324015b-internal-source-connector-e16d400b-b0a4-45be-b0ad-d25b2c73c1fd",
+            "source": "loop-1ad66f7a-ed59-46bb-a527-2dc60324015b",
+            "target": "connector-e16d400b-b0a4-45be-b0ad-d25b2c73c1fd",
+            "sourceHandle": "internal-source"
+          },
+          {
+            "id": "edge-canvasNote-3f8e3ac3-bd4a-4556-938e-bfad43cd7a28-canvasNote-bd609a2b-3343-46a0-998e-6ffc790c5787-input",
+            "source": "canvasNote-3f8e3ac3-bd4a-4556-938e-bfad43cd7a28",
+            "target": "canvasNote-bd609a2b-3343-46a0-998e-6ffc790c5787",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-canvasNote-bd609a2b-3343-46a0-998e-6ffc790c5787-canvasNote-583985c1-b82e-4071-8033-c5beeb7d6886-input",
+            "source": "canvasNote-bd609a2b-3343-46a0-998e-6ffc790c5787",
+            "target": "canvasNote-583985c1-b82e-4071-8033-c5beeb7d6886",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-agent-848e51f3-9cb5-46cd-80ac-255e39595f77-agent-9674c9fd-3ad2-4c35-856a-b41009c14ac7",
+            "source": "agent-848e51f3-9cb5-46cd-80ac-255e39595f77",
+            "target": "agent-9674c9fd-3ad2-4c35-856a-b41009c14ac7"
+          },
+          {
+            "id": "edge-agent-9674c9fd-3ad2-4c35-856a-b41009c14ac7-variable-56c98fea-75aa-4cd3-878b-3f385ce908fb",
+            "source": "agent-9674c9fd-3ad2-4c35-856a-b41009c14ac7",
+            "target": "variable-56c98fea-75aa-4cd3-878b-3f385ce908fb"
+          },
+          {
+            "id": "edge-variable-56c98fea-75aa-4cd3-878b-3f385ce908fb-loop-1ad66f7a-ed59-46bb-a527-2dc60324015b-external-input",
+            "source": "variable-56c98fea-75aa-4cd3-878b-3f385ce908fb",
+            "target": "loop-1ad66f7a-ed59-46bb-a527-2dc60324015b",
+            "targetHandle": "external-input"
+          },
+          {
+            "id": "edge-variable-b89b6746-ed6d-4b9f-9d58-f1635196cfd0-ifElse-b68c5181-67c4-4da2-84cc-84070737ac18",
+            "source": "variable-b89b6746-ed6d-4b9f-9d58-f1635196cfd0",
+            "target": "ifElse-b68c5181-67c4-4da2-84cc-84070737ac18"
+          },
+          {
+            "id": "edge-ifElse-b68c5181-67c4-4da2-84cc-84070737ac18-condition:fe7f512f-d196-4d7b-8df2-a32253cc7a31-variable-33527315-290e-4301-a82c-cc53b66fb04b",
+            "source": "ifElse-b68c5181-67c4-4da2-84cc-84070737ac18",
+            "target": "variable-33527315-290e-4301-a82c-cc53b66fb04b",
+            "sourceHandle": "condition:fe7f512f-d196-4d7b-8df2-a32253cc7a31"
+          },
+          {
+            "id": "edge-loop-1ad66f7a-ed59-46bb-a527-2dc60324015b-external-output-agent-6cc9de38-806e-407c-8295-7219833e6645",
+            "source": "loop-1ad66f7a-ed59-46bb-a527-2dc60324015b",
+            "target": "agent-6cc9de38-806e-407c-8295-7219833e6645",
+            "sourceHandle": "external-output"
+          },
+          {
+            "id": "edge-connector-e16d400b-b0a4-45be-b0ad-d25b2c73c1fd-agent-aa43f5e2-05ee-4b6e-aaf5-29b5bf1a4a9c-input",
+            "source": "connector-e16d400b-b0a4-45be-b0ad-d25b2c73c1fd",
+            "target": "agent-aa43f5e2-05ee-4b6e-aaf5-29b5bf1a4a9c",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-agent-aa43f5e2-05ee-4b6e-aaf5-29b5bf1a4a9c-output-variable-b89b6746-ed6d-4b9f-9d58-f1635196cfd0-input",
+            "source": "agent-aa43f5e2-05ee-4b6e-aaf5-29b5bf1a4a9c",
+            "target": "variable-b89b6746-ed6d-4b9f-9d58-f1635196cfd0",
+            "sourceHandle": "output",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-variable-8f9fc022-0757-434e-8981-3f6ca033be8c-loop-1ad66f7a-ed59-46bb-a527-2dc60324015b-internal-target",
+            "source": "variable-8f9fc022-0757-434e-8981-3f6ca033be8c",
+            "target": "loop-1ad66f7a-ed59-46bb-a527-2dc60324015b",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-ifElse-b68c5181-67c4-4da2-84cc-84070737ac18-else-variable-8f9fc022-0757-434e-8981-3f6ca033be8c-input",
+            "source": "ifElse-b68c5181-67c4-4da2-84cc-84070737ac18",
+            "target": "variable-8f9fc022-0757-434e-8981-3f6ca033be8c",
+            "sourceHandle": "else",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-variable-33527315-290e-4301-a82c-cc53b66fb04b-output-loop-1ad66f7a-ed59-46bb-a527-2dc60324015b-internal-target",
+            "source": "variable-33527315-290e-4301-a82c-cc53b66fb04b",
+            "target": "loop-1ad66f7a-ed59-46bb-a527-2dc60324015b",
+            "sourceHandle": "output",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-variable-bb898e35-ad33-4bda-842d-b2d4bbc1988f-connector-c1bbcf23-bd0f-4301-859d-6c3a137115ce",
+            "source": "variable-bb898e35-ad33-4bda-842d-b2d4bbc1988f",
+            "target": "connector-c1bbcf23-bd0f-4301-859d-6c3a137115ce"
+          },
+          {
+            "id": "edge-connector-c1bbcf23-bd0f-4301-859d-6c3a137115ce-agent-848e51f3-9cb5-46cd-80ac-255e39595f77",
+            "source": "connector-c1bbcf23-bd0f-4301-859d-6c3a137115ce",
+            "target": "agent-848e51f3-9cb5-46cd-80ac-255e39595f77"
+          }
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 258
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 4100
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4172
+    },
+    {
+      "path": "Workflows/RFPResponseManagerFinal-84FD5CF3-C01A-C1CF-9685-C0C3789CE47D.json",
+      "category": "workflow",
+      "size": 186427
+    }
+  ]
+}
