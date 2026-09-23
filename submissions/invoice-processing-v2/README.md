@@ -29,7 +29,7 @@ Failed`) are skipped rather than logged.
 
 | Variable | Purpose |
 | --- | --- |
-| `InvoiceTableName` | The Dataverse table's logical/schema name (for example `a3p_invoiceledger`, not the display name "Invoice Ledgers"). There are no pickers on the canvas for this, so it must be typed exactly. |
+| `InvoiceTableName` | The Dataverse table's logical/schema name (for example `a3p_invoiceledgerv2s`, not the display name "Invoice Ledgers V2"). There are no pickers on the canvas for this, so it must be typed exactly. |
 
 ## Import notes
 
@@ -45,6 +45,9 @@ Failed`) are skipped rather than logged.
 - Create a Dataverse table to log invoices to, with columns matching the
   fields above (`Vendor`, `Invoice Number`, `Invoice Date`, `Currency`,
   `Amount Due`, `Duplicate Of`), and set `InvoiceTableName` to its logical name.
+  If you've already imported an earlier version of this table (e.g. from V1),
+  give the new one a distinct logical name (this solution's sample table is
+  named `a3p_invoiceledgerv2`) to avoid a naming collision.
 - The Ledger Agent uses the native Dataverse connector's "List rows" and "Add
   a new row to selected environment" actions. In some Personal Developer
   environments, the default Data Loss Prevention policy blocks the

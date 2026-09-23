@@ -840,12 +840,12 @@
                             "variableName": "InvoiceTableName",
                             "mode": "initialize",
                             "type": "string",
-                            "value": "a3p_invoiceledgers",
+                            "value": "a3p_invoiceledgerv2s",
                             "valueRich": {
                               "segments": [
                                 {
                                   "type": "static",
-                                  "value": "a3p_invoiceledgers"
+                                  "value": "a3p_invoiceledgerv2s"
                                 }
                               ]
                             }
@@ -1166,21 +1166,21 @@
                       "y": 457.02763619189182
                     },
                     "width": 232,
-                    "height": 200,
+                    "height": 204,
                     "style": {
                       "width": 232,
-                      "height": 200
+                      "height": 204
                     },
                     "data": {
                       "config": {
-                        "markdown": "Configuration: InvoiceTableName = the table's logical/schema name present in solution — e.g. a3p_invoiceledgers, not the display name (\"Invoice Ledgers\"). There are no pickers on this surface, so it must be typed exactly.",
+                        "markdown": "Configuration: InvoiceTableName = the table's logical/schema name present in solution — e.g. a3p_invoiceledgerv2s, not the display name (\"Invoice Ledgers V2\"). There are no pickers on this surface, so it must be typed exactly. Currently this table is available in solution.",
                         "color": "red"
                       },
                       "outcomes": []
                     },
                     "measured": {
                       "width": 232,
-                      "height": 200
+                      "height": 204
                     },
                     "resizing": false
                   },
@@ -1717,28 +1717,10 @@
                                       "x-ms-property-name-alias": "exchangerate"
                                     },
                                     "a3p_extractionstatus": {
-                                      "type": "integer",
+                                      "type": "string",
                                       "title": "Extraction Status",
-                                      "x-ms-dynamic-list": {
-                                        "operationId": "GetOptionSetMetadataWithEntitySetName",
-                                        "parameters": {
-                                          "entityName": {
-                                            "parameterReference": "entityName",
-                                            "required": true
-                                          },
-                                          "attributeMetadataId": {
-                                            "value": "0d6a1391-335e-4f91-a2eb-242c85e9ce0c"
-                                          },
-                                          "type": {
-                                            "value": "Picklist"
-                                          }
-                                        },
-                                        "itemsPath": "value",
-                                        "itemValuePath": "value",
-                                        "itemTitlePath": "Label/UserLocalizedLabel/Label"
-                                      },
-                                      "format": "int32",
                                       "description": "",
+                                      "maxLength": 4000,
                                       "x-ms-visibility": "advanced",
                                       "x-ms-property-name-alias": "a3p_extractionstatus"
                                     },
@@ -1760,13 +1742,13 @@
                                       "x-ms-visibility": "advanced",
                                       "x-ms-property-name-alias": "a3p_invoicedate"
                                     },
-                                    "a3p_invoiceledgerid": {
+                                    "a3p_invoiceledgerv2id": {
                                       "type": "string",
-                                      "title": "Invoice Ledger",
+                                      "title": "Invoice Ledger V2",
                                       "format": "guid",
                                       "description": "Unique identifier for entity instances",
                                       "x-ms-visibility": "advanced",
-                                      "x-ms-property-name-alias": "a3p_invoiceledgerid"
+                                      "x-ms-property-name-alias": "a3p_invoiceledgerv2id"
                                     },
                                     "a3p_invoicenumber": {
                                       "type": "string",
@@ -1918,7 +1900,7 @@
                                             "required": true
                                           },
                                           "attributeMetadataId": {
-                                            "value": "7ee7a7d9-5ae3-4dfa-9a6e-73b3f5490f96"
+                                            "value": "8766d6a5-7519-42ef-8f86-6f44345e9ee6"
                                           },
                                           "type": {
                                             "value": "State"
@@ -1929,7 +1911,7 @@
                                         "itemTitlePath": "Label/UserLocalizedLabel/Label"
                                       },
                                       "format": "int32",
-                                      "description": "Status of the Invoice Ledger",
+                                      "description": "Status of the Invoice Ledger V2",
                                       "x-ms-visibility": "advanced",
                                       "x-ms-property-name-alias": "statecode"
                                     },
@@ -1944,7 +1926,7 @@
                                             "required": true
                                           },
                                           "attributeMetadataId": {
-                                            "value": "e52fcf14-c629-4711-acf1-116d67cc12f2"
+                                            "value": "2462d1fd-2613-4232-95ff-3deb21959731"
                                           },
                                           "type": {
                                             "value": "Status"
@@ -1955,7 +1937,7 @@
                                         "itemTitlePath": "Label/UserLocalizedLabel/Label"
                                       },
                                       "format": "int32",
-                                      "description": "Reason for the status of the Invoice Ledger",
+                                      "description": "Reason for the status of the Invoice Ledger V2",
                                       "x-ms-visibility": "advanced",
                                       "x-ms-property-name-alias": "statuscode"
                                     },
@@ -2114,7 +2096,7 @@
                         "connectionName": "shared_commondataserviceforapps",
                         "parameters": {
                           "entityName": "@variables('InvoiceTableName')",
-                          "item": "@json(concat('{\"a3p_amountdue\":', string(body('Ledger_Agent')?['structuredOutput/AmountDue']), ',\"a3p_attachmentname\":\"', body('Ledger_Agent')?['structuredOutput/AttachmentName'], '\",\"a3p_currency\":\"', body('Ledger_Agent')?['structuredOutput/Currency'], '\",\"a3p_duplicateof\":\"', if(equals(body('Ledger_Agent')?['structuredOutput/DuplicateOf'], 'null'), '', body('Ledger_Agent')?['structuredOutput/DuplicateOf']), '\",\"a3p_extractionstatus\":', string(if(equals(body('Ledger_Agent')?['structuredOutput/ExtractionStatus'], 'Complete'), 741260000, if(equals(body('Ledger_Agent')?['structuredOutput/ExtractionStatus'], 'Partial'), 741260001, 741260002))), ',\"a3p_invoicedate\":', if(equals(body('Ledger_Agent')?['structuredOutput/InvoiceDate'], ''), 'null', concat('\"', body('Ledger_Agent')?['structuredOutput/InvoiceDate'], '\"')), ',\"a3p_invoicenumber\":\"', body('Ledger_Agent')?['structuredOutput/InvoiceNumber'], '\",\"a3p_sourceemailid\":\"', body('Ledger_Agent')?['structuredOutput/SourceEmailId'], '\",\"a3p_vendor\":\"', body('Ledger_Agent')?['structuredOutput/Vendor'], '\",\"a3p_receivedon\":\"', body('Ledger_Agent')?['structuredOutput/ReceivedOn'], '\",\"a3p_newcolumn\":\"', body('Ledger_Agent')?['structuredOutput/RecordName'], '\"}'))"
+                          "item": "@json(concat('{\"a3p_amountdue\":', string(body('agent-deacd806-935a-4fa2-9d96-7cf38acc1b24')?['structuredOutput/AmountDue']), ',\"a3p_attachmentname\":\"', body('agent-deacd806-935a-4fa2-9d96-7cf38acc1b24')?['structuredOutput/AttachmentName'], '\",\"a3p_currency\":\"', body('agent-deacd806-935a-4fa2-9d96-7cf38acc1b24')?['structuredOutput/Currency'], '\",\"a3p_duplicateof\":\"', if(equals(body('agent-deacd806-935a-4fa2-9d96-7cf38acc1b24')?['structuredOutput/DuplicateOf'], 'null'), '', body('agent-deacd806-935a-4fa2-9d96-7cf38acc1b24')?['structuredOutput/DuplicateOf']), '\",\"a3p_extractionstatus\":\"', body('agent-deacd806-935a-4fa2-9d96-7cf38acc1b24')?['structuredOutput/ExtractionStatus'], '\",\"a3p_invoicedate\":', if(equals(body('agent-deacd806-935a-4fa2-9d96-7cf38acc1b24')?['structuredOutput/InvoiceDate'], ''), 'null', concat('\"', body('agent-deacd806-935a-4fa2-9d96-7cf38acc1b24')?['structuredOutput/InvoiceDate'], '\"')), ',\"a3p_invoicenumber\":\"', body('agent-deacd806-935a-4fa2-9d96-7cf38acc1b24')?['structuredOutput/InvoiceNumber'], '\",\"a3p_sourceemailid\":\"', body('agent-deacd806-935a-4fa2-9d96-7cf38acc1b24')?['structuredOutput/SourceEmailId'], '\",\"a3p_vendor\":\"', body('agent-deacd806-935a-4fa2-9d96-7cf38acc1b24')?['structuredOutput/Vendor'], '\",\"a3p_receivedon\":\"', body('agent-deacd806-935a-4fa2-9d96-7cf38acc1b24')?['structuredOutput/ReceivedOn'], '\",\"a3p_newcolumn\":\"', body('agent-deacd806-935a-4fa2-9d96-7cf38acc1b24')?['structuredOutput/RecordName'], '\"}'))"
                         },
                         "resolvedDynamicSchemas": {
                           "item": {}
@@ -2738,7 +2720,7 @@
               {
                 "name": "InvoiceTableName",
                 "type": "String",
-                "value": "a3p_invoiceledgers"
+                "value": "a3p_invoiceledgerv2s"
               }
             ]
           },
@@ -2840,7 +2822,7 @@
                   "inputs": {
                     "parameters": {
                       "entityName": "@variables('InvoiceTableName')",
-                      "item": "@json(concat('{\"a3p_amountdue\":', string(body('Ledger_Agent')?['structuredOutput/AmountDue']), ',\"a3p_attachmentname\":\"', body('Ledger_Agent')?['structuredOutput/AttachmentName'], '\",\"a3p_currency\":\"', body('Ledger_Agent')?['structuredOutput/Currency'], '\",\"a3p_duplicateof\":\"', if(equals(body('Ledger_Agent')?['structuredOutput/DuplicateOf'], 'null'), '', body('Ledger_Agent')?['structuredOutput/DuplicateOf']), '\",\"a3p_extractionstatus\":', string(if(equals(body('Ledger_Agent')?['structuredOutput/ExtractionStatus'], 'Complete'), 741260000, if(equals(body('Ledger_Agent')?['structuredOutput/ExtractionStatus'], 'Partial'), 741260001, 741260002))), ',\"a3p_invoicedate\":', if(equals(body('Ledger_Agent')?['structuredOutput/InvoiceDate'], ''), 'null', concat('\"', body('Ledger_Agent')?['structuredOutput/InvoiceDate'], '\"')), ',\"a3p_invoicenumber\":\"', body('Ledger_Agent')?['structuredOutput/InvoiceNumber'], '\",\"a3p_sourceemailid\":\"', body('Ledger_Agent')?['structuredOutput/SourceEmailId'], '\",\"a3p_vendor\":\"', body('Ledger_Agent')?['structuredOutput/Vendor'], '\",\"a3p_receivedon\":\"', body('Ledger_Agent')?['structuredOutput/ReceivedOn'], '\",\"a3p_newcolumn\":\"', body('Ledger_Agent')?['structuredOutput/RecordName'], '\"}'))"
+                      "item": "@json(concat('{\"a3p_amountdue\":', string(body('Ledger_Agent')?['structuredOutput/AmountDue']), ',\"a3p_attachmentname\":\"', body('Ledger_Agent')?['structuredOutput/AttachmentName'], '\",\"a3p_currency\":\"', body('Ledger_Agent')?['structuredOutput/Currency'], '\",\"a3p_duplicateof\":\"', if(equals(body('Ledger_Agent')?['structuredOutput/DuplicateOf'], 'null'), '', body('Ledger_Agent')?['structuredOutput/DuplicateOf']), '\",\"a3p_extractionstatus\":\"', body('Ledger_Agent')?['structuredOutput/ExtractionStatus'], '\",\"a3p_invoicedate\":', if(equals(body('Ledger_Agent')?['structuredOutput/InvoiceDate'], ''), 'null', concat('\"', body('Ledger_Agent')?['structuredOutput/InvoiceDate'], '\"')), ',\"a3p_invoicenumber\":\"', body('Ledger_Agent')?['structuredOutput/InvoiceNumber'], '\",\"a3p_sourceemailid\":\"', body('Ledger_Agent')?['structuredOutput/SourceEmailId'], '\",\"a3p_vendor\":\"', body('Ledger_Agent')?['structuredOutput/Vendor'], '\",\"a3p_receivedon\":\"', body('Ledger_Agent')?['structuredOutput/ReceivedOn'], '\",\"a3p_newcolumn\":\"', body('Ledger_Agent')?['structuredOutput/RecordName'], '\"}'))"
                     },
                     "host": {
                       "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",

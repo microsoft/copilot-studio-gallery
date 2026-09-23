@@ -1,14 +1,14 @@
 <ImportExportXml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.26092.134" OrganizationSchemaType="Standard" CRMServerServiceabilityVersion="9.2.26092.00135">
   <Entities>
     <Entity>
-      <Name LocalizedName="Invoice Ledger" OriginalName="Invoice Ledger">a3p_InvoiceLedger</Name>
+      <Name LocalizedName="Invoice Ledger V2" OriginalName="Invoice Ledger V2">a3p_InvoiceLedgerV2</Name>
       <EntityInfo>
-        <entity Name="a3p_InvoiceLedger">
+        <entity Name="a3p_InvoiceLedgerV2">
           <LocalizedNames>
-            <LocalizedName description="Invoice Ledger" languagecode="1033" />
+            <LocalizedName description="Invoice Ledger V2" languagecode="1033" />
           </LocalizedNames>
           <LocalizedCollectionNames>
-            <LocalizedCollectionName description="Invoice Ledgers" languagecode="1033" />
+            <LocalizedCollectionName description="Invoice Ledger V2S" languagecode="1033" />
           </LocalizedCollectionNames>
           <Descriptions>
             <Description description="" languagecode="1033" />
@@ -110,7 +110,7 @@
               <IsCustomField>1</IsCustomField>
               <IsAuditEnabled>1</IsAuditEnabled>
               <IsSecured>0</IsSecured>
-              <IntroducedVersion>1.0.0.7</IntroducedVersion>
+              <IntroducedVersion>1.0.0.10</IntroducedVersion>
               <IsCustomizable>1</IsCustomizable>
               <IsRenameable>1</IsRenameable>
               <CanModifySearchSettings>1</CanModifySearchSettings>
@@ -150,7 +150,7 @@
               <IsCustomField>1</IsCustomField>
               <IsAuditEnabled>1</IsAuditEnabled>
               <IsSecured>0</IsSecured>
-              <IntroducedVersion>1.0.0.7</IntroducedVersion>
+              <IntroducedVersion>1.0.0.10</IntroducedVersion>
               <IsCustomizable>1</IsCustomizable>
               <IsRenameable>1</IsRenameable>
               <CanModifySearchSettings>1</CanModifySearchSettings>
@@ -190,7 +190,7 @@
               <IsCustomField>1</IsCustomField>
               <IsAuditEnabled>1</IsAuditEnabled>
               <IsSecured>0</IsSecured>
-              <IntroducedVersion>1.0.0.7</IntroducedVersion>
+              <IntroducedVersion>1.0.0.10</IntroducedVersion>
               <IsCustomizable>1</IsCustomizable>
               <IsRenameable>1</IsRenameable>
               <CanModifySearchSettings>1</CanModifySearchSettings>
@@ -218,11 +218,11 @@
               </Descriptions>
             </attribute>
             <attribute PhysicalName="a3p_ExtractionStatus">
-              <Type>picklist</Type>
+              <Type>nvarchar</Type>
               <Name>a3p_extractionstatus</Name>
               <LogicalName>a3p_extractionstatus</LogicalName>
               <RequiredLevel>none</RequiredLevel>
-              <DisplayMask>ValidForAdvancedFind|ValidForForm|ValidForGrid</DisplayMask>
+              <DisplayMask>ValidForForm|ValidForGrid</DisplayMask>
               <ImeMode>auto</ImeMode>
               <ValidForUpdateApi>1</ValidForUpdateApi>
               <ValidForReadApi>1</ValidForReadApi>
@@ -230,7 +230,7 @@
               <IsCustomField>1</IsCustomField>
               <IsAuditEnabled>1</IsAuditEnabled>
               <IsSecured>0</IsSecured>
-              <IntroducedVersion>1.0</IntroducedVersion>
+              <IntroducedVersion>1.0.0.10</IntroducedVersion>
               <IsCustomizable>1</IsCustomizable>
               <IsRenameable>1</IsRenameable>
               <CanModifySearchSettings>1</CanModifySearchSettings>
@@ -247,35 +247,9 @@
               <IsFilterable>0</IsFilterable>
               <IsRetrievable>0</IsRetrievable>
               <IsLocalizable>0</IsLocalizable>
-              <AppDefaultValue>741260000</AppDefaultValue>
-              <optionset Name="a3p_invoiceledger_a3p_extractionstatus">
-                <OptionSetType>picklist</OptionSetType>
-                <IntroducedVersion>1.0</IntroducedVersion>
-                <IsCustomizable>1</IsCustomizable>
-                <displaynames>
-                  <displayname description="Extraction Status" languagecode="1033" />
-                </displaynames>
-                <Descriptions>
-                  <Description description="" languagecode="1033" />
-                </Descriptions>
-                <options>
-                  <option value="741260000" ExternalValue="" IsHidden="0">
-                    <labels>
-                      <label description="Complete" languagecode="1033" />
-                    </labels>
-                  </option>
-                  <option value="741260001" ExternalValue="" IsHidden="0">
-                    <labels>
-                      <label description="Partial" languagecode="1033" />
-                    </labels>
-                  </option>
-                  <option value="741260002" ExternalValue="" IsHidden="0">
-                    <labels>
-                      <label description="Failed" languagecode="1033" />
-                    </labels>
-                  </option>
-                </options>
-              </optionset>
+              <Format>text</Format>
+              <MaxLength>4000</MaxLength>
+              <Length>8000</Length>
               <displaynames>
                 <displayname description="Extraction Status" languagecode="1033" />
               </displaynames>
@@ -296,7 +270,7 @@
               <IsCustomField>1</IsCustomField>
               <IsAuditEnabled>1</IsAuditEnabled>
               <IsSecured>0</IsSecured>
-              <IntroducedVersion>1.0.0.7</IntroducedVersion>
+              <IntroducedVersion>1.0.0.10</IntroducedVersion>
               <IsCustomizable>1</IsCustomizable>
               <IsRenameable>1</IsRenameable>
               <CanModifySearchSettings>1</CanModifySearchSettings>
@@ -313,7 +287,7 @@
               <IsFilterable>0</IsFilterable>
               <IsRetrievable>0</IsRetrievable>
               <IsLocalizable>0</IsLocalizable>
-              <Format>date</Format>
+              <Format>datetime</Format>
               <CanChangeDateTimeBehavior>1</CanChangeDateTimeBehavior>
               <Behavior>1</Behavior>
               <displaynames>
@@ -323,10 +297,10 @@
                 <Description description="" languagecode="1033" />
               </Descriptions>
             </attribute>
-            <attribute PhysicalName="a3p_InvoiceLedgerId">
+            <attribute PhysicalName="a3p_InvoiceLedgerV2Id">
               <Type>primarykey</Type>
-              <Name>a3p_invoiceledgerid</Name>
-              <LogicalName>a3p_invoiceledgerid</LogicalName>
+              <Name>a3p_invoiceledgerv2id</Name>
+              <LogicalName>a3p_invoiceledgerv2id</LogicalName>
               <RequiredLevel>systemrequired</RequiredLevel>
               <DisplayMask>ValidForAdvancedFind|RequiredForGrid</DisplayMask>
               <ImeMode>auto</ImeMode>
@@ -354,7 +328,7 @@
               <IsRetrievable>1</IsRetrievable>
               <IsLocalizable>0</IsLocalizable>
               <displaynames>
-                <displayname description="Invoice Ledger" languagecode="1033" />
+                <displayname description="Invoice Ledger V2" languagecode="1033" />
               </displaynames>
               <Descriptions>
                 <Description description="Unique identifier for entity instances" languagecode="1033" />
@@ -373,7 +347,7 @@
               <IsCustomField>1</IsCustomField>
               <IsAuditEnabled>1</IsAuditEnabled>
               <IsSecured>0</IsSecured>
-              <IntroducedVersion>1.0.0.7</IntroducedVersion>
+              <IntroducedVersion>1.0.0.10</IntroducedVersion>
               <IsCustomizable>1</IsCustomizable>
               <IsRenameable>1</IsRenameable>
               <CanModifySearchSettings>1</CanModifySearchSettings>
@@ -453,7 +427,7 @@
               <IsCustomField>1</IsCustomField>
               <IsAuditEnabled>1</IsAuditEnabled>
               <IsSecured>0</IsSecured>
-              <IntroducedVersion>1.0.0.7</IntroducedVersion>
+              <IntroducedVersion>1.0.0.10</IntroducedVersion>
               <IsCustomizable>1</IsCustomizable>
               <IsRenameable>1</IsRenameable>
               <CanModifySearchSettings>1</CanModifySearchSettings>
@@ -493,7 +467,7 @@
               <IsCustomField>1</IsCustomField>
               <IsAuditEnabled>1</IsAuditEnabled>
               <IsSecured>0</IsSecured>
-              <IntroducedVersion>1.0.0.7</IntroducedVersion>
+              <IntroducedVersion>1.0.0.10</IntroducedVersion>
               <IsCustomizable>1</IsCustomizable>
               <IsRenameable>1</IsRenameable>
               <CanModifySearchSettings>1</CanModifySearchSettings>
@@ -533,7 +507,7 @@
               <IsCustomField>1</IsCustomField>
               <IsAuditEnabled>1</IsAuditEnabled>
               <IsSecured>0</IsSecured>
-              <IntroducedVersion>1.0.0.7</IntroducedVersion>
+              <IntroducedVersion>1.0.0.10</IntroducedVersion>
               <IsCustomizable>1</IsCustomizable>
               <IsRenameable>1</IsRenameable>
               <CanModifySearchSettings>1</CanModifySearchSettings>
@@ -1105,7 +1079,7 @@
               <IsFilterable>1</IsFilterable>
               <IsRetrievable>0</IsRetrievable>
               <IsLocalizable>0</IsLocalizable>
-              <optionset Name="a3p_invoiceledger_statecode">
+              <optionset Name="a3p_invoiceledgerv2_statecode">
                 <OptionSetType>state</OptionSetType>
                 <IntroducedVersion>1.0</IntroducedVersion>
                 <IsCustomizable>1</IsCustomizable>
@@ -1113,7 +1087,7 @@
                   <displayname description="Status" languagecode="1033" />
                 </displaynames>
                 <Descriptions>
-                  <Description description="Status of the Invoice Ledger" languagecode="1033" />
+                  <Description description="Status of the Invoice Ledger V2" languagecode="1033" />
                 </Descriptions>
                 <states>
                   <state value="0" defaultstatus="1" invariantname="Active" IsHidden="0">
@@ -1132,7 +1106,7 @@
                 <displayname description="Status" languagecode="1033" />
               </displaynames>
               <Descriptions>
-                <Description description="Status of the Invoice Ledger" languagecode="1033" />
+                <Description description="Status of the Invoice Ledger V2" languagecode="1033" />
               </Descriptions>
             </attribute>
             <attribute PhysicalName="statuscode">
@@ -1165,7 +1139,7 @@
               <IsFilterable>0</IsFilterable>
               <IsRetrievable>0</IsRetrievable>
               <IsLocalizable>0</IsLocalizable>
-              <optionset Name="a3p_invoiceledger_statuscode">
+              <optionset Name="a3p_invoiceledgerv2_statuscode">
                 <OptionSetType>status</OptionSetType>
                 <IntroducedVersion>1.0</IntroducedVersion>
                 <IsCustomizable>1</IsCustomizable>
@@ -1173,7 +1147,7 @@
                   <displayname description="Status Reason" languagecode="1033" />
                 </displaynames>
                 <Descriptions>
-                  <Description description="Reason for the status of the Invoice Ledger" languagecode="1033" />
+                  <Description description="Reason for the status of the Invoice Ledger V2" languagecode="1033" />
                 </Descriptions>
                 <statuses>
                   <status value="1" state="0" IsHidden="0">
@@ -1192,7 +1166,7 @@
                 <displayname description="Status Reason" languagecode="1033" />
               </displaynames>
               <Descriptions>
-                <Description description="Reason for the status of the Invoice Ledger" languagecode="1033" />
+                <Description description="Reason for the status of the Invoice Ledger V2" languagecode="1033" />
               </Descriptions>
             </attribute>
             <attribute PhysicalName="TimeZoneRuleVersionNumber">
@@ -1313,7 +1287,7 @@
               </Descriptions>
             </attribute>
           </attributes>
-          <EntitySetName>a3p_invoiceledgers</EntitySetName>
+          <EntitySetName>a3p_invoiceledgerv2s</EntitySetName>
           <IsDuplicateCheckSupported>1</IsDuplicateCheckSupported>
           <IsBusinessProcessEnabled>0</IsBusinessProcessEnabled>
           <IsRequiredOffline>0</IsRequiredOffline>
@@ -1380,20 +1354,20 @@
       <FormXml>
         <forms type="card">
           <systemform>
-            <formid>{994b8361-365f-4760-8be7-bc3bf77e760f}</formid>
+            <formid>{7225ced6-1600-4483-bdec-b48c7afc34e7}</formid>
             <IntroducedVersion>1.0</IntroducedVersion>
             <FormPresentation>1</FormPresentation>
             <FormActivationState>1</FormActivationState>
             <form>
               <tabs>
-                <tab name="general" verticallayout="true" id="{ea54f8f9-f039-42a7-83c1-48e53e9478d1}" IsUserDefined="0">
+                <tab name="general" verticallayout="true" id="{cf607a7a-4d62-4fd9-8541-9be4a586a593}" IsUserDefined="0">
                   <labels>
                     <label description="" languagecode="1033" />
                   </labels>
                   <columns>
                     <column width="25%">
                       <sections>
-                        <section name="ColorStrip" showlabel="false" showbar="false" columns="1" IsUserDefined="0" id="{96205be6-1a9a-4047-ac70-5948762f0909}">
+                        <section name="ColorStrip" showlabel="false" showbar="false" columns="1" IsUserDefined="0" id="{fa040878-c581-402e-83e0-cef435c11a7e}">
                           <labels>
                             <label description="ColorStrip" languagecode="1033" />
                           </labels>
@@ -1402,24 +1376,24 @@
                     </column>
                     <column width="75%">
                       <sections>
-                        <section name="CardHeader" showlabel="false" showbar="false" columns="111" id="{017a6a6d-7e4b-43a4-972f-108475ebc4ba}" IsUserDefined="0">
+                        <section name="CardHeader" showlabel="false" showbar="false" columns="111" id="{e9af0daf-a237-40a7-9ca5-e9c97ef22890}" IsUserDefined="0">
                           <labels>
                             <label description="Header" languagecode="1033" />
                           </labels>
                           <rows>
                             <row>
-                              <cell id="{8283f160-627f-432d-b42b-8d20522ef509}" showlabel="true" locklevel="0">
+                              <cell id="{f1e76c11-5b95-482b-90b3-1f360693a1b1}" showlabel="true" locklevel="0">
                                 <labels>
                                   <label description="Status Reason" languagecode="1033" />
                                 </labels>
                                 <control id="statuscode" classid="{5D68B988-0661-4db2-BC3E-17598AD3BE6C}" datafieldname="statuscode" disabled="false" />
                               </cell>
-                              <cell id="{13ff01dd-9c09-4066-ae56-bdf3853c99af}" showlabel="true" locklevel="0">
+                              <cell id="{cf4161a4-1a83-431a-93ce-440c60819b67}" showlabel="true" locklevel="0">
                                 <labels>
                                   <label description="" languagecode="1033" />
                                 </labels>
                               </cell>
-                              <cell id="{423cdb90-3c20-4dd3-bce5-f279702ceab5}" showlabel="true" locklevel="0">
+                              <cell id="{97016d60-9fdb-45b3-8739-a7a3930bb639}" showlabel="true" locklevel="0">
                                 <labels>
                                   <label description="" languagecode="1033" />
                                 </labels>
@@ -1427,13 +1401,13 @@
                             </row>
                           </rows>
                         </section>
-                        <section name="CardDetails" showlabel="false" showbar="false" columns="1" id="{a9547120-7847-4c68-87e9-ea31d106a4aa}" IsUserDefined="0">
+                        <section name="CardDetails" showlabel="false" showbar="false" columns="1" id="{dfb2697e-31b3-4f8f-aea2-1135b444d5f8}" IsUserDefined="0">
                           <labels>
                             <label description="Details" languagecode="1033" />
                           </labels>
                           <rows>
                             <row>
-                              <cell id="{13e3f8af-3190-4c03-ad0d-4948724db58f}" showlabel="true" locklevel="0">
+                              <cell id="{ce2e063b-d86d-420b-b8dc-f2e3a07b8505}" showlabel="true" locklevel="0">
                                 <labels>
                                   <label description="New column" languagecode="1033" />
                                 </labels>
@@ -1442,30 +1416,30 @@
                             </row>
                           </rows>
                         </section>
-                        <section name="CardFooter" showlabel="false" columns="1111" showbar="false" id="{e34733f3-6d9c-4305-afe6-b9710074bfee}" IsUserDefined="0">
+                        <section name="CardFooter" showlabel="false" columns="1111" showbar="false" id="{58a9872f-1196-49c6-bd50-52d910fb4756}" IsUserDefined="0">
                           <labels>
                             <label description="Footer" languagecode="1033" />
                           </labels>
                           <rows>
                             <row>
-                              <cell id="{0c2744ad-73ae-4a45-ac97-d5cdc553b5f2}" showlabel="true" locklevel="0">
+                              <cell id="{575ad04f-a1ae-451c-8445-8cde65adffa3}" showlabel="true" locklevel="0">
                                 <labels>
                                   <label description="Owner" languagecode="1033" />
                                 </labels>
                                 <control id="ownerid" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="ownerid" disabled="false" />
                               </cell>
-                              <cell id="{dd0bde7d-60ce-46ce-b676-a6530f03e000}" showlabel="true" locklevel="0">
+                              <cell id="{2e1e169f-d7ad-453c-9a55-85d6d552849f}" showlabel="true" locklevel="0">
                                 <labels>
                                   <label description="Created On" languagecode="1033" />
                                 </labels>
                                 <control id="createdon" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="createdon" disabled="false" />
                               </cell>
-                              <cell id="{3f93f1f4-6aaf-41e4-8791-1736a33c94c1}" showlabel="true" locklevel="0">
+                              <cell id="{4d34d00c-64d7-4118-ba3b-4a2448b10857}" showlabel="true" locklevel="0">
                                 <labels>
                                   <label description="" languagecode="1033" />
                                 </labels>
                               </cell>
-                              <cell id="{205085b9-a2be-45fd-b2e1-4b6d3d420e68}" showlabel="true" locklevel="0">
+                              <cell id="{73d13ba5-2c74-41a3-afd1-89d24fc9cc75}" showlabel="true" locklevel="0">
                                 <labels>
                                   <label description="" languagecode="1033" />
                                 </labels>
@@ -1491,26 +1465,26 @@
         </forms>
         <forms type="main">
           <systemform>
-            <formid>{00ce4fa9-925c-4588-9081-520c88cd9692}</formid>
+            <formid>{22c2d3b5-3e5e-4eb9-b6e5-a6a82d1c773e}</formid>
             <IntroducedVersion>1.0</IntroducedVersion>
             <FormPresentation>1</FormPresentation>
             <FormActivationState>1</FormActivationState>
             <form>
               <tabs>
-                <tab verticallayout="true" id="{9458026c-6069-42e8-bb0d-e7ac4ec83d5b}" IsUserDefined="1">
+                <tab verticallayout="true" id="{ed27d401-e839-461a-a7f4-dac029e82bbc}" IsUserDefined="1">
                   <labels>
                     <label description="General" languagecode="1033" />
                   </labels>
                   <columns>
                     <column width="100%">
                       <sections>
-                        <section showlabel="false" showbar="false" IsUserDefined="0" id="{481444c6-fadd-4411-b185-fed1890f510e}">
+                        <section showlabel="false" showbar="false" IsUserDefined="0" id="{b070d292-4b3a-40d8-bb62-c3dff1392c38}">
                           <labels>
                             <label description="General" languagecode="1033" />
                           </labels>
                           <rows>
                             <row>
-                              <cell id="{57dd672c-bd26-4466-9e71-7b209a154e93}">
+                              <cell id="{b0afc448-30d3-4b7c-b351-8cca7c7ee9ab}">
                                 <labels>
                                   <label description="New column" languagecode="1033" />
                                 </labels>
@@ -1518,7 +1492,7 @@
                               </cell>
                             </row>
                             <row>
-                              <cell id="{a2129118-41ae-4f4a-ac83-c9a42d0a50cf}">
+                              <cell id="{0a7986eb-ba8a-41d7-8dff-9061efa9233c}">
                                 <labels>
                                   <label description="Owner" languagecode="1033" />
                                 </labels>
@@ -1526,7 +1500,7 @@
                               </cell>
                             </row>
                             <row>
-                              <cell id="{75970f08-d5c5-4496-84a3-d4996a33014d}">
+                              <cell id="{c4934835-e6f4-4858-bd90-21f9944683d5}">
                                 <labels>
                                   <label description="Invoice Number" languagecode="1033" />
                                 </labels>
@@ -1534,7 +1508,7 @@
                               </cell>
                             </row>
                             <row>
-                              <cell id="{4045dc10-674e-4f4e-bfab-6bb03af1c658}">
+                              <cell id="{abe7e504-adc4-4713-8f7e-5f39fb668e9d}">
                                 <labels>
                                   <label description="Vendor" languagecode="1033" />
                                 </labels>
@@ -1542,7 +1516,7 @@
                               </cell>
                             </row>
                             <row>
-                              <cell id="{68bfe291-6bf9-4b93-b159-44555dcd64aa}">
+                              <cell id="{cca685d4-40ef-4d23-b494-2de14f22b3a4}">
                                 <labels>
                                   <label description="Invoice Date" languagecode="1033" />
                                 </labels>
@@ -1550,15 +1524,7 @@
                               </cell>
                             </row>
                             <row>
-                              <cell id="{03242454-51cf-4743-ab8d-de05e2b3ad0e}">
-                                <labels>
-                                  <label description="Amount Due" languagecode="1033" />
-                                </labels>
-                                <control id="a3p_amountdue" classid="{533b9e00-756b-4312-95a0-dc888637ac78}" datafieldname="a3p_amountdue" />
-                              </cell>
-                            </row>
-                            <row>
-                              <cell id="{12995060-30ed-4d39-9c12-c3db536c8513}">
+                              <cell id="{dc821144-0270-4bf1-a084-5dea9026e862}">
                                 <labels>
                                   <label description="Currency" languagecode="1033" />
                                 </labels>
@@ -1566,15 +1532,15 @@
                               </cell>
                             </row>
                             <row>
-                              <cell id="{c4eec553-f076-44a9-a37e-b24c8542489f}">
+                              <cell id="{a9688ba4-9056-4259-8b1f-a27b3598220f}">
                                 <labels>
                                   <label description="Extraction Status" languagecode="1033" />
                                 </labels>
-                                <control id="a3p_extractionstatus" classid="{3ef39988-22bb-4f0b-bbbe-64b5a3748aee}" datafieldname="a3p_extractionstatus" />
+                                <control id="a3p_extractionstatus" classid="{4273edbd-ac1d-40d3-9fb2-095c621b552d}" datafieldname="a3p_extractionstatus" />
                               </cell>
                             </row>
                             <row>
-                              <cell id="{39ab3331-5319-4ba9-8340-00f3bc3b6808}">
+                              <cell id="{22729c64-08e3-453c-86bd-9f5c023d0789}">
                                 <labels>
                                   <label description="Attachment Name" languagecode="1033" />
                                 </labels>
@@ -1582,7 +1548,7 @@
                               </cell>
                             </row>
                             <row>
-                              <cell id="{8101830e-6617-4a8e-89c0-c60c7272fd36}">
+                              <cell id="{7997e2ac-6354-466a-b13d-d9800537a922}">
                                 <labels>
                                   <label description="Received On" languagecode="1033" />
                                 </labels>
@@ -1590,7 +1556,7 @@
                               </cell>
                             </row>
                             <row>
-                              <cell id="{76eecc28-183f-42fa-909c-9df93bff0f31}">
+                              <cell id="{58b40d10-33a4-4e52-b4fa-7fa6512c00c4}">
                                 <labels>
                                   <label description="Source Email Id" languagecode="1033" />
                                 </labels>
@@ -1598,11 +1564,19 @@
                               </cell>
                             </row>
                             <row>
-                              <cell id="{ba97f856-3954-4d44-b97e-6c8821c053e2}">
+                              <cell id="{b1ef5a9d-fd0f-49cc-99a5-85387c613038}">
                                 <labels>
                                   <label description="Duplicate Of" languagecode="1033" />
                                 </labels>
                                 <control id="a3p_duplicateof" classid="{4273edbd-ac1d-40d3-9fb2-095c621b552d}" datafieldname="a3p_duplicateof" />
+                              </cell>
+                            </row>
+                            <row>
+                              <cell id="{46f6e34b-3032-40f6-a43b-c009e59fa436}">
+                                <labels>
+                                  <label description="Amount Due" languagecode="1033" />
+                                </labels>
+                                <control id="a3p_amountdue" classid="{533b9e00-756b-4312-95a0-dc888637ac78}" datafieldname="a3p_amountdue" />
                               </cell>
                             </row>
                           </rows>
@@ -1625,26 +1599,26 @@
         </forms>
         <forms type="quick">
           <systemform>
-            <formid>{4f61d299-8efe-448e-9008-0604aa72d31a}</formid>
+            <formid>{a22ffaaf-dab5-4ccc-9bab-4e112d6e1216}</formid>
             <IntroducedVersion>1.0</IntroducedVersion>
             <FormPresentation>1</FormPresentation>
             <FormActivationState>1</FormActivationState>
             <form>
               <tabs>
-                <tab verticallayout="true" id="{3f2adff8-cdcd-4bb4-a936-8db86136fd6c}" IsUserDefined="1">
+                <tab verticallayout="true" id="{e359ce77-d7dc-45b1-824c-88f00c2bf098}" IsUserDefined="1">
                   <labels>
                     <label description="" languagecode="1033" />
                   </labels>
                   <columns>
                     <column width="100%">
                       <sections>
-                        <section showlabel="false" showbar="false" IsUserDefined="0" id="{2ac449c9-ede0-4abc-9a2f-13c1774f2744}">
+                        <section showlabel="false" showbar="false" IsUserDefined="0" id="{37263be2-3cc8-420a-9d78-f570c6114042}">
                           <labels>
                             <label description="GENERAL" languagecode="1033" />
                           </labels>
                           <rows>
                             <row>
-                              <cell id="{1fbd4c4b-a684-4803-a037-eaefe0ae39fd}">
+                              <cell id="{16db770e-4887-48bc-8b1e-eb2752ef7432}">
                                 <labels>
                                   <label description="New column" languagecode="1033" />
                                 </labels>
@@ -1652,7 +1626,7 @@
                               </cell>
                             </row>
                             <row>
-                              <cell id="{ea3cf03a-b66c-4318-bbc8-17cad51f87e1}">
+                              <cell id="{dfe0bf1f-8404-4d86-a67d-138b002ee55e}">
                                 <labels>
                                   <label description="Owner" languagecode="1033" />
                                 </labels>
@@ -1683,29 +1657,29 @@
             <isquickfindquery>0</isquickfindquery>
             <isprivate>0</isprivate>
             <isdefault>1</isdefault>
-            <savedqueryid>{a9844d10-1fc8-4001-a20d-a4ddf267b244}</savedqueryid>
+            <savedqueryid>{af4ff9aa-a6d8-4b62-80dc-e10a4d8dd790}</savedqueryid>
             <layoutxml>
               <grid name="resultset" jump="a3p_newcolumn" select="1" icon="1" preview="1">
-                <row name="result" id="a3p_invoiceledgerid">
+                <row name="result" id="a3p_invoiceledgerv2id">
                   <cell name="a3p_newcolumn" width="300" />
                   <cell name="a3p_invoicenumber" width="150" />
                   <cell name="a3p_vendor" width="150" />
                   <cell name="a3p_invoicedate" width="150" />
-                  <cell name="a3p_amountdue" width="150" />
                   <cell name="a3p_currency" width="150" />
                   <cell name="a3p_extractionstatus" width="150" />
                   <cell name="a3p_attachmentname" width="150" />
                   <cell name="a3p_receivedon" width="150" />
                   <cell name="a3p_sourceemailid" width="150" />
                   <cell name="a3p_duplicateof" width="150" />
+                  <cell name="a3p_amountdue" width="150" />
                 </row>
               </grid>
             </layoutxml>
             <querytype>0</querytype>
             <fetchxml>
               <fetch version="1.0" mapping="logical">
-                <entity name="a3p_invoiceledger">
-                  <attribute name="a3p_invoiceledgerid" />
+                <entity name="a3p_invoiceledgerv2">
+                  <attribute name="a3p_invoiceledgerv2id" />
                   <attribute name="a3p_newcolumn" />
                   <attribute name="createdon" />
                   <order attribute="a3p_newcolumn" descending="false" />
@@ -1715,19 +1689,19 @@
                   <attribute name="a3p_invoicenumber" />
                   <attribute name="a3p_vendor" />
                   <attribute name="a3p_invoicedate" />
-                  <attribute name="a3p_amountdue" />
                   <attribute name="a3p_currency" />
                   <attribute name="a3p_extractionstatus" />
                   <attribute name="a3p_attachmentname" />
                   <attribute name="a3p_receivedon" />
                   <attribute name="a3p_sourceemailid" />
                   <attribute name="a3p_duplicateof" />
+                  <attribute name="a3p_amountdue" />
                 </entity>
               </fetch>
             </fetchxml>
             <IntroducedVersion>1.0</IntroducedVersion>
             <LocalizedNames>
-              <LocalizedName description="Active Invoice Ledgers" languagecode="1033" />
+              <LocalizedName description="Active Invoice Ledger V2S" languagecode="1033" />
             </LocalizedNames>
           </savedquery>
           <savedquery>
@@ -1736,10 +1710,10 @@
             <isquickfindquery>0</isquickfindquery>
             <isprivate>0</isprivate>
             <isdefault>0</isdefault>
-            <savedqueryid>{8e9247be-5063-4014-b57c-8208095ad9a4}</savedqueryid>
+            <savedqueryid>{a9e14bea-6aac-4c15-a595-2c5a27a2c6a9}</savedqueryid>
             <layoutxml>
               <grid name="resultset" jump="a3p_newcolumn" select="1" icon="1" preview="1">
-                <row name="result" id="a3p_invoiceledgerid">
+                <row name="result" id="a3p_invoiceledgerv2id">
                   <cell name="a3p_newcolumn" width="300" />
                   <cell name="createdon" width="125" />
                 </row>
@@ -1748,8 +1722,8 @@
             <querytype>0</querytype>
             <fetchxml>
               <fetch version="1.0" mapping="logical">
-                <entity name="a3p_invoiceledger">
-                  <attribute name="a3p_invoiceledgerid" />
+                <entity name="a3p_invoiceledgerv2">
+                  <attribute name="a3p_invoiceledgerv2id" />
                   <attribute name="a3p_newcolumn" />
                   <attribute name="createdon" />
                   <order attribute="a3p_newcolumn" descending="false" />
@@ -1761,7 +1735,7 @@
             </fetchxml>
             <IntroducedVersion>1.0</IntroducedVersion>
             <LocalizedNames>
-              <LocalizedName description="Inactive Invoice Ledgers" languagecode="1033" />
+              <LocalizedName description="Inactive Invoice Ledger V2S" languagecode="1033" />
             </LocalizedNames>
           </savedquery>
           <savedquery>
@@ -1770,10 +1744,10 @@
             <isquickfindquery>0</isquickfindquery>
             <isprivate>0</isprivate>
             <isdefault>1</isdefault>
-            <savedqueryid>{eff5ad0b-dee0-4d2b-a3e0-5dbe8f3ba9c1}</savedqueryid>
+            <savedqueryid>{3d428f1f-d6e1-4627-ba43-c90ce5b0279c}</savedqueryid>
             <layoutxml>
               <grid name="resultset" jump="a3p_newcolumn" select="1" icon="1" preview="1">
-                <row name="result" id="a3p_invoiceledgerid">
+                <row name="result" id="a3p_invoiceledgerv2id">
                   <cell name="a3p_newcolumn" width="300" />
                   <cell name="createdon" width="125" />
                 </row>
@@ -1782,8 +1756,8 @@
             <querytype>1</querytype>
             <fetchxml>
               <fetch version="1.0" mapping="logical">
-                <entity name="a3p_invoiceledger">
-                  <attribute name="a3p_invoiceledgerid" />
+                <entity name="a3p_invoiceledgerv2">
+                  <attribute name="a3p_invoiceledgerv2id" />
                   <attribute name="a3p_newcolumn" />
                   <attribute name="createdon" />
                   <order attribute="a3p_newcolumn" descending="false" />
@@ -1792,7 +1766,7 @@
             </fetchxml>
             <IntroducedVersion>1.0</IntroducedVersion>
             <LocalizedNames>
-              <LocalizedName description="Invoice Ledger Advanced Find View" languagecode="1033" />
+              <LocalizedName description="Invoice Ledger V2 Advanced Find View" languagecode="1033" />
             </LocalizedNames>
           </savedquery>
           <savedquery>
@@ -1801,10 +1775,10 @@
             <isquickfindquery>0</isquickfindquery>
             <isprivate>0</isprivate>
             <isdefault>1</isdefault>
-            <savedqueryid>{2c0aaaee-e54c-4411-be42-0fce0d5eca12}</savedqueryid>
+            <savedqueryid>{9c9cb639-0898-4e59-9e33-4454f7a6cb15}</savedqueryid>
             <layoutxml>
-              <grid name="a3p_invoiceledgers" jump="a3p_newcolumn" select="1" icon="1" preview="1">
-                <row name="a3p_invoiceledger" id="a3p_invoiceledgerid">
+              <grid name="a3p_invoiceledgerv2s" jump="a3p_newcolumn" select="1" icon="1" preview="1">
+                <row name="a3p_invoiceledgerv2" id="a3p_invoiceledgerv2id">
                   <cell name="a3p_newcolumn" width="300" />
                   <cell name="createdon" width="125" />
                 </row>
@@ -1813,8 +1787,8 @@
             <querytype>2</querytype>
             <fetchxml>
               <fetch version="1.0" mapping="logical">
-                <entity name="a3p_invoiceledger">
-                  <attribute name="a3p_invoiceledgerid" />
+                <entity name="a3p_invoiceledgerv2">
+                  <attribute name="a3p_invoiceledgerv2id" />
                   <attribute name="a3p_newcolumn" />
                   <attribute name="createdon" />
                   <order attribute="a3p_newcolumn" descending="false" />
@@ -1826,7 +1800,7 @@
             </fetchxml>
             <IntroducedVersion>1.0</IntroducedVersion>
             <LocalizedNames>
-              <LocalizedName description="Invoice Ledger Associated View" languagecode="1033" />
+              <LocalizedName description="Invoice Ledger V2 Associated View" languagecode="1033" />
             </LocalizedNames>
           </savedquery>
           <savedquery>
@@ -1835,10 +1809,10 @@
             <isquickfindquery>0</isquickfindquery>
             <isprivate>0</isprivate>
             <isdefault>1</isdefault>
-            <savedqueryid>{a647422e-fa66-48da-ace3-6237a2bf90fd}</savedqueryid>
+            <savedqueryid>{1d331742-e2c2-4728-9386-fd9689c29eb8}</savedqueryid>
             <layoutxml>
-              <grid name="a3p_invoiceledgers" jump="a3p_newcolumn" select="1" icon="1" preview="0">
-                <row name="a3p_invoiceledger" id="a3p_invoiceledgerid">
+              <grid name="a3p_invoiceledgerv2s" jump="a3p_newcolumn" select="1" icon="1" preview="0">
+                <row name="a3p_invoiceledgerv2" id="a3p_invoiceledgerv2id">
                   <cell name="a3p_newcolumn" width="300" />
                   <cell name="createdon" width="125" />
                 </row>
@@ -1847,8 +1821,8 @@
             <querytype>64</querytype>
             <fetchxml>
               <fetch version="1.0" mapping="logical">
-                <entity name="a3p_invoiceledger">
-                  <attribute name="a3p_invoiceledgerid" />
+                <entity name="a3p_invoiceledgerv2">
+                  <attribute name="a3p_invoiceledgerv2id" />
                   <attribute name="a3p_newcolumn" />
                   <attribute name="createdon" />
                   <filter type="and">
@@ -1859,7 +1833,7 @@
             </fetchxml>
             <IntroducedVersion>1.0</IntroducedVersion>
             <LocalizedNames>
-              <LocalizedName description="Invoice Ledger Lookup View" languagecode="1033" />
+              <LocalizedName description="Invoice Ledger V2 Lookup View" languagecode="1033" />
             </LocalizedNames>
           </savedquery>
           <savedquery>
@@ -1868,12 +1842,12 @@
             <isquickfindquery>0</isquickfindquery>
             <isprivate>0</isprivate>
             <isdefault>1</isdefault>
-            <savedqueryid>{250fd683-50b2-f111-aaad-7ced8d3b448b}</savedqueryid>
+            <savedqueryid>{0a4a72d7-4cb7-f111-aaad-70a8a5af46e5}</savedqueryid>
             <querytype>8192</querytype>
             <fetchxml>
               <fetch version="1.0" mapping="logical" output-format="xml-platform">
-                <entity name="a3p_invoiceledger">
-                  <attribute name="a3p_invoiceledgerid" />
+                <entity name="a3p_invoiceledgerv2">
+                  <attribute name="a3p_invoiceledgerv2id" />
                   <filter type="and">
                     <condition attribute="statecode" operator="eq" value="0" />
                     <condition attribute="ownerid" operator="eq-userid" />
@@ -1883,10 +1857,10 @@
             </fetchxml>
             <IntroducedVersion>1.0</IntroducedVersion>
             <LocalizedNames>
-              <LocalizedName description="My Invoice Ledgers" languagecode="1033" />
+              <LocalizedName description="My Invoice Ledger V2S" languagecode="1033" />
             </LocalizedNames>
             <Descriptions>
-              <Description description="Active Invoice Ledgers owned by me" languagecode="1033" />
+              <Description description="Active Invoice Ledger V2S owned by me" languagecode="1033" />
             </Descriptions>
           </savedquery>
           <savedquery>
@@ -1895,10 +1869,10 @@
             <isquickfindquery>1</isquickfindquery>
             <isprivate>0</isprivate>
             <isdefault>1</isdefault>
-            <savedqueryid>{f60e6afc-713d-48db-ae44-9a72c4b0ae36}</savedqueryid>
+            <savedqueryid>{c06ab509-3f0f-4bfd-b1dc-0eae9a42eefc}</savedqueryid>
             <layoutxml>
               <grid name="resultset" jump="a3p_newcolumn" select="1" icon="1" preview="1">
-                <row name="result" id="a3p_invoiceledgerid">
+                <row name="result" id="a3p_invoiceledgerv2id">
                   <cell name="a3p_newcolumn" width="300" />
                   <cell name="createdon" width="125" />
                 </row>
@@ -1907,8 +1881,8 @@
             <querytype>4</querytype>
             <fetchxml>
               <fetch version="1.0" mapping="logical">
-                <entity name="a3p_invoiceledger">
-                  <attribute name="a3p_invoiceledgerid" />
+                <entity name="a3p_invoiceledgerv2">
+                  <attribute name="a3p_invoiceledgerv2id" />
                   <attribute name="a3p_newcolumn" />
                   <attribute name="createdon" />
                   <order attribute="a3p_newcolumn" descending="false" />
@@ -1923,7 +1897,7 @@
             </fetchxml>
             <IntroducedVersion>1.0</IntroducedVersion>
             <LocalizedNames>
-              <LocalizedName description="Quick Find Active Invoice Ledgers" languagecode="1033" />
+              <LocalizedName description="Quick Find Active Invoice Ledger V2S" languagecode="1033" />
             </LocalizedNames>
           </savedquery>
         </savedqueries>
@@ -1975,12 +1949,12 @@
   <Templates />
   <EntityMaps />
   <EntityRelationships>
-    <EntityRelationship Name="business_unit_a3p_invoiceledger">
+    <EntityRelationship Name="business_unit_a3p_invoiceledgerv2">
       <EntityRelationshipType>OneToMany</EntityRelationshipType>
       <IsCustomizable>1</IsCustomizable>
       <IntroducedVersion>1.0</IntroducedVersion>
       <IsHierarchical>0</IsHierarchical>
-      <ReferencingEntityName>a3p_InvoiceLedger</ReferencingEntityName>
+      <ReferencingEntityName>a3p_InvoiceLedgerV2</ReferencingEntityName>
       <ReferencedEntityName>BusinessUnit</ReferencedEntityName>
       <CascadeAssign>NoCascade</CascadeAssign>
       <CascadeDelete>Restrict</CascadeDelete>
@@ -1995,12 +1969,12 @@
         </Descriptions>
       </RelationshipDescription>
     </EntityRelationship>
-    <EntityRelationship Name="lk_a3p_invoiceledger_createdby">
+    <EntityRelationship Name="lk_a3p_invoiceledgerv2_createdby">
       <EntityRelationshipType>OneToMany</EntityRelationshipType>
       <IsCustomizable>1</IsCustomizable>
       <IntroducedVersion>1.0</IntroducedVersion>
       <IsHierarchical>0</IsHierarchical>
-      <ReferencingEntityName>a3p_InvoiceLedger</ReferencingEntityName>
+      <ReferencingEntityName>a3p_InvoiceLedgerV2</ReferencingEntityName>
       <ReferencedEntityName>SystemUser</ReferencedEntityName>
       <CascadeAssign>NoCascade</CascadeAssign>
       <CascadeDelete>NoCascade</CascadeDelete>
@@ -2015,12 +1989,12 @@
         </Descriptions>
       </RelationshipDescription>
     </EntityRelationship>
-    <EntityRelationship Name="lk_a3p_invoiceledger_modifiedby">
+    <EntityRelationship Name="lk_a3p_invoiceledgerv2_modifiedby">
       <EntityRelationshipType>OneToMany</EntityRelationshipType>
       <IsCustomizable>1</IsCustomizable>
       <IntroducedVersion>1.0</IntroducedVersion>
       <IsHierarchical>0</IsHierarchical>
-      <ReferencingEntityName>a3p_InvoiceLedger</ReferencingEntityName>
+      <ReferencingEntityName>a3p_InvoiceLedgerV2</ReferencingEntityName>
       <ReferencedEntityName>SystemUser</ReferencedEntityName>
       <CascadeAssign>NoCascade</CascadeAssign>
       <CascadeDelete>NoCascade</CascadeDelete>
@@ -2035,12 +2009,12 @@
         </Descriptions>
       </RelationshipDescription>
     </EntityRelationship>
-    <EntityRelationship Name="owner_a3p_invoiceledger">
+    <EntityRelationship Name="owner_a3p_invoiceledgerv2">
       <EntityRelationshipType>OneToMany</EntityRelationshipType>
       <IsCustomizable>1</IsCustomizable>
       <IntroducedVersion>1.0</IntroducedVersion>
       <IsHierarchical>0</IsHierarchical>
-      <ReferencingEntityName>a3p_InvoiceLedger</ReferencingEntityName>
+      <ReferencingEntityName>a3p_InvoiceLedgerV2</ReferencingEntityName>
       <ReferencedEntityName>Owner</ReferencedEntityName>
       <CascadeAssign>NoCascade</CascadeAssign>
       <CascadeDelete>NoCascade</CascadeDelete>
@@ -2055,12 +2029,12 @@
         </Descriptions>
       </RelationshipDescription>
     </EntityRelationship>
-    <EntityRelationship Name="team_a3p_invoiceledger">
+    <EntityRelationship Name="team_a3p_invoiceledgerv2">
       <EntityRelationshipType>OneToMany</EntityRelationshipType>
       <IsCustomizable>1</IsCustomizable>
       <IntroducedVersion>1.0</IntroducedVersion>
       <IsHierarchical>0</IsHierarchical>
-      <ReferencingEntityName>a3p_InvoiceLedger</ReferencingEntityName>
+      <ReferencingEntityName>a3p_InvoiceLedgerV2</ReferencingEntityName>
       <ReferencedEntityName>Team</ReferencedEntityName>
       <CascadeAssign>NoCascade</CascadeAssign>
       <CascadeDelete>NoCascade</CascadeDelete>
@@ -2075,12 +2049,12 @@
         </Descriptions>
       </RelationshipDescription>
     </EntityRelationship>
-    <EntityRelationship Name="TransactionCurrency_a3p_InvoiceLedger">
+    <EntityRelationship Name="TransactionCurrency_a3p_InvoiceLedgerV2">
       <EntityRelationshipType>OneToMany</EntityRelationshipType>
       <IsCustomizable>1</IsCustomizable>
       <IntroducedVersion>1.0</IntroducedVersion>
       <IsHierarchical>0</IsHierarchical>
-      <ReferencingEntityName>a3p_InvoiceLedger</ReferencingEntityName>
+      <ReferencingEntityName>a3p_InvoiceLedgerV2</ReferencingEntityName>
       <ReferencedEntityName>TransactionCurrency</ReferencedEntityName>
       <CascadeAssign>NoCascade</CascadeAssign>
       <CascadeDelete>Restrict</CascadeDelete>
@@ -2096,12 +2070,12 @@
         </Descriptions>
       </RelationshipDescription>
     </EntityRelationship>
-    <EntityRelationship Name="user_a3p_invoiceledger">
+    <EntityRelationship Name="user_a3p_invoiceledgerv2">
       <EntityRelationshipType>OneToMany</EntityRelationshipType>
       <IsCustomizable>1</IsCustomizable>
       <IntroducedVersion>1.0</IntroducedVersion>
       <IsHierarchical>0</IsHierarchical>
-      <ReferencingEntityName>a3p_InvoiceLedger</ReferencingEntityName>
+      <ReferencingEntityName>a3p_InvoiceLedgerV2</ReferencingEntityName>
       <ReferencedEntityName>SystemUser</ReferencedEntityName>
       <CascadeAssign>NoCascade</CascadeAssign>
       <CascadeDelete>NoCascade</CascadeDelete>
