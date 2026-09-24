@@ -1,0 +1,226 @@
+{
+  "name": "HR New Hire Welcome Packet",
+  "description": "Watches a SharePoint new-hire list, matches the hire's job title to an audience, and emails a role-specific welcome packet assembled from a SharePoint links list.",
+  "tags": [
+    "hr",
+    "onboarding",
+    "sharepoint",
+    "email",
+    "single-agent"
+  ],
+  "author": "Pulkit Bhagat",
+  "createdAt": "2026-09-22",
+  "updatedAt": "2026-09-23",
+  "featured": false,
+  "uniqueName": "HROnboarding",
+  "version": "1.0.0.7",
+  "publisher": "A3P",
+  "bundle": "bundles/hr-new-hire-welcome-packet.zip",
+  "agentCount": 0,
+  "workflowCount": 1,
+  "componentCount": 1,
+  "agents": [],
+  "agentGraph": {
+    "nodes": [],
+    "edges": []
+  },
+  "workflows": [
+    {
+      "id": "{8c80c828-256e-5d89-7723-ba234f4c40a2}",
+      "name": "HR New Hire Welcome Packet",
+      "trigger": "When an item is created",
+      "nodeCount": 11,
+      "edgeCount": 4,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-51fd44b0-e2a1-4c03-bff1-72567e6c14fd",
+            "name": "When an item is created",
+            "type": "start",
+            "position": {
+              "x": 271.5798767913098,
+              "y": 222.576721011951
+            },
+            "details": {}
+          },
+          {
+            "id": "agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514",
+            "name": "Onboarding Agent",
+            "type": "agent",
+            "position": {
+              "x": 1437.4847977438737,
+              "y": 223.77521794874815
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are the Delivery step for HR New Hire Welcome Packet. You run once per new-hire row, immediately after Match Audience. You have three tools: Get items (filtered), Send email, and Update item. You never re-decide the audience — you trust Match Audience's result completely. Send every email at Normal importance. Do not mark anything Low or High priority.\n\nMATCH RESULT FROM THE PREVIOUS STEP {bod"
+            }
+          },
+          {
+            "id": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b",
+            "name": "Configuration",
+            "type": "variable",
+            "position": {
+              "x": 630.118950466471,
+              "y": 224.73718742671687
+            },
+            "details": {}
+          },
+          {
+            "id": "canvasNote-f530af65-6ff7-46fe-981c-c401d3e5ab44",
+            "name": "Note",
+            "type": "canvasNote",
+            "position": {
+              "x": 268.7159642906813,
+              "y": 318.7987679130978
+            },
+            "details": {
+              "markdown": "Fires when a row is added to New Hires. Site/list are set directly here, reselect them in this trigger to point at your own list. \n\n\n",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-0aa7edc5-01f8-4cc3-83ee-80af0d1d4177",
+            "name": "Note 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 633.143228555974,
+              "y": 318.68807051707836
+            },
+            "details": {
+              "markdown": "Configuration variables:\n\n• HRNotifyEmail — where HR gets alerted (missing data / no audience match)\n\n• WelcomeLinksSite / WelcomeLinksList — where role-based links live\n\nReplace with your own site, list, and mailbox before use.\n",
+              "color": "red"
+            }
+          },
+          {
+            "id": "canvasNote-a53507e7-a46f-4b75-9ec6-e6e13b2aeec4",
+            "name": "Note 3",
+            "type": "canvasNote",
+            "position": {
+              "x": 1456.8965299359413,
+              "y": 329.2488290490506
+            },
+            "details": {
+              "markdown": "Onboarding Agent — runs after Match Audience, trusts its result completely.\n\n• Stops if Packet sent is already set\n\n• Alerts HR and stops if any required field was missing\n\n• Otherwise: gets Welcome Links filtered to Everyone + matched audience (SharePoint does the filtering, not the agent), emails the hire (Cc manager), also alerts HR if no audience matched, then stamps Packet sent\n",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "agent-d41ad52d-144b-434f-84b8-78e895e8dd2d",
+            "name": "Match Audience",
+            "type": "agent",
+            "position": {
+              "x": 1008.6838140606345,
+              "y": 223.83276945826017
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are the Match Audience step for HR New Hire Welcome Packet. You run once per new-hire row, immediately after the trigger. You have exactly one tool: Get items, read-only. You never send email, never update any row, and never take any action beyond producing the result described below.\n\nWelcome Links site: {variables('WelcomeLinksSite')} Welcome Links list: {variables('WelcomeLinksList')}. Use "
+            }
+          },
+          {
+            "id": "canvasNote-6b84dad0-e5db-4198-90c3-058dd607938d",
+            "name": "Note 4",
+            "type": "canvasNote",
+            "position": {
+              "x": 1009.9327012016117,
+              "y": 334.9269820752564
+            },
+            "details": {
+              "markdown": "Match Audience — read-only (one Get items call, no writes). Matches Job title to an existing Welcome Links audience, or null if none fit.  \n\nOutputs only {audience, matched_on, missing_fields}.\n",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-aa583182-e79a-4075-8057-c3fe9a45ad41",
+            "name": "Note 5",
+            "type": "canvasNote",
+            "position": {
+              "x": 278.15001481440066,
+              "y": 41.7334219131537
+            },
+            "details": {
+              "markdown": "Expected columns: Preferred name, Work email, Job title, Start date, Manager email, Packet sent.",
+              "color": "green"
+            }
+          },
+          {
+            "id": "canvasNote-90939fef-1649-4370-ac52-b2864a434a04",
+            "name": "Note 6",
+            "type": "canvasNote",
+            "position": {
+              "x": 1007.7837238042753,
+              "y": -11.88577187676141
+            },
+            "details": {
+              "markdown": "Reconnect required: Delete and re-add this node's tool connections -\n1. Sharepoint - get items\n\nConnections don't automatically renew for a new user who acquires this workflow.",
+              "color": "red"
+            }
+          },
+          {
+            "id": "canvasNote-5f327463-8646-4cfb-a13e-b131d3053b95",
+            "name": "Note 7",
+            "type": "canvasNote",
+            "position": {
+              "x": 1424.9636462167423,
+              "y": -36.11072148459517
+            },
+            "details": {
+              "markdown": "Reconnect required: Delete and re-add this node's tool connections -\n1. Sharepoint - get items\n2. Sharepoint - update item\n3. Office 365 Outlook - send an email\n\nConnections don't automatically renew for a new user who acquires this workflow.",
+              "color": "red"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-51fd44b0-e2a1-4c03-bff1-72567e6c14fd-variable-faf9b4df-2036-499f-959a-6fb24d953d1b",
+            "source": "start-51fd44b0-e2a1-4c03-bff1-72567e6c14fd",
+            "target": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b"
+          },
+          {
+            "id": "edge-variable-faf9b4df-2036-499f-959a-6fb24d953d1b-agent-d41ad52d-144b-434f-84b8-78e895e8dd2d",
+            "source": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b",
+            "target": "agent-d41ad52d-144b-434f-84b8-78e895e8dd2d"
+          },
+          {
+            "id": "edge-agent-d41ad52d-144b-434f-84b8-78e895e8dd2d-agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514",
+            "source": "agent-d41ad52d-144b-434f-84b8-78e895e8dd2d",
+            "target": "agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514"
+          },
+          {
+            "id": "edge-canvasNote-0aa7edc5-01f8-4cc3-83ee-80af0d1d4177-canvasNote-6b84dad0-e5db-4198-90c3-058dd607938d-input",
+            "source": "canvasNote-0aa7edc5-01f8-4cc3-83ee-80af0d1d4177",
+            "target": "canvasNote-6b84dad0-e5db-4198-90c3-058dd607938d",
+            "targetHandle": "input"
+          }
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 258
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 3610
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4159
+    },
+    {
+      "path": "Workflows/HRNewHireWelcomePacket-8C80C828-256E-5D89-7723-BA234F4C40A2.json",
+      "category": "workflow",
+      "size": 76059
+    }
+  ]
+}
