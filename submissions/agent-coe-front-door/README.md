@@ -1,6 +1,6 @@
 # Agent CoE Front Door
 
-Agent CoE Front Door gives an organization a governed entry point for agent discovery, guidance, and intake. It checks the existing catalogue before recommending new development, grounds licensing and governance answers in organization-owned knowledge, and creates an intake record only after the requester confirms the collected details.
+Agent CoE Front Door provides a governed **agent intake and triage process** for agent discovery, guidance, and delivery support. It checks the existing catalogue before recommending new development, grounds licensing and governance answers in organization-owned knowledge, and creates an intake record only after the requester confirms the collected details.
 
 ## Agent
 
