@@ -33,7 +33,7 @@ After import, rebind all connector connections and update these values before en
 - `SharePoint Folder Path Final` for approved proposals
 - `maxIterations` for the maximum number of review rounds
 
-Add grounding knowledge to the agent nodes using a public website or documents from SharePoint. Recommended sources include capabilities, case studies, rates, and services.
+Add grounding knowledge to the agent nodes using a public website or documents from SharePoint. Recommended documents include capabilities, case studies, rates, and services.
 
 The flow polls SharePoint every minute. Confirm that cadence is appropriate for the target environment and verify that the selected agent models and grounding knowledge are available before running it.
 
