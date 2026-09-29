@@ -10,9 +10,10 @@
   ],
   "author": "Isha Gautam",
   "createdAt": "2026-09-23",
-  "featured": false,
-  "uniqueName": "RFPResponseManager",
-  "version": "1.0.0.5",
+  "updatedAt": "2026-09-29",
+  "featured": true,
+  "uniqueName": "RFPResponseManagement",
+  "version": "1.0.0.3",
   "publisher": "A3P",
   "bundle": "bundles/rfp-response-manager.zip",
   "agentCount": 0,
@@ -26,9 +27,9 @@
   "workflows": [
     {
       "id": "{84fd5cf3-c01a-c1cf-9685-c0c3789ce47d}",
-      "name": "RFP Response Manager Final",
+      "name": "RFP Response Manager",
       "trigger": "When a file is created (properties only)",
-      "nodeCount": 20,
+      "nodeCount": 24,
       "edgeCount": 18,
       "graph": {
         "nodes": [
@@ -47,8 +48,8 @@
             "name": "Agent - Drafting",
             "type": "agent",
             "position": {
-              "x": 1618,
-              "y": 454.5
+              "x": 1634.4374751794435,
+              "y": 454.4486517436313
             },
             "details": {
               "botSchemaName": "",
@@ -115,12 +116,12 @@
             "name": "Note",
             "type": "canvasNote",
             "position": {
-              "x": 128.05566385757186,
+              "x": 124.83413765559351,
               "y": 700.6300980465007
             },
             "details": {
-              "markdown": "Gets triggered whenever a file is created in the specified SharePoint location",
-              "color": "yellow"
+              "markdown": "Gets triggered whenever a file is created in the specified SharePoint location. Configure the SharePoint site and folder.",
+              "color": "red"
             }
           },
           {
@@ -158,7 +159,7 @@
               "y": 150.82379549546732
             },
             "details": {
-              "markdown": "** BEFORE TRIGGERING THE WORKFLOW **\n\nMake sure to update the grounding knowledge in the Agent actions.",
+              "markdown": "** BEFORE TRIGGERING THE WORKFLOW **\n\nMake sure to follow the steps mentioned in the NOTES within the workflow.",
               "color": "red"
             }
           },
@@ -171,7 +172,7 @@
               "y": 707.8532145910101
             },
             "details": {
-              "markdown": "Add your grounding knowledge in this Agent node",
+              "markdown": "Add your grounding knowledge in this Agent node:\n1. Click on '+' icon in the Knowledge section.\n2. Add a public website or browse documents from your SharePoint site.\n\nSome recommended documents are:\n1. Capabilities\n2. Case studies\n3. Rates\n4. Services",
               "color": "red"
             }
           },
@@ -180,8 +181,8 @@
             "name": "Agent - Extraction",
             "type": "agent",
             "position": {
-              "x": 1335,
-              "y": 454.5
+              "x": 1339.0825924142111,
+              "y": 456.77573690553913
             },
             "details": {
               "botSchemaName": "",
@@ -210,7 +211,7 @@
             "name": "Init agentResponse",
             "type": "variable",
             "position": {
-              "x": 1901,
+              "x": 1921,
               "y": 454.5
             },
             "details": {}
@@ -288,6 +289,58 @@
                 "dataset": "@variables('SharePoint Site Address')",
                 "path": "@triggerOutputs()?['body/{FullPath}']"
               }
+            }
+          },
+          {
+            "id": "canvasNote-46879298-07de-47dd-a52a-cc7e10e4795e",
+            "name": "Note 5",
+            "type": "canvasNote",
+            "position": {
+              "x": 1644.5478198245314,
+              "y": 153.11723929419963
+            },
+            "details": {
+              "markdown": "If the tool usage returns 404 tool not found, remove and add the tools again.\n1. SharePoint: Create file\n2. SharePoint: Create sharing link for file or folder\n3. SharePoint: Create new folder",
+              "color": "red"
+            }
+          },
+          {
+            "id": "canvasNote-fdb8555e-ead4-4fcf-ad77-98796c926e67",
+            "name": "Note 5 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 2557.8106041866276,
+              "y": 748.2224566800818
+            },
+            "details": {
+              "markdown": "If the tool usage returns 404 tool not found, remove and add the tools again.\n1. SharePoint: Update file",
+              "color": "red"
+            }
+          },
+          {
+            "id": "canvasNote-6a60882c-2ca3-4c90-b456-2b96c02ddcac",
+            "name": "Note 5 3",
+            "type": "canvasNote",
+            "position": {
+              "x": 4027.1377976644717,
+              "y": 748.9183611553485
+            },
+            "details": {
+              "markdown": "If the tool usage returns 404 tool not found, remove and add the tools again.\n1. SharePoint: Create file\n2. SharePoint: Create sharing link for file or folder\n3. SharePoint: Create new folder\n4. Office 365 Outlook: Send an email",
+              "color": "red"
+            }
+          },
+          {
+            "id": "canvasNote-599727c2-bb91-4f79-b08a-c98795ff80fe",
+            "name": "Note 6",
+            "type": "canvasNote",
+            "position": {
+              "x": 126.26179374866052,
+              "y": 903.6084713434764
+            },
+            "details": {
+              "markdown": "Make sure that the file uploaded has document sensitivity set to General or Non-Business as the workflow cannot read the contents of anything above that ",
+              "color": "red"
             }
           }
         ],
@@ -409,17 +462,17 @@
     {
       "path": "customizations.xml",
       "category": "solution",
-      "size": 4100
+      "size": 3115
     },
     {
       "path": "solution.xml",
       "category": "solution",
-      "size": 4172
+      "size": 4178
     },
     {
-      "path": "Workflows/RFPResponseManagerFinal-84FD5CF3-C01A-C1CF-9685-C0C3789CE47D.json",
+      "path": "Workflows/RFPResponseManager-84FD5CF3-C01A-C1CF-9685-C0C3789CE47D.json",
       "category": "workflow",
-      "size": 186427
+      "size": 191958
     }
   ]
 }

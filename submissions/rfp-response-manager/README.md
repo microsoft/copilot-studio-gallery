@@ -17,16 +17,27 @@ Creates grounded proposal drafts from incoming RFP documents, coordinates iterat
 - A SharePoint document library for incoming RFPs, proposal drafts, and final proposals
 - Grounding knowledge containing the services, rates, capabilities, and case studies that the drafting and review agents may use
 - Microsoft Teams access for the reviewer receiving the human review request
+- Source documents with a sensitivity label of General or Non-Business; the workflow cannot read content protected by a higher sensitivity label
 
 ## Import notes
 
 After import, rebind all connector connections and update these values before enabling the flow:
 
-- SharePoint site address, document library, and incoming RFP folder on the trigger
+- Replace the example SharePoint site address (`https://contoso.sharepoint.com/sites/rfp-response-manager`), select the document library, and confirm the incoming RFP folder on the trigger
 - `approverAlias` for the reviewer
 - `Notify Owner Alias` for completion and escalation notifications
 - `SharePoint Folder Path Draft` for proposal drafts
 - `SharePoint Folder Path Final` for approved proposals
 - `maxIterations` for the maximum number of review rounds
 
+Add grounding knowledge to the agent nodes using a public website or documents from SharePoint. Recommended documents include capabilities, case studies, rates, and services.
+
 The flow polls SharePoint every minute. Confirm that cadence is appropriate for the target environment and verify that the selected agent models and grounding knowledge are available before running it.
+
+## Troubleshooting
+
+If an agent reports `404 tool not found`, remove and add the affected tools again:
+
+- Drafting agent: SharePoint Create file, Create sharing link for a file or folder, and Create new folder
+- Review agent: SharePoint Update file
+- Finalization agent: SharePoint Create file, Create sharing link for a file or folder, Create new folder, and Office 365 Outlook Send an email
