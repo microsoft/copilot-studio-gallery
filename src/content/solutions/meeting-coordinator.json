@@ -1,0 +1,618 @@
+{
+  "name": "Meeting Coordinator",
+  "description": "Turn a Microsoft To Do task into a Teams meeting with inline agents, Outlook time suggestions, Teams ranking cards, and Dataverse-backed voting.",
+  "tags": [
+    "scheduling",
+    "productivity",
+    "teams",
+    "human-in-the-loop",
+    "mcp"
+  ],
+  "author": "Adriana Trujillo",
+  "authorUrl": "https://github.com/adrianatruji",
+  "authorGithub": "adrianatruji",
+  "createdAt": "2026-09-29",
+  "updatedAt": "2026-09-29",
+  "featured": false,
+  "uniqueName": "MeetingCoordinatorWorkflow",
+  "version": "1.0.0.1",
+  "publisher": "AdrianaTrujillo",
+  "bundle": "bundles/meeting-coordinator.zip",
+  "agentCount": 0,
+  "workflowCount": 1,
+  "componentCount": 3,
+  "agents": [],
+  "agentGraph": {
+    "nodes": [],
+    "edges": []
+  },
+  "workflows": [
+    {
+      "id": "{9cb0b6d8-89d8-ed3e-959f-8404cf72d5cb}",
+      "name": "Meeting Coordinator",
+      "trigger": "When a to-do is created",
+      "nodeCount": 29,
+      "edgeCount": 26,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-8e8a857c-5d0f-468d-98ff-5b9b89f7cf58",
+            "name": "When a to-do is created",
+            "type": "start",
+            "position": {
+              "x": 100,
+              "y": 380
+            },
+            "details": {}
+          },
+          {
+            "id": "agent-167eb026-c530-4602-8f74-22a3bacf88a2",
+            "name": "Meeting Task Builder",
+            "type": "agent",
+            "position": {
+              "x": 666,
+              "y": 380
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are a \\*\\*Meeting Task Builder\\*\\*. A task was just added to a To-Do list. Decide whether it's a request to schedule a meeting. If it is, gather what the scheduling agent needs: meeting type, the project's Teams team, and who must vs. may attend. If it isn't, say so and stop.\n\n#Input\n- \\*\\*Task title\\*\\* = {variables('Title')}\n- \\*\\*Task notes\\*\\* = {variables('Body')}\n\n#Tools\n- Teams \\*\\*List"
+            }
+          },
+          {
+            "id": "loop-a92b9a5d-7724-42df-b7ea-7c98bca56680",
+            "name": "Loop until slot is found",
+            "type": "loop",
+            "position": {
+              "x": 1578,
+              "y": 392
+            },
+            "details": {
+              "expression": "@equals(variables('Exit'), true)\n"
+            }
+          },
+          {
+            "id": "agent-1a2c350c-c482-4a0d-907b-8c410467963c",
+            "name": "Meeting Coordinator",
+            "type": "agent",
+            "position": {
+              "x": 60,
+              "y": 80
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "```\nYou are **Meeting Coordinator**. Find candidate slots from real calendars, let attendees rank them, weigh votes (required attendees count more), and recommend one slot.\n\n# Inputs\n**Project Name** = {variables('ProjectName')} · \n**Meeting Type** = {variables('MeetingType')} — defines meeting duration.\n**Attempt** = {variables('Run')} — loop counter. **Read rows where `Attempt = Run`; write as `"
+            }
+          },
+          {
+            "id": "variable-8ed5595e-238f-4de7-9261-eb26d9bbaea0",
+            "name": "Set task builder variables",
+            "type": "variable",
+            "position": {
+              "x": 383,
+              "y": 380
+            },
+            "details": {}
+          },
+          {
+            "id": "ifElse-d5b2cb7a-c156-4444-8894-657698d20bdb",
+            "name": "Task nature condition",
+            "type": "ifElse",
+            "position": {
+              "x": 1295,
+              "y": 329
+            },
+            "details": {}
+          },
+          {
+            "id": "end-8424ecb1-d186-4e1f-bd96-527cbcab371a",
+            "name": "End",
+            "type": "end",
+            "position": {
+              "x": 1582.079054761871,
+              "y": 1095.4156785648474
+            },
+            "details": {
+              "runStatus": "Succeeded"
+            }
+          },
+          {
+            "id": "ifElse-b7b79cdd-b869-4938-804a-157486d15254",
+            "name": "Next step condition",
+            "type": "ifElse",
+            "position": {
+              "x": 343,
+              "y": 80
+            },
+            "details": {}
+          },
+          {
+            "id": "connector-8c6ab8dc-c8d2-4119-9f3d-e51e6e3c2728",
+            "name": "Send slots card",
+            "type": "connector",
+            "position": {
+              "x": 61.0197636904677,
+              "y": 80
+            },
+            "details": {
+              "displayName": "Microsoft Teams",
+              "apiName": "shared_teams",
+              "operationName": "PostCardAndWaitForResponse",
+              "operationType": "OpenApiConnectionWebhook",
+              "parameters": {
+                "poster": "Flow bot",
+                "body/body/messageBody": "{\r\n  \"$schema\": \"https://adaptivecards.io/schemas/adaptive-card.json\",\r\n  \"type\": \"AdaptiveCard\",\r\n  \"version\": \"1.5\",\r\n  \"body\": [\r\n    { \"type\": \"TextBlock\", \"text\": \"Rank proposed meeting slots\", \"weight\": \"Bolder\", \"size\": \"Medium\", \"wrap\": true },\r\n    { \"type\": \"TextBlock\", \"text\": \"Hi 👋 You have been invited to an upcoming meeting and we are picking a time that suits everyone. Please rank ",
+                "location": "Chat with Flow bot"
+              }
+            }
+          },
+          {
+            "id": "variable-925cfdf4-5831-4cf4-bb83-8e4657d30076",
+            "name": "Update variables",
+            "type": "variable",
+            "position": {
+              "x": 626,
+              "y": 80
+            },
+            "details": {}
+          },
+          {
+            "id": "variable-5f9d8a49-214d-4ebf-a7c3-45b7883833bf",
+            "name": "Update Run",
+            "type": "variable",
+            "position": {
+              "x": 1301,
+              "y": 336
+            },
+            "details": {}
+          },
+          {
+            "id": "loop-81fe6058-9d0b-464d-b83a-a45d9ce7d19c",
+            "name": "For each attendee",
+            "type": "loop",
+            "position": {
+              "x": 626,
+              "y": 336
+            },
+            "details": {}
+          },
+          {
+            "id": "connector-5c689929-9d9c-4c9a-b2bc-291d32cf871f",
+            "name": "Add new Vote row",
+            "type": "connector",
+            "position": {
+              "x": 343,
+              "y": 80
+            },
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "CreateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "crf9c_votes",
+                "item/crf9c_projectname": "@body('agent-167eb026-c530-4602-8f74-22a3bacf88a2')?['structuredOutput/ProjectName']",
+                "item/crf9c_rankposition1": "@outputs('connector-8c6ab8dc-c8d2-4119-9f3d-e51e6e3c2728')?['body/data/OPT_01']",
+                "item/crf9c_rankposition2": "@outputs('connector-8c6ab8dc-c8d2-4119-9f3d-e51e6e3c2728')?['body/data/OPT_02']",
+                "item/crf9c_rankposition3": "@outputs('connector-8c6ab8dc-c8d2-4119-9f3d-e51e6e3c2728')?['body/data/OPT_03']",
+                "item/crf9c_rankposition4": "@outputs('connector-8c6ab8dc-c8d2-4119-9f3d-e51e6e3c2728')?['body/data/OPT_04']",
+                "item/crf9c_rankposition5": "@outputs('connector-8c6ab8dc-c8d2-4119-9f3d-e51e6e3c2728')?['body/data/OPT_05']",
+                "item/crf9c_voteremail": "@items('For_each_attendee')",
+                "item/crf9c_meetingtype": "@body('agent-167eb026-c530-4602-8f74-22a3bacf88a2')?['structuredOutput/MeetingType']",
+                "item/crf9c_attemptidentifier": "@add(variables('Run'), 1)",
+                "item/crf9c_voteidentifier": "@variables('Seed')"
+              }
+            }
+          },
+          {
+            "id": "variable-cb29af3f-7f14-4d37-b74d-af403a9f9e4a",
+            "name": "Set meeting coordinator variables",
+            "type": "variable",
+            "position": {
+              "x": 949,
+              "y": 380
+            },
+            "details": {}
+          },
+          {
+            "id": "ifElse-dccfafdd-c735-435c-8b5c-347dc477d851",
+            "name": "Successful exit condition",
+            "type": "ifElse",
+            "position": {
+              "x": 3211,
+              "y": 625
+            },
+            "details": {}
+          },
+          {
+            "id": "connector-9627c018-2042-4d3d-bbdb-a4948ed78ba3",
+            "name": "Send an email",
+            "type": "connector",
+            "position": {
+              "x": 3774.4545947475804,
+              "y": 905
+            },
+            "details": {
+              "displayName": "Office 365 Outlook",
+              "apiName": "shared_office365",
+              "operationName": "SendEmailV2",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "emailMessage/Importance": "Normal",
+                "emailMessage/To": "@variables('Fallback Mail Owner')",
+                "emailMessage/Subject": "Meeting Coordinator: We could not find a suitable slot for @{variables('MeetingType')} -  @{variables('ProjectName')}",
+                "emailMessage/Body": "<div>Hi!</div><div><br></div><div>We detected a task to schedule a meeting for one of your projects. Unfortunately, we could not find a suitable slot for the attendees. Please see the summary below:</div><div><br></div><div><b>Project:</b>&nbsp;<b>@{variables('ProjectName')}</b></div><div><b>Meeting Type:</b>&nbsp;<b>@{variables('MeetingType')}</b></div><div><b>Summary:</b><i>&nbsp;</i></div><div>"
+              }
+            }
+          },
+          {
+            "id": "variable-a33b285c-c6ef-45fe-a65e-7582de7d09ed",
+            "name": "Set abortion rationale",
+            "type": "variable",
+            "position": {
+              "x": 627.0667238173664,
+              "y": 194.91441645168265
+            },
+            "details": {}
+          },
+          {
+            "id": "builtinFunction-a60621bf-1658-4b1e-adfc-856209b63f5a",
+            "name": "Compose abort summary",
+            "type": "builtinFunction",
+            "position": {
+              "x": 3484.964721222484,
+              "y": 813.0705575550315
+            },
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+              "description": "Compose outputs from multiple actions into a single output."
+            }
+          },
+          {
+            "id": "canvasNote-8be2598d-c1c9-400f-ac01-e940aaf8d491",
+            "name": "Note",
+            "type": "canvasNote",
+            "position": {
+              "x": 95.44573723217718,
+              "y": -100.78788271731719
+            },
+            "details": {
+              "markdown": "Note: In this sample, we use to-do actions as a trigger to create meetings based on a to-do list associated to a mail (personal or shared).\nTailor this trigger to the conditions that suit your case: When a task in created in planner, when a row is added in a Dataverse table, etc.",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-819ffa6d-208a-4004-83b4-7a0e488baba5",
+            "name": "Note 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 371.4398529343181,
+              "y": -102.20651095246143
+            },
+            "details": {
+              "markdown": "Config: Replace `Fallback Mail Owner` variable with the email address of the mailbox that should receive a notification if the agent aborts its mission.",
+              "color": "blue"
+            }
+          },
+          {
+            "id": "canvasNote-0f7d50ee-5be0-473e-b946-becff17973f9",
+            "name": "Note 3",
+            "type": "canvasNote",
+            "position": {
+              "x": 666.812493092152,
+              "y": 48.55505302042286
+            },
+            "details": {
+              "markdown": "Note: In this sample, we use Microsoft Teams team member types to classify required VS optional meeting attendees.\nTailor the required/optional composition and data source to your needs (e.g. a stakeholder field in a ServiceNow record)",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-4ff90932-ab13-4ee1-a19e-a0e1a7bcab7a",
+            "name": "Note 3 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 963.0249616516467,
+              "y": -181.9115410252894
+            },
+            "details": {
+              "markdown": "Note: The following variables use dynamic inputs configurable based on the triggers and data sources you choose to use:\n- `ProjectName` (string)\n- `MeetingType` (string)\n- `RequiredAttendees` (array) \n- `OptionalAttendees` (array)\n- `AllAttendees` (array that unions RequiredAttendees and OptionalAttendees)\n\nAll three arrays must be in an acceptable Outlook-connector format, example: [\n\"john@contos",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-cfc02c44-1d4e-4756-b43e-f8fafd55765d",
+            "name": "Note 2 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 1628.4312694607963,
+              "y": -191.45943644686872
+            },
+            "details": {
+              "markdown": "Config: Inside \"Meeting Coordinator\", adjust # Scheduling Rules to your preferences (e.g. timezone, meeting types, duration). Proposed slots will be presented to attendees in the timezone chosen. ",
+              "color": "blue"
+            }
+          },
+          {
+            "id": "canvasNote-666cd462-2791-4b7d-81f0-b502fbbe0fa1",
+            "name": "Note 2 3",
+            "type": "canvasNote",
+            "position": {
+              "x": 663.458005413291,
+              "y": -179.12869599022198
+            },
+            "details": {
+              "markdown": "Config: Tailor \"MeetingType\" options in the `structuredoutput` list and the #Step 2 instructions according to your context.",
+              "color": "blue"
+            }
+          },
+          {
+            "id": "canvasNote-07177653-bc9b-4c94-8b35-2b310d686014",
+            "name": "Note 3 3",
+            "type": "canvasNote",
+            "position": {
+              "x": 1630.5768228524964,
+              "y": 32.540563553131264
+            },
+            "details": {
+              "markdown": "Note: In this sample, we use an adaptive card with exactly 5 placeholders for 5 proposed slots to be voted. If you decide to increase or decrease this number across the \"Meeting Coordinator\" instructions, note the card in \"Send slots card\" must be adjusted too (won't be adjusted dynamically).\nIf you wish to use other variations of \"Meeting Coordinator\" instructions, such as adjusting the slots ran",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-261cbca4-2f1f-4536-9574-05848b80785a",
+            "name": "Note 3 3 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 2201.864274420735,
+              "y": 31.899947918845527
+            },
+            "details": {
+              "markdown": "Note: In this sample, we use a timeout of 24H for the adaptive card node, and a timeout of 32H for  the \"Loop until slot is found\" (with maximum 5 iterations). Consider adjusting this to your needs, as well as the informative notes in the adaptive card. ",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-de4bacb1-02a6-4f65-9148-b14a9d269882",
+            "name": "Note 3 3 2 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 2542.770243558274,
+              "y": 36.55944451590099
+            },
+            "details": {
+              "markdown": "Note: In this sample, we use Dataverse as the system of record for storing the Coordination Runs (suitable slots found in one attempt) and Votes (ranking of proposed slots by recipients). \nTailor the \"Add new Vote row\" and Dataverse references in \"Meeting Coordinator\" instructions if you wish to use a different system of record.",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-4ebd780d-b545-4917-8a3a-0d34dc7f676a",
+            "name": "Note 2 2 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 3492.8977837170614,
+              "y": 25.772287478715285
+            },
+            "details": {
+              "markdown": "Config: In \"Create event\", choose the same `Timezone` from the dropdown as the one you set in the # Scheduling Rules of \"Meeting Coordinator\"\n",
+              "color": "blue"
+            }
+          },
+          {
+            "id": "connector-d83849e4-c5ea-46f1-ab52-806c089abf12",
+            "name": "Create a Teams meeting",
+            "type": "connector",
+            "position": {
+              "x": 3491.690197078152,
+              "y": 567.3072476260215
+            },
+            "details": {
+              "displayName": "Microsoft Teams",
+              "apiName": "shared_teams",
+              "operationName": "CreateTeamsMeeting",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "item/importance": "low",
+                "item/recurrence/pattern/type": "",
+                "item/recurrence/pattern/index": "",
+                "item/showAs": "free",
+                "item/subject": "@{variables('MeetingType')} -  @{variables('ProjectName')}",
+                "item/start/dateTime": "@variables('Slot')",
+                "item/timeZone": "UTC",
+                "item/end/dateTime": "@addMinutes(variables('Slot'), variables('Duration'))",
+                "item/requiredAttendees": "@variables('RequiredAttendees')",
+                "item/optionalAttendees": "@variables('OptionalAttendees')",
+                "item/body/content": "@variables('Agenda')"
+              }
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-loop-a92b9a5d-7724-42df-b7ea-7c98bca56680-internal-source-agent-1a2c350c-c482-4a0d-907b-8c410467963c",
+            "source": "loop-a92b9a5d-7724-42df-b7ea-7c98bca56680",
+            "target": "agent-1a2c350c-c482-4a0d-907b-8c410467963c",
+            "sourceHandle": "internal-source"
+          },
+          {
+            "id": "edge-ifElse-d5b2cb7a-c156-4444-8894-657698d20bdb-loop-a92b9a5d-7724-42df-b7ea-7c98bca56680-external-input",
+            "source": "ifElse-d5b2cb7a-c156-4444-8894-657698d20bdb",
+            "target": "loop-a92b9a5d-7724-42df-b7ea-7c98bca56680",
+            "targetHandle": "external-input"
+          },
+          {
+            "id": "edge-ifElse-d5b2cb7a-c156-4444-8894-657698d20bdb-else-end-8424ecb1-d186-4e1f-bd96-527cbcab371a",
+            "source": "ifElse-d5b2cb7a-c156-4444-8894-657698d20bdb",
+            "target": "end-8424ecb1-d186-4e1f-bd96-527cbcab371a",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-agent-1a2c350c-c482-4a0d-907b-8c410467963c-ifElse-b7b79cdd-b869-4938-804a-157486d15254",
+            "source": "agent-1a2c350c-c482-4a0d-907b-8c410467963c",
+            "target": "ifElse-b7b79cdd-b869-4938-804a-157486d15254"
+          },
+          {
+            "id": "edge-ifElse-b7b79cdd-b869-4938-804a-157486d15254-condition:76a2881f-ec0d-477c-93dc-e0a9c73cf29d-variable-925cfdf4-5831-4cf4-bb83-8e4657d30076",
+            "source": "ifElse-b7b79cdd-b869-4938-804a-157486d15254",
+            "target": "variable-925cfdf4-5831-4cf4-bb83-8e4657d30076",
+            "sourceHandle": "condition:76a2881f-ec0d-477c-93dc-e0a9c73cf29d"
+          },
+          {
+            "id": "edge-loop-81fe6058-9d0b-464d-b83a-a45d9ce7d19c-internal-source-connector-8c6ab8dc-c8d2-4119-9f3d-e51e6e3c2728",
+            "source": "loop-81fe6058-9d0b-464d-b83a-a45d9ce7d19c",
+            "target": "connector-8c6ab8dc-c8d2-4119-9f3d-e51e6e3c2728",
+            "sourceHandle": "internal-source"
+          },
+          {
+            "id": "edge-variable-5f9d8a49-214d-4ebf-a7c3-45b7883833bf-loop-a92b9a5d-7724-42df-b7ea-7c98bca56680-internal-target",
+            "source": "variable-5f9d8a49-214d-4ebf-a7c3-45b7883833bf",
+            "target": "loop-a92b9a5d-7724-42df-b7ea-7c98bca56680",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-loop-81fe6058-9d0b-464d-b83a-a45d9ce7d19c-external-output-variable-5f9d8a49-214d-4ebf-a7c3-45b7883833bf-input",
+            "source": "loop-81fe6058-9d0b-464d-b83a-a45d9ce7d19c",
+            "target": "variable-5f9d8a49-214d-4ebf-a7c3-45b7883833bf",
+            "sourceHandle": "external-output",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-variable-925cfdf4-5831-4cf4-bb83-8e4657d30076-output-loop-a92b9a5d-7724-42df-b7ea-7c98bca56680-internal-target",
+            "source": "variable-925cfdf4-5831-4cf4-bb83-8e4657d30076",
+            "target": "loop-a92b9a5d-7724-42df-b7ea-7c98bca56680",
+            "sourceHandle": "output",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-connector-8c6ab8dc-c8d2-4119-9f3d-e51e6e3c2728-connector-5c689929-9d9c-4c9a-b2bc-291d32cf871f",
+            "source": "connector-8c6ab8dc-c8d2-4119-9f3d-e51e6e3c2728",
+            "target": "connector-5c689929-9d9c-4c9a-b2bc-291d32cf871f"
+          },
+          {
+            "id": "edge-connector-5c689929-9d9c-4c9a-b2bc-291d32cf871f-loop-81fe6058-9d0b-464d-b83a-a45d9ce7d19c-internal-target",
+            "source": "connector-5c689929-9d9c-4c9a-b2bc-291d32cf871f",
+            "target": "loop-81fe6058-9d0b-464d-b83a-a45d9ce7d19c",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-agent-167eb026-c530-4602-8f74-22a3bacf88a2-variable-cb29af3f-7f14-4d37-b74d-af403a9f9e4a-input",
+            "source": "agent-167eb026-c530-4602-8f74-22a3bacf88a2",
+            "target": "variable-cb29af3f-7f14-4d37-b74d-af403a9f9e4a",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-variable-cb29af3f-7f14-4d37-b74d-af403a9f9e4a-output-ifElse-d5b2cb7a-c156-4444-8894-657698d20bdb-input",
+            "source": "variable-cb29af3f-7f14-4d37-b74d-af403a9f9e4a",
+            "target": "ifElse-d5b2cb7a-c156-4444-8894-657698d20bdb",
+            "sourceHandle": "output",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-start-8e8a857c-5d0f-468d-98ff-5b9b89f7cf58-variable-8ed5595e-238f-4de7-9261-eb26d9bbaea0-input",
+            "source": "start-8e8a857c-5d0f-468d-98ff-5b9b89f7cf58",
+            "target": "variable-8ed5595e-238f-4de7-9261-eb26d9bbaea0",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-variable-8ed5595e-238f-4de7-9261-eb26d9bbaea0-output-agent-167eb026-c530-4602-8f74-22a3bacf88a2-input",
+            "source": "variable-8ed5595e-238f-4de7-9261-eb26d9bbaea0",
+            "target": "agent-167eb026-c530-4602-8f74-22a3bacf88a2",
+            "sourceHandle": "output",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-loop-a92b9a5d-7724-42df-b7ea-7c98bca56680-external-output-ifElse-dccfafdd-c735-435c-8b5c-347dc477d851",
+            "source": "loop-a92b9a5d-7724-42df-b7ea-7c98bca56680",
+            "target": "ifElse-dccfafdd-c735-435c-8b5c-347dc477d851",
+            "sourceHandle": "external-output"
+          },
+          {
+            "id": "edge-ifElse-b7b79cdd-b869-4938-804a-157486d15254-condition:67edc154-7c63-4372-9129-75ef7cc86a9c-loop-81fe6058-9d0b-464d-b83a-a45d9ce7d19c-external-input",
+            "source": "ifElse-b7b79cdd-b869-4938-804a-157486d15254",
+            "target": "loop-81fe6058-9d0b-464d-b83a-a45d9ce7d19c",
+            "sourceHandle": "condition:67edc154-7c63-4372-9129-75ef7cc86a9c",
+            "targetHandle": "external-input"
+          },
+          {
+            "id": "edge-ifElse-b7b79cdd-b869-4938-804a-157486d15254-else-variable-a33b285c-c6ef-45fe-a65e-7582de7d09ed",
+            "source": "ifElse-b7b79cdd-b869-4938-804a-157486d15254",
+            "target": "variable-a33b285c-c6ef-45fe-a65e-7582de7d09ed",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-variable-a33b285c-c6ef-45fe-a65e-7582de7d09ed-loop-a92b9a5d-7724-42df-b7ea-7c98bca56680-internal-target",
+            "source": "variable-a33b285c-c6ef-45fe-a65e-7582de7d09ed",
+            "target": "loop-a92b9a5d-7724-42df-b7ea-7c98bca56680",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-ifElse-dccfafdd-c735-435c-8b5c-347dc477d851-else-builtinFunction-a60621bf-1658-4b1e-adfc-856209b63f5a",
+            "source": "ifElse-dccfafdd-c735-435c-8b5c-347dc477d851",
+            "target": "builtinFunction-a60621bf-1658-4b1e-adfc-856209b63f5a",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-builtinFunction-a60621bf-1658-4b1e-adfc-856209b63f5a-connector-9627c018-2042-4d3d-bbdb-a4948ed78ba3",
+            "source": "builtinFunction-a60621bf-1658-4b1e-adfc-856209b63f5a",
+            "target": "connector-9627c018-2042-4d3d-bbdb-a4948ed78ba3"
+          },
+          {
+            "id": "edge-canvasNote-8be2598d-c1c9-400f-ac01-e940aaf8d491-canvasNote-819ffa6d-208a-4004-83b4-7a0e488baba5-input",
+            "source": "canvasNote-8be2598d-c1c9-400f-ac01-e940aaf8d491",
+            "target": "canvasNote-819ffa6d-208a-4004-83b4-7a0e488baba5",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-canvasNote-819ffa6d-208a-4004-83b4-7a0e488baba5-canvasNote-0f7d50ee-5be0-473e-b946-becff17973f9-input",
+            "source": "canvasNote-819ffa6d-208a-4004-83b4-7a0e488baba5",
+            "target": "canvasNote-0f7d50ee-5be0-473e-b946-becff17973f9",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-canvasNote-0f7d50ee-5be0-473e-b946-becff17973f9-canvasNote-4ff90932-ab13-4ee1-a19e-a0e1a7bcab7a-input",
+            "source": "canvasNote-0f7d50ee-5be0-473e-b946-becff17973f9",
+            "target": "canvasNote-4ff90932-ab13-4ee1-a19e-a0e1a7bcab7a",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-canvasNote-261cbca4-2f1f-4536-9574-05848b80785a-canvasNote-de4bacb1-02a6-4f65-9148-b14a9d269882-input",
+            "source": "canvasNote-261cbca4-2f1f-4536-9574-05848b80785a",
+            "target": "canvasNote-de4bacb1-02a6-4f65-9148-b14a9d269882",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-ifElse-dccfafdd-c735-435c-8b5c-347dc477d851-condition:7f023f19-03c3-47e2-a3d8-b1c03d741deb-connector-d83849e4-c5ea-46f1-ab52-806c089abf12",
+            "source": "ifElse-dccfafdd-c735-435c-8b5c-347dc477d851",
+            "target": "connector-d83849e4-c5ea-46f1-ab52-806c089abf12",
+            "sourceHandle": "condition:7f023f19-03c3-47e2-a3d8-b1c03d741deb"
+          }
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 258
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 236798
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4199
+    },
+    {
+      "path": "Workflows/MeetingCoordinator-9CB0B6D8-89D8-ED3E-959F-8404CF72D5CB.json",
+      "category": "workflow",
+      "size": 295920
+    }
+  ]
+}
