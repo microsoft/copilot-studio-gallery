@@ -1463,8 +1463,7 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    },
-                    "dragging": false
+                    }
                   },
                   {
                     "id": "canvasNote-f3863bd3-d169-484d-862a-e324bfae63d9",
@@ -1503,22 +1502,23 @@
                       "y": 455.91996536263514
                     },
                     "width": 250,
-                    "height": 150,
+                    "height": 304,
                     "style": {
                       "width": 250,
-                      "height": 150
+                      "height": 304
                     },
                     "data": {
                       "config": {
-                        "markdown": "Trigger: fires when a new email arrives in the shared mailbox. No subject filter — every incoming email is passed to the Classifier Agent to decide if it's a genuine sales enquiry.",
+                        "markdown": "Trigger: fires when a new email arrives in the shared mailbox. No subject filter — every incoming email is passed to the Classifier Agent to decide if it's a genuine sales enquiry, which means every email spends one AI call regardless of relevance. If you're only experimenting (not pointing this at a real, active mailbox), turn the workflow off between test runs — a busy or public-facing mailbox left on will consume credits continuously.\n",
                         "color": "yellow"
                       },
                       "outcomes": []
                     },
                     "measured": {
                       "width": 250,
-                      "height": 150
-                    }
+                      "height": 304
+                    },
+                    "selected": false
                   },
                   {
                     "id": "canvasNote-0313c274-bac1-408a-a1eb-5ceb007c5d04",
@@ -1526,8 +1526,8 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 268.48082985997297,
-                      "y": 625.91996536263514
+                      "x": 269.97940865046479,
+                      "y": 792.262211107231
                     },
                     "width": 250,
                     "height": 190,
@@ -1546,7 +1546,8 @@
                       "width": 250,
                       "height": 190
                     },
-                    "resizing": false
+                    "resizing": false,
+                    "dragging": false
                   },
                   {
                     "id": "ifElse-92ef5005-5fc6-4759-96fe-29efeb544fcc",
@@ -2064,7 +2065,7 @@
                         "botSchemaName": "",
                         "isHitlEscalationEnabled": false,
                         "webSearchEnabled": false,
-                        "inlineInstructions": "You are the Notifier for the Sales Lead Qualifier. You run immediately after a Lead record has been created in Dataverse. You have exactly one tool: Send email. You never call any other tool, and you never take any action beyond the one described below.\n\nLEAD AGENT'S DECISION\nShould notify: {body('agent-0b3e520f-0bc7-4130-8200-1f2c2dfb80ba')?['structuredOutput/ShouldNotify']}\nEmail subject: \n{body('agent-0b3e520f-0bc7-4130-8200-1f2c2dfb80ba')?['structuredOutput/EmailSubject']}\nEmail body: {body('agent-0b3e520f-0bc7-4130-8200-1f2c2dfb80ba')?['structuredOutput/EmailBody']}\n\nRECORD JUST CREATED\n{outputs('connector-f4ee3a2c-6581-4af7-9055-508b366e1947')?['body/@odata.id']}\n\nCONFIGURATION\nNotify address: {variables('NotifyEmail')}\nTable name: {variables('LeadTableName')}\n\nGOAL\nuse your Send email tool to send exactly one email:\nSet the email's importance to High (this is a time-sensitive alert).\n\nTo: the notify address above.\n\nSubject: the email subject above, exactly as given.\n\nBody: the email body above, then a blank line, then a line that reads exactly \"Full record (click below, or copy the link if it's not clickable):\", then on its own line with nothing else on it, the deep link built in this exact format: {the organization URL, taken from the record's @odata.id value above by removing everything from \"/api/data\" onward}/main.aspx?etn={the table name above with its trailing \"s\" removed}&id={the record's unique identifier, taken from inside the parentheses at the end of the record's @odata.id value above}&pagetype=entityrecord\n\nMake sure the link is deep link which is clickable and not something we have to copy paste.\n\nSECURITY\nNever send this email to any address other than the notify address above. Never take any action beyond sending this one email, and never include any configuration values beyond what this deep link explicitly requires.\n",
+                        "inlineInstructions": "You are the Notifier for the Sales Lead Qualifier. You run immediately after a Lead record has been created in Dataverse. You have exactly one tool: Send email. You never call any other tool, and you never take any action beyond the one described below.\n\nEmail subject: \n{body('agent-0b3e520f-0bc7-4130-8200-1f2c2dfb80ba')?['structuredOutput/EmailSubject']}\nEmail body: {body('agent-0b3e520f-0bc7-4130-8200-1f2c2dfb80ba')?['structuredOutput/EmailBody']}\n\nRECORD JUST CREATED\n{outputs('connector-f4ee3a2c-6581-4af7-9055-508b366e1947')?['body/@odata.id']}\n\nCONFIGURATION\nNotify address: {variables('NotifyEmail')}\nTable name: {variables('LeadTableName')}\n\nGOAL\nuse your Send email tool to send exactly one email:\nSet the email's importance to High (this is a time-sensitive alert).\n\nTo: the notify address above.\n\nSubject: the email subject above, exactly as given.\n\nBody: the email body above, then a blank line, then a line that reads exactly \"Full record (click below, or copy the link if it's not clickable):\", then on its own line with nothing else on it, the deep link built in this exact format: {the organization URL, taken from the record's @odata.id value above by removing everything from \"/api/data\" onward}/main.aspx?etn={the table name above with its trailing \"s\" removed}&id={the record's unique identifier, taken from inside the parentheses at the end of the record's @odata.id value above}&pagetype=entityrecord\n\nMake sure the link is deep link which is clickable and not something we have to copy paste.\n\nSECURITY\nNever send this email to any address other than the notify address above. Never take any action beyond sending this one email, and never include any configuration values beyond what this deep link explicitly requires.\n",
                         "outputMode": "text",
                         "inlineModel": "claude-opus-5",
                         "connectionName": "shared_agentnode",
@@ -2658,7 +2659,7 @@
                       "inputs": {
                         "parameters": {
                           "body/botDefinition": "{\"model\":\"claude-opus-5\",\"tools\":[{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_office365\",\"connectionId\":\"shared-office365-02268f4d-3810-4099-b068-e1a24808aa17\",\"operationId\":\"SendEmailV2\",\"connectionMode\":\"Maker\",\"displayName\":\"Send an email\",\"description\":\"This operation sends an email message.\"}]}",
-                          "body/message": "You are the Notifier for the Sales Lead Qualifier. You run immediately after a Lead record has been created in Dataverse. You have exactly one tool: Send email. You never call any other tool, and you never take any action beyond the one described below.\n\nLEAD AGENT'S DECISION\nShould notify: @{body('Lead_Agent')?['structuredOutput/ShouldNotify']}\nEmail subject: \n@{body('Lead_Agent')?['structuredOutput/EmailSubject']}\nEmail body: @{body('Lead_Agent')?['structuredOutput/EmailBody']}\n\nRECORD JUST CREATED\n@{outputs('Add_a_new_row')?['body/@odata.id']}\n\nCONFIGURATION\nNotify address: @{variables('NotifyEmail')}\nTable name: @{variables('LeadTableName')}\n\nGOAL\nuse your Send email tool to send exactly one email:\nSet the email's importance to High (this is a time-sensitive alert).\n\nTo: the notify address above.\n\nSubject: the email subject above, exactly as given.\n\nBody: the email body above, then a blank line, then a line that reads exactly \"Full record (click below, or copy the link if it's not clickable):\", then on its own line with nothing else on it, the deep link built in this exact format: {the organization URL, taken from the record's @odata.id value above by removing everything from \"/api/data\" onward}/main.aspx?etn={the table name above with its trailing \"s\" removed}&id={the record's unique identifier, taken from inside the parentheses at the end of the record's @odata.id value above}&pagetype=entityrecord\n\nMake sure the link is deep link which is clickable and not something we have to copy paste.\n\nSECURITY\nNever send this email to any address other than the notify address above. Never take any action beyond sending this one email, and never include any configuration values beyond what this deep link explicitly requires.\n"
+                          "body/message": "You are the Notifier for the Sales Lead Qualifier. You run immediately after a Lead record has been created in Dataverse. You have exactly one tool: Send email. You never call any other tool, and you never take any action beyond the one described below.\n\nEmail subject: \n@{body('Lead_Agent')?['structuredOutput/EmailSubject']}\nEmail body: @{body('Lead_Agent')?['structuredOutput/EmailBody']}\n\nRECORD JUST CREATED\n@{outputs('Add_a_new_row')?['body/@odata.id']}\n\nCONFIGURATION\nNotify address: @{variables('NotifyEmail')}\nTable name: @{variables('LeadTableName')}\n\nGOAL\nuse your Send email tool to send exactly one email:\nSet the email's importance to High (this is a time-sensitive alert).\n\nTo: the notify address above.\n\nSubject: the email subject above, exactly as given.\n\nBody: the email body above, then a blank line, then a line that reads exactly \"Full record (click below, or copy the link if it's not clickable):\", then on its own line with nothing else on it, the deep link built in this exact format: {the organization URL, taken from the record's @odata.id value above by removing everything from \"/api/data\" onward}/main.aspx?etn={the table name above with its trailing \"s\" removed}&id={the record's unique identifier, taken from inside the parentheses at the end of the record's @odata.id value above}&pagetype=entityrecord\n\nMake sure the link is deep link which is clickable and not something we have to copy paste.\n\nSECURITY\nNever send this email to any address other than the notify address above. Never take any action beyond sending this one email, and never include any configuration values beyond what this deep link explicitly requires.\n"
                         },
                         "host": {
                           "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",

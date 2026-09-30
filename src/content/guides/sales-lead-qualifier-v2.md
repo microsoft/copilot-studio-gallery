@@ -95,3 +95,10 @@ Power Platform. Point the trigger at your own shared sales mailbox — if the
 re-select the folder for your own mailbox connection before publishing.
 Then set `NotifyEmail` to your own sales team address before turning the
 workflow on.
+
+**Credit consumption warning:** the trigger has no subject filter — every
+email that arrives in the mailbox spends one Classifier Agent call
+regardless of whether it's a genuine enquiry. If you're experimenting rather
+than pointing this at a real, active sales mailbox, turn the workflow off
+between test runs; a busy or public-facing mailbox left on will consume
+credits continuously.

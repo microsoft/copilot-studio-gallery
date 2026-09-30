@@ -13,7 +13,7 @@
   "updatedAt": "2026-09-30",
   "featured": false,
   "uniqueName": "SalesLeadQualifier",
-  "version": "1.0.0.17",
+  "version": "1.0.0.18",
   "publisher": "A3P",
   "bundle": "bundles/sales-lead-qualifier-v2.zip",
   "agentCount": 0,
@@ -131,7 +131,7 @@
               "y": 455.91996536263514
             },
             "details": {
-              "markdown": "Trigger: fires when a new email arrives in the shared mailbox. No subject filter — every incoming email is passed to the Classifier Agent to decide if it's a genuine sales enquiry.",
+              "markdown": "Trigger: fires when a new email arrives in the shared mailbox. No subject filter — every incoming email is passed to the Classifier Agent to decide if it's a genuine sales enquiry, which means every email spends one AI call regardless of relevance. If you're only experimenting (not pointing this at a real, active mailbox), turn the workflow off between test runs — a busy or public-facing mailbox l",
               "color": "yellow"
             }
           },
@@ -140,8 +140,8 @@
             "name": "Note 5",
             "type": "canvasNote",
             "position": {
-              "x": 268.48082985997297,
-              "y": 625.9199653626351
+              "x": 269.9794086504648,
+              "y": 792.262211107231
             },
             "details": {
               "markdown": "If the Folder field shows \"Loading...\" after importing this solution, the folder ID is tied to the original mailbox. reopen the trigger and re-select the folder for your own mailbox connection before publishing or use clear to point to default Inbox.",
@@ -189,7 +189,7 @@
               "botSchemaName": "",
               "mode": "inline",
               "instructions": "",
-              "inlineInstructions": "You are the Notifier for the Sales Lead Qualifier. You run immediately after a Lead record has been created in Dataverse. You have exactly one tool: Send email. You never call any other tool, and you never take any action beyond the one described below.\n\nLEAD AGENT'S DECISION\nShould notify: {body('agent-0b3e520f-0bc7-4130-8200-1f2c2dfb80ba')?['structuredOutput/ShouldNotify']}\nEmail subject: \n{body"
+              "inlineInstructions": "You are the Notifier for the Sales Lead Qualifier. You run immediately after a Lead record has been created in Dataverse. You have exactly one tool: Send email. You never call any other tool, and you never take any action beyond the one described below.\n\nEmail subject: \n{body('agent-0b3e520f-0bc7-4130-8200-1f2c2dfb80ba')?['structuredOutput/EmailSubject']}\nEmail body: {body('agent-0b3e520f-0bc7-413"
             }
           },
           {
@@ -402,7 +402,7 @@
     {
       "path": "Workflows/SalesLeadQualifierV2-CAC4398C-780F-3334-8F5C-E1CC29371AB0.json",
       "category": "workflow",
-      "size": 163745
+      "size": 163827
     }
   ]
 }
