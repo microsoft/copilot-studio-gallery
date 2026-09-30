@@ -730,7 +730,7 @@
                     "type": "agent",
                     "version": 1,
                     "position": {
-                      "x": 1437.4847977438737,
+                      "x": 1121.4847977438737,
                       "y": 223.77521794874815
                     },
                     "data": {
@@ -740,7 +740,7 @@
                         "botSchemaName": "",
                         "isHitlEscalationEnabled": false,
                         "webSearchEnabled": false,
-                        "inlineInstructions": "You are the Delivery step for HR New Hire Welcome Packet. You run once per new-hire row, immediately after Match Audience. You have three tools: Get items (filtered), Send email, and Update item. You never re-decide the audience — you trust Match Audience's result completely. Send every email at Normal importance. Do not mark anything Low or High priority.\n\nMATCH RESULT FROM THE PREVIOUS STEP {body('agent-d41ad52d-144b-434f-84b8-78e895e8dd2d')?['message']}\n\nHIRE ROW FOR THIS RUN id : {triggerOutputs()?['body/ID']}\n Work email: {triggerOutputs()?['body/field_1']}\n Manager email: {triggerOutputs()?['body/field_4']}\nPacket sent: {triggerOutputs()?['body/Packet_x0020_sent']}\nWelcome Links site: {variables('WelcomeLinksSite')}Welcome Links list: {variables('WelcomeLinksList')}\nGOAL\n1. If Packet sent above already has a value, stop entirely. Do nothing further — this row was already processed.\n2. If missing\\_fields in the match result is non-empty, send an email to HR {variables('HRNotifyEmail')} naming exactly which field(s) it lists as blank. Do not call Get items, do not send the welcome packet, do not update the row.\n3. Otherwise, call Get items on Welcome Links with a filter so SharePoint itself returns only the rows you need Audience equals \"Everyone\" OR Audience equals the audience value from the match result. Do not judge which rows to keep yourself; let the filter do that. Use every row this filtered call returns.\n4. Build the email body:\n\"Start here — everyone does this\": every returned row where Audience = Everyone, each as the Link name hyperlinked to URL, with Description underneath if present.\nIf audience in the match result is not null: add \"Because you are joining \" with that audience's rows in the same format.\nIf audience is null: add one line instead saying the hire's manager will follow up with role-specific material.\n5. Send that email To: Work email above, Cc: Manager email above.\n6. If audience is null (and missing\\_fields was empty), also send HR a short email naming the job title from matched\\_on in the match result that couldn't be placed.\n7. Call Update item on this hire's row using the Item ID given above to identify it directly, setting Packet sent to today's date. Do not search for the row by Work email or any other field.",
+                        "inlineInstructions": "You are the Onboarding Agent for HR New Hire Welcome Packet. You run once per new-hire row, immediately after the trigger. You have three tools: Get items, Send email, and Update item. Send every email at Normal importance. Do not mark anything Low or High priority.\n\nHIRE ROW FOR THIS RUN\nid: {triggerOutputs()?['body/ID']}\nPreferred name: {triggerOutputs()?['body/Title']}\nWork email: {triggerOutputs()?['body/field_1']}\nJob title: {triggerOutputs()?['body/field_2']}\nStart date: {triggerOutputs()?['body/field_3']}\nManager email: {triggerOutputs()?['body/field_4']}\nPacket sent: {triggerOutputs()?['body/Packet_x0020_sent']}\n\nWelcome Links site: {variables('WelcomeLinksSite')}Welcome Links list: {variables('WelcomeLinksList')}\n\nGOAL\n1. If Packet sent above already has a value, stop entirely. Do nothing further — this row was already processed.\n2. Check Work email, Job title, Start date, Manager email above. If any are blank, send an email to HR {variables('HRNotifyEmail')} naming exactly which field(s) are missing, and stop — do not call Get items, do not send the welcome packet, do not update the row.\n3. Otherwise, call Get items once on Welcome Links to retrieve every row.\n4. From those rows, decide which single Audience value best matches Job title, or decide none do. Never invent an audience that isn't present in the retrieved rows. Keep track of what you matched on — the specific words in the job title, and what they matched to (or why nothing matched) — you'll need this if nothing matches.\n5. From the same retrieved rows — do not call Get items again — select every row where Audience = \"Everyone\", plus every row where Audience equals the audience you matched (if any). Only use rows that are actually present in what Get items returned; never invent a row, link, or description that isn't there.\n6. Build the email body: \"Start here — everyone does this\": every selected Everyone row, each as the Link name hyperlinked to URL, with Description underneath if present. If you matched an audience: add \"Because you are joining \" with that audience's selected rows in the same format. If no audience matched: add one line instead saying the hire's manager will follow up with role-specific material.\n7. Send that email To: Work email above, Cc: Manager email above.\n8. If no audience matched (and no fields were missing), also send HR a short email naming the job title that couldn't be placed.\n9. Call Update item on this hire's row using the Item ID given above to identify it directly, setting Packet sent to today's date. Do not search for the row by Work email or any other field.\n",
                         "outputMode": "text",
                         "inlineModel": "claude-opus-5",
                         "connectionName": "shared_agentnode",
@@ -890,8 +890,7 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    },
-                    "selected": false
+                    }
                   },
                   {
                     "id": "canvasNote-f530af65-6ff7-46fe-981c-c401d3e5ab44",
@@ -903,23 +902,24 @@
                       "y": 318.79876791309778
                     },
                     "width": 232,
-                    "height": 200,
+                    "height": 300,
                     "style": {
                       "width": 232,
-                      "height": 200
+                      "height": 300
                     },
                     "data": {
                       "config": {
-                        "markdown": "Fires when a row is added to New Hires. Site/list are set directly here, reselect them in this trigger to point at your own list. \n\n\n",
+                        "markdown": "Fires when a row is added to New Hires. \n\nSite/list are set directly here, reselect them in this trigger to point at your own list. \n\nAfter doing so, every \"field_N\" dynamic-content token in Onboarding Agent's prompt will break (SharePoint assigns these per-list) — reopen the agent and re-insert each one from the dynamic content picker against your own list's columns.\n",
                         "color": "yellow"
                       },
                       "outcomes": []
                     },
                     "measured": {
                       "width": 232,
-                      "height": 200
+                      "height": 300
                     },
-                    "resizing": false
+                    "resizing": false,
+                    "selected": false
                   },
                   {
                     "id": "canvasNote-0aa7edc5-01f8-4cc3-83ee-80af0d1d4177",
@@ -931,23 +931,24 @@
                       "y": 318.68807051707836
                     },
                     "width": 235,
-                    "height": 286,
+                    "height": 300,
                     "style": {
                       "width": 235,
-                      "height": 286
+                      "height": 300
                     },
                     "data": {
                       "config": {
-                        "markdown": "Configuration variables:\n\n• HRNotifyEmail — where HR gets alerted (missing data / no audience match)\n\n• WelcomeLinksSite / WelcomeLinksList — where role-based links live\n\nReplace with your own site, list, and mailbox before use.\n",
+                        "markdown": "Configuration variables: \n\n• HRNotifyEmail — where HR gets alerted (missing data / no audience match) \n\n• WelcomeLinksSite — full SharePoint site URL (e.g. https://yourtenant.sharepoint.com/teams/YourSiteName) • WelcomeLinksList — the list's display name (e.g. Welcome_Links), not a GUID. Replace with your own site, list, and mailbox before use.\n",
                         "color": "red"
                       },
                       "outcomes": []
                     },
                     "measured": {
                       "width": 235,
-                      "height": 286
+                      "height": 300
                     },
-                    "resizing": false
+                    "resizing": false,
+                    "selected": false
                   },
                   {
                     "id": "canvasNote-a53507e7-a46f-4b75-9ec6-e6e13b2aeec4",
@@ -955,8 +956,8 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 1456.8965299359413,
-                      "y": 329.24882904905058
+                      "x": 1141.3754688362221,
+                      "y": 345.77612272570246
                     },
                     "width": 227,
                     "height": 478,
@@ -966,7 +967,7 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "Onboarding Agent — runs after Match Audience, trusts its result completely.\n\n• Stops if Packet sent is already set\n\n• Alerts HR and stops if any required field was missing\n\n• Otherwise: gets Welcome Links filtered to Everyone + matched audience (SharePoint does the filtering, not the agent), emails the hire (Cc manager), also alerts HR if no audience matched, then stamps Packet sent\n",
+                        "markdown": "Onboarding Agent — runs once per new-hire row, right after the trigger. Stops if Packet sent is already set. Alerts HR and stops if any required field was missing. Otherwise: calls Get items once on Welcome Links, decides which audience the job title matches (or that none do) and which rows belong in the email — the agent does this selection itself, not a SharePoint filter — emails the hire (Cc manager), alerts HR if no audience matched, then stamps Packet sent.\n",
                         "color": "yellow"
                       },
                       "outcomes": []
@@ -975,103 +976,9 @@
                       "width": 227,
                       "height": 478
                     },
-                    "resizing": false
-                  },
-                  {
-                    "id": "agent-d41ad52d-144b-434f-84b8-78e895e8dd2d",
-                    "name": "Match Audience",
-                    "type": "agent",
-                    "version": 1,
-                    "position": {
-                      "x": 1008.6838140606345,
-                      "y": 223.83276945826017
-                    },
-                    "data": {
-                      "config": {
-                        "mode": "inline",
-                        "instructions": "",
-                        "botSchemaName": "",
-                        "isHitlEscalationEnabled": false,
-                        "webSearchEnabled": false,
-                        "inlineInstructions": "You are the Match Audience step for HR New Hire Welcome Packet. You run once per new-hire row, immediately after the trigger. You have exactly one tool: Get items, read-only. You never send email, never update any row, and never take any action beyond producing the result described below.\n\nWelcome Links site: {variables('WelcomeLinksSite')} Welcome Links list: {variables('WelcomeLinksList')}. Use these exact values when you call Get items.\n\n\nHIRE ROW FOR THIS RUN Preferred name: {triggerOutputs()?['body/Title']}\nWork email: {triggerOutputs()?['body/field_1']}\nJob title: {triggerOutputs()?['body/field_2']}\nStart date: {triggerOutputs()?['body/field_3']}\nManager email: {triggerOutputs()?['body/field_4']}\nPacket sent: {triggerOutputs()?['body/Packet_x0020_sent']}\n\nGOAL\nProduce exactly one JSON object as your entire output:\n```\n{\n  \"audience\": \"<one Audience value from Welcome Links, or null>\",\n  \"matched_on\": \"<the words in Job title that drove the match, and what they matched to, or the reason none matched, or the reason matching didn't run>\",\n  \"missing_fields\": [\"<any of Work email, Job title, Start date, Manager email that are blank>\"]\n}\nSTEPS\n\nCheck Work email, Job title, Start date, Manager email above. List every one that is blank in missing_fields.\n\nIf missing_fields is non-empty, set audience to null, explain in matched_on that missing fields blocked matching, and stop — do not call Get items.\n\nOtherwise, call Get items on Welcome Links to retrieve every row and see the full set of Audience values that exist.\n\nDecide which single Audience value best matches Job title, or decide none do. Never invent an audience that isn't present in the retrieved rows. Record what you matched on — the specific words in the job title, and what they matched to (or why nothing matched).\nNever guess, estimate, or invent a missing field's value. Never take any action other than producing this JSON object.\n\n\n\n```",
-                        "outputMode": "text",
-                        "inlineModel": "claude-opus-5",
-                        "connectionName": "shared_agentnode",
-                        "inlineTools": [
-                          {
-                            "id": "f3682060-01d0-4db4-bbaf-17b9fb850022",
-                            "connectorId": "shared_sharepointonline",
-                            "operationId": "GetItems",
-                            "displayName": "Get items",
-                            "description": "Gets items from a SharePoint list.",
-                            "connectionReferenceName": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9",
-                            "connectionId": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9",
-                            "authMode": "invoker",
-                            "isMcp": false,
-                            "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1827/1.0.1827.4902/sharepointonline/icon.png",
-                            "brandColor": "#036C70"
-                          }
-                        ]
-                      },
-                      "outcomes": [
-                        {
-                          "id": "default",
-                          "label": "Default",
-                          "outcomeSchema": {
-                            "type": "object",
-                            "properties": {
-                              "message": {
-                                "type": "string",
-                                "title": "Agent Response",
-                                "description": "The agent response text"
-                              },
-                              "activities": {
-                                "type": "array",
-                                "description": "Bot response activities (typing, message, and event types)"
-                              }
-                            },
-                            "required": [
-                              "activities"
-                            ]
-                          }
-                        }
-                      ]
-                    },
-                    "measured": {
-                      "width": 240,
-                      "height": 66
-                    },
+                    "resizing": false,
                     "dragging": false,
                     "selected": false
-                  },
-                  {
-                    "id": "canvasNote-6b84dad0-e5db-4198-90c3-058dd607938d",
-                    "name": "Note 4",
-                    "type": "canvasNote",
-                    "version": 1,
-                    "position": {
-                      "x": 1009.9327012016117,
-                      "y": 334.92698207525638
-                    },
-                    "width": 246,
-                    "height": 219,
-                    "style": {
-                      "width": 246,
-                      "height": 219
-                    },
-                    "data": {
-                      "config": {
-                        "markdown": "Match Audience — read-only (one Get items call, no writes). Matches Job title to an existing Welcome Links audience, or null if none fit.  \n\nOutputs only {audience, matched_on, missing_fields}.\n",
-                        "color": "yellow"
-                      },
-                      "outcomes": []
-                    },
-                    "measured": {
-                      "width": 246,
-                      "height": 219
-                    },
-                    "resizing": false,
-                    "dragging": false
                   },
                   {
                     "id": "canvasNote-aa583182-e79a-4075-8057-c3fe9a45ad41",
@@ -1079,56 +986,28 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 278.15001481440066,
-                      "y": 41.7334219131537
+                      "x": 276.70395807335859,
+                      "y": -5.986450541234916
                     },
                     "width": 250,
-                    "height": 150,
+                    "height": 200,
                     "style": {
                       "width": 250,
-                      "height": 150
+                      "height": 200
                     },
                     "data": {
                       "config": {
-                        "markdown": "Expected columns: Preferred name, Work email, Job title, Start date, Manager email, Packet sent.",
+                        "markdown": "Expected columns\n\nNew Hires (first list): Preferred name, Work email, Job title, Start date, Manager email, Packet sent. \n\nWelcome Links (second list): Audience (text - \"Everyone\" or a role word), Link name, URL (Hyperlink), Description (optional).\n",
                         "color": "green"
                       },
                       "outcomes": []
                     },
                     "measured": {
                       "width": 250,
-                      "height": 150
-                    }
-                  },
-                  {
-                    "id": "canvasNote-90939fef-1649-4370-ac52-b2864a434a04",
-                    "name": "Note 6",
-                    "type": "canvasNote",
-                    "version": 1,
-                    "position": {
-                      "x": 1007.7837238042753,
-                      "y": -11.88577187676141
+                      "height": 200
                     },
-                    "width": 240,
-                    "height": 194,
-                    "style": {
-                      "width": 240,
-                      "height": 194
-                    },
-                    "data": {
-                      "config": {
-                        "markdown": "Reconnect required: Delete and re-add this node's tool connections -\n1. Sharepoint - get items\n\nConnections don't automatically renew for a new user who acquires this workflow.",
-                        "color": "red"
-                      },
-                      "outcomes": []
-                    },
-                    "measured": {
-                      "width": 240,
-                      "height": 194
-                    },
-                    "dragging": false,
                     "selected": false,
-                    "resizing": false
+                    "dragging": false
                   },
                   {
                     "id": "canvasNote-5f327463-8646-4cfb-a13e-b131d3053b95",
@@ -1136,8 +1015,8 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 1424.9636462167423,
-                      "y": -36.110721484595167
+                      "x": 1128.9748412803388,
+                      "y": -36.11072148459516
                     },
                     "width": 250,
                     "height": 224,
@@ -1156,8 +1035,7 @@
                       "width": 250,
                       "height": 224
                     },
-                    "dragging": false,
-                    "selected": false
+                    "dragging": false
                   }
                 ],
                 "edges": [
@@ -1167,20 +1045,9 @@
                     "target": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b"
                   },
                   {
-                    "id": "edge-variable-faf9b4df-2036-499f-959a-6fb24d953d1b-agent-d41ad52d-144b-434f-84b8-78e895e8dd2d",
+                    "id": "edge-variable-faf9b4df-2036-499f-959a-6fb24d953d1b-agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514",
                     "source": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b",
-                    "target": "agent-d41ad52d-144b-434f-84b8-78e895e8dd2d"
-                  },
-                  {
-                    "id": "edge-agent-d41ad52d-144b-434f-84b8-78e895e8dd2d-agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514",
-                    "source": "agent-d41ad52d-144b-434f-84b8-78e895e8dd2d",
                     "target": "agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514"
-                  },
-                  {
-                    "id": "edge-canvasNote-0aa7edc5-01f8-4cc3-83ee-80af0d1d4177-canvasNote-6b84dad0-e5db-4198-90c3-058dd607938d-input",
-                    "source": "canvasNote-0aa7edc5-01f8-4cc3-83ee-80af0d1d4177",
-                    "target": "canvasNote-6b84dad0-e5db-4198-90c3-058dd607938d",
-                    "targetHandle": "input"
                   }
                 ],
                 "connectionReferences": {
@@ -1221,9 +1088,6 @@
                   "Configuration",
                   "Configuration_Init_WelcomeLinksSite",
                   "Configuration_Init_WelcomeLinksList"
-                ],
-                "agent-d41ad52d-144b-434f-84b8-78e895e8dd2d": [
-                  "Match_Audience"
                 ],
                 "agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514": [
                   "Onboarding_Agent"
@@ -1284,12 +1148,12 @@
             ]
           }
         },
-        "Match_Audience": {
+        "Onboarding_Agent": {
           "type": "OpenApiConnection",
           "inputs": {
             "parameters": {
-              "body/botDefinition": "{\"model\":\"claude-opus-5\",\"tools\":[{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_sharepointonline\",\"connectionId\":\"shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9\",\"operationId\":\"GetItems\",\"connectionMode\":\"Maker\",\"displayName\":\"Get items\",\"description\":\"Gets items from a SharePoint list.\"}]}",
-              "body/message": "You are the Match Audience step for HR New Hire Welcome Packet. You run once per new-hire row, immediately after the trigger. You have exactly one tool: Get items, read-only. You never send email, never update any row, and never take any action beyond producing the result described below.\n\nWelcome Links site: @{variables('WelcomeLinksSite')} Welcome Links list: @{variables('WelcomeLinksList')}. Use these exact values when you call Get items.\n\n\nHIRE ROW FOR THIS RUN Preferred name: @{triggerOutputs()?['body/Title']}\nWork email: @{triggerOutputs()?['body/field_1']}\nJob title: @{triggerOutputs()?['body/field_2']}\nStart date: @{triggerOutputs()?['body/field_3']}\nManager email: @{triggerOutputs()?['body/field_4']}\nPacket sent: @{triggerOutputs()?['body/Packet_x0020_sent']}\n\nGOAL\nProduce exactly one JSON object as your entire output:\n```\n{\n  \"audience\": \"<one Audience value from Welcome Links, or null>\",\n  \"matched_on\": \"<the words in Job title that drove the match, and what they matched to, or the reason none matched, or the reason matching didn't run>\",\n  \"missing_fields\": [\"<any of Work email, Job title, Start date, Manager email that are blank>\"]\n}\nSTEPS\n\nCheck Work email, Job title, Start date, Manager email above. List every one that is blank in missing_fields.\n\nIf missing_fields is non-empty, set audience to null, explain in matched_on that missing fields blocked matching, and stop — do not call Get items.\n\nOtherwise, call Get items on Welcome Links to retrieve every row and see the full set of Audience values that exist.\n\nDecide which single Audience value best matches Job title, or decide none do. Never invent an audience that isn't present in the retrieved rows. Record what you matched on — the specific words in the job title, and what they matched to (or why nothing matched).\nNever guess, estimate, or invent a missing field's value. Never take any action other than producing this JSON object.\n\n\n\n```"
+              "body/botDefinition": "{\"model\":\"claude-opus-5\",\"tools\":[{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_sharepointonline\",\"connectionId\":\"shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9\",\"operationId\":\"PatchItem\",\"connectionMode\":\"Maker\",\"displayName\":\"Update item\",\"description\":\"Updates an item in a SharePoint list.\"},{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_sharepointonline\",\"connectionId\":\"shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9\",\"operationId\":\"GetItems\",\"connectionMode\":\"Maker\",\"displayName\":\"Get items\",\"description\":\"Gets items from a SharePoint list.\"},{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_office365\",\"connectionId\":\"shared-office365-02268f4d-3810-4099-b068-e1a24808aa17\",\"operationId\":\"SendEmailV2\",\"connectionMode\":\"Maker\",\"displayName\":\"Send an email\",\"description\":\"This operation sends an email message.\"}]}",
+              "body/message": "You are the Onboarding Agent for HR New Hire Welcome Packet. You run once per new-hire row, immediately after the trigger. You have three tools: Get items, Send email, and Update item. Send every email at Normal importance. Do not mark anything Low or High priority.\n\nHIRE ROW FOR THIS RUN\nid: @{triggerOutputs()?['body/ID']}\nPreferred name: @{triggerOutputs()?['body/Title']}\nWork email: @{triggerOutputs()?['body/field_1']}\nJob title: @{triggerOutputs()?['body/field_2']}\nStart date: @{triggerOutputs()?['body/field_3']}\nManager email: @{triggerOutputs()?['body/field_4']}\nPacket sent: @{triggerOutputs()?['body/Packet_x0020_sent']}\n\nWelcome Links site: @{variables('WelcomeLinksSite')}Welcome Links list: @{variables('WelcomeLinksList')}\n\nGOAL\n1. If Packet sent above already has a value, stop entirely. Do nothing further — this row was already processed.\n2. Check Work email, Job title, Start date, Manager email above. If any are blank, send an email to HR @{variables('HRNotifyEmail')} naming exactly which field(s) are missing, and stop — do not call Get items, do not send the welcome packet, do not update the row.\n3. Otherwise, call Get items once on Welcome Links to retrieve every row.\n4. From those rows, decide which single Audience value best matches Job title, or decide none do. Never invent an audience that isn't present in the retrieved rows. Keep track of what you matched on — the specific words in the job title, and what they matched to (or why nothing matched) — you'll need this if nothing matches.\n5. From the same retrieved rows — do not call Get items again — select every row where Audience = \"Everyone\", plus every row where Audience equals the audience you matched (if any). Only use rows that are actually present in what Get items returned; never invent a row, link, or description that isn't there.\n6. Build the email body: \"Start here — everyone does this\": every selected Everyone row, each as the Link name hyperlinked to URL, with Description underneath if present. If you matched an audience: add \"Because you are joining \" with that audience's selected rows in the same format. If no audience matched: add one line instead saying the hire's manager will follow up with role-specific material.\n7. Send that email To: Work email above, Cc: Manager email above.\n8. If no audience matched (and no fields were missing), also send HR a short email naming the job title that couldn't be placed.\n9. Call Update item on this hire's row using the Item ID given above to identify it directly, setting Packet sent to today's date. Do not search for the row by Work email or any other field.\n"
             },
             "host": {
               "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
@@ -1299,29 +1163,6 @@
           },
           "runAfter": {
             "Configuration_Init_WelcomeLinksList": [
-              "Succeeded"
-            ]
-          },
-          "metadata": {
-            "description": "Match Audience",
-            "nodeId": "agent-d41ad52d-144b-434f-84b8-78e895e8dd2d"
-          }
-        },
-        "Onboarding_Agent": {
-          "type": "OpenApiConnection",
-          "inputs": {
-            "parameters": {
-              "body/botDefinition": "{\"model\":\"claude-opus-5\",\"tools\":[{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_sharepointonline\",\"connectionId\":\"shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9\",\"operationId\":\"PatchItem\",\"connectionMode\":\"Maker\",\"displayName\":\"Update item\",\"description\":\"Updates an item in a SharePoint list.\"},{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_sharepointonline\",\"connectionId\":\"shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9\",\"operationId\":\"GetItems\",\"connectionMode\":\"Maker\",\"displayName\":\"Get items\",\"description\":\"Gets items from a SharePoint list.\"},{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_office365\",\"connectionId\":\"shared-office365-02268f4d-3810-4099-b068-e1a24808aa17\",\"operationId\":\"SendEmailV2\",\"connectionMode\":\"Maker\",\"displayName\":\"Send an email\",\"description\":\"This operation sends an email message.\"}]}",
-              "body/message": "You are the Delivery step for HR New Hire Welcome Packet. You run once per new-hire row, immediately after Match Audience. You have three tools: Get items (filtered), Send email, and Update item. You never re-decide the audience — you trust Match Audience's result completely. Send every email at Normal importance. Do not mark anything Low or High priority.\n\nMATCH RESULT FROM THE PREVIOUS STEP @{body('Match_Audience')?['message']}\n\nHIRE ROW FOR THIS RUN id : @{triggerOutputs()?['body/ID']}\n Work email: @{triggerOutputs()?['body/field_1']}\n Manager email: @{triggerOutputs()?['body/field_4']}\nPacket sent: @{triggerOutputs()?['body/Packet_x0020_sent']}\nWelcome Links site: @{variables('WelcomeLinksSite')}Welcome Links list: @{variables('WelcomeLinksList')}\nGOAL\n1. If Packet sent above already has a value, stop entirely. Do nothing further — this row was already processed.\n2. If missing\\_fields in the match result is non-empty, send an email to HR @{variables('HRNotifyEmail')} naming exactly which field(s) it lists as blank. Do not call Get items, do not send the welcome packet, do not update the row.\n3. Otherwise, call Get items on Welcome Links with a filter so SharePoint itself returns only the rows you need Audience equals \"Everyone\" OR Audience equals the audience value from the match result. Do not judge which rows to keep yourself; let the filter do that. Use every row this filtered call returns.\n4. Build the email body:\n\"Start here — everyone does this\": every returned row where Audience = Everyone, each as the Link name hyperlinked to URL, with Description underneath if present.\nIf audience in the match result is not null: add \"Because you are joining \" with that audience's rows in the same format.\nIf audience is null: add one line instead saying the hire's manager will follow up with role-specific material.\n5. Send that email To: Work email above, Cc: Manager email above.\n6. If audience is null (and missing\\_fields was empty), also send HR a short email naming the job title from matched\\_on in the match result that couldn't be placed.\n7. Call Update item on this hire's row using the Item ID given above to identify it directly, setting Packet sent to today's date. Do not search for the row by Work email or any other field."
-            },
-            "host": {
-              "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
-              "connectionName": "shared_agentnode",
-              "operationId": "InvokeDefinition"
-            }
-          },
-          "runAfter": {
-            "Match_Audience": [
               "Succeeded"
             ]
           },

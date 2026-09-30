@@ -27,7 +27,10 @@ not a workflow change.
 
 The trigger fires when a new item is created in the `New Hires` list. The
 Onboarding Agent then runs its checks and, when the row is complete, calls
-**Get items** on `Welcome Links` to assemble the packet. It sends the mail (To:
+**Get items** once on `Welcome Links`, decides which audience the job title
+matches (or that none do), and selects which rows belong in the packet itself
+— the agent does this selection, not a SharePoint filter, using only rows
+actually present in what Get items returned. It sends the mail (To:
 the hire, Cc: their manager) and stamps `Packet sent` with today's date. Every
 link, URL, and description in the mail comes from the `Welcome Links` list —
 the agent never authors content, only selects and formats it. If no audience
@@ -39,6 +42,8 @@ follow up, and separately tells HR which title couldn't be placed.
 | Variable | Purpose |
 | --- | --- |
 | `HRNotifyEmail` | Address the agent emails when a title can't be placed or a required field is missing. Ships as a placeholder (`hr@contoso.com`) — set it to your HR team's address. |
+| `WelcomeLinksSite` | Full SharePoint site URL where the `Welcome Links` list lives (e.g. `https://yourtenant.sharepoint.com/teams/YourSiteName`). |
+| `WelcomeLinksList` | The `Welcome Links` list's display name (e.g. `Welcome_Links`) — not a GUID. |
 
 ## Customizations
 
@@ -70,8 +75,12 @@ A SharePoint site with two lists and an Office 365 Outlook connection:
 
 Download the rebuilt solution ZIP from this page and import it through Power
 Platform. Connections don't carry over to a new user or environment — on the
-**Match Audience** and **Onboarding Agent** nodes, delete and re-add each tool
-so it authenticates against your own account (the canvas has a note on each
-node listing exactly which tools to re-add), and reopen each SharePoint action
-to re-point it at your own `New Hires` and `Welcome Links` lists. Then set
-`HRNotifyEmail` before turning the workflow on.
+**Onboarding Agent** node, delete and re-add each tool so it authenticates
+against your own account (the canvas has a note listing exactly which tools
+to re-add), and reopen the trigger and the agent's SharePoint actions to
+re-point them at your own `New Hires` and `Welcome Links` lists. Re-pointing
+the trigger will break every `field_N` dynamic-content token used in the
+agent's prompt (SharePoint assigns these per-list) — reopen the agent and
+re-insert each one from the dynamic content picker against your own list's
+columns. Then set `HRNotifyEmail`, `WelcomeLinksSite`, and `WelcomeLinksList`
+before turning the workflow on.
