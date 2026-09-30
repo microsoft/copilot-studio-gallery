@@ -17,29 +17,34 @@ broad write access at the same time.
   recruitment, vendor pitches, invoices, support requests, auto-replies) are
   tagged `Filtered`. Genuine enquiries are scored against BANT (each
   `Strong`/`Weak`/`Absent`) and assigned a `Tier` of `Hot`, `Warm`, or
-  `Cold`. It has no tools, so instructions hidden in the email body can't
-  act on your mailbox or Dataverse.
+  `Cold`, exposed as a structured `Tier` output so the flow can branch on it
+  deterministically. It has no tools, so instructions hidden in the email
+  body can't act on your mailbox or Dataverse.
 - **Lead Agent** reviews the Classifier's BANT tier and decides `ShouldLog`
   and every Sales Lead V2 field, including whether a notification is
   warranted (`ShouldNotify`, true only when `Tier` is `Hot`). It never
   guesses a budget figure that wasn't explicitly stated. It also holds no
   tools — it only reasons and produces structured output; Dataverse and
-  Outlook access live elsewhere.
+  Outlook access live elsewhere. It never runs at all for `Filtered` mail.
 - **Notifier Agent** has exactly one tool, Outlook's "Send an email". It
-  only sends when the Lead Agent's `ShouldNotify` was true; otherwise it
-  takes no action. The email links to the record it just read back from the
-  create step's response, so no separate environment-URL setting is needed.
+  only runs when the Lead Agent's `ShouldNotify` was true, so it never
+  incurs an AI call it doesn't need. The email links to the record it just
+  read back from the create step's response, so no separate
+  environment-URL setting is needed.
 
 ## How the workflow runs
 
 Mail arriving in the shared mailbox starts the run (no subject filter —
-every inbound email is evaluated). The Classifier Agent scores the enquiry,
-and the Lead Agent turns that score into a logging decision. An If/Else
-node — the only deterministic gate in the flow — branches purely on the Lead
-Agent's `ShouldLog` output. On the "yes" branch, a plain Dataverse "Add a new
-row" step writes the Sales Lead V2 row with every field wired from the Lead
-Agent's structured output, then the Notifier Agent runs and emails the sales
-team if `ShouldNotify` was true.
+every inbound email is evaluated). The Classifier Agent scores the enquiry
+and outputs its `Tier`. A deterministic If/Else immediately checks that
+`Tier` — filtered mail stops here, so the Lead Agent never runs on spam or
+noise. For genuine enquiries, the Lead Agent turns the tier into a logging
+decision; a nested If/Else on its `ShouldLog` output gates a plain Dataverse
+"Add a new row" step that writes the Sales Lead V2 row with every field
+wired from the Lead Agent's structured output. A third, innermost If/Else
+then checks `ShouldNotify` and only invokes the Notifier Agent — which emails
+the sales team — when it's true, so the notifier never runs (and never
+spends an AI call) on leads that don't need an alert.
 
 ## Configuration
 
