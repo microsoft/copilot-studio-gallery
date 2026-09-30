@@ -1,0 +1,1181 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "api": {
+          "name": "shared_sharepointonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedsharepointonline_98f4ff9e"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9"
+      },
+      "shared_agentnode": {
+        "api": {
+          "name": "shared_agentnode"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedagentnode_d38e148f"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-agentnode-f572142a-9479-4621-b54a-1b0f258e4edc"
+      },
+      "shared_sharepointonline": {
+        "api": {
+          "name": "shared_sharepointonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedsharepointonline_c6afa5d6"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "When_an_item_is_created": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://microsoftapc.sharepoint.com/teams/HROnboardingTemplateDemo",
+              "table": "a30b7182-2410-4f48-8d05-7dbade2d2ce6"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetOnNewItems",
+              "connectionName": "shared_sharepointonline-1"
+            },
+            "authentication": "@parameters('$authentication')"
+          },
+          "recurrence": {
+            "frequency": "Minute",
+            "interval": 1
+          },
+          "splitOn": "@triggerOutputs()?['body/value']",
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "HR New Hire Welcome Packet",
+                "nodes": [
+                  {
+                    "id": "start-51fd44b0-e2a1-4c03-bff1-72567e6c14fd",
+                    "name": "When an item is created",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 271.5798767913098,
+                      "y": 222.576721011951
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "connector",
+                        "connector": {
+                          "apiName": "shared_sharepointonline",
+                          "operationName": "GetOnNewItems",
+                          "connectionName": "shared_sharepointonline-1",
+                          "inputs": {
+                            "dataset": "https://microsoftapc.sharepoint.com/teams/HROnboardingTemplateDemo",
+                            "table": "a30b7182-2410-4f48-8d05-7dbade2d2ce6"
+                          },
+                          "displayName": "When an item is created",
+                          "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1827/1.0.1827.4902/sharepointonline/icon.png",
+                          "brandColor": "",
+                          "operationType": "OpenApiConnection",
+                          "parametersSchema": {
+                            "type": "object",
+                            "properties": {
+                              "dataset": {
+                                "type": "string",
+                                "title": "Site Address",
+                                "x-ms-dynamic-list": {
+                                  "operationId": "GetDataSets",
+                                  "parameters": {},
+                                  "itemsPath": "value",
+                                  "itemValuePath": "Name",
+                                  "itemTitlePath": "DisplayName"
+                                },
+                                "description": "Example: https://contoso.sharepoint.com/sites/sitename",
+                                "minLength": 1,
+                                "x-ms-property-name-alias": "dataset"
+                              },
+                              "table": {
+                                "type": "string",
+                                "title": "List Name",
+                                "x-ms-dynamic-list": {
+                                  "operationId": "GetTables",
+                                  "parameters": {
+                                    "dataset": {
+                                      "parameterReference": "dataset",
+                                      "required": true
+                                    }
+                                  },
+                                  "itemsPath": "value",
+                                  "itemValuePath": "Name",
+                                  "itemTitlePath": "DisplayName"
+                                },
+                                "description": "SharePoint list name",
+                                "minLength": 1,
+                                "x-ms-property-name-alias": "table"
+                              },
+                              "view": {
+                                "type": "string",
+                                "title": "Limit Columns by View",
+                                "x-ms-dynamic-list": {
+                                  "operationId": "GetTableViews",
+                                  "parameters": {
+                                    "dataset": {
+                                      "parameterReference": "dataset",
+                                      "required": true
+                                    },
+                                    "table": {
+                                      "parameterReference": "table",
+                                      "required": true
+                                    }
+                                  },
+                                  "itemValuePath": "Name",
+                                  "itemTitlePath": "DisplayName"
+                                },
+                                "description": "Avoid column threshold issues by only using columns defined in a view",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "view"
+                              }
+                            },
+                            "required": [
+                              "dataset",
+                              "table"
+                            ]
+                          },
+                          "triggerBatchMode": "Batch",
+                          "outputSchema": {
+                            "200": {
+                              "type": "object",
+                              "properties": {
+                                "body": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "x-ms-dynamic-properties": {
+                                          "operationId": "GetTable",
+                                          "parameters": {
+                                            "dataset": {
+                                              "parameterReference": "dataset",
+                                              "required": true
+                                            },
+                                            "view": {
+                                              "parameterReference": "view",
+                                              "required": false
+                                            },
+                                            "table": {
+                                              "parameterReference": "table",
+                                              "required": true
+                                            }
+                                          },
+                                          "itemValuePath": "Schema/Items"
+                                        },
+                                        "description": "Table item entity"
+                                      },
+                                      "description": "List of Items",
+                                      "x-ms-property-name-alias": "body/value"
+                                    }
+                                  },
+                                  "required": [],
+                                  "description": "List of Items",
+                                  "x-ms-property-name-alias": "body"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "ID": {
+                                "type": "integer",
+                                "title": "ID",
+                                "readOnly": true,
+                                "format": "int64",
+                                "description": "List item id. Use this value for specifying the item to act on in other list related actions.",
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/ID"
+                              },
+                              "Title": {
+                                "type": "string",
+                                "title": "Preferred name",
+                                "readOnly": false,
+                                "maxLength": 255,
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq",
+                                    "startswith"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/Title"
+                              },
+                              "field_1": {
+                                "type": "string",
+                                "title": "Work email",
+                                "readOnly": false,
+                                "maxLength": 255,
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq",
+                                    "startswith"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/field_1"
+                              },
+                              "field_2": {
+                                "type": "string",
+                                "title": "Job title",
+                                "readOnly": false,
+                                "maxLength": 255,
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq",
+                                    "startswith"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/field_2"
+                              },
+                              "field_3": {
+                                "type": "string",
+                                "title": "Start date",
+                                "readOnly": false,
+                                "format": "date",
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq",
+                                    "gt",
+                                    "ge",
+                                    "lt",
+                                    "le",
+                                    "ne"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/field_3"
+                              },
+                              "field_4": {
+                                "type": "string",
+                                "title": "Manager email",
+                                "readOnly": false,
+                                "maxLength": 255,
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq",
+                                    "startswith"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/field_4"
+                              },
+                              "Packet_x0020_sent": {
+                                "type": "string",
+                                "title": "Packet sent",
+                                "readOnly": false,
+                                "format": "date",
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq",
+                                    "gt",
+                                    "ge",
+                                    "lt",
+                                    "le",
+                                    "ne"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/Packet_x0020_sent"
+                              },
+                              "OData__ColorTag": {
+                                "type": "string",
+                                "title": "Color Tag",
+                                "readOnly": true,
+                                "maxLength": 255,
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq",
+                                    "startswith"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/OData__ColorTag"
+                              },
+                              "ComplianceAssetId": {
+                                "type": "string",
+                                "title": "Compliance Asset Id",
+                                "readOnly": true,
+                                "maxLength": 255,
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq",
+                                    "startswith"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/ComplianceAssetId"
+                              },
+                              "Modified": {
+                                "type": "string",
+                                "title": "Modified",
+                                "readOnly": true,
+                                "format": "date-time",
+                                "description": "When this item was last changed.",
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq",
+                                    "gt",
+                                    "ge",
+                                    "lt",
+                                    "le",
+                                    "ne"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/Modified"
+                              },
+                              "Created": {
+                                "type": "string",
+                                "title": "Created",
+                                "readOnly": true,
+                                "format": "date-time",
+                                "description": "When this item was created.",
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq",
+                                    "gt",
+                                    "ge",
+                                    "lt",
+                                    "le",
+                                    "ne"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/Created"
+                              },
+                              "Author": {
+                                "type": "object",
+                                "title": "Created By",
+                                "properties": {
+                                  "Claims": {
+                                    "type": "string",
+                                    "title": "Claims",
+                                    "readOnly": true,
+                                    "x-ms-dynamic-list": {
+                                      "operationId": "GetEntityValues",
+                                      "parameters": {
+                                        "dataset": {
+                                          "parameterReference": "dataset",
+                                          "required": true
+                                        },
+                                        "table": {
+                                          "parameterReference": "table",
+                                          "required": true
+                                        },
+                                        "id": {
+                                          "value": "1df5e554-ec7e-46a6-901d-d85a3881cb18"
+                                        }
+                                      },
+                                      "itemsPath": "value",
+                                      "itemValuePath": "Claims",
+                                      "itemTitlePath": "DisplayName"
+                                    },
+                                    "description": "Internal identifier for the user who created this item.",
+                                    "x-ms-property-name-alias": "body/Author/Claims"
+                                  },
+                                  "DisplayName": {
+                                    "type": "string",
+                                    "title": "DisplayName",
+                                    "readOnly": true,
+                                    "description": "The name of the user who created this item.",
+                                    "x-ms-capabilities": {
+                                      "filterFunctions": [
+                                        "eq",
+                                        "startswith"
+                                      ]
+                                    },
+                                    "x-ms-property-name-alias": "body/Author/DisplayName"
+                                  },
+                                  "Email": {
+                                    "type": "string",
+                                    "title": "Email",
+                                    "readOnly": true,
+                                    "format": "email",
+                                    "description": "Email address of the user who created this item.",
+                                    "x-ms-capabilities": {
+                                      "filterFunctions": [
+                                        "eq",
+                                        "startswith"
+                                      ]
+                                    },
+                                    "x-ms-property-name-alias": "body/Author/Email"
+                                  },
+                                  "Picture": {
+                                    "type": "string",
+                                    "title": "Picture",
+                                    "readOnly": true,
+                                    "format": "uri",
+                                    "description": "Link to a picture of the user who created this item.",
+                                    "x-ms-property-name-alias": "body/Author/Picture"
+                                  },
+                                  "Department": {
+                                    "type": "string",
+                                    "title": "Department",
+                                    "readOnly": true,
+                                    "description": "Department name of the user who created this item.",
+                                    "x-ms-property-name-alias": "body/Author/Department"
+                                  },
+                                  "JobTitle": {
+                                    "type": "string",
+                                    "title": "JobTitle",
+                                    "readOnly": true,
+                                    "description": "Job title of the user who created this item.",
+                                    "x-ms-property-name-alias": "body/Author/JobTitle"
+                                  }
+                                },
+                                "required": [],
+                                "readOnly": true,
+                                "description": "The user who created this item.",
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/Author"
+                              },
+                              "Editor": {
+                                "type": "object",
+                                "title": "Modified By",
+                                "properties": {
+                                  "Claims": {
+                                    "type": "string",
+                                    "title": "Claims",
+                                    "readOnly": true,
+                                    "x-ms-dynamic-list": {
+                                      "operationId": "GetEntityValues",
+                                      "parameters": {
+                                        "dataset": {
+                                          "parameterReference": "dataset",
+                                          "required": true
+                                        },
+                                        "table": {
+                                          "parameterReference": "table",
+                                          "required": true
+                                        },
+                                        "id": {
+                                          "value": "d31655d1-1d5b-4511-95a1-7a09e9b75bf2"
+                                        }
+                                      },
+                                      "itemsPath": "value",
+                                      "itemValuePath": "Claims",
+                                      "itemTitlePath": "DisplayName"
+                                    },
+                                    "description": "Internal identifier for the user who last changed this item.",
+                                    "x-ms-property-name-alias": "body/Editor/Claims"
+                                  },
+                                  "DisplayName": {
+                                    "type": "string",
+                                    "title": "DisplayName",
+                                    "readOnly": true,
+                                    "description": "The name of the user who last changed this item.",
+                                    "x-ms-capabilities": {
+                                      "filterFunctions": [
+                                        "eq",
+                                        "startswith"
+                                      ]
+                                    },
+                                    "x-ms-property-name-alias": "body/Editor/DisplayName"
+                                  },
+                                  "Email": {
+                                    "type": "string",
+                                    "title": "Email",
+                                    "readOnly": true,
+                                    "format": "email",
+                                    "description": "Email address of the user who last changed this item.",
+                                    "x-ms-capabilities": {
+                                      "filterFunctions": [
+                                        "eq",
+                                        "startswith"
+                                      ]
+                                    },
+                                    "x-ms-property-name-alias": "body/Editor/Email"
+                                  },
+                                  "Picture": {
+                                    "type": "string",
+                                    "title": "Picture",
+                                    "readOnly": true,
+                                    "format": "uri",
+                                    "description": "Link to a picture of the user who last changed this item.",
+                                    "x-ms-property-name-alias": "body/Editor/Picture"
+                                  },
+                                  "Department": {
+                                    "type": "string",
+                                    "title": "Department",
+                                    "readOnly": true,
+                                    "description": "Department name of the user who last changed this item.",
+                                    "x-ms-property-name-alias": "body/Editor/Department"
+                                  },
+                                  "JobTitle": {
+                                    "type": "string",
+                                    "title": "JobTitle",
+                                    "readOnly": true,
+                                    "description": "Job title of the user who last changed this item.",
+                                    "x-ms-property-name-alias": "body/Editor/JobTitle"
+                                  }
+                                },
+                                "required": [],
+                                "readOnly": true,
+                                "description": "The user who last changed this item.",
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/Editor"
+                              },
+                              "{Identifier}": {
+                                "type": "string",
+                                "title": "Identifier",
+                                "readOnly": true,
+                                "description": "Value that can be used in file related actions for selecting a file.",
+                                "x-ms-property-name-alias": "body/{Identifier}"
+                              },
+                              "{IsFolder}": {
+                                "type": "boolean",
+                                "title": "Is folder",
+                                "readOnly": true,
+                                "description": "True when the item is a folder, false otherwise.",
+                                "x-ms-property-name-alias": "body/{IsFolder}"
+                              },
+                              "{Thumbnail}": {
+                                "type": "object",
+                                "title": "Thumbnail",
+                                "properties": {
+                                  "Small": {
+                                    "type": "string",
+                                    "title": "Small",
+                                    "readOnly": true,
+                                    "description": "URL to the small, highly compressed size thumbnail of the item, if available.",
+                                    "x-ms-property-name-alias": "body/{Thumbnail}/Small"
+                                  },
+                                  "Medium": {
+                                    "type": "string",
+                                    "title": "Medium",
+                                    "readOnly": true,
+                                    "description": "URL to the standard size thumbnail of the item, if available.",
+                                    "x-ms-property-name-alias": "body/{Thumbnail}/Medium"
+                                  },
+                                  "Large": {
+                                    "type": "string",
+                                    "title": "Large",
+                                    "readOnly": true,
+                                    "description": "URL to the largest size thumbnail of the item, if available.",
+                                    "x-ms-property-name-alias": "body/{Thumbnail}/Large"
+                                  }
+                                },
+                                "required": [],
+                                "readOnly": true,
+                                "description": "URL to the thumbnails of the item in 3 different sizes, if available.",
+                                "x-ms-property-name-alias": "body/{Thumbnail}"
+                              },
+                              "{Link}": {
+                                "type": "string",
+                                "title": "Link to item",
+                                "readOnly": true,
+                                "description": "Link that can be used to get to the file or list item. Only people with permissions to the item will be able to open the link.",
+                                "x-ms-property-name-alias": "body/{Link}"
+                              },
+                              "{Name}": {
+                                "type": "string",
+                                "title": "Name",
+                                "readOnly": true,
+                                "description": "File name of the item in document libraries, display name of the item in lists.",
+                                "x-ms-property-name-alias": "body/{Name}"
+                              },
+                              "{FilenameWithExtension}": {
+                                "type": "string",
+                                "title": "File name with extension",
+                                "readOnly": true,
+                                "description": "For libraries, returns file name including extension. For lists, returns the title property.",
+                                "x-ms-property-name-alias": "body/{FilenameWithExtension}"
+                              },
+                              "{Path}": {
+                                "type": "string",
+                                "title": "Folder path",
+                                "readOnly": true,
+                                "description": "Path to the folder the item is in, relative to the site address.",
+                                "x-ms-property-name-alias": "body/{Path}"
+                              },
+                              "{FullPath}": {
+                                "type": "string",
+                                "title": "Full Path",
+                                "readOnly": true,
+                                "description": "Full path of an item or a folder or a file",
+                                "x-ms-property-name-alias": "body/{FullPath}"
+                              },
+                              "{ModerationStatus}": {
+                                "type": "string",
+                                "title": "Content approval status",
+                                "readOnly": true,
+                                "description": "The content approval status. It can be one of the following: Draft, Pending, Approved, or Rejected",
+                                "x-ms-property-name-alias": "body/{ModerationStatus}"
+                              },
+                              "{ModerationComment}": {
+                                "type": "string",
+                                "title": "Comments associated with the content approval of this list item",
+                                "readOnly": true,
+                                "description": "The comments associated with moderation of the list item.",
+                                "x-ms-property-name-alias": "body/{ModerationComment}"
+                              },
+                              "{ContentType}": {
+                                "type": "object",
+                                "title": "Content type",
+                                "properties": {
+                                  "Id": {
+                                    "type": "string",
+                                    "title": "Id",
+                                    "x-ms-dynamic-list": {
+                                      "operationId": "GetEntityValues",
+                                      "parameters": {
+                                        "dataset": {
+                                          "parameterReference": "dataset",
+                                          "required": true
+                                        },
+                                        "table": {
+                                          "parameterReference": "table",
+                                          "required": true
+                                        },
+                                        "id": {
+                                          "value": "4651e8f2-38c9-4ad0-8def-41f743f76f30"
+                                        }
+                                      },
+                                      "itemsPath": "value",
+                                      "itemValuePath": "Id",
+                                      "itemTitlePath": "Name"
+                                    },
+                                    "x-ms-property-name-alias": "body/{ContentType}/Id"
+                                  },
+                                  "Name": {
+                                    "type": "string",
+                                    "title": "Name",
+                                    "readOnly": true,
+                                    "x-ms-property-name-alias": "body/{ContentType}/Name"
+                                  }
+                                },
+                                "required": [],
+                                "readOnly": false,
+                                "description": "Name of the Content type of the item.",
+                                "x-ms-property-name-alias": "body/{ContentType}"
+                              },
+                              "{HasAttachments}": {
+                                "type": "boolean",
+                                "title": "Has attachments",
+                                "readOnly": true,
+                                "description": "Indicates the presence of attachments in the item.",
+                                "x-ms-property-name-alias": "body/{HasAttachments}"
+                              },
+                              "{VersionNumber}": {
+                                "type": "string",
+                                "title": "Version number",
+                                "readOnly": true,
+                                "description": "The version number of the file or the list item.",
+                                "x-ms-property-name-alias": "body/{VersionNumber}"
+                              },
+                              "{TriggerWindowStartToken}": {
+                                "type": "string",
+                                "title": "Trigger Window Start Token",
+                                "readOnly": true,
+                                "description": "A token expressing the time of the last flow check. Use this if you want to check if one or more columns were modified since the last flow check.",
+                                "x-ms-property-name-alias": "body/{TriggerWindowStartToken}"
+                              },
+                              "{TriggerWindowEndToken}": {
+                                "type": "string",
+                                "title": "Trigger Window End Token",
+                                "readOnly": true,
+                                "description": "A token expressing the time of the current flow check. Use this if you want to check if one or more columns were modified since the last flow check.",
+                                "x-ms-property-name-alias": "body/{TriggerWindowEndToken}"
+                              }
+                            },
+                            "required": []
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514",
+                    "name": "Onboarding Agent",
+                    "type": "agent",
+                    "version": 1,
+                    "position": {
+                      "x": 1121.4847977438737,
+                      "y": 223.77521794874815
+                    },
+                    "data": {
+                      "config": {
+                        "mode": "inline",
+                        "instructions": "",
+                        "botSchemaName": "",
+                        "isHitlEscalationEnabled": false,
+                        "webSearchEnabled": false,
+                        "inlineInstructions": "You are the Onboarding Agent for HR New Hire Welcome Packet. You run once per new-hire row, immediately after the trigger. You have three tools: Get items, Send email, and Update item. Send every email at Normal importance. Do not mark anything Low or High priority.\n\nHIRE ROW FOR THIS RUN\nid: {triggerOutputs()?['body/ID']}\nPreferred name: {triggerOutputs()?['body/Title']}\nWork email: {triggerOutputs()?['body/field_1']}\nJob title: {triggerOutputs()?['body/field_2']}\nStart date: {triggerOutputs()?['body/field_3']}\nManager email: {triggerOutputs()?['body/field_4']}\nPacket sent: {triggerOutputs()?['body/Packet_x0020_sent']}\n\nWelcome Links site: {variables('WelcomeLinksSite')}Welcome Links list: {variables('WelcomeLinksList')}\n\nGOAL\nIf Packet sent above already has a value, stop entirely. Do nothing further — this row was already processed.\nCheck Work email, Job title, Start date, Manager email above. If any are blank, send an email to HR {variables('HRNotifyEmail')} naming exactly which field(s) are missing, and stop — do not call Get items, do not send the welcome packet, do not update the row.\nOtherwise, call Get items once on Welcome Links to retrieve every row.\nCheck whether any Audience value other than \"Everyone\" exists among the retrieved rows — call this \"role audiences exist.\" This distinguishes a genuine no-match (a title that doesn't fit any defined role) from an unpopulated list (no roles defined yet), which shouldn't alert HR. If role audiences exist, decide which single Audience value best matches Job title, or decide none do. If role audiences do not exist, skip matching entirely — there's nothing to compare Job title against yet. Never invent an audience that isn't present in the retrieved rows. Keep track of what you matched on — the specific words in the job title, and what they matched to (or why nothing matched) — you'll need this for the HR alert step below.\nFrom the same retrieved rows — do not call Get items again — select every row where Audience = \"Everyone\", plus every row where Audience equals the audience you matched (if any). Only use rows that are actually present in what Get items returned; never invent a row, link, or description that isn't there.\nBuild the email body: \"Start here — everyone does this\": every selected Everyone row, each as the Link name hyperlinked to URL, with Description underneath if present. If you matched an audience: add \"Because you are joining \" with that audience's selected rows in the same format. If no audience matched: add one line instead saying the hire's manager will follow up with role-specific material.\nSend that email To: Work email above, Cc: Manager email above.\nIf role audiences exist and none matched (and no fields were missing), also send HR a short email naming the job title that couldn't be placed. If role audiences do not exist yet, do not send this alert — there's no meaningful mismatch to report.\nCall Update item on this hire's row using the Item ID given above to identify it directly, setting Packet sent to today's date. Do not search for the row by Work email or any other field.\n",
+                        "outputMode": "text",
+                        "inlineModel": "claude-opus-5",
+                        "connectionName": "shared_agentnode",
+                        "inlineTools": [
+                          {
+                            "id": "321bb009-acbd-4180-b8c8-f3dd1dadcf6e",
+                            "connectorId": "shared_sharepointonline",
+                            "operationId": "PatchItem",
+                            "displayName": "Update item",
+                            "description": "Updates an item in a SharePoint list.",
+                            "connectionReferenceName": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9",
+                            "connectionId": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9",
+                            "authMode": "invoker",
+                            "isMcp": false,
+                            "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1827/1.0.1827.4902/sharepointonline/icon.png",
+                            "brandColor": "#036C70"
+                          },
+                          {
+                            "id": "fd3a32cb-86cb-4502-ae79-a169c1acf264",
+                            "connectorId": "shared_sharepointonline",
+                            "operationId": "GetItems",
+                            "displayName": "Get items",
+                            "description": "Gets items from a SharePoint list.",
+                            "connectionReferenceName": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9",
+                            "connectionId": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9",
+                            "authMode": "invoker",
+                            "isMcp": false,
+                            "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1827/1.0.1827.4902/sharepointonline/icon.png",
+                            "brandColor": "#036C70"
+                          },
+                          {
+                            "id": "73d4e090-0d26-4d9f-92cb-65f29148d359",
+                            "connectorId": "shared_office365",
+                            "operationId": "SendEmailV2",
+                            "displayName": "Send an email",
+                            "description": "This operation sends an email message.",
+                            "connectionReferenceName": "shared-office365-02268f4d-3810-4099-b068-e1a24808aa17",
+                            "connectionId": "shared-office365-02268f4d-3810-4099-b068-e1a24808aa17",
+                            "authMode": "invoker",
+                            "isMcp": false,
+                            "iconUri": "https://res-1.cdn.office.net/files/fabric-cdn-prod_20251008.001/assets/brand-icons/product/svg/outlook_48x1.svg",
+                            "brandColor": "#0078D4"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "type": "string",
+                                "title": "Agent Response",
+                                "description": "The agent response text"
+                              },
+                              "activities": {
+                                "type": "array",
+                                "description": "Bot response activities (typing, message, and event types)"
+                              }
+                            },
+                            "required": [
+                              "activities"
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b",
+                    "name": "Configuration",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 630.118950466471,
+                      "y": 224.73718742671687
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "aea475d4-dde9-4cc7-9820-183c6c64953d",
+                            "variableName": "HRNotifyEmail",
+                            "mode": "initialize",
+                            "type": "string",
+                            "value": "pulkitbhagat@microsoft.com",
+                            "valueRich": {
+                              "segments": [
+                                {
+                                  "type": "static",
+                                  "value": "pulkitbhagat@microsoft.com"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "id": "6d2b4a52-8e8c-4b67-a921-88a4222a0a0b",
+                            "variableName": "WelcomeLinksSite",
+                            "mode": "initialize",
+                            "type": "string",
+                            "value": "https://microsoftapc.sharepoint.com/teams/HROnboardingTemplateDemo",
+                            "valueRich": {
+                              "segments": [
+                                {
+                                  "type": "static",
+                                  "value": "https://microsoftapc.sharepoint.com/teams/HROnboardingTemplateDemo"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "id": "89bf5c96-c498-45dd-9d3c-ea5525133ad9",
+                            "variableName": "WelcomeLinksList",
+                            "mode": "initialize",
+                            "type": "string",
+                            "value": "Welcome_Links",
+                            "valueRich": {
+                              "segments": [
+                                {
+                                  "type": "static",
+                                  "value": "Welcome_Links"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "description": "Variables set by this node"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "canvasNote-f530af65-6ff7-46fe-981c-c401d3e5ab44",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 268.71596429068131,
+                      "y": 318.79876791309778
+                    },
+                    "width": 232,
+                    "height": 300,
+                    "style": {
+                      "width": 232,
+                      "height": 300
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "Fires when a row is added to New Hires. \n\nSite/list are set directly here, reselect them in this trigger to point at your own list. \n\nAfter doing so, every \"field_N\" dynamic-content token in Onboarding Agent's prompt will break (SharePoint assigns these per-list) — reopen the agent and re-insert each one from the dynamic content picker against your own list's columns.\n",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 232,
+                      "height": 300
+                    },
+                    "resizing": false
+                  },
+                  {
+                    "id": "canvasNote-0aa7edc5-01f8-4cc3-83ee-80af0d1d4177",
+                    "name": "Note 2",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 633.143228555974,
+                      "y": 318.68807051707836
+                    },
+                    "width": 235,
+                    "height": 448,
+                    "style": {
+                      "width": 235,
+                      "height": 448
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "Configuration variables: \n\n• HRNotifyEmail — where HR gets alerted (missing data / no audience match) \n\n• WelcomeLinksSite — full SharePoint site URL (e.g. https://yourtenant.sharepoint.com/teams/YourSiteName).\nWelcomeLinksSite locates the SharePoint site to find the list on — it's not a source of links itself; every link, URL, and description the agent sends always comes from rows inside the Welcome Links list.\n\n\n • WelcomeLinksList — the list's display name (e.g. Welcome_Links), not a GUID. Replace with your own site, list, and mailbox before use.\n",
+                        "color": "red"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 235,
+                      "height": 448
+                    },
+                    "resizing": false,
+                    "selected": false
+                  },
+                  {
+                    "id": "canvasNote-a53507e7-a46f-4b75-9ec6-e6e13b2aeec4",
+                    "name": "Note 3",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 1141.3754688362221,
+                      "y": 345.77612272570246
+                    },
+                    "width": 227,
+                    "height": 478,
+                    "style": {
+                      "width": 227,
+                      "height": 478
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "Onboarding Agent — runs once per new-hire row, right after the trigger. Stops if Packet sent is already set. Alerts HR and stops if any required field was missing. Otherwise: calls Get items once on Welcome Links, decides which audience the job title matches (or that none do) and which rows belong in the email — the agent does this selection itself, not a SharePoint filter — emails the hire (Cc manager), alerts HR if no audience matched, then stamps Packet sent.\n",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 227,
+                      "height": 478
+                    },
+                    "resizing": false
+                  },
+                  {
+                    "id": "canvasNote-aa583182-e79a-4075-8057-c3fe9a45ad41",
+                    "name": "Note 5",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 276.70395807335859,
+                      "y": -5.986450541234916
+                    },
+                    "width": 250,
+                    "height": 200,
+                    "style": {
+                      "width": 250,
+                      "height": 200
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "Expected columns\n\nNew Hires (first list): Preferred name, Work email, Job title, Start date, Manager email, Packet sent. \n\nWelcome Links (second list): Audience (text - \"Everyone\" or a role word), Link name, URL (Hyperlink), Description (optional).\n",
+                        "color": "green"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 250,
+                      "height": 200
+                    }
+                  },
+                  {
+                    "id": "canvasNote-5f327463-8646-4cfb-a13e-b131d3053b95",
+                    "name": "Note 7",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 1128.9748412803388,
+                      "y": -36.11072148459516
+                    },
+                    "width": 250,
+                    "height": 224,
+                    "style": {
+                      "width": 250,
+                      "height": 224
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "Reconnect required: Delete and re-add this node's tool connections -\n1. Sharepoint - get items\n2. Sharepoint - update item\n3. Office 365 Outlook - send an email\n\nConnections don't automatically renew for a new user who acquires this workflow.",
+                        "color": "red"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 250,
+                      "height": 224
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-51fd44b0-e2a1-4c03-bff1-72567e6c14fd-variable-faf9b4df-2036-499f-959a-6fb24d953d1b",
+                    "source": "start-51fd44b0-e2a1-4c03-bff1-72567e6c14fd",
+                    "target": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b"
+                  },
+                  {
+                    "id": "edge-variable-faf9b4df-2036-499f-959a-6fb24d953d1b-agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514",
+                    "source": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b",
+                    "target": "agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514"
+                  }
+                ],
+                "connectionReferences": {
+                  "shared_sharepointonline-1": {
+                    "api": {
+                      "name": "shared_sharepointonline"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedsharepointonline_98f4ff9e"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9"
+                  },
+                  "shared_agentnode": {
+                    "api": {
+                      "name": "shared_agentnode"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedagentnode_d38e148f"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-agentnode-f572142a-9479-4621-b54a-1b0f258e4edc"
+                  },
+                  "shared_sharepointonline": {
+                    "api": {
+                      "name": "shared_sharepointonline"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedsharepointonline_c6afa5d6"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9"
+                  }
+                }
+              },
+              "nodeActionMapping": {
+                "variable-faf9b4df-2036-499f-959a-6fb24d953d1b": [
+                  "Configuration",
+                  "Configuration_Init_WelcomeLinksSite",
+                  "Configuration_Init_WelcomeLinksList"
+                ],
+                "agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514": [
+                  "Onboarding_Agent"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "actions": {
+        "Configuration": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "HRNotifyEmail",
+                "type": "String",
+                "value": "pulkitbhagat@microsoft.com"
+              }
+            ]
+          },
+          "metadata": {
+            "description": "Configuration",
+            "nodeId": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b"
+          }
+        },
+        "Configuration_Init_WelcomeLinksSite": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "WelcomeLinksSite",
+                "type": "String",
+                "value": "https://microsoftapc.sharepoint.com/teams/HROnboardingTemplateDemo"
+              }
+            ]
+          },
+          "runAfter": {
+            "Configuration": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Configuration_Init_WelcomeLinksList": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "WelcomeLinksList",
+                "type": "String",
+                "value": "Welcome_Links"
+              }
+            ]
+          },
+          "runAfter": {
+            "Configuration_Init_WelcomeLinksSite": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Onboarding_Agent": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "body/botDefinition": "{\"model\":\"claude-opus-5\",\"tools\":[{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_sharepointonline\",\"connectionId\":\"shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9\",\"operationId\":\"PatchItem\",\"connectionMode\":\"Maker\",\"displayName\":\"Update item\",\"description\":\"Updates an item in a SharePoint list.\"},{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_sharepointonline\",\"connectionId\":\"shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9\",\"operationId\":\"GetItems\",\"connectionMode\":\"Maker\",\"displayName\":\"Get items\",\"description\":\"Gets items from a SharePoint list.\"},{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_office365\",\"connectionId\":\"shared-office365-02268f4d-3810-4099-b068-e1a24808aa17\",\"operationId\":\"SendEmailV2\",\"connectionMode\":\"Maker\",\"displayName\":\"Send an email\",\"description\":\"This operation sends an email message.\"}]}",
+              "body/message": "You are the Onboarding Agent for HR New Hire Welcome Packet. You run once per new-hire row, immediately after the trigger. You have three tools: Get items, Send email, and Update item. Send every email at Normal importance. Do not mark anything Low or High priority.\n\nHIRE ROW FOR THIS RUN\nid: @{triggerOutputs()?['body/ID']}\nPreferred name: @{triggerOutputs()?['body/Title']}\nWork email: @{triggerOutputs()?['body/field_1']}\nJob title: @{triggerOutputs()?['body/field_2']}\nStart date: @{triggerOutputs()?['body/field_3']}\nManager email: @{triggerOutputs()?['body/field_4']}\nPacket sent: @{triggerOutputs()?['body/Packet_x0020_sent']}\n\nWelcome Links site: @{variables('WelcomeLinksSite')}Welcome Links list: @{variables('WelcomeLinksList')}\n\nGOAL\nIf Packet sent above already has a value, stop entirely. Do nothing further — this row was already processed.\nCheck Work email, Job title, Start date, Manager email above. If any are blank, send an email to HR @{variables('HRNotifyEmail')} naming exactly which field(s) are missing, and stop — do not call Get items, do not send the welcome packet, do not update the row.\nOtherwise, call Get items once on Welcome Links to retrieve every row.\nCheck whether any Audience value other than \"Everyone\" exists among the retrieved rows — call this \"role audiences exist.\" This distinguishes a genuine no-match (a title that doesn't fit any defined role) from an unpopulated list (no roles defined yet), which shouldn't alert HR. If role audiences exist, decide which single Audience value best matches Job title, or decide none do. If role audiences do not exist, skip matching entirely — there's nothing to compare Job title against yet. Never invent an audience that isn't present in the retrieved rows. Keep track of what you matched on — the specific words in the job title, and what they matched to (or why nothing matched) — you'll need this for the HR alert step below.\nFrom the same retrieved rows — do not call Get items again — select every row where Audience = \"Everyone\", plus every row where Audience equals the audience you matched (if any). Only use rows that are actually present in what Get items returned; never invent a row, link, or description that isn't there.\nBuild the email body: \"Start here — everyone does this\": every selected Everyone row, each as the Link name hyperlinked to URL, with Description underneath if present. If you matched an audience: add \"Because you are joining \" with that audience's selected rows in the same format. If no audience matched: add one line instead saying the hire's manager will follow up with role-specific material.\nSend that email To: Work email above, Cc: Manager email above.\nIf role audiences exist and none matched (and no fields were missing), also send HR a short email naming the job title that couldn't be placed. If role audiences do not exist yet, do not send this alert — there's no meaningful mismatch to report.\nCall Update item on this hire's row using the Item ID given above to identify it directly, setting Packet sent to today's date. Do not search for the row by Work email or any other field.\n"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
+              "connectionName": "shared_agentnode",
+              "operationId": "InvokeDefinition"
+            }
+          },
+          "runAfter": {
+            "Configuration_Init_WelcomeLinksList": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Onboarding Agent",
+            "nodeId": "agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514"
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "telemetryMetadata": {
+          "creationSource": "WorkflowDesigner",
+          "modifiedSources": "WorkflowDesigner"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
