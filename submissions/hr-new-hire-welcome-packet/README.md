@@ -39,7 +39,7 @@ follow up, and separately tells HR which title couldn't be placed.
 | Variable | Purpose |
 | --- | --- |
 | `HRNotifyEmail` | Address the agent emails when a title can't be placed or a required field is missing. Ships as a placeholder (`hr@contoso.com`) — set it to your HR team's address. |
-| `WelcomeLinksSite` | Full SharePoint site URL where the `Welcome Links` list lives (e.g. `https://yourtenant.sharepoint.com/teams/YourSiteName`). |
+| `WelcomeLinksSite` | Full SharePoint site URL where the `Welcome Links` list lives (e.g. `https://yourtenant.sharepoint.com/teams/YourSiteName`). This only locates the site to find the list on — it isn't a source of links itself; every link, URL, and description the agent sends always comes from rows inside the `Welcome Links` list. |
 | `WelcomeLinksList` | The `Welcome Links` list's display name (e.g. `Welcome_Links`) — not a GUID. |
 
 ## Customizations
