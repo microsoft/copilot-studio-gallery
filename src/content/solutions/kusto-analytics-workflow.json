@@ -1,0 +1,204 @@
+{
+  "name": "Kusto Analytics Assistant",
+  "description": "A read-only analytics agent that runs scheduled Kusto queries, interprets the results, and emails concise summaries.",
+  "tags": [
+    "analytics",
+    "azure-data-explorer",
+    "kusto",
+    "scheduled",
+    "email"
+  ],
+  "author": "Sushank Kumar",
+  "authorGithub": "suskum",
+  "createdAt": "2026-10-01",
+  "updatedAt": "2026-10-01",
+  "featured": false,
+  "uniqueName": "KustoAnalyticsAssistant",
+  "version": "1.0.0.0",
+  "publisher": "A3P",
+  "bundle": "bundles/kusto-analytics-workflow.zip",
+  "agentCount": 1,
+  "workflowCount": 0,
+  "componentCount": 12,
+  "agents": [
+    {
+      "id": "Default_Kusto_Analytics_Assistant_6f1eb7",
+      "schemaName": "Default_Kusto_Analytics_Assistant_6f1eb7",
+      "name": "Kusto Analytics Assistant",
+      "model": "Sonnet46",
+      "instructions": "You are a read-only Azure Data Explorer (Kusto) analytics assistant. Your job is to help people explore their data by turning natural-language questions into Kusto Query Language (KQL), running those queries through the Kusto tool, and reporting back both a clear, human-readable answer and the exact KQL you executed.\n\nCONTEXT YOU TRACK\nYou hold two pieces of session context for the current conversation: the Cluster (a Kusto cluster URI) and the Database (a database name on that cluster). Both start empty until the user sets them.\n- If the user asks a data question and either Cluster or Database is blank, do NOT guess or invent one — tell them which value is missing and ask them to provide it (e.g. \"I don't have a cluster set yet — what's the Kusto cluster URI I should query?\").\n- When the user says something like \"set the cluster to <value>\" or \"use cluster <value>\", update your stored Cluster to that value for the rest of the conversation and confirm the change.\n- When the user says something like \"set the database to <value>\" or \"use database <value>\", update your stored Database to that value for the rest of the conversation and confirm the change.\n- The user can change either value at any time, mid-conversation, and every subsequent query uses the newly set value.\n\nANSWERING A DATA QUESTION\n1. Confirm you have both Cluster and Database set. If not, ask for the missing one(s) instead of guessing.\n2. Translate the user's natural-language question into a precise KQL query scoped to the current Cluster and Database.\n3. The query MUST be strictly read-only: only summarize, count, filter, project, join, render, take, top, or otherwise read data. NEVER produce or run a query containing write, delete, drop, purge, alter, set, ingest, or any other mutating or administrative command.\n4. Run the query using the Kusto tool against the current Cluster and Database.\n5. Reply with two things, always: (a) a clear, human-readable summary of what the results show, and (b) the exa",
+      "channels": [],
+      "toolCount": 2,
+      "skillCount": 1,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:Default_Kusto_Analytics_Assistant_6f1eb7",
+        "name": "Kusto Analytics Assistant",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "Sonnet46",
+          "instructions": "You are a read-only Azure Data Explorer (Kusto) analytics assistant. Your job is to help people explore their data by turning natural-language questions into Kusto Query Language (KQL), running those queries through the Kusto tool, and reporting back both a clear, human-readable answer and the exact KQL you executed.\n\nCONTEXT YOU TRACK\nYou hold two pieces of session context for the current conversation: the Cluster (a Kusto cluster URI) and the Database (a database name on that cluster). Both start empty until the user sets them.\n- If the user asks a data question and either Cluster or Database is blank, do NOT guess or invent one — tell them which value is missing and ask them to provide it (e.g. \"I don't have a cluster set yet — what's the Kusto cluster URI I should query?\").\n- When the user says something like \"set the cluster to <value>\" or \"use cluster <value>\", update your stored Cluster to that value for the rest of the conversation and confirm the change.\n- When the user says something like \"set the database to <value>\" or \"use database <value>\", update your stored Database to that value for the rest of the conversation and confirm the change.\n- The user can change either value at any time, mid-conversation, and every subsequent query uses the newly set value.\n\nANSWERING A DATA QUESTION\n1. Confirm you have both Cluster and Database set. If not, ask for the missing one(s) instead of guessing.\n2. Translate the user's natural-language question into a precise KQL query scoped to the current Cluster and Database.\n3. The query MUST be strictly read-only: only summarize, count, filter, project, join, render, take, top, or otherwise read data. NEVER produce or run a query containing write, delete, drop, purge, alter, set, ingest, or any other mutating or administrative command.\n4. Run the query using the Kusto tool against the current Cluster and Database.\n5. Reply with two things, always: (a) a clear, human-readable summary of what the results show, and (b) the exa",
+          "channels": [],
+          "toolCount": 2,
+          "skillCount": 1,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:Default_Kusto_Analytics_Assistant_6f1eb7.skill.kusto-query-interpreter_aaL",
+        "name": "kusto-query-interpreter",
+        "type": "skill",
+        "position": {
+          "x": 228,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "Default_Kusto_Analytics_Assistant_6f1eb7.skill.kusto-query-interpreter_aaL",
+          "description": "Use when the user asks any natural-language analytics question over Azure Data Explorer / Kusto data (for example \"what was the error rate last week\", \"top 10 tables by row count\", \"busiest hour for errors\") and a Cluster and Database are already set. Do NOT use for requests to write, delete, update, ingest, or administer data, or for requests unrelated to data analysis — refuse those instead."
+        }
+      },
+      {
+        "id": "tool:Default_Kusto_Analytics_Assistant_6f1eb7.tool.Mail-Mail_Bki",
+        "name": "Mail — Mail",
+        "type": "tool",
+        "position": {
+          "x": -111.99999999999997,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_Kusto_Analytics_Assistant_6f1eb7.tool.Mail-Mail_Bki",
+          "operation": "mcp_MailTools",
+          "description": "MCP server for Microsoft Outlook Mail operations. This feature is in preview and is part of the tools, providing shared work intelligence and actions for agents. Availability and capabilities are subject to change. Learn more: https://aka.ms/AboutWorkIQ"
+        }
+      },
+      {
+        "id": "tool:Default_Kusto_Analytics_Assistant_6f1eb7.tool.Run_Kusto_Query",
+        "name": "Run Kusto Query",
+        "type": "tool",
+        "position": {
+          "x": -452,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_Kusto_Analytics_Assistant_6f1eb7.tool.Run_Kusto_Query",
+          "operation": "mcp_KustoQueryManagement",
+          "description": "Runs a read-only KQL query against the configured Azure Data Explorer cluster and database, and returns the results."
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:Default_Kusto_Analytics_Assistant_6f1eb7-includes-Default_Kusto_Analytics_Assistant_6f1eb7.skill.kusto-query-interpreter_aaL",
+        "source": "agent:Default_Kusto_Analytics_Assistant_6f1eb7",
+        "target": "skill:Default_Kusto_Analytics_Assistant_6f1eb7.skill.kusto-query-interpreter_aaL",
+        "label": "includes"
+      },
+      {
+        "id": "agent:Default_Kusto_Analytics_Assistant_6f1eb7-uses-Default_Kusto_Analytics_Assistant_6f1eb7.tool.Mail-Mail_Bki",
+        "source": "agent:Default_Kusto_Analytics_Assistant_6f1eb7",
+        "target": "tool:Default_Kusto_Analytics_Assistant_6f1eb7.tool.Mail-Mail_Bki",
+        "label": "uses"
+      },
+      {
+        "id": "agent:Default_Kusto_Analytics_Assistant_6f1eb7-uses-Default_Kusto_Analytics_Assistant_6f1eb7.tool.Run_Kusto_Query",
+        "source": "agent:Default_Kusto_Analytics_Assistant_6f1eb7",
+        "target": "tool:Default_Kusto_Analytics_Assistant_6f1eb7.tool.Run_Kusto_Query",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 992
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 1133
+    },
+    {
+      "path": "botcomponents/Default_Kusto_Analytics_Assistant_6f1eb7.AutonomousSettings_QBaTn4/botcomponent.xml",
+      "category": "component",
+      "size": 350
+    },
+    {
+      "path": "botcomponents/Default_Kusto_Analytics_Assistant_6f1eb7.AutonomousSettings_QBaTn4/data",
+      "category": "component",
+      "size": 139
+    },
+    {
+      "path": "botcomponents/Default_Kusto_Analytics_Assistant_6f1eb7.skill.kusto-query-interpreter_aaL/botcomponent.xml",
+      "category": "component",
+      "size": 826
+    },
+    {
+      "path": "botcomponents/Default_Kusto_Analytics_Assistant_6f1eb7.skill.kusto-query-interpreter_aaL/data",
+      "category": "component",
+      "size": 4104
+    },
+    {
+      "path": "botcomponents/Default_Kusto_Analytics_Assistant_6f1eb7.tool.Mail-Mail_Bki/botcomponent.xml",
+      "category": "component",
+      "size": 656
+    },
+    {
+      "path": "botcomponents/Default_Kusto_Analytics_Assistant_6f1eb7.tool.Mail-Mail_Bki/data",
+      "category": "component",
+      "size": 258
+    },
+    {
+      "path": "botcomponents/Default_Kusto_Analytics_Assistant_6f1eb7.tool.Run_Kusto_Query/botcomponent.xml",
+      "category": "component",
+      "size": 523
+    },
+    {
+      "path": "botcomponents/Default_Kusto_Analytics_Assistant_6f1eb7.tool.Run_Kusto_Query/data",
+      "category": "component",
+      "size": 249
+    },
+    {
+      "path": "botcomponents/Default_Kusto_Analytics_Assistant_6f1eb7.trigger.Recurrence/botcomponent.xml",
+      "category": "component",
+      "size": 370
+    },
+    {
+      "path": "botcomponents/Default_Kusto_Analytics_Assistant_6f1eb7.trigger.Recurrence/data",
+      "category": "component",
+      "size": 1494
+    },
+    {
+      "path": "bots/Default_Kusto_Analytics_Assistant_6f1eb7/bot.xml",
+      "category": "bot",
+      "size": 413
+    },
+    {
+      "path": "bots/Default_Kusto_Analytics_Assistant_6f1eb7/configuration.json",
+      "category": "bot",
+      "size": 5213
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 2365
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 2660
+    }
+  ]
+}

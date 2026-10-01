@@ -1,0 +1,53 @@
+kind: ExternalTriggerConfiguration
+externalTriggerSource:
+  kind: AgentRecurrenceTrigger
+  callbackMessage:
+    segments:
+      - kind: StaticSegment
+        value: |-
+          Mail me summary of top 10 rows for:
+          Cluster: https://<cluster>.<region>.kusto.windows.net
+          Database: <database>
+          Table: <table>
+
+      - kind: StaticSegment
+        value: " @{triggerBody()}"
+
+  inputs:
+    - name: frequency
+      displayName: Frequency
+      description: How often the trigger fires (e.g., Hour, Day, Week).
+      value:
+        kind: ValueReference
+        type: "{\"type\":\"string\"}"
+        defaultValue: "\"Day\""
+
+      isValueOverridable: true
+
+    - name: interval
+      displayName: Interval
+      description: The number of frequency units between each firing.
+      value:
+        kind: ValueReference
+        type: "{\"type\":\"string\"}"
+        defaultValue: "\"1\""
+
+      isValueOverridable: true
+
+    - name: startTime
+      displayName: Start time
+      description: When the recurrence begins.
+      value:
+        kind: ValueReference
+        type: "{\"type\":\"string\"}"
+        defaultValue: "\"2026-09-07T18:37:00Z\""
+
+    - name: timeZone
+      displayName: Time zone
+      description: Windows time zone id used to interpret start time and schedule.
+      value:
+        kind: ValueReference
+        type: "{\"type\":\"string\"}"
+        defaultValue: "\"Asia/Kolkata\""
+
+  authMode: Invoker
