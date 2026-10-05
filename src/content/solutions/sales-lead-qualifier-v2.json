@@ -10,10 +10,10 @@
   ],
   "author": "Pulkit Bhagat",
   "createdAt": "2026-09-21",
-  "updatedAt": "2026-09-30",
+  "updatedAt": "2026-10-05",
   "featured": false,
   "uniqueName": "SalesLeadQualifier",
-  "version": "1.0.0.18",
+  "version": "1.0.0.19",
   "publisher": "A3P",
   "bundle": "bundles/sales-lead-qualifier-v2.zip",
   "agentCount": 0,
@@ -150,7 +150,7 @@
           },
           {
             "id": "ifElse-92ef5005-5fc6-4759-96fe-29efeb544fcc",
-            "name": "If/Else",
+            "name": "If ShouldLog is True",
             "type": "ifElse",
             "position": {
               "x": 2041.0620732213256,
@@ -214,7 +214,7 @@
               "y": 490.7113379403015
             },
             "details": {
-              "markdown": "If/Else: branches purely on Lead Agent's own ShouldLog decision (a defensive check — Lead Agent only ever sets this true, since Filtered never reaches it). Does not re-evaluate the original email or classification.\n",
+              "markdown": "If ShouldLog is True: branches purely on Lead Agent's own ShouldLog decision (a defensive check — Lead Agent only ever sets this true, since Filtered never reaches it). Does not re-evaluate the original email or classification.\n",
               "color": "yellow"
             }
           },
@@ -240,13 +240,13 @@
               "y": 475.92235904426514
             },
             "details": {
-              "markdown": "Notifier Agent: tool-less except for Send email. Only invoked when the If/Else above has already confirmed ShouldNotify is true — builds a deep link to the record just created from its own @odata.id response and sends one High-importance alert to NotifyEmail.\n",
+              "markdown": "Notifier Agent: tool-less except for Send email. Only invoked when the If ShouldNotify is True gate above has already confirmed ShouldNotify is true — builds a deep link to the record just created from its own @odata.id response and sends one High-importance alert to NotifyEmail.\n",
               "color": "yellow"
             }
           },
           {
             "id": "ifElse-b2d6c3bf-c3de-4c25-8bc4-29b3bc231c56",
-            "name": "If/Else 2",
+            "name": "If Tier is not Filtered",
             "type": "ifElse",
             "position": {
               "x": 1359.7109682391776,
@@ -256,7 +256,7 @@
           },
           {
             "id": "ifElse-321ee58b-adc7-4457-8d07-38da46acfc76",
-            "name": "If/Else 3",
+            "name": "If ShouldNotify is True",
             "type": "ifElse",
             "position": {
               "x": 2713.466570086401,
@@ -273,7 +273,7 @@
               "y": 465.8777858261333
             },
             "details": {
-              "markdown": "If/Else: gates purely on Classifier Agent's own Tier field. Skips Lead Agent entirely when Tier is Filtered — no second AI call, no record, no notification for non-genuine enquiries.\n",
+              "markdown": "If Tier is not Filtered: gates purely on Classifier Agent's own Tier field. Skips Lead Agent entirely when Tier is Filtered — no second AI call, no record, no notification for non-genuine enquiries.\n",
               "color": "yellow"
             }
           },
@@ -286,7 +286,7 @@
               "y": 480.8554992170673
             },
             "details": {
-              "markdown": "If/Else: gates purely on Lead Agent's own ShouldNotify field. Skips Notifier Agent entirely unless Tier was Hot — no AI call spent on Warm/Cold/Filtered leads.\n",
+              "markdown": "If ShouldNotify is True: gates purely on Lead Agent's own ShouldNotify field. Skips Notifier Agent entirely unless Tier was Hot — no AI call spent on Warm/Cold/Filtered leads.\n",
               "color": "yellow"
             }
           }
@@ -402,7 +402,7 @@
     {
       "path": "Workflows/SalesLeadQualifierV2-CAC4398C-780F-3334-8F5C-E1CC29371AB0.json",
       "category": "workflow",
-      "size": 163827
+      "size": 163975
     }
   ]
 }
