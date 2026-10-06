@@ -1,19 +1,19 @@
 {
   "name": "HR New Hire Welcome Packet",
-  "description": "Watches a SharePoint new-hire list, matches the hire's job title to an audience, and emails a role-specific welcome packet assembled from a SharePoint links list.",
+  "description": "Watches a SharePoint new-hire list and sends two emails per hire: a role-specific welcome packet assembled from a SharePoint links list, and a \"Meet your new team\" email with AI-generated, confidence-scored bios for the hire's manager and teammates.",
   "tags": [
     "hr",
     "onboarding",
     "sharepoint",
     "email",
-    "single-agent"
+    "org-directory"
   ],
   "author": "Pulkit Bhagat",
   "createdAt": "2026-09-22",
-  "updatedAt": "2026-09-30",
+  "updatedAt": "2026-10-06",
   "featured": false,
   "uniqueName": "HROnboarding",
-  "version": "1.0.0.10",
+  "version": "1.0.0.11",
   "publisher": "A3P",
   "bundle": "bundles/hr-new-hire-welcome-packet.zip",
   "agentCount": 0,
@@ -29,8 +29,8 @@
       "id": "{8c80c828-256e-5d89-7723-ba234f4c40a2}",
       "name": "HR New Hire Welcome Packet",
       "trigger": "When an item is created",
-      "nodeCount": 8,
-      "edgeCount": 2,
+      "nodeCount": 16,
+      "edgeCount": 9,
       "graph": {
         "nodes": [
           {
@@ -48,8 +48,8 @@
             "name": "Onboarding Agent",
             "type": "agent",
             "position": {
-              "x": 1121.4847977438737,
-              "y": 223.77521794874815
+              "x": 1084.30237529207,
+              "y": 116.73100006440066
             },
             "details": {
               "botSchemaName": "",
@@ -63,7 +63,7 @@
             "name": "Configuration",
             "type": "variable",
             "position": {
-              "x": 630.118950466471,
+              "x": 608.1626385018347,
               "y": 224.73718742671687
             },
             "details": {}
@@ -73,8 +73,8 @@
             "name": "Note",
             "type": "canvasNote",
             "position": {
-              "x": 268.7159642906813,
-              "y": 318.7987679130978
+              "x": 263.1945194005484,
+              "y": 362.9703270341611
             },
             "details": {
               "markdown": "Fires when a row is added to New Hires. \n\nSite/list are set directly here, reselect them in this trigger to point at your own list. \n\nAfter doing so, every \"field_N\" dynamic-content token in Onboarding Agent's prompt will break (SharePoint assigns these per-list) — reopen the agent and re-insert each one from the dynamic content picker against your own list's columns.\n",
@@ -86,8 +86,8 @@
             "name": "Note 2",
             "type": "canvasNote",
             "position": {
-              "x": 633.143228555974,
-              "y": 318.68807051707836
+              "x": 611.0574489954424,
+              "y": 357.3381847480087
             },
             "details": {
               "markdown": "Configuration variables: \n\n• HRNotifyEmail — where HR gets alerted (missing data / no audience match) \n\n• WelcomeLinksSite — full SharePoint site URL (e.g. https://yourtenant.sharepoint.com/teams/YourSiteName).\nWelcomeLinksSite locates the SharePoint site to find the list on — it's not a source of links itself; every link, URL, and description the agent sends always comes from rows inside the Welc",
@@ -99,8 +99,8 @@
             "name": "Note 3",
             "type": "canvasNote",
             "position": {
-              "x": 1141.3754688362221,
-              "y": 345.77612272570246
+              "x": 1085.9941381479703,
+              "y": 329.3306401842956
             },
             "details": {
               "markdown": "Onboarding Agent — runs once per new-hire row, right after the trigger. Stops if Packet sent is already set. Alerts HR and stops if any required field was missing. Otherwise: calls Get items once on Welcome Links, decides which audience the job title matches (or that none do) and which rows belong in the email — the agent does this selection itself, not a SharePoint filter — emails the hire (Cc ma",
@@ -112,8 +112,8 @@
             "name": "Note 5",
             "type": "canvasNote",
             "position": {
-              "x": 276.7039580733586,
-              "y": -5.986450541234916
+              "x": 268.42179073815925,
+              "y": -88.80812389322855
             },
             "details": {
               "markdown": "Expected columns\n\nNew Hires (first list): Preferred name, Work email, Job title, Start date, Manager email, Packet sent. \n\nWelcome Links (second list): Audience (text - \"Everyone\" or a role word), Link name, URL (Hyperlink), Description (optional).\n",
@@ -125,11 +125,133 @@
             "name": "Note 7",
             "type": "canvasNote",
             "position": {
-              "x": 1128.9748412803388,
-              "y": -36.11072148459516
+              "x": 1083.33573841494,
+              "y": -154.6895556128317
             },
             "details": {
               "markdown": "Reconnect required: Delete and re-add this node's tool connections -\n1. Sharepoint - get items\n2. Sharepoint - update item\n3. Office 365 Outlook - send an email\n\nConnections don't automatically renew for a new user who acquires this workflow.",
+              "color": "red"
+            }
+          },
+          {
+            "id": "agent-fb7e675d-b47e-43f9-a603-1289da05d738",
+            "name": "Team Intro Agent",
+            "type": "agent",
+            "position": {
+              "x": 1616.970448875372,
+              "y": 218.41631167370176
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "```\nYou are the Team Intro Agent for HR New Hire Welcome Packet. You run once per new-hire row, in parallel with the Onboarding Agent. You have two tools: Get manager and Get direct reports, both read-only, plus web search. You never send email, never update any row, and never take any action beyond producing the result described below.\n\nHIRE ROW FOR THIS RUN\nPreferred name: {triggerOutputs()?['bo"
+            }
+          },
+          {
+            "id": "canvasNote-952261e6-c2d2-4980-8578-d2b5d389f4ba",
+            "name": "Note 4",
+            "type": "canvasNote",
+            "position": {
+              "x": 1615.668036802225,
+              "y": 383.40930102872517
+            },
+            "details": {
+              "markdown": "Team Intro Agent — runs in parallel with Onboarding Agent off the same trigger, not blocking or blocked by it. Builds the new hire's team roster via Get manager + Get direct reports (Office 365 Users, read-only), drops blank-title/shadow accounts and the new hire's own self-match, caps at 10 people. For the manager plus each person, searches the web for a public LinkedIn match and writes a short f",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-80de7f4d-2ba5-4fd7-9aad-4b16c0ee6350",
+            "name": "Note 6",
+            "type": "canvasNote",
+            "position": {
+              "x": 1604.3621494932686,
+              "y": -15.596911830783057
+            },
+            "details": {
+              "markdown": "Reconnect required: Delete and re-add this node's tool connections - \n\n1. Office 365 Users - get manager \n\n2. Office 365 Users - get direct reports. Connections don't automatically renew for a new user who acquires this workflow.\n",
+              "color": "red"
+            }
+          },
+          {
+            "id": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
+            "name": "If/Else",
+            "type": "ifElse",
+            "position": {
+              "x": 1933,
+              "y": 218
+            },
+            "details": {}
+          },
+          {
+            "id": "connector-01dcf0f5-4b06-4d60-b58a-8b398d27ea82",
+            "name": "Send an email",
+            "type": "connector",
+            "position": {
+              "x": 2273.1906585181187,
+              "y": 210.5
+            },
+            "details": {
+              "displayName": "Office 365 Outlook",
+              "apiName": "shared_office365",
+              "operationName": "SendEmailV2",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "emailMessage/Importance": "Normal",
+                "emailMessage/To": "@triggerOutputs()?['body/field_1']",
+                "emailMessage/Subject": "@body('agent-fb7e675d-b47e-43f9-a603-1289da05d738')?['structuredOutput/EmailSubject']",
+                "emailMessage/Body": "<div>@{body('agent-fb7e675d-b47e-43f9-a603-1289da05d738')?['structuredOutput/EmailBody']}​</div>",
+                "emailMessage/Sensitivity": "f42aa342-8706-4288-bd11-ebb85995028c",
+                "emailMessage/Cc": "@variables('HRNotifyEmail')"
+              }
+            }
+          },
+          {
+            "id": "connector-5afa3316-61b8-4673-95ba-0c8edcd1276e",
+            "name": "Draft an email message",
+            "type": "connector",
+            "position": {
+              "x": 2278.1947118102125,
+              "y": 345.05091844460566
+            },
+            "details": {
+              "displayName": "Office 365 Outlook",
+              "apiName": "shared_office365",
+              "operationName": "DraftEmail",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "draftMessage/Importance": "Normal",
+                "draftMessage/To": "@triggerOutputs()?['body/field_1']",
+                "draftMessage/Subject": "@body('agent-fb7e675d-b47e-43f9-a603-1289da05d738')?['structuredOutput/EmailSubject']",
+                "draftMessage/Body": "<div>@{body('agent-fb7e675d-b47e-43f9-a603-1289da05d738')?['structuredOutput/EmailBody']}​</div>",
+                "draftMessage/Cc": "@variables('HRNotifyEmail')"
+              }
+            }
+          },
+          {
+            "id": "canvasNote-bf817137-0d94-4890-9050-25dad943f021",
+            "name": "Note 8",
+            "type": "canvasNote",
+            "position": {
+              "x": 1935.0646368191194,
+              "y": 440.0515498403842
+            },
+            "details": {
+              "markdown": "If AutoSendTeamIntro is Yes → Send an email (V2) sends directly to the new hire, CC HR. Else → Draft an email message creates the same email as a draft in HR's mailbox for manual review. Both branches use the same To/Subject/Body/CC from Team Intro Agent's output.",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-dd2afdec-8a33-41cf-990a-228dbfd2b9d8",
+            "name": "Note 9",
+            "type": "canvasNote",
+            "position": {
+              "x": 2273.2447123787424,
+              "y": -53.630952441286226
+            },
+            "details": {
+              "markdown": "Reconnect required: Delete and re-add these nodes' connections -\n\n1. Office 365 Outlook - Send an email \n\n2. Office 365 Outlook - Draft an email message. Connections don't automatically renew for a new user who acquires this workflow.",
               "color": "red"
             }
           }
@@ -144,6 +266,47 @@
             "id": "edge-variable-faf9b4df-2036-499f-959a-6fb24d953d1b-agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514",
             "source": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b",
             "target": "agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514"
+          },
+          {
+            "id": "edge-canvasNote-5f327463-8646-4cfb-a13e-b131d3053b95-agent-fb7e675d-b47e-43f9-a603-1289da05d738",
+            "source": "canvasNote-5f327463-8646-4cfb-a13e-b131d3053b95",
+            "target": "agent-fb7e675d-b47e-43f9-a603-1289da05d738"
+          },
+          {
+            "id": "edge-variable-faf9b4df-2036-499f-959a-6fb24d953d1b-output-agent-fb7e675d-b47e-43f9-a603-1289da05d738-input",
+            "source": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b",
+            "target": "agent-fb7e675d-b47e-43f9-a603-1289da05d738",
+            "sourceHandle": "output",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-agent-fb7e675d-b47e-43f9-a603-1289da05d738-ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
+            "source": "agent-fb7e675d-b47e-43f9-a603-1289da05d738",
+            "target": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0"
+          },
+          {
+            "id": "edge-ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0-condition:a1df2617-5651-4873-9a20-2ca13152851d-connector-01dcf0f5-4b06-4d60-b58a-8b398d27ea82",
+            "source": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
+            "target": "connector-01dcf0f5-4b06-4d60-b58a-8b398d27ea82",
+            "sourceHandle": "condition:a1df2617-5651-4873-9a20-2ca13152851d"
+          },
+          {
+            "id": "edge-ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0-else-connector-5afa3316-61b8-4673-95ba-0c8edcd1276e",
+            "source": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
+            "target": "connector-5afa3316-61b8-4673-95ba-0c8edcd1276e",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-canvasNote-f530af65-6ff7-46fe-981c-c401d3e5ab44-canvasNote-0aa7edc5-01f8-4cc3-83ee-80af0d1d4177-input",
+            "source": "canvasNote-f530af65-6ff7-46fe-981c-c401d3e5ab44",
+            "target": "canvasNote-0aa7edc5-01f8-4cc3-83ee-80af0d1d4177",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-canvasNote-952261e6-c2d2-4980-8578-d2b5d389f4ba-canvasNote-bf817137-0d94-4890-9050-25dad943f021-input",
+            "source": "canvasNote-952261e6-c2d2-4980-8578-d2b5d389f4ba",
+            "target": "canvasNote-bf817137-0d94-4890-9050-25dad943f021",
+            "targetHandle": "input"
           }
         ]
       }
@@ -158,7 +321,7 @@
     {
       "path": "customizations.xml",
       "category": "solution",
-      "size": 3610
+      "size": 4067
     },
     {
       "path": "solution.xml",
@@ -168,7 +331,7 @@
     {
       "path": "Workflows/HRNewHireWelcomePacket-8C80C828-256E-5D89-7723-BA234F4C40A2.json",
       "category": "workflow",
-      "size": 67076
+      "size": 136564
     }
   ]
 }

@@ -30,6 +30,16 @@
         },
         "runtimeSource": "embedded",
         "connectionName": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9"
+      },
+      "shared_office365": {
+        "api": {
+          "name": "shared_office365"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedoffice365_a9b57bf1"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-office365-02268f4d-3810-4099-b068-e1a24808aa17"
       }
     },
     "definition": {
@@ -50,7 +60,7 @@
           "type": "OpenApiConnection",
           "inputs": {
             "parameters": {
-              "dataset": "https://microsoftapc.sharepoint.com/teams/HROnboardingTemplateDemo",
+              "dataset": "https://yourtenant.sharepoint.com/teams/YourSiteName",
               "table": "a30b7182-2410-4f48-8d05-7dbade2d2ce6"
             },
             "host": {
@@ -87,7 +97,7 @@
                           "operationName": "GetOnNewItems",
                           "connectionName": "shared_sharepointonline-1",
                           "inputs": {
-                            "dataset": "https://microsoftapc.sharepoint.com/teams/HROnboardingTemplateDemo",
+                            "dataset": "https://yourtenant.sharepoint.com/teams/YourSiteName",
                             "table": "a30b7182-2410-4f48-8d05-7dbade2d2ce6"
                           },
                           "displayName": "When an item is created",
@@ -565,37 +575,6 @@
                                 "description": "True when the item is a folder, false otherwise.",
                                 "x-ms-property-name-alias": "body/{IsFolder}"
                               },
-                              "{Thumbnail}": {
-                                "type": "object",
-                                "title": "Thumbnail",
-                                "properties": {
-                                  "Small": {
-                                    "type": "string",
-                                    "title": "Small",
-                                    "readOnly": true,
-                                    "description": "URL to the small, highly compressed size thumbnail of the item, if available.",
-                                    "x-ms-property-name-alias": "body/{Thumbnail}/Small"
-                                  },
-                                  "Medium": {
-                                    "type": "string",
-                                    "title": "Medium",
-                                    "readOnly": true,
-                                    "description": "URL to the standard size thumbnail of the item, if available.",
-                                    "x-ms-property-name-alias": "body/{Thumbnail}/Medium"
-                                  },
-                                  "Large": {
-                                    "type": "string",
-                                    "title": "Large",
-                                    "readOnly": true,
-                                    "description": "URL to the largest size thumbnail of the item, if available.",
-                                    "x-ms-property-name-alias": "body/{Thumbnail}/Large"
-                                  }
-                                },
-                                "required": [],
-                                "readOnly": true,
-                                "description": "URL to the thumbnails of the item in 3 different sizes, if available.",
-                                "x-ms-property-name-alias": "body/{Thumbnail}"
-                              },
                               "{Link}": {
                                 "type": "string",
                                 "title": "Link to item",
@@ -722,7 +701,8 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    }
+                    },
+                    "selected": false
                   },
                   {
                     "id": "agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514",
@@ -730,8 +710,8 @@
                     "type": "agent",
                     "version": 1,
                     "position": {
-                      "x": 1121.4847977438737,
-                      "y": 223.77521794874815
+                      "x": 1084.30237529207,
+                      "y": 116.73100006440066
                     },
                     "data": {
                       "config": {
@@ -813,8 +793,7 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    },
-                    "selected": false
+                    }
                   },
                   {
                     "id": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b",
@@ -822,7 +801,7 @@
                     "type": "variable",
                     "version": 1,
                     "position": {
-                      "x": 630.118950466471,
+                      "x": 608.16263850183475,
                       "y": 224.73718742671687
                     },
                     "data": {
@@ -833,12 +812,12 @@
                             "variableName": "HRNotifyEmail",
                             "mode": "initialize",
                             "type": "string",
-                            "value": "pulkitbhagat@microsoft.com",
+                            "value": "hr@contoso.com",
                             "valueRich": {
                               "segments": [
                                 {
                                   "type": "static",
-                                  "value": "pulkitbhagat@microsoft.com"
+                                  "value": "hr@contoso.com"
                                 }
                               ]
                             }
@@ -848,12 +827,12 @@
                             "variableName": "WelcomeLinksSite",
                             "mode": "initialize",
                             "type": "string",
-                            "value": "https://microsoftapc.sharepoint.com/teams/HROnboardingTemplateDemo",
+                            "value": "https://yourtenant.sharepoint.com/teams/YourSiteName",
                             "valueRich": {
                               "segments": [
                                 {
                                   "type": "static",
-                                  "value": "https://microsoftapc.sharepoint.com/teams/HROnboardingTemplateDemo"
+                                  "value": "https://yourtenant.sharepoint.com/teams/YourSiteName"
                                 }
                               ]
                             }
@@ -872,6 +851,13 @@
                                 }
                               ]
                             }
+                          },
+                          {
+                            "id": "9544bfae-fa6a-40d0-ace0-5067d9f35ffa",
+                            "variableName": "AutoSendTeamIntro",
+                            "mode": "initialize",
+                            "type": "boolean",
+                            "value": "false"
                           }
                         ]
                       },
@@ -899,8 +885,8 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 268.71596429068131,
-                      "y": 318.79876791309778
+                      "x": 263.19451940054842,
+                      "y": 362.97032703416107
                     },
                     "width": 232,
                     "height": 300,
@@ -919,7 +905,8 @@
                       "width": 232,
                       "height": 300
                     },
-                    "resizing": false
+                    "resizing": false,
+                    "dragging": false
                   },
                   {
                     "id": "canvasNote-0aa7edc5-01f8-4cc3-83ee-80af0d1d4177",
@@ -927,27 +914,28 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 633.143228555974,
-                      "y": 318.68807051707836
+                      "x": 611.05744899544243,
+                      "y": 357.3381847480087
                     },
                     "width": 235,
-                    "height": 448,
+                    "height": 696,
                     "style": {
                       "width": 235,
-                      "height": 448
+                      "height": 696
                     },
                     "data": {
                       "config": {
-                        "markdown": "Configuration variables: \n\n• HRNotifyEmail — where HR gets alerted (missing data / no audience match) \n\n• WelcomeLinksSite — full SharePoint site URL (e.g. https://yourtenant.sharepoint.com/teams/YourSiteName).\nWelcomeLinksSite locates the SharePoint site to find the list on — it's not a source of links itself; every link, URL, and description the agent sends always comes from rows inside the Welcome Links list.\n\n\n • WelcomeLinksList — the list's display name (e.g. Welcome_Links), not a GUID. Replace with your own site, list, and mailbox before use.\n",
+                        "markdown": "Configuration variables: \n\n• HRNotifyEmail — where HR gets alerted (missing data / no audience match) \n\n• WelcomeLinksSite — full SharePoint site URL (e.g. https://yourtenant.sharepoint.com/teams/YourSiteName).\nWelcomeLinksSite locates the SharePoint site to find the list on — it's not a source of links itself; every link, URL, and description the agent sends always comes from rows inside the Welcome Links list.\n\n\n • WelcomeLinksList — the list's display name (e.g. Welcome_Links), not a GUID. Replace with your own site, list, and mailbox before use.\n\n• AutoSendTeamIntro (Yes/No, default Yes) — controls whether the Meet Your Team email sends automatically or is created as a draft for human review. Defaults to Yes so the automation works out-of-the-box; an org's admin can flip to No if they want every AI-generated bio reviewed before it goes out. Deliberate org-level risk-acceptance choice — see README.",
                         "color": "red"
                       },
                       "outcomes": []
                     },
                     "measured": {
                       "width": 235,
-                      "height": 448
+                      "height": 696
                     },
                     "resizing": false,
+                    "dragging": false,
                     "selected": false
                   },
                   {
@@ -956,8 +944,8 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 1141.3754688362221,
-                      "y": 345.77612272570246
+                      "x": 1085.9941381479703,
+                      "y": 329.33064018429559
                     },
                     "width": 227,
                     "height": 478,
@@ -976,7 +964,8 @@
                       "width": 227,
                       "height": 478
                     },
-                    "resizing": false
+                    "resizing": false,
+                    "dragging": false
                   },
                   {
                     "id": "canvasNote-aa583182-e79a-4075-8057-c3fe9a45ad41",
@@ -984,8 +973,8 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 276.70395807335859,
-                      "y": -5.986450541234916
+                      "x": 268.42179073815925,
+                      "y": -88.808123893228554
                     },
                     "width": 250,
                     "height": 200,
@@ -1003,7 +992,8 @@
                     "measured": {
                       "width": 250,
                       "height": 200
-                    }
+                    },
+                    "dragging": false
                   },
                   {
                     "id": "canvasNote-5f327463-8646-4cfb-a13e-b131d3053b95",
@@ -1011,8 +1001,8 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 1128.9748412803388,
-                      "y": -36.11072148459516
+                      "x": 1083.33573841494,
+                      "y": -154.6895556128317
                     },
                     "width": 250,
                     "height": 224,
@@ -1030,7 +1020,996 @@
                     "measured": {
                       "width": 250,
                       "height": 224
+                    },
+                    "dragging": false
+                  },
+                  {
+                    "id": "agent-fb7e675d-b47e-43f9-a603-1289da05d738",
+                    "name": "Team Intro Agent",
+                    "type": "agent",
+                    "version": 1,
+                    "position": {
+                      "x": 1616.9704488753721,
+                      "y": 218.41631167370176
+                    },
+                    "data": {
+                      "config": {
+                        "mode": "inline",
+                        "instructions": "",
+                        "botSchemaName": "",
+                        "isHitlEscalationEnabled": false,
+                        "webSearchEnabled": true,
+                        "inlineInstructions": "```\nYou are the Team Intro Agent for HR New Hire Welcome Packet. You run once per new-hire row, in parallel with the Onboarding Agent. You have two tools: Get manager and Get direct reports, both read-only, plus web search. You never send email, never update any row, and never take any action beyond producing the result described below.\n\nHIRE ROW FOR THIS RUN\nPreferred name: {triggerOutputs()?['body/Title']}\nWork email (the new hire's own email, not the manager's): {triggerOutputs()?['body/field_1']}\n\nSTEP 1 - BUILD THE ROSTER\n1. Call Get manager using the new hire's Work email above to find their manager.\n2. Call Get direct reports using the manager's email from step 1 to get the manager's full team.\n3. From that list, drop any person whose job title is blank or missing — these are placeholder/shadow accounts, not real colleagues to introduce.\n4. From what remains, remove the new hire themselves if they appear in it.\n5. If more than 10 people remain, keep only the first 10.\n6. Only include people actually returned by your tool calls — never invent a name, title, or email that wasn't in the results.\n\nSTEP 2 - LOOK UP EACH PERSON (the manager plus every person in the team list from Step 1)\nSearch the web for their public LinkedIn profile using their name, job title, and \"Microsoft\" as the company.\nRate your confidence that you found the right person on a 0.0-1.0 scale, based on how well the name, current employer, and job title all agree with what you found.\n- If confidence is 0.75 or higher: write a short, factual summary of their professional background (2-3 sentences) based only on what their profile states — role, how long in the field, what they appear to work on. Do not describe or infer their personality, capabilities, reputation, or anything not explicitly stated. Include the profile URL as a source link.\n- If confidence is below 0.75, or you cannot find a clear match, or there are multiple equally-likely candidates: do not include a bio or source link. Use this exact line instead: \"Additional profile details weren't available.\"\nNever guess a bio you are not confident about — a missing bio is always better than a wrong one.\n\nSTEP 3 - COMPOSE THE EMAIL\nBuild one HTML email: a short friendly intro mentioning the new hire's own name, then one card per person, manager first, then the rest of the team. Each card shows: name, job title, bio (or the fallback line), and a \"Schedule a 1:1\" link in this exact format: mailto:{their email}?subject=1:1 with {their name}\nAfter the cards, add a line inviting the new hire to reply or contact HR if anything looks outdated or incorrect.\nEnd with this exact disclaimer in smaller/lighter text: \"This profile was generated using AI based on available professional information, which may include public LinkedIn content. It may contain inaccurate or outdated details. Please verify the information before sharing or using it.\"\n\nOUTPUT\nProduce exactly two structured output fields:\nEmailSubject: a short, friendly subject line such as \"Meet your new team!\"\nEmailBody: the complete HTML email from Step 3, ready to send as-is.\n\n```",
+                        "outputMode": "structured-simple",
+                        "connectionName": "shared_agentnode",
+                        "inlineModel": "claude-opus-5",
+                        "inlineTools": [
+                          {
+                            "id": "70a04289-f5b8-4596-b423-f39b6dc969e6",
+                            "connectorId": "shared_office365users",
+                            "operationId": "Manager_V2",
+                            "displayName": "Get manager",
+                            "description": "Retrieves the profile of the specified user's manager. Learn more about available fields to select: https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/user#properties",
+                            "connectionReferenceName": "shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc",
+                            "connectionId": "shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc",
+                            "authMode": "invoker",
+                            "isMcp": false,
+                            "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1818/1.0.1818.4788/office365users/icon.png",
+                            "brandColor": "#FFFFFF"
+                          },
+                          {
+                            "id": "c96e56cc-b86a-4ba8-8657-39f33451044f",
+                            "connectorId": "shared_office365users",
+                            "operationId": "DirectReports_V2",
+                            "displayName": "Get direct reports",
+                            "description": "Retrieves the user profiles of the specified user's direct reports. Learn more about available fields to select: https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/user#properties",
+                            "connectionReferenceName": "shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc",
+                            "connectionId": "shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc",
+                            "authMode": "invoker",
+                            "isMcp": false,
+                            "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1818/1.0.1818.4788/office365users/icon.png",
+                            "brandColor": "#FFFFFF"
+                          }
+                        ],
+                        "simpleProperties": [
+                          {
+                            "id": "ef792f6b-9c37-40f4-8695-cfe0d3d299c6",
+                            "name": "EmailSubject",
+                            "type": "string",
+                            "description": ""
+                          },
+                          {
+                            "id": "bc6fe45f-8b86-45b3-a90c-a8cb8be7547c",
+                            "name": "EmailBody",
+                            "type": "string",
+                            "description": ""
+                          }
+                        ],
+                        "jsonSchema": {
+                          "type": "object",
+                          "properties": {
+                            "EmailSubject": {
+                              "type": "string"
+                            },
+                            "EmailBody": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "EmailSubject",
+                            "EmailBody"
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "type": "string",
+                                "title": "Agent Response",
+                                "description": "Aggregated message text emitted before the structured output (may be null)"
+                              },
+                              "activities": {
+                                "type": "array",
+                                "description": "Bot response activities (typing, message, and event types)"
+                              },
+                              "structuredOutput": {
+                                "type": "object",
+                                "properties": {
+                                  "EmailSubject": {
+                                    "type": "string"
+                                  },
+                                  "EmailBody": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "EmailSubject",
+                                  "EmailBody"
+                                ],
+                                "title": ""
+                              }
+                            },
+                            "required": [
+                              "activities",
+                              "structuredOutput"
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
                     }
+                  },
+                  {
+                    "id": "canvasNote-952261e6-c2d2-4980-8578-d2b5d389f4ba",
+                    "name": "Note 4",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 1615.6680368022251,
+                      "y": 383.40930102872517
+                    },
+                    "width": 250,
+                    "height": 464,
+                    "style": {
+                      "width": 250,
+                      "height": 464
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "Team Intro Agent — runs in parallel with Onboarding Agent off the same trigger, not blocking or blocked by it. Builds the new hire's team roster via Get manager + Get direct reports (Office 365 Users, read-only), drops blank-title/shadow accounts and the new hire's own self-match, caps at 10 people. For the manager plus each person, searches the web for a public LinkedIn match and writes a short factual bio only when confidence ≥0.75 — otherwise uses a fixed fallback line, never guesses. Composes the full HTML email (manager first, then team, each with a mailto: 'Schedule a 1:1' link) and outputs EmailSubject/EmailBody. Never sends email or updates any row itself — the If/Else + Send/Draft nodes downstream handle delivery.",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 250,
+                      "height": 464
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "canvasNote-80de7f4d-2ba5-4fd7-9aad-4b16c0ee6350",
+                    "name": "Note 6",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 1604.3621494932686,
+                      "y": -15.596911830783057
+                    },
+                    "width": 250,
+                    "height": 188,
+                    "style": {
+                      "width": 250,
+                      "height": 188
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "Reconnect required: Delete and re-add this node's tool connections - \n\n1. Office 365 Users - get manager \n\n2. Office 365 Users - get direct reports. Connections don't automatically renew for a new user who acquires this workflow.\n",
+                        "color": "red"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 250,
+                      "height": 188
+                    },
+                    "dragging": false
+                  },
+                  {
+                    "id": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
+                    "name": "If/Else",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 1933,
+                      "y": 218
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "a1df2617-5651-4873-9a20-2ca13152851d",
+                            "name": "If",
+                            "expression": "{\n  \"and\": [\n    {\n      \"equals\": [\n        \"@variables('AutoSendTeamIntro')\",\n        true\n      ]\n    }\n  ]\n}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:a1df2617-5651-4873-9a20-2ca13152851d",
+                          "label": "If"
+                        },
+                        {
+                          "id": "else",
+                          "label": "Else"
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 169
+                    }
+                  },
+                  {
+                    "id": "connector-01dcf0f5-4b06-4d60-b58a-8b398d27ea82",
+                    "name": "Send an email",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 2273.1906585181187,
+                      "y": 210.5
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_office365",
+                        "displayName": "Office 365 Outlook",
+                        "iconUri": "https://res-1.cdn.office.net/files/fabric-cdn-prod_20251008.001/assets/brand-icons/product/svg/outlook_48x1.svg",
+                        "brandColor": "#0078D4",
+                        "operationName": "SendEmailV2",
+                        "operationType": "OpenApiConnection",
+                        "parametersSchema": {
+                          "type": "object",
+                          "properties": {
+                            "emailMessage": {
+                              "type": "object",
+                              "title": "Email",
+                              "properties": {
+                                "To": {
+                                  "type": "string",
+                                  "title": "To",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-property-name-alias": "emailMessage/To"
+                                },
+                                "Subject": {
+                                  "type": "string",
+                                  "title": "Subject",
+                                  "description": "Specify the subject of the mail",
+                                  "x-ms-property-name-alias": "emailMessage/Subject"
+                                },
+                                "Body": {
+                                  "type": "string",
+                                  "title": "Body",
+                                  "format": "html",
+                                  "description": "Specify the body of the mail",
+                                  "x-ms-property-name-alias": "emailMessage/Body"
+                                },
+                                "From": {
+                                  "type": "string",
+                                  "title": "From (Send as)",
+                                  "format": "email",
+                                  "description": "Email address to send mail from (requires \"Send as\" or \"Send on behalf of\" permission for that mailbox). For more info on granting permissions please refer https://docs.microsoft.com/office365/admin/manage/send-email-as-distribution-list",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/From"
+                                },
+                                "Cc": {
+                                  "type": "string",
+                                  "title": "CC",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Cc"
+                                },
+                                "Bcc": {
+                                  "type": "string",
+                                  "title": "BCC",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Bcc"
+                                },
+                                "Attachments": {
+                                  "type": "array",
+                                  "title": "Attachments",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "Name": {
+                                        "type": "string",
+                                        "title": "Name",
+                                        "description": "Attachment name",
+                                        "x-ms-property-name-alias": "Name"
+                                      },
+                                      "ContentBytes": {
+                                        "type": "string",
+                                        "title": "Content",
+                                        "format": "byte",
+                                        "description": "Attachment content",
+                                        "x-ms-property-name-alias": "ContentBytes"
+                                      }
+                                    },
+                                    "required": [
+                                      "ContentBytes",
+                                      "Name"
+                                    ],
+                                    "description": "Attachment"
+                                  },
+                                  "description": "Attachments",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Attachments"
+                                },
+                                "Sensitivity": {
+                                  "type": "string",
+                                  "title": "Sensitivity",
+                                  "x-ms-dynamic-list": {
+                                    "operationId": "GetSensitivityLabels",
+                                    "parameters": {},
+                                    "itemValuePath": "Id",
+                                    "itemTitlePath": "DisplayName"
+                                  },
+                                  "description": "Sensitivity",
+                                  "x-ms-visibility": "important",
+                                  "x-ms-property-name-alias": "emailMessage/Sensitivity"
+                                },
+                                "ReplyTo": {
+                                  "type": "string",
+                                  "title": "Reply To",
+                                  "format": "email",
+                                  "description": "The email addresses to use when replying",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/ReplyTo"
+                                },
+                                "Importance": {
+                                  "type": "string",
+                                  "title": "Importance",
+                                  "description": "Importance",
+                                  "default": "Normal",
+                                  "enum": [
+                                    "Low",
+                                    "Normal",
+                                    "High"
+                                  ],
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Importance"
+                                }
+                              },
+                              "required": [
+                                "Body",
+                                "Subject",
+                                "To"
+                              ],
+                              "description": "Email.",
+                              "x-ms-property-name-alias": "emailMessage"
+                            }
+                          },
+                          "required": [
+                            "emailMessage"
+                          ]
+                        },
+                        "parameters": {
+                          "emailMessage/Importance": "Normal",
+                          "emailMessage/To": "@triggerOutputs()?['body/field_1']",
+                          "emailMessage/Subject": "@body('agent-fb7e675d-b47e-43f9-a603-1289da05d738')?['structuredOutput/EmailSubject']",
+                          "emailMessage/Body": "<div>@{body('agent-fb7e675d-b47e-43f9-a603-1289da05d738')?['structuredOutput/EmailBody']}​</div>",
+                          "emailMessage/Sensitivity": "f42aa342-8706-4288-bd11-ebb85995028c",
+                          "emailMessage/Cc": "@variables('HRNotifyEmail')"
+                        },
+                        "connectionName": "shared_office365"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {}
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "dragging": false,
+                    "selected": false
+                  },
+                  {
+                    "id": "connector-5afa3316-61b8-4673-95ba-0c8edcd1276e",
+                    "name": "Draft an email message",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 2278.1947118102125,
+                      "y": 345.05091844460566
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_office365",
+                        "displayName": "Office 365 Outlook",
+                        "iconUri": "https://res-1.cdn.office.net/files/fabric-cdn-prod_20251008.001/assets/brand-icons/product/svg/outlook_48x1.svg",
+                        "brandColor": "#0078D4",
+                        "operationName": "DraftEmail",
+                        "connectionName": "shared_office365",
+                        "operationType": "OpenApiConnection",
+                        "parameters": {
+                          "draftMessage/Importance": "Normal",
+                          "draftMessage/To": "@triggerOutputs()?['body/field_1']",
+                          "draftMessage/Subject": "@body('agent-fb7e675d-b47e-43f9-a603-1289da05d738')?['structuredOutput/EmailSubject']",
+                          "draftMessage/Body": "<div>@{body('agent-fb7e675d-b47e-43f9-a603-1289da05d738')?['structuredOutput/EmailBody']}​</div>",
+                          "draftMessage/Cc": "@variables('HRNotifyEmail')"
+                        },
+                        "parametersSchema": {
+                          "type": "object",
+                          "properties": {
+                            "draftMessage": {
+                              "type": "object",
+                              "title": "Draft",
+                              "properties": {
+                                "To": {
+                                  "type": "string",
+                                  "title": "To",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-property-name-alias": "draftMessage/To"
+                                },
+                                "Subject": {
+                                  "type": "string",
+                                  "title": "Subject",
+                                  "description": "Specify the subject of the mail",
+                                  "x-ms-property-name-alias": "draftMessage/Subject"
+                                },
+                                "Body": {
+                                  "type": "string",
+                                  "title": "Body",
+                                  "format": "html",
+                                  "description": "Specify the body of the mail",
+                                  "x-ms-property-name-alias": "draftMessage/Body"
+                                },
+                                "From": {
+                                  "type": "string",
+                                  "title": "From (Send as)",
+                                  "format": "email",
+                                  "description": "Email address to send mail from (requires \"Send as\" or \"Send on behalf of\" permission for that mailbox). For more info on granting permissions please refer https://docs.microsoft.com/office365/admin/manage/send-email-as-distribution-list",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "draftMessage/From"
+                                },
+                                "Cc": {
+                                  "type": "string",
+                                  "title": "CC",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "draftMessage/Cc"
+                                },
+                                "Bcc": {
+                                  "type": "string",
+                                  "title": "BCC",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "draftMessage/Bcc"
+                                },
+                                "Attachments": {
+                                  "type": "array",
+                                  "title": "Attachments",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "Name": {
+                                        "type": "string",
+                                        "title": "Name",
+                                        "description": "Attachment name",
+                                        "x-ms-property-name-alias": "Name"
+                                      },
+                                      "ContentBytes": {
+                                        "type": "string",
+                                        "title": "Content",
+                                        "format": "byte",
+                                        "description": "Attachment content",
+                                        "x-ms-property-name-alias": "ContentBytes"
+                                      }
+                                    },
+                                    "required": [
+                                      "ContentBytes",
+                                      "Name"
+                                    ],
+                                    "description": "Attachment"
+                                  },
+                                  "description": "Attachments",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "draftMessage/Attachments"
+                                },
+                                "Sensitivity": {
+                                  "type": "string",
+                                  "title": "Sensitivity",
+                                  "x-ms-dynamic-list": {
+                                    "operationId": "GetSensitivityLabels",
+                                    "parameters": {},
+                                    "itemValuePath": "Id",
+                                    "itemTitlePath": "DisplayName"
+                                  },
+                                  "description": "Sensitivity",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "draftMessage/Sensitivity"
+                                },
+                                "ReplyTo": {
+                                  "type": "string",
+                                  "title": "Reply To",
+                                  "format": "email",
+                                  "description": "The email addresses to use when replying",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "draftMessage/ReplyTo"
+                                },
+                                "Importance": {
+                                  "type": "string",
+                                  "title": "Importance",
+                                  "description": "Importance",
+                                  "default": "Normal",
+                                  "enum": [
+                                    "Low",
+                                    "Normal",
+                                    "High"
+                                  ],
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "draftMessage/Importance"
+                                }
+                              },
+                              "required": [
+                                "Body",
+                                "Subject",
+                                "To"
+                              ],
+                              "description": "Draft.",
+                              "x-ms-property-name-alias": "draftMessage"
+                            },
+                            "messageId": {
+                              "type": "string",
+                              "title": "Message Id",
+                              "description": "Message Id.",
+                              "x-ms-visibility": "advanced",
+                              "x-ms-property-name-alias": "messageId"
+                            },
+                            "draftType": {
+                              "type": "string",
+                              "title": "Draft Type",
+                              "description": "Draft Type.",
+                              "x-ms-visibility": "advanced",
+                              "x-ms-property-name-alias": "draftType"
+                            },
+                            "comment": {
+                              "type": "string",
+                              "title": "Comment",
+                              "description": "Draft Comment",
+                              "x-ms-visibility": "advanced",
+                              "x-ms-property-name-alias": "comment"
+                            }
+                          },
+                          "required": [
+                            "draftMessage"
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "body": {
+                                "type": "object",
+                                "properties": {
+                                  "InternetMessageId": {
+                                    "type": "string",
+                                    "description": "Internet Message Id",
+                                    "x-ms-property-name-alias": "body/InternetMessageId"
+                                  },
+                                  "BodyPreview": {
+                                    "type": "string",
+                                    "description": "Body preview",
+                                    "x-ms-property-name-alias": "body/BodyPreview"
+                                  },
+                                  "Id": {
+                                    "type": "string",
+                                    "description": "Id",
+                                    "x-ms-property-name-alias": "body/Id"
+                                  },
+                                  "ConversationId": {
+                                    "type": "string",
+                                    "description": "Conversation Id",
+                                    "x-ms-property-name-alias": "body/ConversationId"
+                                  },
+                                  "HasAttachments": {
+                                    "type": "boolean",
+                                    "description": "Has attachments",
+                                    "x-ms-property-name-alias": "body/HasAttachments"
+                                  },
+                                  "IsRead": {
+                                    "type": "boolean",
+                                    "description": "Is read",
+                                    "x-ms-property-name-alias": "body/IsRead"
+                                  },
+                                  "CreatedDateTime": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "description": "Created date and time",
+                                    "x-ms-property-name-alias": "body/CreatedDateTime"
+                                  },
+                                  "ReceivedDateTime": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "description": "Received date and time",
+                                    "x-ms-property-name-alias": "body/ReceivedDateTime"
+                                  },
+                                  "LastModifiedDateTime": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "description": "Last modified date and time",
+                                    "x-ms-property-name-alias": "body/LastModifiedDateTime"
+                                  },
+                                  "Attachments": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "@odata.type": {
+                                          "type": "string",
+                                          "description": "OData type",
+                                          "x-ms-property-name-alias": "@odata.type"
+                                        },
+                                        "Id": {
+                                          "type": "string",
+                                          "description": "Attachment Id",
+                                          "x-ms-property-name-alias": "Id"
+                                        },
+                                        "Name": {
+                                          "type": "string",
+                                          "description": "Attachment name",
+                                          "x-ms-property-name-alias": "Name"
+                                        },
+                                        "ContentBytes": {
+                                          "type": "string",
+                                          "description": "Attachment content",
+                                          "x-ms-property-name-alias": "ContentBytes"
+                                        },
+                                        "ContentType": {
+                                          "type": "string",
+                                          "description": "Attachment content type",
+                                          "x-ms-property-name-alias": "ContentType"
+                                        },
+                                        "Size": {
+                                          "type": "integer",
+                                          "format": "int64",
+                                          "description": "Attachment size in bytes",
+                                          "x-ms-property-name-alias": "Size"
+                                        },
+                                        "Permission": {
+                                          "type": "string",
+                                          "description": "Permission associated with a reference attachment",
+                                          "x-ms-property-name-alias": "Permission"
+                                        },
+                                        "ProviderType": {
+                                          "type": "string",
+                                          "description": "Provider for the reference attachment",
+                                          "x-ms-property-name-alias": "ProviderType"
+                                        },
+                                        "SourceUrl": {
+                                          "type": "string",
+                                          "description": "Reference attachment source url",
+                                          "x-ms-property-name-alias": "SourceUrl"
+                                        },
+                                        "IsInline": {
+                                          "type": "boolean",
+                                          "description": "Set to true if this is an inline attachment",
+                                          "x-ms-property-name-alias": "IsInline"
+                                        },
+                                        "LastModifiedDateTime": {
+                                          "type": "string",
+                                          "format": "date-time",
+                                          "description": "The date and time when the attachment was last modified",
+                                          "x-ms-property-name-alias": "LastModifiedDateTime"
+                                        },
+                                        "ContentId": {
+                                          "type": "string",
+                                          "description": "Content Id",
+                                          "x-ms-property-name-alias": "ContentId"
+                                        }
+                                      },
+                                      "required": [],
+                                      "description": "Attachment"
+                                    },
+                                    "description": "Attachments",
+                                    "x-ms-property-name-alias": "body/Attachments"
+                                  },
+                                  "ToRecipients": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "EmailAddress": {
+                                          "type": "object",
+                                          "properties": {
+                                            "Name": {
+                                              "type": "string",
+                                              "x-ms-property-name-alias": "EmailAddress/Name"
+                                            },
+                                            "Address": {
+                                              "type": "string",
+                                              "format": "email",
+                                              "x-ms-property-name-alias": "EmailAddress/Address"
+                                            }
+                                          },
+                                          "required": [],
+                                          "x-ms-property-name-alias": "EmailAddress"
+                                        }
+                                      },
+                                      "required": []
+                                    },
+                                    "description": "To Recipient",
+                                    "x-ms-property-name-alias": "body/ToRecipients"
+                                  },
+                                  "CcRecipients": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "EmailAddress": {
+                                          "type": "object",
+                                          "properties": {
+                                            "Name": {
+                                              "type": "string",
+                                              "x-ms-property-name-alias": "EmailAddress/Name"
+                                            },
+                                            "Address": {
+                                              "type": "string",
+                                              "format": "email",
+                                              "x-ms-property-name-alias": "EmailAddress/Address"
+                                            }
+                                          },
+                                          "required": [],
+                                          "x-ms-property-name-alias": "EmailAddress"
+                                        }
+                                      },
+                                      "required": []
+                                    },
+                                    "description": "Cc Recipients",
+                                    "x-ms-property-name-alias": "body/CcRecipients"
+                                  },
+                                  "BccRecipients": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "EmailAddress": {
+                                          "type": "object",
+                                          "properties": {
+                                            "Name": {
+                                              "type": "string",
+                                              "x-ms-property-name-alias": "EmailAddress/Name"
+                                            },
+                                            "Address": {
+                                              "type": "string",
+                                              "format": "email",
+                                              "x-ms-property-name-alias": "EmailAddress/Address"
+                                            }
+                                          },
+                                          "required": [],
+                                          "x-ms-property-name-alias": "EmailAddress"
+                                        }
+                                      },
+                                      "required": []
+                                    },
+                                    "description": "Bcc Recipients",
+                                    "x-ms-property-name-alias": "body/BccRecipients"
+                                  },
+                                  "ReplyTo": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "EmailAddress": {
+                                          "type": "object",
+                                          "properties": {
+                                            "Name": {
+                                              "type": "string",
+                                              "x-ms-property-name-alias": "EmailAddress/Name"
+                                            },
+                                            "Address": {
+                                              "type": "string",
+                                              "format": "email",
+                                              "x-ms-property-name-alias": "EmailAddress/Address"
+                                            }
+                                          },
+                                          "required": [],
+                                          "x-ms-property-name-alias": "EmailAddress"
+                                        }
+                                      },
+                                      "required": []
+                                    },
+                                    "description": "The email addresses to use when replying",
+                                    "x-ms-property-name-alias": "body/ReplyTo"
+                                  },
+                                  "Subject": {
+                                    "type": "string",
+                                    "description": "Subject",
+                                    "x-ms-property-name-alias": "body/Subject"
+                                  },
+                                  "Body": {
+                                    "type": "object",
+                                    "properties": {
+                                      "ContentType": {
+                                        "type": "string",
+                                        "enum": [
+                                          "Text",
+                                          "HTML"
+                                        ],
+                                        "x-ms-property-name-alias": "body/Body/ContentType"
+                                      },
+                                      "Content": {
+                                        "type": "string",
+                                        "x-ms-property-name-alias": "body/Body/Content"
+                                      }
+                                    },
+                                    "required": [],
+                                    "x-ms-property-name-alias": "body/Body"
+                                  },
+                                  "From": {
+                                    "type": "object",
+                                    "properties": {
+                                      "EmailAddress": {
+                                        "type": "object",
+                                        "properties": {
+                                          "Name": {
+                                            "type": "string",
+                                            "x-ms-property-name-alias": "body/From/EmailAddress/Name"
+                                          },
+                                          "Address": {
+                                            "type": "string",
+                                            "format": "email",
+                                            "x-ms-property-name-alias": "body/From/EmailAddress/Address"
+                                          }
+                                        },
+                                        "required": [],
+                                        "x-ms-property-name-alias": "body/From/EmailAddress"
+                                      }
+                                    },
+                                    "required": [],
+                                    "x-ms-property-name-alias": "body/From"
+                                  },
+                                  "Importance": {
+                                    "type": "string",
+                                    "description": "Importance",
+                                    "enum": [
+                                      "Low",
+                                      "Normal",
+                                      "High"
+                                    ],
+                                    "x-ms-property-name-alias": "body/Importance"
+                                  },
+                                  "InternetMessageHeaders": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "Name": {
+                                          "type": "string",
+                                          "description": "Header name",
+                                          "x-ms-property-name-alias": "Name"
+                                        },
+                                        "Value": {
+                                          "type": "string",
+                                          "description": "Header value",
+                                          "x-ms-property-name-alias": "Value"
+                                        }
+                                      },
+                                      "required": [],
+                                      "description": "Class representing a data structure for an Internet message header which is considered as SMTP header by Exchange"
+                                    },
+                                    "description": "Internet message headers",
+                                    "x-ms-property-name-alias": "body/InternetMessageHeaders"
+                                  }
+                                },
+                                "required": [],
+                                "description": "Received message from outlook rest api",
+                                "x-ms-property-name-alias": "body"
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "dragging": false
+                  },
+                  {
+                    "id": "canvasNote-bf817137-0d94-4890-9050-25dad943f021",
+                    "name": "Note 8",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 1935.0646368191194,
+                      "y": 440.05154984038421
+                    },
+                    "width": 250,
+                    "height": 184,
+                    "style": {
+                      "width": 250,
+                      "height": 184
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "If AutoSendTeamIntro is Yes → Send an email (V2) sends directly to the new hire, CC HR. Else → Draft an email message creates the same email as a draft in HR's mailbox for manual review. Both branches use the same To/Subject/Body/CC from Team Intro Agent's output.",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 250,
+                      "height": 184
+                    },
+                    "dragging": false,
+                    "selected": false
+                  },
+                  {
+                    "id": "canvasNote-dd2afdec-8a33-41cf-990a-228dbfd2b9d8",
+                    "name": "Note 9",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 2273.2447123787424,
+                      "y": -53.630952441286226
+                    },
+                    "width": 250,
+                    "height": 228,
+                    "style": {
+                      "width": 250,
+                      "height": 228
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "Reconnect required: Delete and re-add these nodes' connections -\n\n1. Office 365 Outlook - Send an email \n\n2. Office 365 Outlook - Draft an email message. Connections don't automatically renew for a new user who acquires this workflow.",
+                        "color": "red"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 250,
+                      "height": 228
+                    },
+                    "dragging": false,
+                    "selected": false
                   }
                 ],
                 "edges": [
@@ -1043,6 +2022,47 @@
                     "id": "edge-variable-faf9b4df-2036-499f-959a-6fb24d953d1b-agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514",
                     "source": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b",
                     "target": "agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514"
+                  },
+                  {
+                    "id": "edge-canvasNote-5f327463-8646-4cfb-a13e-b131d3053b95-agent-fb7e675d-b47e-43f9-a603-1289da05d738",
+                    "source": "canvasNote-5f327463-8646-4cfb-a13e-b131d3053b95",
+                    "target": "agent-fb7e675d-b47e-43f9-a603-1289da05d738"
+                  },
+                  {
+                    "id": "edge-variable-faf9b4df-2036-499f-959a-6fb24d953d1b-output-agent-fb7e675d-b47e-43f9-a603-1289da05d738-input",
+                    "source": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b",
+                    "target": "agent-fb7e675d-b47e-43f9-a603-1289da05d738",
+                    "sourceHandle": "output",
+                    "targetHandle": "input"
+                  },
+                  {
+                    "id": "edge-agent-fb7e675d-b47e-43f9-a603-1289da05d738-ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
+                    "source": "agent-fb7e675d-b47e-43f9-a603-1289da05d738",
+                    "target": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0"
+                  },
+                  {
+                    "id": "edge-ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0-condition:a1df2617-5651-4873-9a20-2ca13152851d-connector-01dcf0f5-4b06-4d60-b58a-8b398d27ea82",
+                    "source": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
+                    "target": "connector-01dcf0f5-4b06-4d60-b58a-8b398d27ea82",
+                    "sourceHandle": "condition:a1df2617-5651-4873-9a20-2ca13152851d"
+                  },
+                  {
+                    "id": "edge-ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0-else-connector-5afa3316-61b8-4673-95ba-0c8edcd1276e",
+                    "source": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
+                    "target": "connector-5afa3316-61b8-4673-95ba-0c8edcd1276e",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-canvasNote-f530af65-6ff7-46fe-981c-c401d3e5ab44-canvasNote-0aa7edc5-01f8-4cc3-83ee-80af0d1d4177-input",
+                    "source": "canvasNote-f530af65-6ff7-46fe-981c-c401d3e5ab44",
+                    "target": "canvasNote-0aa7edc5-01f8-4cc3-83ee-80af0d1d4177",
+                    "targetHandle": "input"
+                  },
+                  {
+                    "id": "edge-canvasNote-952261e6-c2d2-4980-8578-d2b5d389f4ba-canvasNote-bf817137-0d94-4890-9050-25dad943f021-input",
+                    "source": "canvasNote-952261e6-c2d2-4980-8578-d2b5d389f4ba",
+                    "target": "canvasNote-bf817137-0d94-4890-9050-25dad943f021",
+                    "targetHandle": "input"
                   }
                 ],
                 "connectionReferences": {
@@ -1075,6 +2095,16 @@
                     },
                     "runtimeSource": "embedded",
                     "connectionName": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9"
+                  },
+                  "shared_office365": {
+                    "api": {
+                      "name": "shared_office365"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedoffice365_a9b57bf1"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-office365-02268f4d-3810-4099-b068-e1a24808aa17"
                   }
                 }
               },
@@ -1082,10 +2112,23 @@
                 "variable-faf9b4df-2036-499f-959a-6fb24d953d1b": [
                   "Configuration",
                   "Configuration_Init_WelcomeLinksSite",
-                  "Configuration_Init_WelcomeLinksList"
+                  "Configuration_Init_WelcomeLinksList",
+                  "Configuration_Init_AutoSendTeamIntro"
                 ],
                 "agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514": [
                   "Onboarding_Agent"
+                ],
+                "agent-fb7e675d-b47e-43f9-a603-1289da05d738": [
+                  "Team_Intro_Agent"
+                ],
+                "connector-01dcf0f5-4b06-4d60-b58a-8b398d27ea82": [
+                  "Send_an_email"
+                ],
+                "connector-5afa3316-61b8-4673-95ba-0c8edcd1276e": [
+                  "Draft_an_email_message"
+                ],
+                "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0": [
+                  "If_Else"
                 ]
               }
             }
@@ -1100,7 +2143,7 @@
               {
                 "name": "HRNotifyEmail",
                 "type": "String",
-                "value": "pulkitbhagat@microsoft.com"
+                "value": "hr@contoso.com"
               }
             ]
           },
@@ -1116,7 +2159,7 @@
               {
                 "name": "WelcomeLinksSite",
                 "type": "String",
-                "value": "https://microsoftapc.sharepoint.com/teams/HROnboardingTemplateDemo"
+                "value": "https://yourtenant.sharepoint.com/teams/YourSiteName"
               }
             ]
           },
@@ -1143,6 +2186,23 @@
             ]
           }
         },
+        "Configuration_Init_AutoSendTeamIntro": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "AutoSendTeamIntro",
+                "type": "Boolean",
+                "value": false
+              }
+            ]
+          },
+          "runAfter": {
+            "Configuration_Init_WelcomeLinksList": [
+              "Succeeded"
+            ]
+          }
+        },
         "Onboarding_Agent": {
           "type": "OpenApiConnection",
           "inputs": {
@@ -1157,13 +2217,107 @@
             }
           },
           "runAfter": {
-            "Configuration_Init_WelcomeLinksList": [
+            "Configuration_Init_AutoSendTeamIntro": [
               "Succeeded"
             ]
           },
           "metadata": {
             "description": "Onboarding Agent",
             "nodeId": "agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514"
+          }
+        },
+        "Team_Intro_Agent": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "body/botDefinition": "{\"model\":\"claude-opus-5\",\"tools\":[{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_office365users\",\"connectionId\":\"shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc\",\"operationId\":\"Manager_V2\",\"connectionMode\":\"Maker\",\"displayName\":\"Get manager\",\"description\":\"Retrieves the profile of the specified user's manager. Learn more about available fields to select: https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/user#properties\"},{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_office365users\",\"connectionId\":\"shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc\",\"operationId\":\"DirectReports_V2\",\"connectionMode\":\"Maker\",\"displayName\":\"Get direct reports\",\"description\":\"Retrieves the user profiles of the specified user's direct reports. Learn more about available fields to select: https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/user#properties\"}],\"outputFormat\":\"JsonSchema\",\"structuredOutputSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"EmailSubject\\\":{\\\"type\\\":\\\"string\\\"},\\\"EmailBody\\\":{\\\"type\\\":\\\"string\\\"}},\\\"required\\\":[\\\"EmailSubject\\\",\\\"EmailBody\\\"]}\",\"webSearchEnabled\":true}",
+              "body/message": "```\nYou are the Team Intro Agent for HR New Hire Welcome Packet. You run once per new-hire row, in parallel with the Onboarding Agent. You have two tools: Get manager and Get direct reports, both read-only, plus web search. You never send email, never update any row, and never take any action beyond producing the result described below.\n\nHIRE ROW FOR THIS RUN\nPreferred name: @{triggerOutputs()?['body/Title']}\nWork email (the new hire's own email, not the manager's): @{triggerOutputs()?['body/field_1']}\n\nSTEP 1 - BUILD THE ROSTER\n1. Call Get manager using the new hire's Work email above to find their manager.\n2. Call Get direct reports using the manager's email from step 1 to get the manager's full team.\n3. From that list, drop any person whose job title is blank or missing — these are placeholder/shadow accounts, not real colleagues to introduce.\n4. From what remains, remove the new hire themselves if they appear in it.\n5. If more than 10 people remain, keep only the first 10.\n6. Only include people actually returned by your tool calls — never invent a name, title, or email that wasn't in the results.\n\nSTEP 2 - LOOK UP EACH PERSON (the manager plus every person in the team list from Step 1)\nSearch the web for their public LinkedIn profile using their name, job title, and \"Microsoft\" as the company.\nRate your confidence that you found the right person on a 0.0-1.0 scale, based on how well the name, current employer, and job title all agree with what you found.\n- If confidence is 0.75 or higher: write a short, factual summary of their professional background (2-3 sentences) based only on what their profile states — role, how long in the field, what they appear to work on. Do not describe or infer their personality, capabilities, reputation, or anything not explicitly stated. Include the profile URL as a source link.\n- If confidence is below 0.75, or you cannot find a clear match, or there are multiple equally-likely candidates: do not include a bio or source link. Use this exact line instead: \"Additional profile details weren't available.\"\nNever guess a bio you are not confident about — a missing bio is always better than a wrong one.\n\nSTEP 3 - COMPOSE THE EMAIL\nBuild one HTML email: a short friendly intro mentioning the new hire's own name, then one card per person, manager first, then the rest of the team. Each card shows: name, job title, bio (or the fallback line), and a \"Schedule a 1:1\" link in this exact format: mailto:{their email}?subject=1:1 with {their name}\nAfter the cards, add a line inviting the new hire to reply or contact HR if anything looks outdated or incorrect.\nEnd with this exact disclaimer in smaller/lighter text: \"This profile was generated using AI based on available professional information, which may include public LinkedIn content. It may contain inaccurate or outdated details. Please verify the information before sharing or using it.\"\n\nOUTPUT\nProduce exactly two structured output fields:\nEmailSubject: a short, friendly subject line such as \"Meet your new team!\"\nEmailBody: the complete HTML email from Step 3, ready to send as-is.\n\n```"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
+              "connectionName": "shared_agentnode",
+              "operationId": "InvokeDefinition"
+            }
+          },
+          "runAfter": {
+            "Configuration_Init_AutoSendTeamIntro": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Team Intro Agent",
+            "nodeId": "agent-fb7e675d-b47e-43f9-a603-1289da05d738"
+          }
+        },
+        "If_Else": {
+          "type": "If",
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@variables('AutoSendTeamIntro')",
+                  true
+                ]
+              }
+            ]
+          },
+          "actions": {
+            "Send_an_email": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "emailMessage/Importance": "Normal",
+                  "emailMessage/To": "@triggerOutputs()?['body/field_1']",
+                  "emailMessage/Subject": "@body('Team_Intro_Agent')?['structuredOutput/EmailSubject']",
+                  "emailMessage/Body": "<div>@{body('Team_Intro_Agent')?['structuredOutput/EmailBody']}​</div>",
+                  "emailMessage/Sensitivity": "f42aa342-8706-4288-bd11-ebb85995028c",
+                  "emailMessage/Cc": "@variables('HRNotifyEmail')"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                  "connectionName": "shared_office365",
+                  "operationId": "SendEmailV2"
+                }
+              },
+              "metadata": {
+                "description": "Send an email",
+                "nodeId": "connector-01dcf0f5-4b06-4d60-b58a-8b398d27ea82"
+              }
+            }
+          },
+          "else": {
+            "actions": {
+              "Draft_an_email_message": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "draftMessage/Importance": "Normal",
+                    "draftMessage/To": "@triggerOutputs()?['body/field_1']",
+                    "draftMessage/Subject": "@body('Team_Intro_Agent')?['structuredOutput/EmailSubject']",
+                    "draftMessage/Body": "<div>@{body('Team_Intro_Agent')?['structuredOutput/EmailBody']}​</div>",
+                    "draftMessage/Cc": "@variables('HRNotifyEmail')"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                    "connectionName": "shared_office365",
+                    "operationId": "DraftEmail"
+                  }
+                },
+                "metadata": {
+                  "description": "Draft an email message",
+                  "nodeId": "connector-5afa3316-61b8-4673-95ba-0c8edcd1276e"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Team_Intro_Agent": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "If/Else",
+            "nodeId": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0"
           }
         }
       },
