@@ -1,0 +1,83 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Power Platform Agent Inventory",
+    "description": "Queries technical Copilot Studio agent inventory with delegated user access.",
+    "version": "1.0"
+  },
+  "host": "api.powerplatform.com",
+  "basePath": "/",
+  "schemes": ["https"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/resourcequery/resources/query": {
+      "post": {
+        "summary": "Query Copilot Studio agents",
+        "description": "A page of Copilot Studio resources; provide the previous skipToken to continue.",
+        "operationId": "QueryCopilotStudioAgents",
+        "parameters": [
+          {"name": "api-version", "in": "query", "required": true, "type": "string", "default": "2024-10-01", "x-ms-visibility": "internal"},
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {"$ref": "#/definitions/QueryRequest"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Query results and pagination token",
+            "schema": {"$ref": "#/definitions/QueryResult"}
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "QueryRequest": {
+      "type": "object",
+      "required": ["TableName", "Clauses", "Options"],
+      "properties": {
+        "TableName": {"type": "string", "default": "PowerPlatformResources"},
+        "Clauses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["$type", "FieldName", "Operator", "Values"],
+            "properties": {
+              "$type": {"type": "string"},
+              "FieldName": {"type": "string"},
+              "Operator": {"type": "string"},
+              "Values": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "Options": {"type": "object", "properties": {
+          "Top": {"type": "integer", "default": 100},
+          "SkipToken": {"type": "string"}
+        }}
+      }
+    },
+    "QueryResult": {
+      "type": "object",
+      "required": ["data"],
+      "properties": {
+        "data": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+        "skipToken": {"type": "string"},
+        "count": {"type": "integer"},
+        "totalRecords": {"type": "integer"}
+      }
+    }
+  },
+  "security": [{"oauth2-auth": ["ResourceQuery.Resources.Read"]}],
+  "securityDefinitions": {
+    "oauth2-auth": {
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "https://login.microsoftonline.com/common/oauth2/authorize",
+      "tokenUrl": "https://login.microsoftonline.com/common/oauth2/token",
+      "scopes": {"ResourceQuery.Resources.Read": "Query Power Platform resources"}
+    }
+  }
+}

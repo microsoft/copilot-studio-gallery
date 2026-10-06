@@ -1,0 +1,647 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "cre2b_agentcoefrontdoor.cr.shared_commondataserviceforapps.63dc395c-43da-424e-9853-87c93887f015"
+        },
+        "runtimeSource": "embedded"
+      },
+      "shared_cat-ppinventory": {
+        "api": {
+          "name": "shared_cat-ppinventory",
+          "logicalName": "cat_ppinventory"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "cat_ppinventory"
+        },
+        "runtimeSource": "embedded"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "Recurrence": {
+          "recurrence": {
+            "frequency": "Day",
+            "interval": 1
+          },
+          "type": "Recurrence",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "runs": 1
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "Refresh Power Platform Agent Inventory Daily",
+                "nodes": [
+                  {
+                    "id": "trigger-Recurrence",
+                    "name": "Recurrence",
+                    "type": "Recurrence",
+                    "position": {
+                      "x": 240,
+                      "y": 120
+                    },
+                    "data": {}
+                  },
+                  {
+                    "id": "Initialize_RefreshStarted",
+                    "name": "Initialize RefreshStarted",
+                    "type": "InitializeVariable",
+                    "position": {
+                      "x": 560,
+                      "y": 120
+                    },
+                    "data": {}
+                  },
+                  {
+                    "id": "Initialize_SkipToken",
+                    "name": "Initialize SkipToken",
+                    "type": "InitializeVariable",
+                    "position": {
+                      "x": 880,
+                      "y": 120
+                    },
+                    "data": {}
+                  },
+                  {
+                    "id": "Process_All_Power_Platform_Pages",
+                    "name": "Process All Power Platform Pages",
+                    "type": "Until",
+                    "position": {
+                      "x": 1200,
+                      "y": 120
+                    },
+                    "data": {}
+                  },
+                  {
+                    "id": "Query_agent_page",
+                    "name": "Query agent page",
+                    "type": "OpenApiConnection",
+                    "position": {
+                      "x": 1520,
+                      "y": 120
+                    },
+                    "data": {}
+                  },
+                  {
+                    "id": "Validate_page",
+                    "name": "Validate page",
+                    "type": "ParseJson",
+                    "position": {
+                      "x": 1840,
+                      "y": 120
+                    },
+                    "data": {}
+                  },
+                  {
+                    "id": "Upsert_agent_page",
+                    "name": "Upsert agent page",
+                    "type": "Foreach",
+                    "position": {
+                      "x": 2160,
+                      "y": 120
+                    },
+                    "data": {}
+                  },
+                  {
+                    "id": "Find_existing_agent",
+                    "name": "Find existing agent",
+                    "type": "OpenApiConnection",
+                    "position": {
+                      "x": 2480,
+                      "y": 120
+                    },
+                    "data": {}
+                  },
+                  {
+                    "id": "Create_or_update_agent",
+                    "name": "Create or update agent",
+                    "type": "If",
+                    "position": {
+                      "x": 2800,
+                      "y": 120
+                    },
+                    "data": {}
+                  },
+                  {
+                    "id": "Create_agent",
+                    "name": "Create agent",
+                    "type": "OpenApiConnection",
+                    "position": {
+                      "x": 3120,
+                      "y": 120
+                    },
+                    "data": {}
+                  },
+                  {
+                    "id": "Update_agent",
+                    "name": "Update agent",
+                    "type": "OpenApiConnection",
+                    "position": {
+                      "x": 3120,
+                      "y": 260
+                    },
+                    "data": {}
+                  },
+                  {
+                    "id": "Set_SkipToken",
+                    "name": "Set SkipToken",
+                    "type": "SetVariable",
+                    "position": {
+                      "x": 2480,
+                      "y": 260
+                    },
+                    "data": {}
+                  },
+                  {
+                    "id": "Check_complete",
+                    "name": "Check complete",
+                    "type": "If",
+                    "position": {
+                      "x": 1520,
+                      "y": 260
+                    },
+                    "data": {}
+                  },
+                  {
+                    "id": "Incomplete_inventory",
+                    "name": "Incomplete inventory",
+                    "type": "Terminate",
+                    "position": {
+                      "x": 1840,
+                      "y": 260
+                    },
+                    "data": {}
+                  },
+                  {
+                    "id": "Find_stale_Power_Platform_agents",
+                    "name": "Find stale Power Platform agents",
+                    "type": "OpenApiConnection",
+                    "position": {
+                      "x": 1840,
+                      "y": 400
+                    },
+                    "data": {}
+                  },
+                  {
+                    "id": "Remove_stale_Power_Platform_agents",
+                    "name": "Remove stale Power Platform agents",
+                    "type": "Foreach",
+                    "position": {
+                      "x": 2160,
+                      "y": 260
+                    },
+                    "data": {}
+                  },
+                  {
+                    "id": "Delete_stale_agent",
+                    "name": "Delete stale agent",
+                    "type": "OpenApiConnection",
+                    "position": {
+                      "x": 2480,
+                      "y": 400
+                    },
+                    "data": {}
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-trigger-Recurrence-Initialize_RefreshStarted",
+                    "source": "trigger-Recurrence",
+                    "target": "Initialize_RefreshStarted"
+                  },
+                  {
+                    "id": "edge-Initialize_RefreshStarted-Initialize_SkipToken",
+                    "source": "Initialize_RefreshStarted",
+                    "target": "Initialize_SkipToken"
+                  },
+                  {
+                    "id": "edge-Initialize_SkipToken-Process_All_Power_Platform_Pages",
+                    "source": "Initialize_SkipToken",
+                    "target": "Process_All_Power_Platform_Pages"
+                  },
+                  {
+                    "id": "edge-Process_All_Power_Platform_Pages-Query_agent_page",
+                    "source": "Process_All_Power_Platform_Pages",
+                    "target": "Query_agent_page"
+                  },
+                  {
+                    "id": "edge-Query_agent_page-Validate_page",
+                    "source": "Query_agent_page",
+                    "target": "Validate_page"
+                  },
+                  {
+                    "id": "edge-Validate_page-Upsert_agent_page",
+                    "source": "Validate_page",
+                    "target": "Upsert_agent_page"
+                  },
+                  {
+                    "id": "edge-Upsert_agent_page-Find_existing_agent",
+                    "source": "Upsert_agent_page",
+                    "target": "Find_existing_agent"
+                  },
+                  {
+                    "id": "edge-Find_existing_agent-Create_or_update_agent",
+                    "source": "Find_existing_agent",
+                    "target": "Create_or_update_agent"
+                  },
+                  {
+                    "id": "edge-Create_or_update_agent-Create_agent",
+                    "source": "Create_or_update_agent",
+                    "target": "Create_agent"
+                  },
+                  {
+                    "id": "edge-Create_or_update_agent-Update_agent-else",
+                    "source": "Create_or_update_agent",
+                    "target": "Update_agent",
+                    "label": "else"
+                  },
+                  {
+                    "id": "edge-Upsert_agent_page-Set_SkipToken",
+                    "source": "Upsert_agent_page",
+                    "target": "Set_SkipToken"
+                  },
+                  {
+                    "id": "edge-Process_All_Power_Platform_Pages-Check_complete",
+                    "source": "Process_All_Power_Platform_Pages",
+                    "target": "Check_complete"
+                  },
+                  {
+                    "id": "edge-Check_complete-Incomplete_inventory-else",
+                    "source": "Check_complete",
+                    "target": "Incomplete_inventory",
+                    "label": "else"
+                  },
+                  {
+                    "id": "edge-Check_complete-Find_stale_Power_Platform_agents",
+                    "source": "Check_complete",
+                    "target": "Find_stale_Power_Platform_agents"
+                  },
+                  {
+                    "id": "edge-Find_stale_Power_Platform_agents-Remove_stale_Power_Platform_agents",
+                    "source": "Find_stale_Power_Platform_agents",
+                    "target": "Remove_stale_Power_Platform_agents"
+                  },
+                  {
+                    "id": "edge-Remove_stale_Power_Platform_agents-Delete_stale_agent",
+                    "source": "Remove_stale_Power_Platform_agents",
+                    "target": "Delete_stale_agent"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "actions": {
+        "Initialize_RefreshStarted": {
+          "runAfter": {},
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "RefreshStarted",
+                "type": "string",
+                "value": "@utcNow()"
+              }
+            ]
+          }
+        },
+        "Initialize_SkipToken": {
+          "runAfter": {
+            "Initialize_RefreshStarted": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "SkipToken",
+                "type": "string",
+                "value": ""
+              }
+            ]
+          }
+        },
+        "Process_All_Power_Platform_Pages": {
+          "runAfter": {
+            "Initialize_SkipToken": [
+              "Succeeded"
+            ]
+          },
+          "type": "Until",
+          "expression": "@empty(variables('SkipToken'))",
+          "limit": {
+            "count": 1000,
+            "timeout": "P1D"
+          },
+          "actions": {
+            "Query_agent_page": {
+              "runAfter": {},
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "api-version": "2024-10-01",
+                  "body/TableName": "PowerPlatformResources",
+                  "body/Clauses": [
+                    {
+                      "$type": "where",
+                      "FieldName": "type",
+                      "Operator": "in~",
+                      "Values": [
+                        "'microsoft.copilotstudio/agents'"
+                      ]
+                    }
+                  ],
+                  "body/Options/Top": 100,
+                  "body/Options/SkipToken": "@variables('SkipToken')"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_cat-ppinventory",
+                  "operationId": "QueryCopilotStudioAgents",
+                  "connectionName": "shared_cat-ppinventory"
+                }
+              }
+            },
+            "Validate_page": {
+              "runAfter": {
+                "Query_agent_page": [
+                  "Succeeded"
+                ]
+              },
+              "type": "ParseJson",
+              "inputs": {
+                "content": "@body('Query_agent_page')",
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "name",
+                          "properties"
+                        ],
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "properties": {
+                            "type": "object",
+                            "required": [
+                              "environmentId"
+                            ],
+                            "properties": {
+                              "environmentId": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "skipToken": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "Upsert_agent_page": {
+              "runAfter": {
+                "Validate_page": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Foreach",
+              "foreach": "@body('Validate_page')?['data']",
+              "actions": {
+                "Find_existing_agent": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "entityName": "cat_tenantagentinventories",
+                      "$select": "cat_tenantagentinventoryid",
+                      "$filter": "@concat('cat_resourceid eq ''', replace(concat('pp:', item()?['properties']?['environmentId'], ':', item()?['name']), '''', ''''''), '''')",
+                      "$top": 1
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "ListRecords",
+                      "connectionName": "shared_commondataserviceforapps"
+                    }
+                  }
+                },
+                "Create_or_update_agent": {
+                  "runAfter": {
+                    "Find_existing_agent": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@length(body('Find_existing_agent')?['value'])",
+                          0
+                        ]
+                      }
+                    ]
+                  },
+                  "actions": {
+                    "Create_agent": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "entityName": "cat_tenantagentinventories",
+                          "item/cat_agentname": "@substring(coalesce(item()?['properties']?['displayName'], item()?['name']), 0, if(greater(length(coalesce(item()?['properties']?['displayName'], item()?['name'])), 850), 850, length(coalesce(item()?['properties']?['displayName'], item()?['name']))))",
+                          "item/cat_resourceid": "@concat('pp:', item()?['properties']?['environmentId'], ':', item()?['name'])",
+                          "item/cat_agenttype": "Power Platform Inventory API",
+                          "item/cat_lastseenon": "@utcNow()",
+                          "item/cat_environmentid": "@item()?['properties']?['environmentId']",
+                          "item/cat_location": "@item()?['location']",
+                          "item/cat_platform": "@item()?['properties']?['createdIn']",
+                          "item/cat_schemaname": "@item()?['properties']?['schemaName']",
+                          "item/cat_sourcecreatedon": "@item()?['properties']?['createdAt']",
+                          "item/cat_appid": "@item()?['properties']?['entraAppId']",
+                          "item/cat_isquarantined": "@not(equals(item()?['properties']?['isQuarantined'], false))",
+                          "item/cat_authentication": "@item()?['properties']?['authentication']",
+                          "item/cat_channels": "@if(empty(item()?['properties']?['channels']), '', join(item()?['properties']?['channels'], '; '))",
+                          "item/cat_publicationstatus": "@if(empty(item()?['properties']?['lastPublishedAt']), 'Draft', 'Published')",
+                          "item/cat_searchtext": "@toLower(concat(coalesce(item()?['properties']?['displayName'], ''), ' ', coalesce(item()?['properties']?['schemaName'], ''), ' ', coalesce(item()?['properties']?['createdIn'], '')))"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                          "operationId": "CreateRecord",
+                          "connectionName": "shared_commondataserviceforapps"
+                        }
+                      }
+                    }
+                  },
+                  "else": {
+                    "actions": {
+                      "Update_agent": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "parameters": {
+                            "entityName": "cat_tenantagentinventories",
+                            "recordId": "@first(body('Find_existing_agent')?['value'])?['cat_tenantagentinventoryid']",
+                            "item/cat_agentname": "@substring(coalesce(item()?['properties']?['displayName'], item()?['name']), 0, if(greater(length(coalesce(item()?['properties']?['displayName'], item()?['name'])), 850), 850, length(coalesce(item()?['properties']?['displayName'], item()?['name']))))",
+                            "item/cat_agenttype": "Power Platform Inventory API",
+                            "item/cat_lastseenon": "@utcNow()",
+                            "item/cat_environmentid": "@item()?['properties']?['environmentId']",
+                            "item/cat_location": "@item()?['location']",
+                            "item/cat_platform": "@item()?['properties']?['createdIn']",
+                            "item/cat_schemaname": "@item()?['properties']?['schemaName']",
+                            "item/cat_sourcecreatedon": "@item()?['properties']?['createdAt']",
+                            "item/cat_appid": "@item()?['properties']?['entraAppId']",
+                            "item/cat_isquarantined": "@not(equals(item()?['properties']?['isQuarantined'], false))",
+                            "item/cat_authentication": "@item()?['properties']?['authentication']",
+                            "item/cat_channels": "@if(empty(item()?['properties']?['channels']), '', join(item()?['properties']?['channels'], '; '))",
+                            "item/cat_publicationstatus": "@if(empty(item()?['properties']?['lastPublishedAt']), 'Draft', 'Published')",
+                            "item/cat_searchtext": "@toLower(concat(coalesce(item()?['properties']?['displayName'], ''), ' ', coalesce(item()?['properties']?['schemaName'], ''), ' ', coalesce(item()?['properties']?['createdIn'], '')))"
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                            "operationId": "UpdateRecord",
+                            "connectionName": "shared_commondataserviceforapps"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "Set_SkipToken": {
+              "runAfter": {
+                "Upsert_agent_page": [
+                  "Succeeded"
+                ]
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "SkipToken",
+                "value": "@coalesce(body('Validate_page')?['skipToken'], '')"
+              }
+            }
+          }
+        },
+        "Check_complete": {
+          "runAfter": {
+            "Process_All_Power_Platform_Pages": [
+              "Succeeded"
+            ]
+          },
+          "type": "If",
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@empty(variables('SkipToken'))",
+                  true
+                ]
+              }
+            ]
+          },
+          "actions": {},
+          "else": {
+            "actions": {
+              "Incomplete_inventory": {
+                "type": "Terminate",
+                "inputs": {
+                  "runStatus": "Failed",
+                  "runError": {
+                    "code": "IncompleteInventory",
+                    "message": "Pagination limit reached; stale cleanup skipped."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "Find_stale_Power_Platform_agents": {
+          "runAfter": {
+            "Check_complete": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "entityName": "cat_tenantagentinventories",
+              "$select": "cat_tenantagentinventoryid",
+              "$filter": "@concat('cat_agenttype eq ''Power Platform Inventory API'' and cat_lastseenon lt ', variables('RefreshStarted'))"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "connectionName": "shared_commondataserviceforapps"
+            }
+          },
+          "runtimeConfiguration": {
+            "paginationPolicy": {
+              "minimumItemCount": 100000
+            }
+          }
+        },
+        "Remove_stale_Power_Platform_agents": {
+          "runAfter": {
+            "Find_stale_Power_Platform_agents": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach",
+          "foreach": "@body('Find_stale_Power_Platform_agents')?['value']",
+          "actions": {
+            "Delete_stale_agent": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "entityName": "cat_tenantagentinventories",
+                  "recordId": "@item()?['cat_tenantagentinventoryid']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "DeleteRecord",
+                  "connectionName": "shared_commondataserviceforapps"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

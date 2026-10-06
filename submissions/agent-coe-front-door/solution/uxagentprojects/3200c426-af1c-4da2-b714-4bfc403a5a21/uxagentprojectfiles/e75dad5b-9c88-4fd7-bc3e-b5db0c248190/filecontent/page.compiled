@@ -1469,9 +1469,17 @@ var GeneratedComponent = function (_a) {
                 React.createElement("div", { className: styles.detailsFooter },
                     React.createElement(Button, { appearance: "primary", onClick: function () {
                             if (selectedRequest) {
-                                window.top.location.href =
-                                    "/main.aspx?appid=31ae1363-a2af-f111-aaac-000d3a367627&pagetype=entityrecord&etn=cat_agentintakerequest&id=" +
-                                        selectedRequest.cat_agentintakerequestid;
+                                Xrm.Navigation.navigateTo({
+                                    pageType: "entityrecord",
+                                    entityName: "cat_agentintakerequest",
+                                    entityId: selectedRequest.cat_agentintakerequestid,
+                                }).catch(function (error) {
+                                    console.error("Failed to open intake record", error);
+                                    Xrm.Navigation.openErrorDialog({
+                                        message: "Unable to open the intake record.",
+                                        details: String(error),
+                                    });
+                                });
                             }
                         }, "aria-label": t("openFullRecord"), disabled: statusUpdateLoading }, t("openFullRecord")),
                     React.createElement(Button, { appearance: "secondary", onClick: function () { return setSelectedCardId(null); }, "aria-label": t("backToRequests"), disabled: statusUpdateLoading }, t("backToRequests")))))))));

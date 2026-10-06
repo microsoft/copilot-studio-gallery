@@ -1,4 +1,3 @@
-// @ts-nocheck -- This source is compiled by the Power Apps runtime, not the gallery build.
 import React, { useEffect, useState, useMemo } from "react";
 import {
   Button,
@@ -1639,9 +1638,17 @@ const GeneratedComponent = ({ dataApi }: GeneratedComponentProps) => {
                   appearance="primary"
                   onClick={() => {
                     if (selectedRequest) {
-                      window.top.location.href =
-                        "/main.aspx?appid=31ae1363-a2af-f111-aaac-000d3a367627&pagetype=entityrecord&etn=cat_agentintakerequest&id=" +
-                        selectedRequest.cat_agentintakerequestid;
+                      Xrm.Navigation.navigateTo({
+                        pageType: "entityrecord",
+                        entityName: "cat_agentintakerequest",
+                        entityId: selectedRequest.cat_agentintakerequestid,
+                      }).catch((error: Error) => {
+                        console.error("Failed to open intake record", error);
+                        Xrm.Navigation.openErrorDialog({
+                          message: "Unable to open the intake record.",
+                          details: String(error),
+                        });
+                      });
                     }
                   }}
                   aria-label={t("openFullRecord")}
