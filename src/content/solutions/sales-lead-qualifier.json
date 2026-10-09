@@ -1,24 +1,26 @@
 {
   "name": "Sales Lead Qualifier",
-  "description": "A shared sales inbox workflow that qualifies inbound enquiries with BANT, logs them to tiered Excel tables, and escalates hot leads by email.",
+  "description": "Two shared-inbox workflows that qualify sales enquiries with BANT: log leads to tiered Excel tables, or create structured Dataverse records with linked hot-lead alerts. Choose based on your use case and licensing.",
   "tags": [
     "sales",
     "lead-qualification",
     "email-triage",
     "multi-agent",
-    "excel"
+    "excel",
+    "dataverse",
+    "automation"
   ],
-  "author": "Jasmita Lamba and Isha Gautam",
+  "author": "Isha Gautam, Jasmita Lamba, and Pulkit Bhagat",
   "createdAt": "2026-09-03",
-  "updatedAt": "2026-09-04",
+  "updatedAt": "2026-10-09",
   "featured": false,
-  "uniqueName": "SalesLeadQualifier",
-  "version": "1.0.0.9",
-  "publisher": "A3P",
+  "uniqueName": "IshaSalesLeadQualifierVersions",
+  "version": "1.0.0.0",
+  "publisher": "Isha Workflow Isolation",
   "bundle": "bundles/sales-lead-qualifier.zip",
   "agentCount": 0,
-  "workflowCount": 1,
-  "componentCount": 1,
+  "workflowCount": 2,
+  "componentCount": 3,
   "agents": [],
   "agentGraph": {
     "nodes": [],
@@ -26,15 +28,15 @@
   },
   "workflows": [
     {
-      "id": "{cac4398c-780f-3334-8f5c-e1cc29371ab0}",
-      "name": "Sales Lead Qualifier",
+      "id": "{a6f98817-da83-4eeb-9e39-6c969b277275}",
+      "name": "Sales Lead Qualifier - Original",
       "trigger": "When a new email arrives in a shared mailbox",
       "nodeCount": 10,
       "edgeCount": 5,
       "graph": {
         "nodes": [
           {
-            "id": "start-4134db40-3744-4142-92ca-471f4de9d774",
+            "id": "start-8cf9741f-faaa-4e0e-8385-c0bbe540efb4",
             "name": "When a new email arrives in a shared mailbox",
             "type": "start",
             "position": {
@@ -44,7 +46,7 @@
             "details": {}
           },
           {
-            "id": "agent-9a937ec1-6e7c-40b7-b1e2-b2053f0c8a41",
+            "id": "agent-231f287c-9e5e-44b2-96ea-47c59eeec1bb",
             "name": "Classifier Agent",
             "type": "agent",
             "position": {
@@ -59,7 +61,7 @@
             }
           },
           {
-            "id": "variable-6badf871-93fd-45bb-bb9b-213ecc4dee09",
+            "id": "variable-5bb8a9de-e638-4ff4-97c3-d00ebed8a57b",
             "name": "Configuration",
             "type": "variable",
             "position": {
@@ -69,7 +71,7 @@
             "details": {}
           },
           {
-            "id": "canvasNote-9019ace9-0809-4bdc-8f83-c6a7f443c5ff",
+            "id": "canvasNote-b031d8a2-9b1a-45b9-91bd-aef63d46b603",
             "name": "Note",
             "type": "canvasNote",
             "position": {
@@ -82,7 +84,7 @@
             }
           },
           {
-            "id": "canvasNote-925c6d6d-dadf-4ed0-8f10-bd9241d62154",
+            "id": "canvasNote-d9fe74a7-b627-49d6-a92d-d818b1ca1a97",
             "name": "Note 2",
             "type": "canvasNote",
             "position": {
@@ -90,12 +92,12 @@
               "y": 419
             },
             "details": {
-              "markdown": "Configuration: \n\nNotifyEmail = the email address that receives the Hot lead notification (used by the Logging Agent in STEP 3). \n\nSalesLogFileName = the exact file name of the Excel workbook the Logging Agent auto-creates and logs to (e.g. Sales Lead Log.xlsx), stored at the root of OneDrive.",
+              "markdown": "Configuration: \n\nNotifyEmail = the email address that receives the Hot lead notification (used by the Logging Agent in STEP 3). \n\nSalesLogFileName = the exact file name of the Excel workbook the Logging Agent auto-creates and logs to (e.g. Sales Log.xlsx), stored at the root of OneDrive.",
               "color": "red"
             }
           },
           {
-            "id": "canvasNote-161be3a8-d54c-48c9-9406-c21b7c20c707",
+            "id": "canvasNote-ce4580ab-1c9a-44f7-b096-daabd20b257a",
             "name": "Note 3",
             "type": "canvasNote",
             "position": {
@@ -108,7 +110,7 @@
             }
           },
           {
-            "id": "agent-0b3e520f-0bc7-4130-8200-1f2c2dfb80ba",
+            "id": "agent-95554f62-b307-4f07-9276-54976d4892ce",
             "name": "Logging Agent",
             "type": "agent",
             "position": {
@@ -123,7 +125,7 @@
             }
           },
           {
-            "id": "canvasNote-f3863bd3-d169-484d-862a-e324bfae63d9",
+            "id": "canvasNote-efd46b2a-d19b-4be5-90bc-44653fe2fd48",
             "name": "Note 4",
             "type": "canvasNote",
             "position": {
@@ -136,7 +138,7 @@
             }
           },
           {
-            "id": "canvasNote-928ea360-68d2-4de7-aec4-a74ceaec54c3",
+            "id": "canvasNote-167ff985-d2f5-497e-975b-5fb025d19268",
             "name": "Note 4 2",
             "type": "canvasNote",
             "position": {
@@ -149,7 +151,7 @@
             }
           },
           {
-            "id": "canvasNote-131efb47-780f-4dc3-838b-1380d1d066f7",
+            "id": "canvasNote-f0b4cd5b-368b-4ac6-bb16-3415af29e9f1",
             "name": "Note 2 2",
             "type": "canvasNote",
             "position": {
@@ -164,30 +166,387 @@
         ],
         "edges": [
           {
-            "id": "edge-start-4134db40-3744-4142-92ca-471f4de9d774-variable-6badf871-93fd-45bb-bb9b-213ecc4dee09",
-            "source": "start-4134db40-3744-4142-92ca-471f4de9d774",
-            "target": "variable-6badf871-93fd-45bb-bb9b-213ecc4dee09"
+            "id": "edge-start-8cf9741f-faaa-4e0e-8385-c0bbe540efb4-variable-5bb8a9de-e638-4ff4-97c3-d00ebed8a57b",
+            "source": "start-8cf9741f-faaa-4e0e-8385-c0bbe540efb4",
+            "target": "variable-5bb8a9de-e638-4ff4-97c3-d00ebed8a57b"
           },
           {
-            "id": "edge-variable-6badf871-93fd-45bb-bb9b-213ecc4dee09-agent-9a937ec1-6e7c-40b7-b1e2-b2053f0c8a41",
-            "source": "variable-6badf871-93fd-45bb-bb9b-213ecc4dee09",
-            "target": "agent-9a937ec1-6e7c-40b7-b1e2-b2053f0c8a41"
+            "id": "edge-variable-5bb8a9de-e638-4ff4-97c3-d00ebed8a57b-agent-231f287c-9e5e-44b2-96ea-47c59eeec1bb",
+            "source": "variable-5bb8a9de-e638-4ff4-97c3-d00ebed8a57b",
+            "target": "agent-231f287c-9e5e-44b2-96ea-47c59eeec1bb"
           },
           {
-            "id": "edge-canvasNote-925c6d6d-dadf-4ed0-8f10-bd9241d62154-canvasNote-161be3a8-d54c-48c9-9406-c21b7c20c707-input",
-            "source": "canvasNote-925c6d6d-dadf-4ed0-8f10-bd9241d62154",
-            "target": "canvasNote-161be3a8-d54c-48c9-9406-c21b7c20c707",
+            "id": "edge-canvasNote-d9fe74a7-b627-49d6-a92d-d818b1ca1a97-canvasNote-ce4580ab-1c9a-44f7-b096-daabd20b257a-input",
+            "source": "canvasNote-d9fe74a7-b627-49d6-a92d-d818b1ca1a97",
+            "target": "canvasNote-ce4580ab-1c9a-44f7-b096-daabd20b257a",
             "targetHandle": "input"
           },
           {
-            "id": "edge-agent-9a937ec1-6e7c-40b7-b1e2-b2053f0c8a41-agent-0b3e520f-0bc7-4130-8200-1f2c2dfb80ba",
-            "source": "agent-9a937ec1-6e7c-40b7-b1e2-b2053f0c8a41",
-            "target": "agent-0b3e520f-0bc7-4130-8200-1f2c2dfb80ba"
+            "id": "edge-agent-231f287c-9e5e-44b2-96ea-47c59eeec1bb-agent-95554f62-b307-4f07-9276-54976d4892ce",
+            "source": "agent-231f287c-9e5e-44b2-96ea-47c59eeec1bb",
+            "target": "agent-95554f62-b307-4f07-9276-54976d4892ce"
           },
           {
-            "id": "edge-canvasNote-161be3a8-d54c-48c9-9406-c21b7c20c707-canvasNote-f3863bd3-d169-484d-862a-e324bfae63d9-input",
-            "source": "canvasNote-161be3a8-d54c-48c9-9406-c21b7c20c707",
-            "target": "canvasNote-f3863bd3-d169-484d-862a-e324bfae63d9",
+            "id": "edge-canvasNote-ce4580ab-1c9a-44f7-b096-daabd20b257a-canvasNote-efd46b2a-d19b-4be5-90bc-44653fe2fd48-input",
+            "source": "canvasNote-ce4580ab-1c9a-44f7-b096-daabd20b257a",
+            "target": "canvasNote-efd46b2a-d19b-4be5-90bc-44653fe2fd48",
+            "targetHandle": "input"
+          }
+        ]
+      }
+    },
+    {
+      "id": "{45fad15f-bc4a-4920-83c7-6bc935f22dfe}",
+      "name": "Sales Lead Qualifier - Revised",
+      "trigger": "When a new email arrives in a shared mailbox",
+      "nodeCount": 20,
+      "edgeCount": 15,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-ad9a03d9-17c4-44ed-8e52-ea04ce101d5f",
+            "name": "When a new email arrives in a shared mailbox",
+            "type": "start",
+            "position": {
+              "x": 250,
+              "y": 314.8000183105469
+            },
+            "details": {}
+          },
+          {
+            "id": "agent-642c7d96-e63d-4ba9-8e00-03fbb0b6f9a7",
+            "name": "Classifier Agent",
+            "type": "agent",
+            "position": {
+              "x": 1002.9134618668547,
+              "y": 304.01412741708793
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are the Classifier Agent for the Sales Lead Qualifier. You process one inbound sales enquiry email at a time from the shared sales alias. You have no tools - you only read and reason. Your text output is consumed by the Lead Agent that runs immediately after you, so it must always follow the exact OUTPUT FORMAT below.\n\nEMAIL FOR THIS RUN\n\nFrom: {triggerOutputs()?['body/from']}\n\nSubject: {trigg"
+            }
+          },
+          {
+            "id": "variable-16c5226c-dda5-4a72-9363-2495af7930c7",
+            "name": "Configuration",
+            "type": "variable",
+            "position": {
+              "x": 646,
+              "y": 315
+            },
+            "details": {}
+          },
+          {
+            "id": "canvasNote-29e5cf50-b421-453d-b944-ba1816ee040c",
+            "name": "Note",
+            "type": "canvasNote",
+            "position": {
+              "x": 648.2825480541065,
+              "y": 463.5093518065945
+            },
+            "details": {
+              "markdown": "Configuration: LeadTableName = the table's logical/schema plural name present in solution — e.g. iwf_sl2_salesleadv2s, not the display name (\"Sales Lead V2\"). There are no pickers on this surface, so it must be typed exactly. NotifyEmail = the address that receives Hot-lead alerts.\n",
+              "color": "red"
+            }
+          },
+          {
+            "id": "canvasNote-554ae761-d5b2-4a34-b96e-305a04e8e1ed",
+            "name": "Note 3",
+            "type": "canvasNote",
+            "position": {
+              "x": 999.7405704389325,
+              "y": 463.40570438932434
+            },
+            "details": {
+              "markdown": "Classifier Agent: reads the incoming email and classifies it against BANT (Budget, Authority, Need, Timing) into a Tier (Hot, Warm, Cold, or Filtered), extracting Company, ContactName, ContactEmail, Phone, Need, Budget/Authority/Timing signals, Reasons, and an EmailSubject — all as structured output fields, not free text. The very next step gates on Tier alone before Lead Agent ever runs.\n",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "agent-c79d258c-81ac-435f-bb39-926ce1f04758",
+            "name": "Lead Agent",
+            "type": "agent",
+            "position": {
+              "x": 1700.1281708830434,
+              "y": 314.24090907541313
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are the Lead Agent for the Sales Lead Qualifier. You run immediately after the Classifier Agent. You have no tools — you only reason and produce structured output. Whether a Lead record actually gets created depends entirely on your ShouldLog decision below; a separate record-creation step reads your output directly and does nothing unless ShouldLog is true. Whether a notification email gets s"
+            }
+          },
+          {
+            "id": "canvasNote-c021bb01-6b0f-42d3-b51f-238e51f42f60",
+            "name": "Note 4",
+            "type": "canvasNote",
+            "position": {
+              "x": 1686.74161594294,
+              "y": 460.378148002129
+            },
+            "details": {
+              "markdown": "Lead Agent: tool-less — only runs for genuine enquiries (Filtered is already handled upstream), reasoning over Classifier Agent's structured fields. Decides every field value for the Lead record (ShouldLog is always true here) plus ShouldNotify (true only when Tier is Hot) and the alert email's subject/body. Does not touch Dataverse or Outlook itself — the row-creation and notification steps read ",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-f62c7851-20fa-416c-808c-851135233750",
+            "name": "Note 2",
+            "type": "canvasNote",
+            "position": {
+              "x": 267.6078976063061,
+              "y": 455.91996536263514
+            },
+            "details": {
+              "markdown": "Trigger: fires when a new email with 'sales' in the subject arrives in the shared mailbox. Each matching email is passed to the Classifier Agent to decide if it's a genuine sales enquiry and consumes one AI call. If you're only experimenting, turn the workflow off between test runs to avoid unnecessary credit consumption.\n",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-f6e04cfd-5f84-4964-9328-805233faf67d",
+            "name": "Note 5",
+            "type": "canvasNote",
+            "position": {
+              "x": 269.9794086504648,
+              "y": 792.262211107231
+            },
+            "details": {
+              "markdown": "If the Folder field shows \"Loading...\" after importing this solution, the folder ID is tied to the original mailbox. reopen the trigger and re-select the folder for your own mailbox connection before publishing or use clear to point to default Inbox.",
+              "color": "blue"
+            }
+          },
+          {
+            "id": "ifElse-0bdc1a08-7eb8-40f6-86c0-dc0aa22975b4",
+            "name": "If ShouldLog is True",
+            "type": "ifElse",
+            "position": {
+              "x": 2041.0620732213256,
+              "y": 260.36956639563164
+            },
+            "details": {}
+          },
+          {
+            "id": "connector-36c04fa6-c47c-44fd-90c5-e357487cb6ff",
+            "name": "Add a new row",
+            "type": "connector",
+            "position": {
+              "x": 2372.365603926508,
+              "y": 321.0869818482067
+            },
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "CreateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "@variables('LeadTableName')",
+                "item": "@json(concat('{\"iwf_sl2_subject\":\"', replace(body('Lead_Agent')?['structuredOutput/Subject'], '\"', ''), '\",\"iwf_sl2_firstname\":\"', replace(body('Lead_Agent')?['structuredOutput/FirstName'], '\"', ''), '\",\"iwf_sl2_lastname\":\"', replace(body('Lead_Agent')?['structuredOutput/LastName'], '\"', ''), '\",\"iwf_sl2_emailaddress\":\"', replace(body('Lead_Agent')?['structuredOutput/EmailAddress'], '\"', ''), '\",\""
+              }
+            }
+          },
+          {
+            "id": "agent-01b15001-6cac-4a63-be89-4f36daef9812",
+            "name": "Notifier Agent",
+            "type": "agent",
+            "position": {
+              "x": 3044.47945297409,
+              "y": 325.683389941646
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are the Notifier for the Sales Lead Qualifier. You run immediately after a Lead record has been created in Dataverse. You have exactly one tool: Send email. You never call any other tool, and you never take any action beyond the one described below.\n\nEmail subject: \n{body('agent-c79d258c-81ac-435f-bb39-926ce1f04758')?['structuredOutput/EmailSubject']}\nEmail body: {body('agent-c79d258c-81ac-435"
+            }
+          },
+          {
+            "id": "canvasNote-443347d0-66ad-468d-90bd-296d225a806d",
+            "name": "Note 6",
+            "type": "canvasNote",
+            "position": {
+              "x": 3050.265554919667,
+              "y": -3.524259024327691
+            },
+            "details": {
+              "markdown": "Reconnect required: Delete and re-add this node's tool connections -\n1. Office 365 Outlook - send an email\n\nConnections don't automatically renew for a new user who acquires this workflow.",
+              "color": "red"
+            }
+          },
+          {
+            "id": "canvasNote-15276766-a2fc-4ae7-8df6-2466a15b4dbf",
+            "name": "Note 7",
+            "type": "canvasNote",
+            "position": {
+              "x": 2052.301083973152,
+              "y": 490.7113379403015
+            },
+            "details": {
+              "markdown": "If ShouldLog is True: branches purely on Lead Agent's own ShouldLog decision (a defensive check — Lead Agent only ever sets this true, since Filtered never reaches it). Does not re-evaluate the original email or classification.\n",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-78d94773-96be-4652-b8f7-9efa4c660770",
+            "name": "Note 8",
+            "type": "canvasNote",
+            "position": {
+              "x": 2389.1430520789486,
+              "y": 483.6002897407967
+            },
+            "details": {
+              "markdown": "Add a new row: plain connector step, not an agent tool — reads Lead Agent's structured output via a JSON expression to write the record. Runs only when ShouldLog is true.\n",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-c85650ac-b5ff-4d6b-9e46-b32b96e94405",
+            "name": "Note 9",
+            "type": "canvasNote",
+            "position": {
+              "x": 3046.208463202164,
+              "y": 475.92235904426514
+            },
+            "details": {
+              "markdown": "Notifier Agent: tool-less except for Send email. Only invoked when the If ShouldNotify is True gate above has already confirmed ShouldNotify is true — builds a deep link to the record just created from its own @odata.id response and sends one High-importance alert to NotifyEmail.\n",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "ifElse-32a4aade-a6d8-4879-b745-ee9c7155e094",
+            "name": "If Tier is not Filtered",
+            "type": "ifElse",
+            "position": {
+              "x": 1359.7109682391776,
+              "y": 253.70998041042753
+            },
+            "details": {}
+          },
+          {
+            "id": "ifElse-8731ddfd-3b02-4b2d-a4e9-ea45e0c93217",
+            "name": "If ShouldNotify is True",
+            "type": "ifElse",
+            "position": {
+              "x": 2713.466570086401,
+              "y": 267.944645653331
+            },
+            "details": {}
+          },
+          {
+            "id": "canvasNote-4c4c32c0-0191-4fd8-b1b6-b1ec208e8655",
+            "name": "Note 10",
+            "type": "canvasNote",
+            "position": {
+              "x": 1369.4802486229046,
+              "y": 465.8777858261333
+            },
+            "details": {
+              "markdown": "If Tier is not Filtered: gates purely on Classifier Agent's own Tier field. Skips Lead Agent entirely when Tier is Filtered — no second AI call, no record, no notification for non-genuine enquiries.\n",
+              "color": "yellow"
+            }
+          },
+          {
+            "id": "canvasNote-adf1c3f1-32b1-4240-810c-09e06a517819",
+            "name": "Note 11",
+            "type": "canvasNote",
+            "position": {
+              "x": 2718.7030621189774,
+              "y": 480.8554992170673
+            },
+            "details": {
+              "markdown": "If ShouldNotify is True: gates purely on Lead Agent's own ShouldNotify field. Skips Notifier Agent entirely unless Tier was Hot — no AI call spent on Warm/Cold/Filtered leads.\n",
+              "color": "yellow"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-ad9a03d9-17c4-44ed-8e52-ea04ce101d5f-variable-16c5226c-dda5-4a72-9363-2495af7930c7",
+            "source": "start-ad9a03d9-17c4-44ed-8e52-ea04ce101d5f",
+            "target": "variable-16c5226c-dda5-4a72-9363-2495af7930c7"
+          },
+          {
+            "id": "edge-variable-16c5226c-dda5-4a72-9363-2495af7930c7-agent-642c7d96-e63d-4ba9-8e00-03fbb0b6f9a7",
+            "source": "variable-16c5226c-dda5-4a72-9363-2495af7930c7",
+            "target": "agent-642c7d96-e63d-4ba9-8e00-03fbb0b6f9a7"
+          },
+          {
+            "id": "edge-canvasNote-554ae761-d5b2-4a34-b96e-305a04e8e1ed-canvasNote-c021bb01-6b0f-42d3-b51f-238e51f42f60-input",
+            "source": "canvasNote-554ae761-d5b2-4a34-b96e-305a04e8e1ed",
+            "target": "canvasNote-c021bb01-6b0f-42d3-b51f-238e51f42f60",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-canvasNote-c021bb01-6b0f-42d3-b51f-238e51f42f60-canvasNote-f62c7851-20fa-416c-808c-851135233750-input",
+            "source": "canvasNote-c021bb01-6b0f-42d3-b51f-238e51f42f60",
+            "target": "canvasNote-f62c7851-20fa-416c-808c-851135233750",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-canvasNote-29e5cf50-b421-453d-b944-ba1816ee040c-canvasNote-554ae761-d5b2-4a34-b96e-305a04e8e1ed-input",
+            "source": "canvasNote-29e5cf50-b421-453d-b944-ba1816ee040c",
+            "target": "canvasNote-554ae761-d5b2-4a34-b96e-305a04e8e1ed",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-agent-c79d258c-81ac-435f-bb39-926ce1f04758-ifElse-0bdc1a08-7eb8-40f6-86c0-dc0aa22975b4",
+            "source": "agent-c79d258c-81ac-435f-bb39-926ce1f04758",
+            "target": "ifElse-0bdc1a08-7eb8-40f6-86c0-dc0aa22975b4"
+          },
+          {
+            "id": "edge-ifElse-0bdc1a08-7eb8-40f6-86c0-dc0aa22975b4-condition:0e945a21-a7eb-408c-8ee3-bd9cc0b5f501-connector-36c04fa6-c47c-44fd-90c5-e357487cb6ff",
+            "source": "ifElse-0bdc1a08-7eb8-40f6-86c0-dc0aa22975b4",
+            "target": "connector-36c04fa6-c47c-44fd-90c5-e357487cb6ff",
+            "sourceHandle": "condition:0e945a21-a7eb-408c-8ee3-bd9cc0b5f501"
+          },
+          {
+            "id": "edge-agent-01b15001-6cac-4a63-be89-4f36daef9812-canvasNote-15276766-a2fc-4ae7-8df6-2466a15b4dbf-input",
+            "source": "agent-01b15001-6cac-4a63-be89-4f36daef9812",
+            "target": "canvasNote-15276766-a2fc-4ae7-8df6-2466a15b4dbf",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-agent-642c7d96-e63d-4ba9-8e00-03fbb0b6f9a7-ifElse-32a4aade-a6d8-4879-b745-ee9c7155e094",
+            "source": "agent-642c7d96-e63d-4ba9-8e00-03fbb0b6f9a7",
+            "target": "ifElse-32a4aade-a6d8-4879-b745-ee9c7155e094"
+          },
+          {
+            "id": "edge-connector-36c04fa6-c47c-44fd-90c5-e357487cb6ff-ifElse-8731ddfd-3b02-4b2d-a4e9-ea45e0c93217",
+            "source": "connector-36c04fa6-c47c-44fd-90c5-e357487cb6ff",
+            "target": "ifElse-8731ddfd-3b02-4b2d-a4e9-ea45e0c93217"
+          },
+          {
+            "id": "edge-canvasNote-c85650ac-b5ff-4d6b-9e46-b32b96e94405-canvasNote-adf1c3f1-32b1-4240-810c-09e06a517819-input",
+            "source": "canvasNote-c85650ac-b5ff-4d6b-9e46-b32b96e94405",
+            "target": "canvasNote-adf1c3f1-32b1-4240-810c-09e06a517819",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-canvasNote-78d94773-96be-4652-b8f7-9efa4c660770-canvasNote-c85650ac-b5ff-4d6b-9e46-b32b96e94405-input",
+            "source": "canvasNote-78d94773-96be-4652-b8f7-9efa4c660770",
+            "target": "canvasNote-c85650ac-b5ff-4d6b-9e46-b32b96e94405",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-canvasNote-15276766-a2fc-4ae7-8df6-2466a15b4dbf-canvasNote-78d94773-96be-4652-b8f7-9efa4c660770-input",
+            "source": "canvasNote-15276766-a2fc-4ae7-8df6-2466a15b4dbf",
+            "target": "canvasNote-78d94773-96be-4652-b8f7-9efa4c660770",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-ifElse-8731ddfd-3b02-4b2d-a4e9-ea45e0c93217-condition:900a9c93-9213-4436-a221-074dc3e511a0-agent-01b15001-6cac-4a63-be89-4f36daef9812-input",
+            "source": "ifElse-8731ddfd-3b02-4b2d-a4e9-ea45e0c93217",
+            "target": "agent-01b15001-6cac-4a63-be89-4f36daef9812",
+            "sourceHandle": "condition:900a9c93-9213-4436-a221-074dc3e511a0",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-ifElse-32a4aade-a6d8-4879-b745-ee9c7155e094-condition:956e5638-3d5c-438b-8d61-754d395f7432-agent-c79d258c-81ac-435f-bb39-926ce1f04758-input",
+            "source": "ifElse-32a4aade-a6d8-4879-b745-ee9c7155e094",
+            "target": "agent-c79d258c-81ac-435f-bb39-926ce1f04758",
+            "sourceHandle": "condition:956e5638-3d5c-438b-8d61-754d395f7432",
             "targetHandle": "input"
           }
         ]
@@ -203,17 +562,22 @@
     {
       "path": "customizations.xml",
       "category": "solution",
-      "size": 2646
+      "size": 81170
     },
     {
       "path": "solution.xml",
       "category": "solution",
-      "size": 4087
+      "size": 4437
     },
     {
-      "path": "Workflows/SalesLeadQualifier-CAC4398C-780F-3334-8F5C-E1CC29371AB0.json",
+      "path": "Workflows/SalesLeadQualifier-Original-A6F98817-DA83-4EEB-9E39-6C969B277275.json",
       "category": "workflow",
-      "size": 91449
+      "size": 94123
+    },
+    {
+      "path": "Workflows/SalesLeadQualifier-Revised-45FAD15F-BC4A-4920-83C7-6BC935F22DFE.json",
+      "category": "workflow",
+      "size": 163947
     }
   ]
 }
