@@ -1,0 +1,298 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "api": {
+          "name": "shared_sharepointonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "a3p_sharedsharepointonline_b880e"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-sharepointonl-c70ce4cb-499d-42d9-9f4b-7a2c1bfd98a6"
+      },
+      "shared_agentnode": {
+        "api": {
+          "name": "shared_agentnode"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedagentnode_65c3e92a"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "fc6b40b87a0e4e56b95021b540accd39"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "When_an_item_is_created_or_modified": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "<site-url>",
+              "table": "<list-id>"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetOnUpdatedItems",
+              "connectionName": "shared_sharepointonline"
+            },
+            "authentication": "@parameters('$authentication')"
+          },
+          "recurrence": {
+            "frequency": "Minute",
+            "interval": 1
+          },
+          "splitOn": "@triggerOutputs()?['body/value']",
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "SharePoint List Notifier Trigger",
+                "nodes": [
+                  {
+                    "id": "start",
+                    "name": "When an item is created or modified",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 100,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "connector",
+                        "connector": {
+                          "apiName": "shared_sharepointonline",
+                          "operationName": "GetOnUpdatedItems",
+                          "operationType": "OpenApiConnection",
+                          "inputs": {
+                            "dataset": "<site-url>",
+                            "table": "<list-id>"
+                          },
+                          "displayName": "When an item is created or modified",
+                          "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1827/1.0.1827.4902/sharepointonline/icon.png",
+                          "brandColor": "#0078D4",
+                          "connectionName": "shared_sharepointonline",
+                          "parametersSchema": {
+                            "type": "object",
+                            "properties": {
+                              "dataset": {
+                                "type": "string",
+                                "title": "Site Address"
+                              },
+                              "table": {
+                                "type": "string",
+                                "title": "List Name"
+                              }
+                            },
+                            "required": [
+                              "dataset",
+                              "table"
+                            ]
+                          },
+                          "triggerBatchMode": "Batch",
+                          "outputSchema": {
+                            "200": {
+                              "type": "object",
+                              "properties": {
+                                "body": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "ID": {
+                                            "type": "integer"
+                                          },
+                                          "Title": {
+                                            "type": "string"
+                                          },
+                                          "field_2": {
+                                            "type": "string"
+                                          },
+                                          "field_3": {
+                                            "type": "string"
+                                          },
+                                          "{Link}": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "splitOn": "@triggerOutputs()?['body/value']"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "ID": {
+                                "type": "integer"
+                              },
+                              "Title": {
+                                "type": "string"
+                              },
+                              "field_2": {
+                                "type": "string"
+                              },
+                              "field_3": {
+                                "type": "string"
+                              },
+                              "{Link}": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 310,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "agent-66c255da-907f-471e-8098-0c0af4c19051",
+                    "name": "Call SharePoint List Notifier Agent",
+                    "type": "agent",
+                    "version": 1,
+                    "position": {
+                      "x": 500,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "mode": "invoke",
+                        "instructions": "@concat('A SharePoint list item was created or modified. Site: <site-url>, List: <list-name>, Item ID: ', string(triggerBody()?['ID']), ', Title: ', triggerBody()?['Title'], ', Status: ', triggerBody()?['field_2'], ', Priority: ', triggerBody()?['field_3'], ', Link: ', triggerBody()?['{Link}'], '. Retrieve this item and send the required notifications.')",
+                        "botSchemaName": "Default_SharePoint_List_Notifier_360614",
+                        "isHitlEscalationEnabled": false,
+                        "inlineInstructions": "",
+                        "outputMode": "text",
+                        "connectionName": "shared_agentnode",
+                        "inlineInstructionsRich": {},
+                        "displayName": "Call SharePoint List Notifier Agent",
+                        "inlineTools": [],
+                        "inlineKnowledge": []
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "type": "string",
+                                "title": "Agent Response",
+                                "description": "The agent response text"
+                              },
+                              "activities": {
+                                "type": "array",
+                                "description": "Bot response activities (typing, message, and event types)"
+                              }
+                            },
+                            "required": [
+                              "activities"
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 294,
+                      "height": 66
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-agent-66c255da-907f-471e-8098-0c0af4c19051",
+                    "source": "start",
+                    "target": "agent-66c255da-907f-471e-8098-0c0af4c19051"
+                  }
+                ],
+                "connectionReferences": {
+                  "shared_sharepointonline": {
+                    "api": {
+                      "name": "shared_sharepointonline"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "a3p_sharedsharepointonline_b880e"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-sharepointonl-c70ce4cb-499d-42d9-9f4b-7a2c1bfd98a6"
+                  },
+                  "shared_agentnode": {
+                    "api": {
+                      "name": "shared_agentnode"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedagentnode_65c3e92a"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "fc6b40b87a0e4e56b95021b540accd39"
+                  }
+                }
+              },
+              "nodeActionMapping": {
+                "agent-66c255da-907f-471e-8098-0c0af4c19051": [
+                  "Call_SharePoint_List_Notifier_Agent"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "actions": {
+        "Call_SharePoint_List_Notifier_Agent": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "body/prompt": "@concat('A SharePoint list item was created or modified. Site: <site-url>, List: <list-name>, Item ID: ', string(triggerBody()?['ID']), ', Title: ', triggerBody()?['Title'], ', Status: ', triggerBody()?['field_2'], ', Priority: ', triggerBody()?['field_3'], ', Link: ', triggerBody()?['{Link}'], '. Retrieve this item and send the required notifications.')",
+              "body/agentId": "Default_SharePoint_List_Notifier_360614"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
+              "connectionName": "shared_agentnode",
+              "operationId": "InvokeAgent"
+            }
+          },
+          "metadata": {
+            "description": "Call SharePoint List Notifier Agent",
+            "nodeId": "agent-66c255da-907f-471e-8098-0c0af4c19051"
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "telemetryMetadata": {
+          "creationSource": "AgenticMultiArtifactBuilder",
+          "modifiedSources": "AgenticMultiArtifactBuilder"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
