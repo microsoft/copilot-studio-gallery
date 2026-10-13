@@ -1,0 +1,33 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: cancelled-meeting-handler
+  description: Use when a calendar meeting has been cancelled and the user wants participants notified, or wants a follow-up meeting/agenda proposed to replace it. Do NOT use for a meeting the user is actively cancelling right now with no notification or follow-up requested — in that case just cancel it.
+  ---
+  <!-- bic:source=upload -->
+  # Cancelled Meeting Handler
+
+  When a meeting has been cancelled, make sure the people affected actually know, and give the user an easy way to pick back up with a follow-up — rather than letting the cancellation just be a silent calendar change.
+
+  ## Procedure
+
+  1. Identify the cancelled meeting(s) the user means, using the Outlook Calendar tool — either one they name directly, or by scanning a time window for events marked cancelled.
+  2. Confirm who needs to be notified: the full attendee list from the cancelled event, unless the user says otherwise (e.g. "just notify the external folks").
+  3. Draft a short, polite notification email using the Outlook Mail tool. State plainly that the meeting was cancelled, name the original meeting title and time, and give a one-line reason if the user provided one. Do not invent a reason if none was given.
+  4. Decide whether a follow-up makes sense:
+     - If the meeting had a recurring purpose or unresolved agenda items, propose 2-3 concrete follow-up time slots (use the Outlook Calendar tool to check attendee availability) so the user can pick one to send.
+     - If the meeting doesn't need to be rescheduled (e.g. it was cancelled because the topic is resolved), say so instead of proposing a follow-up nobody needs.
+  5. Present the notification draft and (if applicable) the proposed follow-up options to the user for approval before sending — do not send the notification or create the follow-up meeting until the user confirms, unless they explicitly asked you to just handle it.
+
+  ## Example
+
+  User: "The 'Vendor Sync' meeting got cancelled, let everyone know and set up a follow-up."
+
+  - **Notification draft (to all 4 original attendees):** "Hi all — the Vendor Sync meeting originally scheduled for Thursday 3:00 PM has been cancelled. We'll follow up with a new time shortly."
+  - **Proposed follow-up times:** Friday 10:00 AM, or Monday 2:00 PM (both free for all attendees).
+
+  ## Edge cases
+
+  - If the cancelled event has no remaining attendees to notify (e.g. it was a personal reminder), say there's no one to notify rather than sending an empty email.
+  - If attendee free/busy data is incomplete, propose times based on what's available and flag the gap rather than guessing full availability.
+  - Multiple cancelled meetings in one request: handle each separately with its own notification and (if needed) its own follow-up proposal.

@@ -1,0 +1,36 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: agenda-suggester
+  description: Use when the user wants a meeting agenda proposed or improved, says an upcoming meeting has no agenda, or asks how to keep a meeting more focused. Do NOT use for a meeting that already has a detailed agenda the user is satisfied with.
+  ---
+  <!-- bic:source=upload -->
+  # Agenda Suggester
+
+  Propose a clear, time-boxed agenda for a meeting so it stays focused and productive, instead of running as an open-ended discussion.
+
+  ## Procedure
+
+  1. Identify the target meeting using the Outlook Calendar tool — pull its title, description/body, duration, and attendee list.
+  2. Look for signal about the meeting's real purpose: existing notes in the body, the meeting title itself, and (if the user mentions it) related prior meetings or open action items from a previous session on the same topic.
+  3. Draft an agenda with 3-5 time-boxed items that together fit within the meeting's actual scheduled duration. Each item should have:
+     - A short, concrete topic (not "discuss updates" — specify what update).
+     - An estimated time allocation.
+     - Where relevant, a named owner who should lead that item (only if you actually know who — do not invent an owner).
+  4. Order items so the most consequential or blocking topics come first, and put open-ended discussion or "AOB / other topics" last with the smallest time box.
+  5. Present the agenda to the user for review before it's added anywhere — offer to post it into the meeting's description via the Outlook Calendar tool if the user confirms they want it added.
+
+  ## Example
+
+  For a 30-minute meeting titled "Weekly Product Sync" with attendees from product and engineering:
+
+  1. Sprint blockers (10 min) — Engineering lead
+  2. Customer feedback highlights (8 min) — Product
+  3. Decision: launch date confirmation (7 min)
+  4. Open questions / AOB (5 min)
+
+  ## Edge cases
+
+  - If the meeting has almost no context to draw an agenda from (a bare title, no body, first-time meeting), say so and ask the user one short question about the meeting's goal rather than inventing generic filler topics.
+  - If the meeting already has a full agenda in its body, don't propose a competing one — offer to tighten the time-boxing instead, or confirm with the user that they still want a rewrite.
+  - Recurring meetings: check whether prior occurrences left open action items worth carrying into this agenda.

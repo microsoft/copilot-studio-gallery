@@ -1,0 +1,37 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: summarize-meetings
+  description: Use when the user asks to summarize a meeting or several meetings, wants the key decisions from a meeting, or wants a list of action items from a meeting. Do NOT use for a raw list of upcoming events with no summarization ask.
+  ---
+  <!-- bic:source=upload -->
+  # Summarize Meetings
+
+  Produce a concise summary of one or more calendar meetings that clearly separates key decisions from action items, so the user does not have to re-read the full meeting notes or attend to remember what was agreed.
+
+  ## Procedure
+
+  1. Identify which meeting(s) the user means. If they say "today's meetings" or "this week", use the Outlook Calendar tool to list events in that range. If they name a specific meeting, find that single event.
+  2. For each meeting, fetch its full details through the Outlook Calendar tool, including the event body/description, organizer, and attendee list. If a meeting has an attached transcript or detailed notes in its body, use that content as the primary source — do not fabricate details that are not present.
+  3. From the event content, extract:
+     - **Key decisions** — statements that resolve a question or commit to a direction (e.g. "we will use option B", "approved the budget increase").
+     - **Action items** — concrete tasks assigned to a person, with an owner and due date whenever one is stated. If no owner is stated, say so explicitly rather than guessing who is responsible.
+  4. If a meeting's body has no substantive content (e.g. just a Teams link with no notes), say plainly that there isn't enough information in the event to summarize decisions or action items, rather than inventing plausible-sounding content.
+  5. Present the summary per meeting, in this order: meeting title and time (in the user's local time zone), key decisions (bulleted), action items (bulleted, each with owner and due date if known).
+
+  ## Example
+
+  For a meeting titled "Q3 Roadmap Review" whose body reads "Agreed to move the launch to October. Priya to finalize the pricing doc by Friday. Raj to loop in Legal next week.":
+
+  **Q3 Roadmap Review — Tue 2:00 PM**
+  - Key decisions:
+    - Launch date moved to October.
+  - Action items:
+    - Priya: finalize the pricing doc — due Friday.
+    - Raj: loop in Legal — due next week.
+
+  ## Edge cases
+
+  - Multiple meetings requested at once: summarize each separately under its own heading, do not merge them.
+  - A cancelled meeting in the requested range: skip it here and mention it was cancelled, but hand cancellation handling itself to the Cancelled Meeting Handler behavior.
+  - Very long meeting bodies: focus on the decisions and action items only — do not reproduce the full body text back to the user.

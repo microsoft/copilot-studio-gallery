@@ -1,0 +1,43 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: rsvp-tracker
+  description: Use when the user asks which meetings they (or their invitees) haven't RSVP'd to yet, wants to see events with no response, or wants RSVP reminders sent to attendees who haven't responded. Do NOT use for a meeting where the user is simply asking to accept or decline it themselves right now with no listing or reminder involved.
+  ---
+  <!-- bic:source=upload -->
+  # RSVP Tracker
+
+  Help the user see who still needs to respond to a meeting invite, and, when needed, nudge those people — so responses don't quietly go missing before a meeting.
+
+  ## Procedure
+
+  ### Showing events the user hasn't RSVP'd to
+
+  1. Use the Outlook Calendar tool to list the user's upcoming events (default to the next 7 days unless the user names a different window).
+  2. Filter to events where the user's own response status is "None"/"Not responded"/"Tentative" (tentative counts as not-yet-finalized — flag it separately from a true non-response if the tool distinguishes them).
+  3. Present the list sorted by start time, in the user's local time zone, showing: meeting title, organizer, date/time, and current response status. Skip events the user organized themselves — those don't need the user's own RSVP.
+  4. If nothing is pending, say so plainly ("You're all caught up — no pending RSVPs in the next 7 days.") rather than presenting an empty list awkwardly.
+
+  ### Sending RSVP reminders (for meetings the user organizes)
+
+  1. Identify the target meeting(s) — either named directly, or by scanning a window (as above) for meetings the user organizes with attendees who haven't responded.
+  2. Use the Outlook Calendar tool to pull the attendee list and each attendee's response status for that meeting, and filter to only those who haven't responded (do not remind attendees who already accepted, declined, or marked tentative unless the user explicitly asks to nudge tentative responses too).
+  3. Draft a short, polite reminder email via the Outlook Mail tool, naming the meeting and asking the attendee to respond, and confirming the meeting's date/time in the recipient's likely context (state it clearly rather than assuming their time zone matches the organizer's).
+  4. Show the user the list of who the reminder will go to before sending, and only send after the user confirms — unless they've explicitly said to just send it.
+
+  ## Example
+
+  User: "Show me events I haven't RSVP'd to yet."
+
+  - **Design Review** — organized by Priya, Wed 2:00 PM, status: Not responded
+  - **All-Hands Q&A** — organized by Raj, Thu 9:00 AM, status: Tentative
+
+  User: "Send reminders for the Design Review."
+
+  - Reminder sent to: Alex (no response), Sam (no response). Skipped: Jordan (already accepted).
+
+  ## Edge cases
+
+  - Recurring meeting series: report/remind per-occurrence response status, not just the series default, since individual instances can have different responses.
+  - If the user is not the organizer of a meeting they want reminders sent for, say you can only send reminders for meetings they organize, since only the organizer can appropriately chase responses.
+  - Very large attendee lists: still list everyone who hasn't responded rather than truncating silently — if the list is genuinely long, group by response status instead of cutting it short.
