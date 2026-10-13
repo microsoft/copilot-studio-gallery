@@ -37,6 +37,7 @@ test("imports metadata while retaining derived solution identity", async () => {
   assert.equal(record.version, "2.3.4.5");
   assert.equal(record.publisher, "Contoso");
   assert.equal(record.bundle, "bundles/demo-agent.zip");
+  assert.equal(record.category, "Customer service");
   assert.equal(record.componentCount, 1);
   const support = record.agents.find((agent: { schemaName: string }) => agent.schemaName === "support_agent");
   const other = record.agents.find((agent: { schemaName: string }) => agent.schemaName === "other_agent");
@@ -200,6 +201,34 @@ test("extracts one saved graph and retains unknown workflow node types", () => {
 
 test("rejects a workflow without exactly one saved graph", () => {
   assert.throws(() => extractSavedGraph({ name: "no graph", nodes: [] }), /exactly one saved designer graph/);
+});
+
+test("drops designer notes from workflow graphs", () => {
+  const graph = normalizeWorkflowGraph({
+    nodes: [
+      { id: "start", name: "Start", type: "start", position: { x: 0, y: 0 } },
+      { id: "note", name: "Remember this", type: "canvasNote", position: { x: 50, y: 50 } },
+      { id: "end", name: "End", type: "end", position: { x: 100, y: 0 } },
+    ],
+    edges: [
+      { id: "flow", source: "start", target: "end" },
+      { id: "annotation", source: "note", target: "end" },
+    ],
+  });
+  assert.deepEqual(graph.nodes.map((node) => node.id), ["start", "end"]);
+  assert.deepEqual(graph.edges.map((edge) => edge.id), ["flow"]);
+});
+
+test("requires one category from the fixed category list", async () => {
+  const metadataPath = join(workspace, "submissions/demo-agent/metadata.json");
+  const { readFile } = await import("node:fs/promises");
+  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  for (const category of [undefined, "", "Not a category", ["HR"]]) {
+    await writeFile(metadataPath, JSON.stringify({ ...metadata, category }));
+    await assert.rejects(() => importSubmissions({ root: workspace, check: true }), /invalid metadata\.json/);
+  }
+  await writeFile(metadataPath, JSON.stringify({ ...metadata, category: "Finance" }));
+  await importSubmissions({ root: workspace, check: true });
 });
 
 test("rejects invalid metadata, unsafe slugs, and symlinks", async () => {

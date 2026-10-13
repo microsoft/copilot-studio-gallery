@@ -9,11 +9,15 @@ The site uses Astro, Tailwind CSS, React Flow, and static GitHub Pages deploymen
 
 ## Features
 
-- Searchable, filterable gallery of complete solutions.
+- Searchable gallery of complete solutions, filterable by agents or workflows,
+  category, tag, and contributor.
+- Built by Microsoft solutions highlighted on the home page, with a dedicated
+  listing page.
 - One entry per solution, with Overview, Agents, Workflows, and Files tabs.
-- Interactive agent architecture graphs showing agents, tools, skills, and
-  connected-agent delegation.
-- Interactive workflow previews rendered from each export's saved designer graph.
+- Agent component tables listing each agent's tools, MCP servers, skills, and
+  connected agents.
+- Interactive workflow previews rendered from each export's saved designer graph,
+  with agent steps showing the invoked agent's components on hover or select.
 - Deterministic downloadable ZIP rebuilt from the submitted exploded solution.
 - Contributor directory, individual contributor profiles, and JSON catalog endpoint.
 - Pull-request validation for metadata, solution structure, graph availability,

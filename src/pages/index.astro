@@ -2,17 +2,27 @@
 import { getCollection } from "astro:content";
 import Layout from "../layouts/Layout.astro";
 import SolutionCard from "../components/SolutionCard.astro";
-import { collectContributors, collectTags } from "../lib/catalog";
-import { authorKey, solutionMakeup } from "../lib/schema";
+import { collectCategories, collectContributors, collectTags, compareSolutions } from "../lib/catalog";
+import { solutionInventory } from "../lib/inventory";
+import { authorKey } from "../lib/schema";
 import { withBase } from "../lib/url";
 
-const solutions = (await getCollection("solutions")).sort(
-  (a, b) => Number(b.data.featured) - Number(a.data.featured) || a.data.name.localeCompare(b.data.name),
-);
+const MICROSOFT_ROW_SIZE = 3;
+const solutions = (await getCollection("solutions")).sort(compareSolutions);
 const tags = collectTags(solutions);
-const popularTags = tags.slice(0, 8);
+const categories = collectCategories(solutions);
 const contributors = collectContributors(solutions);
-const featuredSolutions = solutions.filter((solution) => solution.data.featured);
+const microsoftSolutions = solutions.filter((solution) => solution.data.featured);
+const typeChoices = [
+  { value: "", label: "All" },
+  { value: "agents", label: "Agents" },
+  { value: "workflows", label: "Workflows" },
+];
+
+function solutionTypes(solution: (typeof solutions)[number]): string[] {
+  const inventory = solutionInventory(solution.data);
+  return [inventory.agents > 0 && "agents", inventory.workflows > 0 && "workflows"].filter((value): value is string => Boolean(value));
+}
 ---
 
 <Layout socialTitle="Copilot Studio Gallery — Community Agents & Workflows">
@@ -29,317 +39,400 @@ const featuredSolutions = solutions.filter((solution) => solution.data.featured)
     </div>
   </section>
 
-  <section class="border-b border-border bg-elevated">
-    <div class="mx-auto w-full max-w-gallery px-4 py-10 sm:px-6">
-      <div class="flex items-end justify-between gap-4">
-        <div>
-          <p class="text-xs font-semibold text-accent">Featured</p>
-          <h2 id="editor-picks-title" class="mt-1 text-2xl font-semibold tracking-[-0.02em] text-ink">Editor’s picks</h2>
-        </div>
-        <div class="flex gap-2" aria-label="Editor’s picks carousel controls">
-          <button
-            id="featured-previous"
-            type="button"
-            aria-label="Show previous editor’s picks"
-            aria-controls="featured-carousel"
-            class="grid h-10 w-10 place-items-center rounded-full border border-border bg-surface text-lg text-ink transition hover:border-accent hover:text-accent disabled:cursor-default disabled:opacity-35"
-          >
-            ←
-          </button>
-          <button
-            id="featured-next"
-            type="button"
-            aria-label="Show next editor’s picks"
-            aria-controls="featured-carousel"
-            class="grid h-10 w-10 place-items-center rounded-full border border-border bg-surface text-lg text-ink transition hover:border-accent hover:text-accent disabled:cursor-default disabled:opacity-35"
-          >
-            →
-          </button>
-        </div>
+  <section class="border-b border-border bg-surface" aria-label="Find solutions">
+    <div class="mx-auto w-full max-w-gallery px-4 py-4 sm:px-6">
+      <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <label class="relative">
+          <span class="sr-only">Search solutions</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-soft" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path>
+          </svg>
+          <input id="solution-search" type="search" autocomplete="off" placeholder="Search agents, workflows, use cases, or contributors…" class="h-11 w-full rounded-lg border border-border bg-elevated pl-10 pr-3 text-sm text-ink placeholder:text-soft" />
+        </label>
+        <label class="flex items-center gap-2">
+          <span class="hidden text-sm text-muted sm:inline">Sort by</span>
+          <select id="sort-select" aria-label="Sort solutions" class="h-11 w-full rounded-lg border border-border bg-elevated px-3 text-sm text-ink sm:w-52">
+            <option value="featured">Built by Microsoft first</option>
+            <option value="newest">Newest</option>
+            <option value="name">Name</option>
+          </select>
+        </label>
       </div>
-      <div
-        id="featured-carousel"
-        class="featured-carousel mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2"
-        role="region"
-        aria-labelledby="editor-picks-title"
-        tabindex="0"
-      >
-        {featuredSolutions.map((solution) => (
-          <div class="featured-slide snap-start">
-            <SolutionCard solution={solution} compact />
+
+      <div class="filter-bar mt-3" role="group" aria-label="Filter solutions">
+        <button id="filters-trigger" type="button" aria-haspopup="dialog" aria-controls="filters-dialog" aria-expanded="false" class="filters-trigger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-4 w-4" aria-hidden="true">
+            <path d="M4 6h7m4 0h5M4 12h2m4 0h10M4 18h10m4 0h2" stroke-linecap="round"></path>
+            <circle cx="13" cy="6" r="2"></circle><circle cx="8" cy="12" r="2"></circle><circle cx="16" cy="18" r="2"></circle>
+          </svg>
+          Filters
+          <span id="filters-count" hidden class="filter-count"></span>
+        </button>
+        <div id="filter-options" class="filter-options" role="group" aria-label="Solution type and applied filters">
+          <div id="applied-filters" hidden class="applied-filters" role="group" aria-label="Applied filters"></div>
+          <div class="fixed-options" role="radiogroup" aria-label="Solution type">
+            {typeChoices.map((choice, index) => (
+              <button type="button" role="radio" data-type-choice={choice.value} aria-checked={index === 0 ? "true" : "false"} tabindex={index === 0 ? "0" : "-1"} class="fixed-choice">
+                {choice.label}<span data-type-count={choice.value} class="facet-count"></span>
+              </button>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   </section>
 
-  <section id="solution-catalog" class="scroll-mt-6 bg-page">
-    <div class="mx-auto w-full max-w-gallery px-4 py-10 sm:px-6 sm:py-12">
+  <dialog id="filters-dialog" aria-labelledby="filters-heading" aria-describedby="filters-scope filters-context" class="filters-dialog">
+    <div class="dialog-shell">
+      <header class="flex shrink-0 items-center justify-between border-b border-border px-5 py-4 sm:px-6">
+        <h2 id="filters-heading" class="text-lg font-semibold text-ink">Filters</h2>
+        <button type="button" data-close-filters class="dialog-close" aria-label="Close filters without applying" autofocus>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"></path></svg>
+        </button>
+      </header>
+      <div class="dialog-body px-5 sm:px-6">
+        <p id="filters-scope" class="pt-5 text-sm text-muted">Match any selected category or contributor, and require every selected tag.</p>
+        <p id="filters-context" class="mt-1 text-sm text-muted"></p>
+        <div id="draft-selections" hidden class="mt-3 flex flex-wrap gap-2" aria-label="Selected filters"></div>
+
+        <fieldset class="filter-section">
+          <legend>Solution type</legend>
+          <div class="flex flex-wrap gap-2 p-1">
+            {typeChoices.map((choice) => (
+              <label class="option-label">
+                <input type="radio" name="draft-type" value={choice.value} />
+                <span class="check-option">{choice.label}<span data-draft-type-count={choice.value} class="facet-count"></span></span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset class="filter-section">
+          <legend>Categories <span data-selection-count="categories" class="text-sm font-normal text-muted"></span></legend>
+          <div class="flex flex-wrap gap-2 p-1">
+            {categories.map(([category]) => (
+              <label class="option-label" data-facet-option="categories" data-value={category}>
+                <input type="checkbox" name="filter-categories" value={category} />
+                <span class="check-option">{category}<span data-facet-count="categories" data-value={category} class="facet-count"></span></span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset class="filter-section">
+          <legend>Tags <span data-selection-count="tags" class="text-sm font-normal text-muted"></span></legend>
+          <label for="filter-tag-search" class="sr-only">Search tags</label>
+          <input id="filter-tag-search" type="search" placeholder="Search tags" autocomplete="off" class="picker-search" data-picker-search="tags" />
+          <div class="mt-3 flex max-h-48 flex-wrap gap-2 overflow-y-auto p-1">
+            {tags.map(([tag]) => (
+              <label class="option-label" data-facet-option="tags" data-value={tag} data-search={tag}>
+                <input type="checkbox" name="filter-tags" value={tag} />
+                <span class="check-option">{tag}<span data-facet-count="tags" data-value={tag} class="facet-count"></span></span>
+              </label>
+            ))}
+          </div>
+          <p data-picker-empty="tags" hidden class="mt-3 text-sm text-muted">No tags match this search.</p>
+        </fieldset>
+
+        <fieldset class="filter-section">
+          <legend>Contributors <span data-selection-count="authors" class="text-sm font-normal text-muted"></span></legend>
+          <label for="filter-author-search" class="sr-only">Search contributors</label>
+          <input id="filter-author-search" type="search" placeholder="Search contributors" autocomplete="off" class="picker-search" data-picker-search="authors" />
+          <div class="mt-3 flex max-h-56 flex-col gap-1 overflow-y-auto p-1">
+            {contributors.map((contributor) => (
+              <label
+                class="author-option"
+                data-facet-option="authors"
+                data-value={contributor.key}
+                data-name={contributor.name}
+                data-github={contributor.github ?? ""}
+                data-search={`${contributor.name} ${contributor.github ?? ""}`.toLowerCase()}
+              >
+                <input type="checkbox" name="filter-authors" value={contributor.key} class="h-4 w-4 shrink-0 accent-accent" />
+                <span class="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full bg-accent-soft text-[10px] font-bold text-accent">
+                  {contributor.github ? <img src={`https://github.com/${contributor.github}.png?size=64`} alt="" class="h-full w-full object-cover" loading="lazy" /> : contributor.name.slice(0, 2).toUpperCase()}
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block truncate text-sm font-medium text-ink">{contributor.name}</span>
+                  {contributor.github && <span class="block truncate text-xs text-muted">@{contributor.github}</span>}
+                </span>
+                <span data-facet-count="authors" data-value={contributor.key} class="text-xs text-muted"></span>
+              </label>
+            ))}
+          </div>
+          <p data-picker-empty="authors" hidden class="mt-3 text-sm text-muted">No contributors match this search.</p>
+          <a href={withBase("/contributors")} class="mt-3 inline-flex text-sm font-medium text-link underline-offset-4 hover:underline">Browse the contributor directory</a>
+        </fieldset>
+      </div>
+      <footer class="flex shrink-0 items-center justify-between gap-4 border-t border-border bg-surface px-5 py-4 sm:px-6">
+        <button type="button" id="clear-extra-filters" class="text-sm font-medium text-ink underline underline-offset-4">Clear filters</button>
+        <button type="button" id="apply-filters" class="apply-filters">Show {solutions.length} solutions</button>
+        <span id="draft-filter-status" class="sr-only" role="status" aria-live="polite"></span>
+      </footer>
+    </div>
+  </dialog>
+
+  {
+    microsoftSolutions.length > 0 && (
+      <section id="built-by-microsoft" data-microsoft-row class="border-b border-border bg-elevated" aria-labelledby="built-by-microsoft-title">
+        <div class="mx-auto w-full max-w-gallery px-4 py-10 sm:px-6">
+          <div class="flex items-end justify-between gap-4">
+            <div>
+              <p class="text-xs font-semibold text-accent">Built by Microsoft</p>
+              <h2 id="built-by-microsoft-title" class="mt-1 text-2xl font-semibold tracking-[-0.02em] text-ink">Solutions from Microsoft</h2>
+            </div>
+            {microsoftSolutions.length > MICROSOFT_ROW_SIZE && (
+              <a href={withBase("/built-by-microsoft")} class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent">
+                Show more <span class="text-soft">({microsoftSolutions.length})</span><span aria-hidden="true">→</span>
+              </a>
+            )}
+          </div>
+          <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {microsoftSolutions.slice(0, MICROSOFT_ROW_SIZE).map((solution, index) => (
+              <div class:list={[index === 2 && "sm:hidden xl:block"]}>
+                <SolutionCard solution={solution} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section id="solution-catalog" class="scroll-mt-20 bg-page">
+    <div class="mx-auto w-full max-w-gallery px-4 py-10 sm:px-6">
       <div class="mb-6 flex items-end justify-between gap-4">
         <div>
           <p class="text-xs font-semibold text-accent">Community library</p>
-          <h2 class="mt-1 text-3xl font-semibold tracking-[-0.03em] text-ink">All solutions</h2>
-          <p class="mt-2 max-w-xl text-sm leading-6 text-muted">Filter the complete library by what it contains, who built it, or the work it helps with.</p>
+          <h2 class="mt-1 text-2xl font-semibold tracking-[-0.02em] text-ink">All solutions</h2>
         </div>
-        <p id="result-count" class="shrink-0 pb-1 text-sm font-medium text-muted">{solutions.length} solutions</p>
+        <p id="result-count" class="shrink-0 pb-1 text-sm font-medium text-muted" aria-live="polite">{solutions.length} solutions</p>
       </div>
-      <div class="rounded-2xl border border-border bg-surface p-3 card-shadow">
-        <div class="grid gap-3 lg:grid-cols-[minmax(18rem,1fr)_auto_auto]">
-          <label class="relative">
-            <span class="sr-only">Search solutions</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-soft" aria-hidden="true">
-              <circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path>
-            </svg>
-            <input id="solution-search" type="search" autocomplete="off" placeholder="Search agents, workflows, use cases, or contributors…" class="h-11 w-full rounded-lg border border-border bg-elevated pl-10 pr-3 text-sm text-ink placeholder:text-soft" />
-          </label>
-          <label>
-            <span class="sr-only">Filter by solution makeup</span>
-            <select id="makeup-filter" class="h-11 w-full rounded-lg border border-border bg-elevated px-3 text-sm text-ink lg:w-48">
-              <option value="">All solution types</option>
-              <option>Agents + workflows</option>
-              <option>Agents</option>
-              <option>Workflows</option>
-            </select>
-          </label>
-          <label>
-            <span class="sr-only">Sort solutions</span>
-            <select id="sort-select" class="h-11 w-full rounded-lg border border-border bg-elevated px-3 text-sm text-ink lg:w-36">
-              <option value="newest">Newest</option>
-              <option value="name">Name</option>
-            </select>
-          </label>
-        </div>
-
-        <div id="discovery-filters" class="relative mt-3 flex flex-nowrap items-center gap-2 overflow-x-auto border-t border-border pt-3 sm:flex-wrap sm:overflow-visible">
-          <button type="button" data-tag-all aria-pressed="true" class="filter-pill shrink-0 rounded-full border border-accent bg-accent-soft px-3 py-1.5 text-sm font-medium text-accent">
-            All tags
-          </button>
-          {popularTags.map(([tag, total], index) => (
-            <button
-              type="button"
-              data-tag-inline
-              data-tag={tag}
-              aria-pressed="false"
-              class:list={[
-                "filter-pill shrink-0 rounded-full border border-border bg-elevated px-3 py-1.5 text-sm font-medium text-muted transition hover:border-accent hover:text-ink",
-                index >= 3 && "hidden sm:inline-flex",
-              ]}
+      <div id="gallery" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {
+          solutions.map((solution) => (
+            <article
+              class="solution-item"
+              data-name={solution.data.name.toLowerCase()}
+              data-description={solution.data.description.toLowerCase()}
+              data-tags={solution.data.tags.join(",").toLowerCase()}
+              data-categories={solution.data.category}
+              data-types={solutionTypes(solution).join(",")}
+              data-author={authorKey(solution.data.authorGithub, solution.data.author)}
+              data-author-name={solution.data.author.toLowerCase()}
+              data-agents={solution.data.agents.map((agent) => agent.name).join(" ").toLowerCase()}
+              data-workflows={solution.data.workflows.map((workflow) => workflow.name).join(" ").toLowerCase()}
+              data-featured={solution.data.featured ? "1" : "0"}
+              data-updated={solution.data.updatedAt ?? solution.data.createdAt ?? ""}
             >
-              {tag}<span class="ml-1.5 text-xs text-soft">{total}</span>
-            </button>
-          ))}
-
-          <div id="tag-backdrop" class="fixed inset-0 z-40 hidden bg-black/40 sm:hidden" aria-hidden="true"></div>
-          <div class="relative shrink-0">
-            <button type="button" id="tag-more" aria-expanded="false" aria-haspopup="true" class="rounded-full border border-dashed border-border px-3 py-1.5 text-sm font-medium text-accent transition hover:border-accent">
-              More tags <span id="tag-count"></span>▾
-            </button>
-            <div id="tag-panel" class="fixed inset-x-0 bottom-0 z-50 hidden max-h-[72vh] overflow-y-auto rounded-t-2xl border border-border bg-surface p-4 shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-0 sm:top-full sm:mt-2 sm:w-80 sm:rounded-xl">
-              <div class="mb-3 flex items-center justify-between sm:hidden">
-                <span class="font-semibold text-ink">Filter by tag</span>
-                <button type="button" id="tag-sheet-close" class="grid h-8 w-8 place-items-center rounded-lg text-muted hover:bg-surface-soft" aria-label="Close tag filter">×</button>
-              </div>
-              <label for="tag-search" class="sr-only">Search tags</label>
-              <input id="tag-search" type="search" placeholder="Search tags…" autocomplete="off" class="w-full rounded-lg border border-border bg-elevated px-3 py-2 text-sm text-ink placeholder:text-soft" />
-              <div id="tag-list" class="mt-3 flex max-h-[52vh] flex-wrap gap-2 overflow-y-auto sm:max-h-64">
-                {tags.map(([tag, total]) => (
-                  <button type="button" data-tag-list data-tag={tag} aria-pressed="false" class="filter-pill rounded-full border border-border bg-elevated px-3 py-1.5 text-sm font-medium text-muted hover:border-accent hover:text-ink">
-                    {tag}<span class="ml-1.5 text-xs text-soft">{total}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <span class="mx-1 hidden h-5 w-px shrink-0 bg-border sm:block" aria-hidden="true"></span>
-
-          <div id="contributor-backdrop" class="fixed inset-0 z-40 hidden bg-black/40 sm:hidden" aria-hidden="true"></div>
-          <div class="relative shrink-0">
-            <button type="button" id="contributor-more" aria-expanded="false" aria-haspopup="true" class="relative inline-flex items-center gap-1.5 rounded-full border border-dashed border-border py-1.5 pl-3 pr-10 text-sm font-medium text-accent transition hover:border-accent">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-4 w-4" aria-hidden="true">
-                <circle cx="12" cy="8" r="3.25"></circle><path d="M5.5 19.2a6.5 6.5 0 0 1 13 0"></path>
-              </svg>
-              Contributors
-              <span class="absolute right-3 inline-flex w-6 items-center justify-end gap-0.5">
-                <span id="contributor-count"></span><span aria-hidden="true">▾</span>
-              </span>
-            </button>
-            <div id="contributor-panel" class="fixed inset-x-0 bottom-0 z-50 hidden max-h-[72vh] overflow-y-auto rounded-t-2xl border border-border bg-surface p-4 shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-0 sm:top-full sm:mt-2 sm:w-80 sm:rounded-xl">
-              <div class="mb-3 flex items-center justify-between sm:hidden">
-                <span class="font-semibold text-ink">Filter by contributor</span>
-                <button type="button" id="contributor-sheet-close" class="grid h-8 w-8 place-items-center rounded-lg text-muted hover:bg-surface-soft" aria-label="Close contributor filter">×</button>
-              </div>
-              <label for="contributor-search" class="sr-only">Search contributors</label>
-              <input id="contributor-search" type="search" placeholder="Search contributors…" autocomplete="off" class="w-full rounded-lg border border-border bg-elevated px-3 py-2 text-sm text-ink placeholder:text-soft" />
-              <div id="contributor-list" class="mt-2 flex max-h-[52vh] flex-col gap-1 overflow-y-auto sm:max-h-72">
-                {contributors.map((contributor) => (
-                  <button
-                    type="button"
-                    data-contributor-item
-                    data-key={contributor.key}
-                    data-name={contributor.name}
-                    data-github={contributor.github ?? ""}
-                    aria-pressed="false"
-                    class="contributor-item flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left hover:bg-surface-soft"
-                  >
-                    <span class="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full bg-accent-soft text-[10px] font-bold text-accent">
-                      {contributor.github ? <img src={`https://github.com/${contributor.github}.png?size=56`} alt="" class="h-full w-full object-cover" loading="lazy" /> : contributor.name.slice(0, 2).toUpperCase()}
-                    </span>
-                    <span class="contributor-name min-w-0 flex-1 truncate text-sm font-medium text-ink">{contributor.name}</span>
-                    <span class="text-xs text-soft">{contributor.count}</span>
-                  </button>
-                ))}
-              </div>
-              <a href={withBase("/contributors")} class="mt-3 flex items-center justify-center rounded-lg border border-border px-3 py-2 text-sm font-semibold text-ink hover:border-accent">Browse contributor directory</a>
-            </div>
-          </div>
-        </div>
-
-        <div id="active-filters" class="hidden flex-wrap items-center gap-2 border-t border-border pt-3">
-          <span id="contributor-chips" class="contents"></span>
-          <span id="tag-chips" class="contents"></span>
-        </div>
+              <SolutionCard solution={solution} />
+            </article>
+          ))
+        }
       </div>
-      <div id="gallery" class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {
-        solutions.map((solution) => (
-          <article
-            class="solution-item"
-            data-name={solution.data.name.toLowerCase()}
-            data-description={solution.data.description.toLowerCase()}
-            data-tags={solution.data.tags.join(",").toLowerCase()}
-            data-author={authorKey(solution.data.authorGithub, solution.data.author)}
-            data-author-name={solution.data.author.toLowerCase()}
-            data-agents={solution.data.agents.map((agent) => agent.name).join(" ").toLowerCase()}
-            data-workflows={solution.data.workflows.map((workflow) => workflow.name).join(" ").toLowerCase()}
-            data-makeup={solutionMakeup(solution.data.agentCount, solution.data.workflowCount)}
-            data-featured={solution.data.featured ? "1" : "0"}
-            data-updated={solution.data.updatedAt ?? solution.data.createdAt ?? ""}
-          >
-            <SolutionCard solution={solution} />
-          </article>
-        ))
-      }
-    </div>
-    <div id="empty-state" class:list={["rounded-2xl border border-dashed border-border bg-elevated px-6 py-14 text-center", solutions.length ? "hidden" : ""]}>
-      <p class="text-lg font-semibold text-ink">{solutions.length ? "No solutions match these filters" : "The first solution is on its way"}</p>
-      <p class="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-muted">
-        {solutions.length ? "Clear one or more filters to widen the gallery." : "Contribute an exploded Copilot Studio solution to make its agents and workflows visible before import."}
-      </p>
-    </div>
-    <div id="scroll-sentinel" class="flex h-16 items-end justify-center text-sm text-soft" aria-live="polite">
-      <span id="load-status">Scroll to load more</span>
-    </div>
+      <div id="empty-state" class:list={["rounded-2xl border border-dashed border-border bg-elevated px-6 py-14 text-center", solutions.length ? "hidden" : ""]}>
+        <p class="text-lg font-semibold text-ink">{solutions.length ? "No solutions match these filters" : "The first solution is on its way"}</p>
+        <p class="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-muted">
+          {solutions.length ? "Clear one or more filters to widen the gallery." : "Contribute an exploded Copilot Studio solution to make its agents and workflows visible before import."}
+        </p>
+        {solutions.length > 0 && (
+          <button type="button" data-clear-filters class="mt-5 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent">
+            Clear all filters
+          </button>
+        )}
+      </div>
+      <div id="scroll-sentinel" class="flex h-16 items-end justify-center text-sm text-soft" aria-live="polite">
+        <span id="load-status">Scroll to load more</span>
+      </div>
     </div>
   </section>
 </Layout>
 
 <script>
-  const featuredCarousel = document.getElementById("featured-carousel")!;
-  const featuredPrevious = document.getElementById("featured-previous") as HTMLButtonElement;
-  const featuredNext = document.getElementById("featured-next") as HTMLButtonElement;
-
-  function updateFeaturedControls() {
-    const maxScroll = featuredCarousel.scrollWidth - featuredCarousel.clientWidth;
-    featuredPrevious.disabled = featuredCarousel.scrollLeft <= 1;
-    featuredNext.disabled = featuredCarousel.scrollLeft >= maxScroll - 1;
+  type Facet = "categories" | "tags" | "authors";
+  type SolutionType = "" | "agents" | "workflows";
+  type SortMode = "featured" | "newest" | "name";
+  interface FilterState {
+    query: string;
+    type: SolutionType;
+    categories: Set<string>;
+    tags: Set<string>;
+    authors: Set<string>;
+  }
+  interface SolutionRecord {
+    text: string;
+    types: string[];
+    categories: string[];
+    tags: string[];
+    authors: string[];
   }
 
-  function scrollFeatured(direction: -1 | 1) {
-    const slide = featuredCarousel.querySelector<HTMLElement>(".featured-slide");
-    if (!slide) return;
-    const gap = Number.parseFloat(getComputedStyle(featuredCarousel).columnGap) || 16;
-    featuredCarousel.scrollBy({
-      left: direction * (slide.offsetWidth + gap),
-      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+  const FACETS: Facet[] = ["categories", "tags", "authors"];
+  // Categories and contributors are alternatives (match any); tags narrow (match all).
+  const MATCH_ANY = new Set<Facet>(["categories", "authors"]);
+  const URL_PARAMS: Record<Facet, string> = { categories: "category", tags: "tag", authors: "author" };
+  const FACET_NOUN: Record<Facet, string> = { categories: "category", tags: "tag", authors: "contributor" };
+  const TYPES: SolutionType[] = ["agents", "workflows"];
+  // Links shared before the type filter replaced the makeup dropdown.
+  const LEGACY_MAKEUP: Record<string, SolutionType> = { Agents: "agents", Workflows: "workflows", "Agents + workflows": "" };
+  const SORTS: SortMode[] = ["featured", "newest", "name"];
+  const BATCH = 9;
+
+  function required<T extends Element>(selector: string, root: ParentNode = document): T {
+    const element = root.querySelector<T>(selector);
+    if (!element) throw new Error(`Missing gallery element: ${selector}`);
+    return element;
+  }
+
+  const gallery = required<HTMLElement>("#gallery");
+  const items = Array.from(gallery.querySelectorAll<HTMLElement>(".solution-item"));
+  const search = required<HTMLInputElement>("#solution-search");
+  const sort = required<HTMLSelectElement>("#sort-select");
+  const count = required<HTMLElement>("#result-count");
+  const empty = required<HTMLElement>("#empty-state");
+  const sentinel = required<HTMLElement>("#scroll-sentinel");
+  const loadStatus = required<HTMLElement>("#load-status");
+  const microsoftRow = document.querySelector<HTMLElement>("[data-microsoft-row]");
+  const trigger = required<HTMLButtonElement>("#filters-trigger");
+  const triggerCount = required<HTMLElement>("#filters-count");
+  const filterOptions = required<HTMLElement>("#filter-options");
+  const appliedFilters = required<HTMLElement>("#applied-filters");
+  const typeButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-type-choice]"));
+  const dialog = required<HTMLDialogElement>("#filters-dialog");
+  const dialogBody = required<HTMLElement>(".dialog-body", dialog);
+  const closeButton = required<HTMLButtonElement>("[data-close-filters]", dialog);
+  const applyButton = required<HTMLButtonElement>("#apply-filters", dialog);
+  const draftSelections = required<HTMLElement>("#draft-selections", dialog);
+  const draftStatus = required<HTMLElement>("#draft-filter-status", dialog);
+  const filtersContext = required<HTMLElement>("#filters-context", dialog);
+  const facetOptions = Array.from(dialog.querySelectorAll<HTMLElement>("[data-facet-option]"));
+  const pickerSearches = Array.from(dialog.querySelectorAll<HTMLInputElement>("[data-picker-search]"));
+  const draftTypeInputs = Array.from(dialog.querySelectorAll<HTMLInputElement>('input[name="draft-type"]'));
+
+  const records = new Map<HTMLElement, SolutionRecord>(items.map((item) => {
+    const data = item.dataset;
+    const list = (value: string | undefined, separator = ",") => (value ?? "").split(separator).filter(Boolean);
+    return [item, {
+      text: [data.name, data.description, data.tags, data.categories, data.agents, data.workflows, data.authorName].join(" ").toLowerCase(),
+      types: list(data.types),
+      categories: list(data.categories, "|"),
+      tags: list(data.tags),
+      authors: data.author ? [data.author] : [],
+    }];
+  }));
+
+  const labels: Record<Facet, Map<string, string>> = { categories: new Map(), tags: new Map(), authors: new Map() };
+  const avatars = new Map<string, string>();
+  facetOptions.forEach((option) => {
+    const facet = option.dataset.facetOption as Facet;
+    const value = option.dataset.value ?? "";
+    labels[facet].set(value, facet === "authors" ? option.dataset.name ?? value : value);
+    if (facet === "authors" && option.dataset.github) avatars.set(value, `https://github.com/${option.dataset.github}.png?size=40`);
+  });
+
+  function emptyState(): FilterState {
+    return { query: "", type: "", categories: new Set(), tags: new Set(), authors: new Set() };
+  }
+
+  function cloneState(state: FilterState): FilterState {
+    return {
+      query: state.query,
+      type: state.type,
+      categories: new Set(state.categories),
+      tags: new Set(state.tags),
+      authors: new Set(state.authors),
+    };
+  }
+
+  function sameState(a: FilterState, b: FilterState): boolean {
+    return a.query === b.query
+      && a.type === b.type
+      && FACETS.every((facet) => a[facet].size === b[facet].size && [...a[facet]].every((value) => b[facet].has(value)));
+  }
+
+  function isFiltered(state: FilterState): boolean {
+    return Boolean(state.query || state.type) || FACETS.some((facet) => state[facet].size > 0);
+  }
+
+  function stateFromUrl(params: URLSearchParams): FilterState {
+    const values = (name: string) => (params.get(name) ?? "").split(",").map((value) => value.trim()).filter(Boolean);
+    const state = emptyState();
+    state.query = (params.get("q") ?? "").trim().toLowerCase();
+    state.type = TYPES.find((type) => type === params.get("type")) ?? LEGACY_MAKEUP[params.get("makeup") ?? ""] ?? "";
+    FACETS.forEach((facet) => {
+      values(URL_PARAMS[facet])
+        .map((value) => (facet === "authors" ? value.toLowerCase() : value))
+        .filter((value) => labels[facet].has(value))
+        .forEach((value) => state[facet].add(value));
+    });
+    return state;
+  }
+
+  function matches(record: SolutionRecord, state: FilterState, ignore?: Facet | "type"): boolean {
+    if (state.query && !record.text.includes(state.query)) return false;
+    if (ignore !== "type" && state.type && !record.types.includes(state.type)) return false;
+    return FACETS.every((facet) => {
+      const selected = state[facet];
+      if (facet === ignore || selected.size === 0) return true;
+      return MATCH_ANY.has(facet)
+        ? record[facet].some((value) => selected.has(value))
+        : [...selected].every((value) => record[facet].includes(value));
     });
   }
 
-  featuredPrevious.addEventListener("click", () => scrollFeatured(-1));
-  featuredNext.addEventListener("click", () => scrollFeatured(1));
-  featuredCarousel.addEventListener("keydown", (event) => {
-    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
-    event.preventDefault();
-    scrollFeatured(event.key === "ArrowLeft" ? -1 : 1);
-  });
-  featuredCarousel.addEventListener("scroll", updateFeaturedControls, { passive: true });
-  new ResizeObserver(updateFeaturedControls).observe(featuredCarousel);
-  updateFeaturedControls();
+  function facetCounts(state: FilterState, facet: Facet | "type"): Map<string, number> {
+    const counts = new Map<string, number>();
+    const ignore = facet === "type" || MATCH_ANY.has(facet) ? facet : undefined;
+    for (const record of records.values()) {
+      if (!matches(record, state, ignore)) continue;
+      const values = facet === "type" ? ["", ...record.types] : record[facet];
+      new Set(values).forEach((value) => counts.set(value, (counts.get(value) ?? 0) + 1));
+    }
+    return counts;
+  }
 
-  const BATCH = 8;
-  const gallery = document.getElementById("gallery")!;
-  const items = Array.from(gallery.querySelectorAll<HTMLElement>(".solution-item"));
-  const search = document.getElementById("solution-search") as HTMLInputElement;
-  const makeup = document.getElementById("makeup-filter") as HTMLSelectElement;
-  const sort = document.getElementById("sort-select") as HTMLSelectElement;
-  const count = document.getElementById("result-count")!;
-  const empty = document.getElementById("empty-state")!;
-  const sentinel = document.getElementById("scroll-sentinel")!;
-  const loadStatus = document.getElementById("load-status")!;
-  const filters = document.getElementById("discovery-filters")!;
-  const tagAll = filters.querySelector<HTMLButtonElement>("[data-tag-all]")!;
-  const tagInline = Array.from(filters.querySelectorAll<HTMLButtonElement>("[data-tag-inline]"));
-  const tagList = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-tag-list]"));
-  const tagMore = document.getElementById("tag-more")!;
-  const tagCount = document.getElementById("tag-count")!;
-  const tagPanel = document.getElementById("tag-panel")!;
-  const tagSearch = document.getElementById("tag-search") as HTMLInputElement;
-  const tagBackdrop = document.getElementById("tag-backdrop")!;
-  const tagSheetClose = document.getElementById("tag-sheet-close")!;
-  const contributorMore = document.getElementById("contributor-more")!;
-  const contributorCount = document.getElementById("contributor-count")!;
-  const contributorPanel = document.getElementById("contributor-panel")!;
-  const contributorSearch = document.getElementById("contributor-search") as HTMLInputElement;
-  const contributorBackdrop = document.getElementById("contributor-backdrop")!;
-  const contributorSheetClose = document.getElementById("contributor-sheet-close")!;
-  const contributorItems = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-contributor-item]"));
-  const activeFilters = document.getElementById("active-filters")!;
-  const tagChips = document.getElementById("tag-chips")!;
-  const contributorChips = document.getElementById("contributor-chips")!;
-  const activeTags = new Set<string>();
-  const activeAuthors = new Set<string>();
-  let query = "";
+  let applied = stateFromUrl(new URLSearchParams(location.search));
+  let draft = cloneState(applied);
+  let matched: HTMLElement[] = items;
   let shown = BATCH;
-  let matched = items;
+  let searchTimer: number | undefined;
+  let previousOverflow = "";
 
-  function selectedValues(param: string): string[] {
-    return (new URLSearchParams(location.search).get(param) ?? "")
-      .split(",")
-      .map((value) => value.trim())
-      .filter(Boolean);
+  function sortMode(): SortMode {
+    return SORTS.find((mode) => mode === sort.value) ?? "featured";
   }
 
   function syncUrl() {
     const params = new URLSearchParams();
-    if (query) params.set("q", search.value.trim());
-    if (makeup.value) params.set("makeup", makeup.value);
-    if (activeTags.size) params.set("tag", [...activeTags].join(","));
-    if (activeAuthors.size) params.set("author", [...activeAuthors].join(","));
-    if (sort.value !== "newest") params.set("sort", sort.value);
-    const next = `${location.pathname}${params.size ? `?${params}` : ""}`;
-    history.replaceState(null, "", next);
+    if (applied.query) params.set("q", search.value.trim());
+    if (applied.type) params.set("type", applied.type);
+    FACETS.forEach((facet) => {
+      if (applied[facet].size) params.set(URL_PARAMS[facet], [...applied[facet]].join(","));
+    });
+    if (sortMode() !== "featured") params.set("sort", sortMode());
+    history.replaceState(history.state, "", `${location.pathname}${params.size ? `?${params}` : ""}${location.hash}`);
   }
 
-  function computeMatched(): HTMLElement[] {
-    matched = items.filter((item) => {
-      const text = `${item.dataset.name} ${item.dataset.description} ${item.dataset.tags} ${item.dataset.agents} ${item.dataset.workflows}`;
-      const tags = (item.dataset.tags ?? "").split(",");
-      return (!query || `${text} ${item.dataset.authorName ?? ""}`.includes(query))
-        && (!makeup.value || item.dataset.makeup === makeup.value)
-        && (activeTags.size === 0 || tags.some((tag) => activeTags.has(tag)))
-        && (activeAuthors.size === 0 || activeAuthors.has(item.dataset.author ?? ""));
-    });
-    return matched.sort((a, b) => {
-      if (sort.value === "name") return (a.dataset.name ?? "").localeCompare(b.dataset.name ?? "");
-      return (b.dataset.updated ?? "").localeCompare(a.dataset.updated ?? "") || (a.dataset.name ?? "").localeCompare(b.dataset.name ?? "");
-    });
+  function compare(a: HTMLElement, b: HTMLElement): number {
+    const byName = (a.dataset.name ?? "").localeCompare(b.dataset.name ?? "");
+    const byNewest = (b.dataset.updated ?? "").localeCompare(a.dataset.updated ?? "");
+    switch (sortMode()) {
+      case "name":
+        return byName;
+      case "newest":
+        return byNewest || byName;
+      default:
+        return Number(b.dataset.featured) - Number(a.dataset.featured) || byNewest || byName;
+    }
+  }
+
+  function computeMatched() {
+    matched = items.filter((item) => matches(records.get(item)!, applied)).sort(compare);
   }
 
   function render() {
-    const fragment = document.createDocumentFragment();
-    matched.forEach((item) => fragment.appendChild(item));
-    items.filter((item) => !matched.includes(item)).forEach((item) => fragment.appendChild(item));
-    gallery.appendChild(fragment);
+    const visible = new Set(matched);
+    gallery.append(...matched, ...items.filter((item) => !visible.has(item)));
     items.forEach((item) => item.classList.add("hidden"));
     matched.slice(0, shown).forEach((item) => item.classList.remove("hidden"));
     count.textContent = `${matched.length} ${matched.length === 1 ? "solution" : "solutions"}`;
@@ -349,193 +442,245 @@ const featuredSolutions = solutions.filter((solution) => solution.data.featured)
         ? `Showing ${Math.min(shown, matched.length)} of ${matched.length} · scroll to load more`
         : `All ${matched.length} loaded`;
     empty.classList.toggle("hidden", matched.length > 0);
+    microsoftRow?.classList.toggle("hidden", isFiltered(applied));
+  }
+
+  function selectionChips(container: HTMLElement, state: FilterState, remove: (facet: Facet, value: string) => void): number {
+    container.replaceChildren();
+    let total = 0;
+    FACETS.forEach((facet) => state[facet].forEach((value) => {
+      const label = labels[facet].get(value) ?? value;
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.dataset.filterKey = `${facet}:${value}`;
+      chip.className = "filter-chip";
+      chip.title = label;
+      chip.setAttribute("aria-label", `Remove ${FACET_NOUN[facet]} filter: ${label}`);
+      const avatar = facet === "authors" ? avatars.get(value) : undefined;
+      if (avatar) {
+        const image = document.createElement("img");
+        image.src = avatar;
+        image.alt = "";
+        image.className = "h-5 w-5 shrink-0 rounded-full object-cover";
+        chip.append(image);
+      }
+      const text = document.createElement("span");
+      text.className = "truncate";
+      text.textContent = label;
+      const close = document.createElement("span");
+      close.setAttribute("aria-hidden", "true");
+      close.textContent = "×";
+      chip.append(text, close);
+      chip.addEventListener("click", () => remove(facet, value));
+      container.append(chip);
+      total += 1;
+    }));
+    return total;
+  }
+
+  function scrollIntoFilterView(element: HTMLElement) {
+    const bounds = filterOptions.getBoundingClientRect();
+    const target = element.getBoundingClientRect();
+    const delta = target.left < bounds.left + 4 ? target.left - bounds.left - 4 : Math.max(0, target.right - bounds.right + 4);
+    if (delta) filterOptions.scrollBy({ left: delta, behavior: "instant" });
+  }
+
+  function paintFilterBar() {
+    typeButtons.forEach((button) => {
+      const selected = (button.dataset.typeChoice ?? "") === applied.type;
+      button.setAttribute("aria-checked", String(selected));
+      button.tabIndex = selected ? 0 : -1;
+    });
+    const typeCounts = facetCounts(applied, "type");
+    document.querySelectorAll<HTMLElement>("[data-type-count]").forEach((element) => {
+      element.textContent = String(typeCounts.get(element.dataset.typeCount ?? "") ?? 0);
+    });
+
+    const total = selectionChips(appliedFilters, applied, (facet, value) => {
+      const chips = Array.from(appliedFilters.querySelectorAll<HTMLButtonElement>("button"));
+      const index = chips.findIndex((chip) => chip.dataset.filterKey === `${facet}:${value}`);
+      applied[facet].delete(value);
+      refresh();
+      const remaining = appliedFilters.querySelectorAll<HTMLButtonElement>("button");
+      const next = remaining[Math.min(index, remaining.length - 1)] ?? trigger;
+      next.focus({ preventScroll: true });
+    });
+    appliedFilters.hidden = total === 0;
+    triggerCount.hidden = total === 0;
+    triggerCount.textContent = String(total);
+    trigger.setAttribute("aria-label", total ? `Filters, ${total} active ${total === 1 ? "filter" : "filters"}` : "Filters");
   }
 
   function refresh() {
     computeMatched();
     shown = BATCH;
     render();
+    paintFilterBar();
     syncUrl();
   }
 
-  function paintFilterButton(button: HTMLButtonElement, selected: boolean) {
-    button.setAttribute("aria-pressed", String(selected));
-    button.classList.toggle("border-accent", selected);
-    button.classList.toggle("bg-accent-soft", selected);
-    button.classList.toggle("text-accent", selected);
-    button.classList.toggle("border-border", !selected);
-    button.classList.toggle("bg-elevated", !selected);
-    button.classList.toggle("text-muted", !selected);
+  function paintDraft() {
+    const draftTypeCounts = facetCounts(draft, "type");
+    draftTypeInputs.forEach((input) => {
+      input.checked = input.value === draft.type;
+      const countElement = input.parentElement?.querySelector<HTMLElement>("[data-draft-type-count]");
+      if (countElement) countElement.textContent = String(draftTypeCounts.get(input.value) ?? 0);
+    });
+    facetOptions.forEach((option) => {
+      const facet = option.dataset.facetOption as Facet;
+      const input = option.querySelector<HTMLInputElement>("input");
+      if (input) input.checked = draft[facet].has(option.dataset.value ?? "");
+    });
+    FACETS.forEach((facet) => {
+      const counts = facetCounts(draft, facet);
+      dialog.querySelectorAll<HTMLElement>(`[data-facet-count="${facet}"]`).forEach((element) => {
+        const value = element.dataset.value ?? "";
+        const total = counts.get(value) ?? 0;
+        element.textContent = String(total);
+        element.closest("[data-facet-option]")?.classList.toggle("is-empty", total === 0 && !draft[facet].has(value));
+      });
+      const selection = dialog.querySelector<HTMLElement>(`[data-selection-count="${facet}"]`);
+      if (selection) selection.textContent = draft[facet].size ? `(${draft[facet].size} selected)` : "";
+    });
+    const total = [...records.values()].filter((record) => matches(record, draft)).length;
+    applyButton.textContent = `Show ${total} ${total === 1 ? "solution" : "solutions"}`;
+    draftStatus.textContent = `${total} ${total === 1 ? "solution matches" : "solutions match"} these filters.`;
+    draftSelections.hidden = selectionChips(draftSelections, draft, (facet, value) => {
+      draft[facet].delete(value);
+      paintDraft();
+      closeButton.focus({ preventScroll: true });
+    }) === 0;
   }
 
-  function updateActiveFilterLayout() {
-    const hasFilters = activeTags.size > 0 || activeAuthors.size > 0;
-    activeFilters.classList.toggle("hidden", !hasFilters);
-    activeFilters.classList.toggle("flex", hasFilters);
+  function filterPicker(input: HTMLInputElement) {
+    const facet = input.dataset.pickerSearch as Facet;
+    const term = input.value.trim().toLowerCase();
+    const options = facetOptions.filter((option) => option.dataset.facetOption === facet);
+    options.forEach((option) => {
+      option.hidden = !(option.dataset.search ?? "").toLowerCase().includes(term);
+    });
+    const emptyMessage = dialog.querySelector<HTMLElement>(`[data-picker-empty="${facet}"]`);
+    if (emptyMessage) emptyMessage.hidden = options.some((option) => !option.hidden);
   }
 
-  function removableChip(label: string, remove: () => void, avatar?: string): HTMLButtonElement {
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "inline-flex max-w-full items-center gap-1.5 rounded-full border border-accent bg-accent-soft py-1 pl-2.5 pr-2 text-sm font-medium text-accent";
-    chip.setAttribute("aria-label", `Remove filter: ${label}`);
-    if (avatar) {
-      const image = document.createElement("img");
-      image.src = avatar;
-      image.alt = "";
-      image.className = "h-5 w-5 rounded-full object-cover";
-      chip.appendChild(image);
+  function commitSearch() {
+    clearTimeout(searchTimer);
+    applied.query = search.value.trim().toLowerCase();
+  }
+
+  function openFilters() {
+    const previousQuery = applied.query;
+    commitSearch();
+    if (applied.query !== previousQuery) refresh();
+    draft = cloneState(applied);
+    pickerSearches.forEach((input) => {
+      input.value = "";
+      filterPicker(input);
+    });
+    filtersContext.textContent = applied.query ? `Search: “${search.value.trim()}”` : "";
+    paintDraft();
+    previousOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    dialog.showModal();
+    dialogBody.scrollTop = 0;
+    trigger.setAttribute("aria-expanded", "true");
+  }
+
+  trigger.addEventListener("click", openFilters);
+  closeButton.addEventListener("click", () => dialog.close());
+  dialog.addEventListener("close", () => {
+    draft = cloneState(applied);
+    document.documentElement.style.overflow = previousOverflow;
+    trigger.setAttribute("aria-expanded", "false");
+    trigger.focus({ preventScroll: true });
+  });
+  dialog.addEventListener("click", (event) => {
+    if (event.target !== dialog) return;
+    const bounds = dialog.getBoundingClientRect();
+    const outside = event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom;
+    if (outside) dialog.close();
+  });
+  dialog.addEventListener("change", (event) => {
+    const input = event.target;
+    if (input instanceof HTMLInputElement && input.name === "draft-type") {
+      draft.type = TYPES.find((type) => type === input.value) ?? "";
+      paintDraft();
+      return;
     }
-    const text = document.createElement("span");
-    text.className = "max-w-52 truncate";
-    text.textContent = label;
-    chip.appendChild(text);
-    const close = document.createElement("span");
-    close.setAttribute("aria-hidden", "true");
-    close.textContent = "×";
-    chip.appendChild(close);
-    chip.addEventListener("click", remove);
-    return chip;
-  }
-
-  function paintTags() {
-    paintFilterButton(tagAll, activeTags.size === 0);
-    [...tagInline, ...tagList].forEach((button) => paintFilterButton(button, activeTags.has(button.dataset.tag ?? "")));
-    tagCount.textContent = activeTags.size ? `${activeTags.size} ` : "";
-    tagChips.replaceChildren();
-    activeTags.forEach((tag) => tagChips.appendChild(removableChip(tag, () => toggleTag(tag))));
-    updateActiveFilterLayout();
-  }
-
-  function toggleTag(tag: string) {
-    if (!tag) return;
-    if (activeTags.has(tag)) activeTags.delete(tag);
-    else activeTags.add(tag);
-    paintTags();
-    refresh();
-  }
-
-  function contributorMeta(key: string) {
-    const button = contributorItems.find((item) => item.dataset.key === key);
-    return {
-      name: button?.dataset.name ?? key,
-      github: button?.dataset.github ?? "",
-    };
-  }
-
-  function paintContributors() {
-    contributorItems.forEach((button) => {
-      const selected = activeAuthors.has(button.dataset.key ?? "");
-      button.setAttribute("aria-pressed", String(selected));
-      button.classList.toggle("bg-accent-soft", selected);
-      button.querySelector(".contributor-name")?.classList.toggle("text-accent", selected);
-    });
-    contributorCount.textContent = activeAuthors.size ? String(activeAuthors.size) : "";
-    contributorChips.replaceChildren();
-    activeAuthors.forEach((key) => {
-      const { name, github } = contributorMeta(key);
-      const avatar = github ? `https://github.com/${github}.png?size=40` : undefined;
-      contributorChips.appendChild(removableChip(name, () => toggleContributor(key), avatar));
-    });
-    updateActiveFilterLayout();
-  }
-
-  function toggleContributor(key: string) {
-    if (!key) return;
-    if (activeAuthors.has(key)) activeAuthors.delete(key);
-    else activeAuthors.add(key);
-    paintContributors();
-    refresh();
-  }
-
-  function setPanel(type: "tag" | "contributor", open: boolean) {
-    const panel = type === "tag" ? tagPanel : contributorPanel;
-    const trigger = type === "tag" ? tagMore : contributorMore;
-    const backdrop = type === "tag" ? tagBackdrop : contributorBackdrop;
-    const otherPanel = type === "tag" ? contributorPanel : tagPanel;
-    const otherTrigger = type === "tag" ? contributorMore : tagMore;
-    const otherBackdrop = type === "tag" ? contributorBackdrop : tagBackdrop;
-    otherPanel.classList.add("hidden");
-    otherBackdrop.classList.add("hidden");
-    otherTrigger.setAttribute("aria-expanded", "false");
-    panel.classList.toggle("hidden", !open);
-    backdrop.classList.toggle("hidden", !open);
-    trigger.setAttribute("aria-expanded", String(open));
-    if (open && matchMedia("(min-width: 640px)").matches) {
-      (type === "tag" ? tagSearch : contributorSearch).focus();
+    if (!(input instanceof HTMLInputElement) || !input.name.startsWith("filter-")) return;
+    const facet = input.name.slice("filter-".length) as Facet;
+    if (!FACETS.includes(facet)) return;
+    if (input.checked) draft[facet].add(input.value);
+    else draft[facet].delete(input.value);
+    paintDraft();
+  });
+  pickerSearches.forEach((input) => input.addEventListener("input", () => filterPicker(input)));
+  required<HTMLButtonElement>("#clear-extra-filters", dialog).addEventListener("click", () => {
+    draft.type = "";
+    FACETS.forEach((facet) => draft[facet].clear());
+    paintDraft();
+  });
+  applyButton.addEventListener("click", () => {
+    const before = new Set(Array.from(appliedFilters.querySelectorAll<HTMLElement>("button"), (chip) => chip.dataset.filterKey));
+    if (!sameState(applied, draft)) {
+      applied = cloneState(draft);
+      refresh();
     }
-  }
+    dialog.close();
+    const added = Array.from(appliedFilters.querySelectorAll<HTMLElement>("button")).find((chip) => !before.has(chip.dataset.filterKey));
+    if (added) scrollIntoFilterView(added);
+  });
 
-  tagAll.addEventListener("click", () => {
-    activeTags.clear();
-    paintTags();
-    refresh();
-  });
-  tagInline.forEach((button) => button.addEventListener("click", () => toggleTag(button.dataset.tag ?? "")));
-  tagList.forEach((button) => button.addEventListener("click", () => toggleTag(button.dataset.tag ?? "")));
-  contributorItems.forEach((button) => button.addEventListener("click", () => toggleContributor(button.dataset.key ?? "")));
-  tagMore.addEventListener("click", (event) => {
-    event.stopPropagation();
-    setPanel("tag", tagPanel.classList.contains("hidden"));
-  });
-  contributorMore.addEventListener("click", (event) => {
-    event.stopPropagation();
-    setPanel("contributor", contributorPanel.classList.contains("hidden"));
-  });
-  tagSheetClose.addEventListener("click", () => setPanel("tag", false));
-  contributorSheetClose.addEventListener("click", () => setPanel("contributor", false));
-  tagBackdrop.addEventListener("click", () => setPanel("tag", false));
-  contributorBackdrop.addEventListener("click", () => setPanel("contributor", false));
-  tagSearch.addEventListener("input", () => {
-    const term = tagSearch.value.trim().toLowerCase();
-    tagList.forEach((button) => button.classList.toggle("hidden", !(button.dataset.tag ?? "").includes(term)));
-  });
-  contributorSearch.addEventListener("input", () => {
-    const term = contributorSearch.value.trim().toLowerCase();
-    contributorItems.forEach((button) => {
-      const value = `${button.dataset.name ?? ""} ${button.dataset.github ?? ""}`.toLowerCase();
-      button.classList.toggle("hidden", !value.includes(term));
+  typeButtons.forEach((button, index) => {
+    button.addEventListener("click", () => {
+      const value = TYPES.find((type) => type === button.dataset.typeChoice) ?? "";
+      if (value === applied.type) return;
+      commitSearch();
+      applied.type = value;
+      refresh();
+      scrollIntoFilterView(button);
+    });
+    button.addEventListener("keydown", (event) => {
+      const step = ["ArrowRight", "ArrowDown"].includes(event.key) ? 1 : ["ArrowLeft", "ArrowUp"].includes(event.key) ? -1 : 0;
+      if (!step) return;
+      event.preventDefault();
+      const next = typeButtons[(index + step + typeButtons.length) % typeButtons.length]!;
+      next.focus({ preventScroll: true });
+      next.click();
     });
   });
-  document.addEventListener("click", (event) => {
-    const target = event.target as Node;
-    if (!tagPanel.classList.contains("hidden") && !tagPanel.contains(target) && !tagMore.contains(target)) setPanel("tag", false);
-    if (!contributorPanel.classList.contains("hidden") && !contributorPanel.contains(target) && !contributorMore.contains(target)) setPanel("contributor", false);
-  });
-  document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") return;
-    setPanel("tag", false);
-    setPanel("contributor", false);
+  filterOptions.addEventListener("focusin", (event) => {
+    if (event.target instanceof HTMLButtonElement) scrollIntoFilterView(event.target);
   });
 
-  let timer: number | undefined;
+  document.querySelectorAll<HTMLButtonElement>("[data-clear-filters]").forEach((button) => button.addEventListener("click", () => {
+    commitSearch();
+    applied = emptyState();
+    search.value = "";
+    refresh();
+    search.focus({ preventScroll: true });
+  }));
+
   search.addEventListener("input", () => {
-    clearTimeout(timer);
-    timer = window.setTimeout(() => {
-      query = search.value.trim().toLowerCase();
+    clearTimeout(searchTimer);
+    searchTimer = window.setTimeout(() => {
+      commitSearch();
       refresh();
     }, 120);
   });
-  for (const control of [makeup, sort]) {
-    control.addEventListener("change", () => {
-      refresh();
-    });
-  }
+  sort.addEventListener("change", refresh);
+
   new IntersectionObserver((entries) => {
     if (!entries[0]?.isIntersecting || shown >= matched.length) return;
     shown = Math.min(shown + BATCH, matched.length);
     render();
   }, { rootMargin: "400px" }).observe(sentinel);
 
-  const params = new URLSearchParams(location.search);
-  query = (params.get("q") ?? "").trim().toLowerCase();
-  search.value = params.get("q") ?? "";
-  makeup.value = params.get("makeup") ?? "";
-  sort.value = params.get("sort") === "name" ? "name" : "newest";
-  selectedValues("tag").forEach((tag) => activeTags.add(tag));
-  selectedValues("author").map((author) => author.toLowerCase()).forEach((author) => activeAuthors.add(author));
-  paintTags();
-  paintContributors();
+  const initialParams = new URLSearchParams(location.search);
+  search.value = initialParams.get("q") ?? "";
+  sort.value = SORTS.find((mode) => mode === initialParams.get("sort")) ?? "featured";
   computeMatched();
   render();
+  paintFilterBar();
+  if (initialParams.has("makeup")) syncUrl();
 </script>

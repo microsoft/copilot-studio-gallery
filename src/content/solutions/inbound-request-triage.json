@@ -8,6 +8,7 @@
     "classification",
     "shared-mailbox"
   ],
+  "category": "Operations",
   "author": "Jasmita Lamba and Isha Gautam",
   "createdAt": "2026-09-03",
   "updatedAt": "2026-09-04",
@@ -29,8 +30,8 @@
       "id": "{879e5c9e-a749-f111-bec7-7ced8d17c48d}",
       "name": "Inbound Request Triage Routing",
       "trigger": "When a new email arrives",
-      "nodeCount": 9,
-      "edgeCount": 5,
+      "nodeCount": 4,
+      "edgeCount": 3,
       "graph": {
         "nodes": [
           {
@@ -42,45 +43,6 @@
               "y": 351.648698354997
             },
             "details": {}
-          },
-          {
-            "id": "canvasNote-cd005ded-b43b-4123-8ed6-af8b6c3ca64d",
-            "name": "Note",
-            "type": "canvasNote",
-            "position": {
-              "x": 88.46150013700063,
-              "y": 97.78741039020997
-            },
-            "details": {
-              "markdown": "Triggers when any new email arrives in the shared request inbox with the subject filter \"email triage\".\nMake sure that the correct folder is selected.",
-              "color": "yellow"
-            }
-          },
-          {
-            "id": "canvasNote-01e48b7e-28e8-4f8a-a24c-e2232de600f5",
-            "name": "Note 3",
-            "type": "canvasNote",
-            "position": {
-              "x": 744.2490514451138,
-              "y": 91.61100059507652
-            },
-            "details": {
-              "markdown": "Template Note: You can modify the categories based on the common noise in your shared mailbox.",
-              "color": "yellow"
-            }
-          },
-          {
-            "id": "canvasNote-5d4657e7-dadd-48b3-9d0b-f32d1afc7d12",
-            "name": "Note 5",
-            "type": "canvasNote",
-            "position": {
-              "x": 1055.4565739187703,
-              "y": -42.66632460341046
-            },
-            "details": {
-              "markdown": "Main brain of the flow. Analyzes the request, decides category & routingTeamEmail, drafts acknowledgment and internal summary.\n\nSends polite acknowledgment to the person who submitted the request.\n\nDynamically sends the internal alert to the correct team using the routingTeamEmail from the Agent Node (no Switch needed).\n\n\n\n\n",
-              "color": "yellow"
-            }
           },
           {
             "id": "agent-3e0ef057-51af-4d8b-966a-1d3a7be8ceb2",
@@ -108,19 +70,6 @@
             "details": {}
           },
           {
-            "id": "canvasNote-f89b746f-bbd1-4ab1-9d86-4432aeb25c3f",
-            "name": "Note 3 2",
-            "type": "canvasNote",
-            "position": {
-              "x": 425.62607722281075,
-              "y": 56.30489575535273
-            },
-            "details": {
-              "markdown": "Template Note: Configure the required variables:\n\nRoutingEmails: Email ids for the respective routing team. If you are modifying the categories themselves, make sure to update the agent prompt as well to match the categories.",
-              "color": "red"
-            }
-          },
-          {
             "id": "classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8",
             "name": "Classify",
             "type": "classifyOnInlineAgent",
@@ -131,34 +80,9 @@
             "details": {
               "model": "GPT5Chat"
             }
-          },
-          {
-            "id": "canvasNote-df30cc97-9540-4d53-b309-3d1650b7bb73",
-            "name": "Note 5 2",
-            "type": "canvasNote",
-            "position": {
-              "x": 1071.4643096599866,
-              "y": 484.1642013822442
-            },
-            "details": {
-              "markdown": "In case tool usage return 404 tool not found, remove and add the tools again:\n\nOffice 365 Outlook: Send an email",
-              "color": "red"
-            }
           }
         ],
         "edges": [
-          {
-            "id": "edge-canvasNote-cd005ded-b43b-4123-8ed6-af8b6c3ca64d-canvasNote-01e48b7e-28e8-4f8a-a24c-e2232de600f5-input",
-            "source": "canvasNote-cd005ded-b43b-4123-8ed6-af8b6c3ca64d",
-            "target": "canvasNote-01e48b7e-28e8-4f8a-a24c-e2232de600f5",
-            "targetHandle": "input"
-          },
-          {
-            "id": "edge-canvasNote-01e48b7e-28e8-4f8a-a24c-e2232de600f5-canvasNote-5d4657e7-dadd-48b3-9d0b-f32d1afc7d12-input",
-            "source": "canvasNote-01e48b7e-28e8-4f8a-a24c-e2232de600f5",
-            "target": "canvasNote-5d4657e7-dadd-48b3-9d0b-f32d1afc7d12",
-            "targetHandle": "input"
-          },
           {
             "id": "edge-start-4a2b4084-f46a-4102-a7c2-d15a56b3ebcd-variable-74eca6db-182d-487b-acb4-8b99af7ec4ca",
             "source": "start-4a2b4084-f46a-4102-a7c2-d15a56b3ebcd",

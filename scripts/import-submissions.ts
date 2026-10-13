@@ -787,6 +787,9 @@ function safeWorkflowDetails(node: UnknownRecord, type: string): Record<string, 
   return details;
 }
 
+// Designer sticky notes are authoring annotations, not workflow steps, so the gallery never shows them.
+const WORKFLOW_ANNOTATION_TYPES = new Set(["canvasNote"]);
+
 export function normalizeWorkflowGraph(graph: UnknownRecord): GraphData {
   const rawNodes = array(graph.nodes).map(record).filter((node): node is UnknownRecord => Boolean(node));
   const nodes = rawNodes.map((node, index): GraphNode => {
@@ -798,7 +801,7 @@ export function normalizeWorkflowGraph(graph: UnknownRecord): GraphData {
     const x = Number(scalar(position ?? {}, "x") ?? scalar(node, "x") ?? index * 220);
     const y = Number(scalar(position ?? {}, "y") ?? scalar(node, "y") ?? 0);
     return { id, name, type, position: { x: Number.isFinite(x) ? x : index * 220, y: Number.isFinite(y) ? y : 0 }, details: safeWorkflowDetails(node, type) };
-  });
+  }).filter((node) => !WORKFLOW_ANNOTATION_TYPES.has(node.type));
   const knownIds = new Set(nodes.map((node) => node.id));
   const edges = array(graph.edges).map(record).filter((edge): edge is UnknownRecord => Boolean(edge)).flatMap((edge, index): GraphEdge[] => {
     const source = safeId(scalar(edge, "source") ?? "", "");

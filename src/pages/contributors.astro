@@ -62,9 +62,9 @@ const MAX_SOLUTIONS = 8;
             <ul class="mt-4 flex flex-wrap gap-1.5" role="list">
               {shown.map((solution) => (
                 <li>
-                  <a href={withBase(`/solutions/${solution.id}`)} title={solution.data.name} class="inline-flex max-w-full items-center gap-1.5 rounded-full bg-surface-soft px-2.5 py-1 text-xs font-medium text-muted hover:text-accent">
-                    {solution.data.featured && <span class="text-warning" aria-label="Featured">★</span>}
-                    <span class="max-w-52 truncate">{solution.data.name}</span>
+                  <a href={withBase(`/solutions/${solution.id}`)} title={solution.data.name} class="inline-flex max-w-full items-center gap-1.5 rounded-xl bg-surface-soft px-2.5 py-1 text-xs font-medium text-muted hover:text-accent">
+                    {solution.data.featured && <span class="text-accent" title="Built by Microsoft" aria-label="Built by Microsoft">◆</span>}
+                    <span>{solution.data.name}</span>
                   </a>
                 </li>
               ))}
@@ -74,7 +74,7 @@ const MAX_SOLUTIONS = 8;
             <div class="mt-auto flex flex-wrap gap-x-4 gap-y-1 border-t border-border pt-4 text-xs text-muted">
               <span>{contributor.agents} agents</span>
               <span>{contributor.workflows} workflows</span>
-              {contributor.featured > 0 && <span>{contributor.featured} featured</span>}
+              {contributor.featured > 0 && <span>{contributor.featured} built by Microsoft</span>}
             </div>
           </li>
         );

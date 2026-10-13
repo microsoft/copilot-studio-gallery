@@ -1,29 +1,43 @@
 import {
   Background,
+  BaseEdge,
+  EdgeLabelRenderer,
   Handle,
   MarkerType,
   MiniMap,
   Position,
   ReactFlow,
   ReactFlowProvider,
+  getBezierPath,
   useReactFlow,
   type Edge,
+  type EdgeProps,
   type Node,
   type NodeProps,
 } from "@xyflow/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from "react";
 import { graphVisualColor, graphVisualKind, isMcpNode, MCP_ICON_PATHS } from "../../lib/graphVisuals";
+import {
+  COMPONENT_LABELS,
+  countLabel,
+  isAgentStep,
+  resolveWorkflowAgent,
+  type AgentProfile,
+  type ComponentKind,
+} from "../../lib/inventory";
 import type { GraphData, GraphNode } from "../../lib/schema";
 import "./GraphCanvas.css";
 
 type CatalogNodeData = {
   source: GraphNode;
-  primary: boolean;
+  agent?: AgentProfile;
 };
 
 type CatalogNode = Node<CatalogNodeData, "catalog">;
-const WORKFLOW_LAYOUT_SCALE_X = 1.7;
-const WORKFLOW_LAYOUT_SCALE_Y = 1.5;
+// Designer positions are already ~300px apart; a light stretch keeps labels clear without shrinking the fitted view.
+const WORKFLOW_LAYOUT_SCALE_X = 1.1;
+const WORKFLOW_LAYOUT_SCALE_Y = 1.35;
+const READABLE_ZOOM = 0.62;
 
 const ICONS: Record<string, string> = {
   start: "IN",
@@ -33,7 +47,6 @@ const ICONS: Record<string, string> = {
   variable: "VR",
   builtinFunction: "FN",
   classifyOnInlineAgent: "CL",
-  canvasNote: "NT",
 };
 
 function GraphNodeIcon({ source }: { source: GraphNode }) {
@@ -79,15 +92,23 @@ function GraphNodeIcon({ source }: { source: GraphNode }) {
   return <>{ICONS[type] ?? type.slice(0, 2)}</>;
 }
 
+function agentStepLabel(source: GraphNode, agent: AgentProfile | undefined): string {
+  if (agent) return `Agent · ${countLabel(agent.components.length, "component")}`;
+  if (source.type === "classifyOnInlineAgent") return "Classifier";
+  return source.details.mode === "inline" ? "Inline agent" : "Agent";
+}
+
 function CatalogNodeView({ data, selected }: NodeProps<CatalogNode>) {
   const source = data.source;
-  const typeLabel = isMcpNode(source) ? "MCP server" : humanize(source.type);
+  const typeLabel = isAgentStep(source)
+    ? agentStepLabel(source, data.agent)
+    : isMcpNode(source) ? "MCP server" : humanize(source.type);
   return (
     <div
       className="catalog-node"
       data-kind={source.type}
       data-visual={graphVisualKind(source)}
-      data-primary={data.primary ? "true" : "false"}
+      data-agent-step={isAgentStep(source) ? "true" : undefined}
       data-selected={selected ? "true" : "false"}
     >
       <Handle type="target" id="target-top" position={Position.Top} />
@@ -112,6 +133,103 @@ function CatalogNodeView({ data, selected }: NodeProps<CatalogNode>) {
 }
 
 const nodeTypes = { catalog: CatalogNodeView };
+
+type FlowEdgeData = { label?: string; color: string };
+type FlowEdge = Edge<FlowEdgeData, "flow">;
+
+/** Soft curved connector; its label is an HTML pill above every line so other connectors never cover it. */
+function FlowEdgeView({ id, sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, markerEnd, data }: EdgeProps<FlowEdge>) {
+  const [path, labelX, labelY] = getBezierPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, curvature: 0.3 });
+  return (
+    <>
+      <BaseEdge id={id} path={path} markerEnd={markerEnd} style={{ stroke: data?.color, strokeWidth: 1.6, strokeOpacity: 0.8 }} />
+      {data?.label && (
+        <EdgeLabelRenderer>
+          <div
+            className="flow-edge-label"
+            style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`, "--edge-color": data.color } as CSSProperties}
+          >
+            {data.label}
+          </div>
+        </EdgeLabelRenderer>
+      )}
+    </>
+  );
+}
+
+const edgeTypes = { flow: FlowEdgeView };
+
+const COMPONENT_ORDER: ComponentKind[] = ["tool", "mcp", "skill"];
+
+function agentCountsSummary(agent: AgentProfile): string {
+  const parts = COMPONENT_ORDER.map((kind) => countLabel(agent.counts[kind], ...COMPONENT_LABELS[kind].inline));
+  if (agent.connectedAgents.length) parts.push(countLabel(agent.connectedAgents.length, "connected agent"));
+  return parts.join(" · ");
+}
+
+/** Single-level agent summary: components and delegate names only, never the delegates' own components. */
+function AgentComponentsSummary({ agent }: { agent: AgentProfile }) {
+  return (
+    <div className="agent-overlay">
+      <p className="agent-overlay__counts">{agentCountsSummary(agent)}</p>
+      {agent.components.length > 0 ? (
+        <ul className="agent-overlay__list">
+          {agent.components.map((component) => (
+            <li key={component.id} data-kind={component.kind}>
+              <span className="agent-overlay__kind">{COMPONENT_LABELS[component.kind].singular}</span>
+              <span className="agent-overlay__name">{component.name}</span>
+              {component.description && <span className="agent-overlay__description">{component.description}</span>}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="agent-overlay__empty">This agent has no tools, MCP servers, or skills.</p>
+      )}
+      {agent.connectedAgents.length > 0 && (
+        <p className="agent-overlay__delegates">
+          Delegates to {agent.connectedAgents.map((connected) => connected.name).join(", ")}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function openAgentsTab(event: ReactMouseEvent<HTMLAnchorElement>, schemaName: string) {
+  if (document.fullscreenElement) void document.exitFullscreen();
+  event.preventDefault();
+  window.dispatchEvent(new CustomEvent("gallery:show-agent", { detail: { schemaName } }));
+}
+
+function AgentStepDetails({ source, agent }: { source: GraphNode; agent?: AgentProfile }) {
+  if (agent) {
+    return (
+      <>
+        <div className="graph-detail__field">
+          <dt>Invokes agent</dt>
+          <dd>
+            <strong className="text-ink">{agent.name}</strong>
+          </dd>
+        </div>
+        <div className="graph-detail__field">
+          <dt>Agent components</dt>
+          <dd><AgentComponentsSummary agent={agent} /></dd>
+        </div>
+        <a className="graph-detail__link" href="#agents" onClick={(event) => openAgentsTab(event, agent.schemaName)}>
+          View {agent.name} in the Agents tab →
+        </a>
+      </>
+    );
+  }
+  if (source.type === "classifyOnInlineAgent") return null;
+  return (
+    <div className="graph-detail__field">
+      <dt>Agent</dt>
+      <dd>Inline agent defined in this workflow step. It has no separate agent components.</dd>
+    </div>
+  );
+}
+
+const AGENT_STEP_HIDDEN_DETAILS = new Set(["botSchemaName", "mode"]);
 
 function humanize(value: string): string {
   return value
@@ -163,20 +281,18 @@ function nearestHandles(source: GraphNode, target: GraphNode): {
 function Canvas({
   graph,
   label,
-  showNotesInitially,
   compact,
-  variant,
+  agents,
 }: {
   graph: GraphData;
   label: string;
-  showNotesInitially: boolean;
   compact: boolean;
-  variant: "workflow" | "agent";
+  agents: AgentProfile[];
 }) {
   const wrapper = useRef<HTMLDivElement>(null);
-  const { fitView, zoomIn, zoomOut } = useReactFlow<CatalogNode>();
-  const [selected, setSelected] = useState<GraphNode | null>(null);
-  const [showNotes, setShowNotes] = useState(showNotesInitially);
+  const { fitView, setViewport, zoomIn, zoomOut } = useReactFlow<CatalogNode, FlowEdge>();
+  const [selected, setSelected] = useState<CatalogNodeData | null>(null);
+  const [peek, setPeek] = useState<{ data: CatalogNodeData; left: number; top: number } | null>(null);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -186,82 +302,95 @@ function Canvas({
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  useEffect(() => {
-    const element = wrapper.current;
-    if (!element) return;
-    let hasFittedVisibleCanvas = false;
-    const observer = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect;
-      if (!hasFittedVisibleCanvas && width > 0 && height > 0) {
-        hasFittedVisibleCanvas = true;
-        requestAnimationFrame(() => void fitView({ padding: 0.18, duration: 0 }));
-      }
-    });
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [fitView, graph]);
-
-  const hiddenIds = useMemo(
-    () => new Set(showNotes ? [] : graph.nodes.filter((node) => node.type === "canvasNote").map((node) => node.id)),
-    [graph.nodes, showNotes],
-  );
-  const primaryAgentIds = useMemo(() => {
-    if (variant !== "agent") return new Set<string>();
-    const agentIds = new Set(graph.nodes.filter((node) => node.type === "agent").map((node) => node.id));
-    const delegatedIds = new Set(
-      graph.edges
-        .filter((edge) => agentIds.has(edge.source) && agentIds.has(edge.target))
-        .map((edge) => edge.target),
-    );
-    return new Set([...agentIds].filter((id) => !delegatedIds.has(id)));
-  }, [graph.edges, graph.nodes, variant]);
   const nodes = useMemo<CatalogNode[]>(
     () =>
-      graph.nodes
-        .filter((node) => !hiddenIds.has(node.id))
-        .map((node) => ({
+      graph.nodes.map((node) => {
+        const agent = isAgentStep(node) ? resolveWorkflowAgent(node, agents) : undefined;
+        return {
           id: node.id,
           type: "catalog",
-          position: variant === "workflow"
-            ? {
-                x: node.position.x * WORKFLOW_LAYOUT_SCALE_X,
-                y: node.position.y * WORKFLOW_LAYOUT_SCALE_Y,
-              }
-            : node.position,
-          data: { source: node, primary: primaryAgentIds.has(node.id) },
+          position: {
+            x: node.position.x * WORKFLOW_LAYOUT_SCALE_X,
+            y: node.position.y * WORKFLOW_LAYOUT_SCALE_Y,
+          },
+          data: { source: node, ...(agent ? { agent } : {}) },
           width: node.type === "start" || node.type === "end" ? 160 : 224,
           height: 72,
           draggable: false,
           selectable: !compact,
-        })),
-    [compact, graph.nodes, hiddenIds, primaryAgentIds, variant],
+        };
+      }),
+    [agents, compact, graph.nodes],
   );
+
+  // Computed from node positions so it works before ReactFlow has measured anything (fitView silently no-ops then).
+  const showInitialView = useMemo(() => (width: number, height: number) => {
+    if (nodes.length === 0) return;
+    const minX = Math.min(...nodes.map((node) => node.position.x));
+    const minY = Math.min(...nodes.map((node) => node.position.y));
+    const maxX = Math.max(...nodes.map((node) => node.position.x + (node.width ?? 224)));
+    const maxY = Math.max(...nodes.map((node) => node.position.y + (node.height ?? 72)));
+    const padding = compact ? 24 : 48;
+    const fitZoom = Math.min((width - padding * 2) / (maxX - minX), (height - padding * 2) / (maxY - minY), 1.1);
+    if (compact || fitZoom >= READABLE_ZOOM) {
+      const zoom = Math.max(fitZoom, 0.08);
+      void setViewport({
+        x: (width - (maxX - minX) * zoom) / 2 - minX * zoom,
+        y: (height - (maxY - minY) * zoom) / 2 - minY * zoom,
+        zoom,
+      }, { duration: 0 });
+      return;
+    }
+    // Too wide to read when fitted: start at a readable zoom from the trigger, and let people pan the rest.
+    const zoom = READABLE_ZOOM;
+    const contentHeight = (maxY - minY) * zoom;
+    const trigger = nodes.find((node) => node.data.source.type === "start")
+      ?? nodes.reduce((first, node) => (node.position.x < first.position.x ? node : first));
+    const triggerCenter = trigger.position.y + (trigger.height ?? 72) / 2;
+    const y = contentHeight < height - padding * 2
+      ? (height - contentHeight) / 2 - minY * zoom
+      : Math.min(padding - minY * zoom, Math.max(height - padding - maxY * zoom, height / 2 - triggerCenter * zoom));
+    void setViewport({ x: padding - minX * zoom, y, zoom }, { duration: 0 });
+  }, [compact, nodes, setViewport]);
+
+  useEffect(() => {
+    const element = wrapper.current;
+    if (!element) return;
+    let shown = false;
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (!shown && width > 0 && height > 0) {
+        shown = true;
+        requestAnimationFrame(() => showInitialView(width, height));
+      }
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [graph, showInitialView]);
   const graphNodeById = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
-  const edges = useMemo<Edge[]>(
+  const edges = useMemo<FlowEdge[]>(
     () =>
-      graph.edges
-        .filter((edge) => !hiddenIds.has(edge.source) && !hiddenIds.has(edge.target))
-        .map((edge) => {
-          const sourceNode = graphNodeById.get(edge.source);
-          const color = sourceNode
-            ? graphVisualColor(graphVisualKind(sourceNode))
-            : "var(--cp-border-strong)";
-          const targetNode = graphNodeById.get(edge.target);
-          const handles = sourceNode && targetNode
-            ? nearestHandles(sourceNode, targetNode)
-            : {};
-          return {
-            id: edge.id,
-            source: edge.source,
-            target: edge.target,
-            label: edge.label ?? branchLabel(edge.sourceHandle),
-            type: "smoothstep",
-            ...handles,
-            markerEnd: { type: MarkerType.ArrowClosed, color, width: 18, height: 18 },
-            style: { strokeWidth: 1.8, stroke: color },
-          };
-        }),
-    [graph.edges, graphNodeById, hiddenIds, variant],
+      graph.edges.map((edge) => {
+        const sourceNode = graphNodeById.get(edge.source);
+        const color = sourceNode
+          ? graphVisualColor(graphVisualKind(sourceNode))
+          : "var(--cp-border-strong)";
+        const targetNode = graphNodeById.get(edge.target);
+        const handles = sourceNode && targetNode
+          ? nearestHandles(sourceNode, targetNode)
+          : {};
+        const label = edge.label ?? branchLabel(edge.sourceHandle);
+        return {
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          type: "flow" as const,
+          ...handles,
+          data: { color, ...(label ? { label } : {}) },
+          markerEnd: { type: MarkerType.ArrowClosed, color, width: 14, height: 14 },
+        };
+      }),
+    [graph.edges, graphNodeById],
   );
 
   const toggleFullscreen = async () => {
@@ -270,10 +399,26 @@ function Canvas({
     else await wrapper.current.requestFullscreen();
   };
 
+  const showPeek = (event: ReactMouseEvent, node: CatalogNode) => {
+    if (compact || !node.data.agent || !wrapper.current) return;
+    const element = (event.target as Element).closest(".react-flow__node");
+    if (!element) return;
+    const bounds = wrapper.current.getBoundingClientRect();
+    const target = element.getBoundingClientRect();
+    const width = Math.min(288, bounds.width - 24);
+    setPeek({
+      data: node.data,
+      left: Math.max(12, Math.min(target.left - bounds.left, bounds.width - width - 12)),
+      top: Math.min(target.bottom - bounds.top + 8, bounds.height - 12),
+    });
+  };
+
+  const source = selected?.source;
+
   return (
     <div
       ref={wrapper}
-      className={`catalog-flow catalog-flow--${variant}${compact ? " catalog-flow--compact" : ""}`}
+      className={`catalog-flow${compact ? " catalog-flow--compact" : ""}`}
       aria-label={label}
     >
       <div className="graph-toolbar">
@@ -286,26 +431,25 @@ function Canvas({
         <button type="button" onClick={() => void fitView({ padding: 0.18, duration: 250 })}>
           Fit
         </button>
-        {!compact && graph.nodes.some((node) => node.type === "canvasNote") && (
-          <button type="button" aria-pressed={showNotes} onClick={() => setShowNotes((value) => !value)}>
-            Notes
-          </button>
-        )}
         {!compact && <button type="button" onClick={() => void toggleFullscreen()}>Full screen</button>}
       </div>
-      <ReactFlow<CatalogNode>
+      <ReactFlow<CatalogNode, FlowEdge>
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
-        fitView
-        fitViewOptions={{ padding: 0.18 }}
-        minZoom={0.15}
+        edgeTypes={edgeTypes}
+        minZoom={0.08}
         maxZoom={1.8}
         nodesDraggable={false}
         nodesConnectable={false}
         onNodeClick={(_, node) => {
-          if (!compact) setSelected(node.data.source);
+          if (compact) return;
+          setPeek(null);
+          setSelected(node.data);
         }}
+        onNodeMouseEnter={showPeek}
+        onNodeMouseLeave={() => setPeek(null)}
+        onMoveStart={() => setPeek(null)}
         onPaneClick={() => setSelected(null)}
         proOptions={{ hideAttribution: true }}
       >
@@ -314,36 +458,49 @@ function Canvas({
           <MiniMap
             pannable
             zoomable
+            style={{ width: 150, height: 96 }}
             position="bottom-right"
             nodeColor={(node) => graphVisualColor(graphVisualKind((node as CatalogNode).data.source))}
           />
         )}
       </ReactFlow>
-      {!compact && selected && (
-        <aside className="graph-detail" aria-label={`${selected.name} details`}>
+      {peek?.data.agent && peek.data.source.id !== source?.id && (
+        <div className="agent-peek" style={{ left: peek.left, top: peek.top }} role="tooltip">
+          <p className="catalog-node__type">Invokes agent</p>
+          <p className="agent-peek__name">{peek.data.agent.name}</p>
+          <AgentComponentsSummary agent={peek.data.agent} />
+          <p className="agent-peek__hint">Click the step for details</p>
+        </div>
+      )}
+      {!compact && selected && source && (
+        <aside className="graph-detail" aria-label={`${source.name} details`}>
           <div className="graph-detail__header">
             <div>
-              <p className="catalog-node__type">{humanize(selected.type)}</p>
-              <h3>{selected.name}</h3>
+              <p className="catalog-node__type">{isAgentStep(source) ? agentStepLabel(source, selected.agent) : humanize(source.type)}</p>
+              <h3>{source.name}</h3>
             </div>
             <button type="button" className="graph-detail__close" onClick={() => setSelected(null)} aria-label="Close node details">
               ×
             </button>
           </div>
           <dl className="graph-detail__content">
-            {selected.summary && (
+            {isAgentStep(source) && <AgentStepDetails source={source} agent={selected.agent} />}
+            {source.summary && (
               <div className="graph-detail__field">
                 <dt>Summary</dt>
-                <dd>{selected.summary}</dd>
+                <dd>{source.summary}</dd>
               </div>
             )}
-            {Object.entries(selected.details).map(([key, value]) => (
-              <div className="graph-detail__field" key={key}>
-                <dt>{humanize(key)}</dt>
-                <dd>{displayValue(value)}</dd>
-              </div>
-            ))}
-            {!selected.summary && Object.keys(selected.details).length === 0 && (
+            {Object.entries(source.details)
+              .filter(([key]) => !isAgentStep(source) || !AGENT_STEP_HIDDEN_DETAILS.has(key))
+              .filter(([, value]) => value !== "")
+              .map(([key, value]) => (
+                <div className="graph-detail__field" key={key}>
+                  <dt>{humanize(key)}</dt>
+                  <dd>{displayValue(value)}</dd>
+                </div>
+              ))}
+            {!isAgentStep(source) && !source.summary && Object.keys(source.details).length === 0 && (
               <div className="graph-detail__field">
                 <dt>Details</dt>
                 <dd>No additional configuration was published for this node.</dd>
@@ -359,19 +516,17 @@ function Canvas({
 export default function GraphCanvas({
   graph,
   label,
-  showNotesInitially = true,
   compact = false,
-  variant = "workflow",
+  agents = [],
 }: {
   graph: GraphData;
   label: string;
-  showNotesInitially?: boolean;
   compact?: boolean;
-  variant?: "workflow" | "agent";
+  agents?: AgentProfile[];
 }) {
   return (
     <ReactFlowProvider>
-      <Canvas graph={graph} label={label} showNotesInitially={showNotesInitially} compact={compact} variant={variant} />
+      <Canvas graph={graph} label={label} compact={compact} agents={agents} />
     </ReactFlowProvider>
   );
 }

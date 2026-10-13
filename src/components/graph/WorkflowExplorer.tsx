@@ -1,8 +1,9 @@
 import { useState } from "react";
+import type { AgentProfile } from "../../lib/inventory";
 import type { WorkflowPreview } from "../../lib/schema";
 import GraphCanvas from "./GraphCanvas";
 
-export default function WorkflowExplorer({ workflows }: { workflows: WorkflowPreview[] }) {
+export default function WorkflowExplorer({ workflows, agents = [] }: { workflows: WorkflowPreview[]; agents?: AgentProfile[] }) {
   const [activeId, setActiveId] = useState(workflows[0]?.id ?? "");
   const active = workflows.find((workflow) => workflow.id === activeId) ?? workflows[0];
 
@@ -19,7 +20,7 @@ export default function WorkflowExplorer({ workflows }: { workflows: WorkflowPre
     <div>
       <div className="mb-3 flex flex-col gap-3 rounded-[0.625rem] border border-border bg-surface p-3 sm:flex-row sm:items-center sm:justify-between">
         <label className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
-          <span className="shrink-0 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-soft">
+          <span className="shrink-0 text-sm font-medium text-muted">
             Workflow
           </span>
           <select
@@ -36,12 +37,12 @@ export default function WorkflowExplorer({ workflows }: { workflows: WorkflowPre
         </label>
         <div className="flex shrink-0 flex-wrap gap-3 text-xs text-muted">
           {active.trigger && <span>Trigger: <strong className="text-ink">{active.trigger}</strong></span>}
-          <span>{active.nodeCount} nodes</span>
+          <span>{active.nodeCount} steps</span>
           <span>{active.edgeCount} connections</span>
         </div>
       </div>
       <div className="overflow-hidden rounded-2xl border border-border bg-elevated card-shadow">
-        <GraphCanvas graph={active.graph} label={`${active.name} workflow graph`} />
+        <GraphCanvas graph={active.graph} label={`${active.name} workflow graph`} agents={agents} />
       </div>
     </div>
   );
