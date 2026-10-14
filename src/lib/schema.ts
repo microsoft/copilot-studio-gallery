@@ -14,8 +14,9 @@ export const CATEGORIES = [
 
 export type Category = (typeof CATEGORIES)[number];
 
-// One category per solution: the main persona or business activity it serves. Tags carry everything else.
-const categorySchema = z.enum(CATEGORIES);
+// At most one category per solution: the main persona or business activity it serves. Tags carry everything else.
+// Optional so submissions that predate categories still validate; uncategorized solutions simply skip the category filter.
+const categorySchema = z.enum(CATEGORIES).optional();
 
 export const submissionMetadataSchema = z.object({
   name: z.string().trim().min(1),

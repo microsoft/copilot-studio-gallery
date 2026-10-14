@@ -47,14 +47,15 @@ The slug must use lowercase letters, numbers, and single hyphens.
 }
 ```
 
-Required fields: `name`, `description`, `tags`, `category`, and `author`.
-Optional fields: `authorUrl`, `authorGithub`, `createdAt`, `updatedAt`, and
-`featured`.
+Required fields: `name`, `description`, `tags`, and `author`.
+Recommended: `category`. Optional fields: `authorUrl`, `authorGithub`,
+`createdAt`, `updatedAt`, and `featured`.
 
 `category` is the one fixed category that best matches who uses the solution
 and the business activity it supports: `Customer service`, `Sales & marketing`,
 `IT & security`, `Operations`, `HR`, `Finance`, `Legal & compliance`, or
-`Productivity & knowledge`. Use `tags` for anything more specific.
+`Productivity & knowledge`. Use `tags` for anything more specific. Solutions
+without a category still appear in the gallery, but not under category filters.
 
 `featured: true` marks a solution as **Built by Microsoft**. Leave it `false`
 unless the solution was built by a Microsoft team.
