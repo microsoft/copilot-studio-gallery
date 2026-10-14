@@ -1,72 +1,20 @@
 ---
-import { getCollection } from "astro:content";
 import Layout from "../layouts/Layout.astro";
-import SolutionCard from "../components/SolutionCard.astro";
-import { compareSolutionOrder } from "../lib/discovery";
+import SolutionGallery from "../components/SolutionGallery.astro";
 import { withBase } from "../lib/url";
-
-const solutions = (await getCollection("solutions"))
-  .filter((solution) => solution.data.featured)
-  .sort((a, b) => compareSolutionOrder(a.data, b.data, "newest"));
 ---
 
 <Layout title="Built by Microsoft" description="Copilot Studio solutions built by Microsoft.">
-  <main class="mx-auto w-full max-w-gallery px-4 py-10 sm:px-6">
-    <a href={withBase("/")} class="inline-flex items-center gap-1.5 text-sm text-muted transition hover:text-accent">
+  <section class="mx-auto w-full max-w-gallery px-4 py-10 sm:px-6" aria-labelledby="microsoft-heading">
+    <a data-gallery-link href={withBase("/")} class="inline-flex items-center gap-1.5 text-sm text-muted transition hover:text-accent">
       <span aria-hidden="true">←</span> All solutions
     </a>
-    <div class="mt-7 flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-semibold tracking-[-0.025em] text-ink sm:text-4xl">Built by Microsoft</h1>
-        <p class="mt-2 max-w-2xl text-muted">
-          Agents and workflows built by Microsoft teams. Review each solution before importing it into your environment.
-        </p>
-      </div>
-      <div class="flex flex-wrap items-center gap-4">
-        <p class="text-sm font-medium text-muted">{solutions.length} solution{solutions.length === 1 ? "" : "s"}</p>
-        <label class="flex items-center gap-2">
-          <span class="text-sm text-muted">Sort by</span>
-          <select id="microsoft-sort" aria-label="Sort Microsoft solutions" disabled={solutions.length === 0} class="h-11 rounded-lg border border-border bg-elevated px-3 text-sm text-ink">
-            <option value="newest">Newest</option>
-            <option value="name">Name</option>
-          </select>
-        </label>
-      </div>
+    <div class="mt-7">
+      <h1 id="microsoft-heading" class="text-3xl font-semibold tracking-[-0.025em] text-ink sm:text-4xl">Built by Microsoft</h1>
+      <p class="mt-2 max-w-2xl text-muted">
+        Agents and workflows built by Microsoft teams. Review each solution before importing it into your environment.
+      </p>
     </div>
-    <div id="microsoft-gallery" class="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {solutions.map((solution) => (
-        <article data-microsoft-solution data-name={solution.data.name} data-updated={solution.data.updatedAt ?? solution.data.createdAt ?? ""}>
-          <SolutionCard solution={solution} />
-        </article>
-      ))}
-      {solutions.length === 0 && (
-        <div class="col-span-full rounded-2xl border border-dashed border-border bg-elevated px-6 py-14 text-center text-muted">
-          No Microsoft-built solutions have been published yet.
-        </div>
-      )}
-    </div>
-  </main>
+  </section>
+  <SolutionGallery scope="microsoft" />
 </Layout>
-
-<script>
-  import { compareSolutionOrder, parseSortMode } from "../lib/discovery";
-
-  const sort = document.querySelector<HTMLSelectElement>("#microsoft-sort");
-  const gallery = document.querySelector<HTMLElement>("#microsoft-gallery");
-  if (!sort || !gallery) throw new Error("Missing Microsoft gallery sort controls");
-  const items = Array.from(gallery.querySelectorAll<HTMLElement>("[data-microsoft-solution]"));
-  const records = new Map(items.map((item) => [item, { name: item.dataset.name ?? "", updatedAt: item.dataset.updated }]));
-
-  const applySort = () => {
-    const mode = parseSortMode(sort.value);
-    gallery.append(...items.sort((a, b) => compareSolutionOrder(records.get(a)!, records.get(b)!, mode)));
-    const url = new URL(location.href);
-    if (mode === "newest") url.searchParams.delete("sort");
-    else url.searchParams.set("sort", mode);
-    history.replaceState(history.state, "", `${url.pathname}${url.search}${url.hash}`);
-  };
-
-  sort.value = parseSortMode(new URLSearchParams(location.search).get("sort"));
-  sort.addEventListener("change", applySort);
-  applySort();
-</script>

@@ -16,7 +16,10 @@ The site uses Astro, Tailwind CSS, React Flow, and static GitHub Pages deploymen
 - Separate Microsoft and community browsing sections that stay in place during
   search and filtering, with their own matches and empty states. Homepage sorting
   applies to community solutions; the dedicated
-  Microsoft listing has its own sort control.
+  Microsoft listing has its own sort control. Both pages share the same search
+  and filter controls, and their navigation links carry the active filters and
+  sort order. Filters stay selected even when they have no Microsoft matches;
+  counts and results reflect the gallery being viewed.
 - One entry per solution, with Overview, Agents, Workflows, and Files tabs.
 - Agent component tables listing each agent's tools, MCP servers, skills, and
   connected agents.
