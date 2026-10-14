@@ -10,6 +10,7 @@ import {
   deterministicZip,
   extractSavedGraph,
   importSubmissions,
+  inspectConnectors,
   layoutAgentGraph,
   normalizeAgentComponents,
   normalizeWorkflowGraph,
@@ -280,6 +281,26 @@ test("drops designer notes from workflow graphs", () => {
   });
   assert.deepEqual(graph.nodes.map((node) => node.id), ["start", "end"]);
   assert.deepEqual(graph.edges.map((edge) => edge.id), ["flow"]);
+});
+
+test("reads custom connectors packaged in the solution and flags MCP servers", async () => {
+  const connectorDir = join(workspace, "connector-check/Connector");
+  await mkdir(connectorDir, { recursive: true });
+  const definitions = {
+    "new_warehouse-20mcp": { info: { title: "Warehouse MCP", description: "Stock and fulfilment tools." }, paths: { "/mcp": { post: { "x-ms-agentic-protocol": "mcp-streamable-1.0" } } } },
+    "new_weather": { info: { title: "Weather API" }, paths: { "/forecast": { get: {} } } },
+  };
+  const files = [];
+  for (const [id, definition] of Object.entries(definitions)) {
+    const absolutePath = join(connectorDir, `${id}_openapidefinition.json`);
+    await writeFile(absolutePath, JSON.stringify(definition));
+    files.push({ absolutePath, path: `Connector/${id}_openapidefinition.json`, size: 1 });
+  }
+  files.push({ absolutePath: join(connectorDir, "ignored.csx"), path: "Connector/new_weather_customcodeblobcontent.csx", size: 1 });
+  assert.deepEqual(await inspectConnectors(files), [
+    { id: "new_warehouse-20mcp", name: "Warehouse MCP", description: "Stock and fulfilment tools.", mcp: true },
+    { id: "new_weather", name: "Weather API", mcp: false },
+  ]);
 });
 
 test("accepts a missing category but only one category from the fixed list", async () => {

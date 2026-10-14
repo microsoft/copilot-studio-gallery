@@ -1,5 +1,5 @@
 import { isMcpNode } from "./graphVisuals";
-import type { AgentPreview, GraphNode, SolutionRecord } from "./schema";
+import type { AgentPreview, ConnectorPreview, GraphNode, SolutionRecord } from "./schema";
 
 export type ComponentKind = "tool" | "mcp" | "skill";
 
@@ -116,6 +116,11 @@ function text(value: unknown): string | undefined {
 }
 
 type AgentSource = Pick<SolutionRecord, "agents" | "agentGraph">;
+type ConnectorSource = Partial<Pick<SolutionRecord, "connectors">>;
+
+function mcpKey(name: string): string {
+  return name.split(" — ")[0]!.trim().toLowerCase();
+}
 
 /** One profile per solution agent, built from the agent graph so every count on the page shares a source. */
 export function agentProfiles({ agents, agentGraph }: AgentSource): AgentProfile[] {
@@ -159,14 +164,22 @@ export function agentProfiles({ agents, agentGraph }: AgentSource): AgentProfile
   return profiles.sort((a, b) => Number(b.connectedAgents.length > 0) - Number(a.connectedAgents.length > 0));
 }
 
-export function solutionInventory(data: AgentSource & Pick<SolutionRecord, "workflows">): SolutionInventory {
+/** MCP servers packaged with the solution that no agent attaches directly, for example servers shared by agents and workflows. */
+export function sharedMcpServers(data: AgentSource & ConnectorSource): ConnectorPreview[] {
+  const attached = new Set(
+    agentProfiles(data).flatMap((profile) => profile.components.filter((component) => component.kind === "mcp").map((component) => mcpKey(component.name))),
+  );
+  return (data.connectors ?? []).filter((connector) => connector.mcp && !attached.has(mcpKey(connector.name)));
+}
+
+export function solutionInventory(data: AgentSource & ConnectorSource & Pick<SolutionRecord, "workflows">): SolutionInventory {
   const totals = agentProfiles(data).reduce(
     (sum, profile) => ({
       tools: sum.tools + profile.counts.tool,
       mcpServers: sum.mcpServers + profile.counts.mcp,
       skills: sum.skills + profile.counts.skill,
     }),
-    { tools: 0, mcpServers: 0, skills: 0 },
+    { tools: 0, mcpServers: sharedMcpServers(data).length, skills: 0 },
   );
   return {
     agents: data.agents.length,

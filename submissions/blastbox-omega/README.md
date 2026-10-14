@@ -1,26 +1,35 @@
 # BlastBox Omega Store Operations
 
-BlastBox Omega is a retro-gaming store solution built around one store-associate
-assistant and two specialist agents. Together they handle returns, warranty
-swaps, membership changes, stock questions, fulfillment alternatives, policy
-checks, and settlement.
-
-The solution includes two modern workflows that reuse the same agent and MCP
-data layer. They show how classification, loops, conditions, human review, and
-agent nodes combine into practical store operations.
+BlastBox Omega is the complete sample from the
+[Copilot Studio tech guide](https://github.com/microsoft/new-copilot-studio-tech-guide):
+a retro-gaming store where agents and workflows share one MCP data layer. This
+package combines the guide's connectors, agents, and workflows solutions, so a
+single import brings in everything.
 
 ## Agents
 
-- **Store Associate Assistant** coordinates the customer's complete visit and
-  delegates stock and policy questions to its specialist agents.
-- **Inventory & Fulfillment Agent** checks stock, alternatives, restock timing,
-  compatibility, and inventory aging.
+- **Store Associate Assistant** is the in-store lead agent. It coordinates the
+  customer's visit and hands stock and policy questions to its specialists. Its
+  skills cover prorated refunds, BlastPoints reconciliation, and PDF slip
+  generation.
+- **Returns & Service Assistant** is the self-serve agent for membership card
+  reissues. Its skills handle the reissue flow and generate the new card image.
 - **Store Policy Agent** grounds returns, warranty, membership, and markdown
   decisions in store policy.
+- **Inventory & Fulfillment Agent** checks stock, alternatives, restock timing,
+  and inventory aging.
 
-The primary assistant also includes inline skills for prorated refunds, points
-reconciliation, and PDF slip generation, plus MCP-backed order and membership
-tools.
+## MCP servers
+
+Four MCP servers ship as custom connectors with inline code, so no external
+hosting is needed. The agents and workflows share them.
+
+| MCP server | Used by |
+| --- | --- |
+| Order Management MCP | Store Associate Assistant |
+| Membership MCP v2 | Store Associate Assistant, Returns & Service Assistant |
+| Policy RAG MCP v2 | Store Policy Agent |
+| Warehouse MCP | Inventory & Fulfillment Agent |
 
 ## BlastBox Post-Sales Service
 
@@ -39,7 +48,14 @@ decisions. The run ends with an HTML inventory report sent by email.
 
 ## Import
 
-Download the rebuilt solution ZIP from this page and import it through Power
-Platform. The package contains the original exploded solution files, including
-its agents, workflows, connectors, skills, and connection references. Review and
-replace environment-specific connections during import.
+1. Download the solution ZIP from this page and import it through Power
+   Platform. Create or select the connections it asks for, such as Office 365
+   Outlook, Approvals, and the four MCP connectors.
+2. Attach each MCP server to the agents that use it (see the table above). MCP
+   tool attachments are environment-specific, so they aren't included in the
+   package.
+3. Publish the agents, then turn on the two workflows.
+
+For a scripted deployment and step-by-step validation scenarios, see the
+[tech guide's sample solution](https://github.com/microsoft/new-copilot-studio-tech-guide/tree/main/sample/solution).
+All data is mock.

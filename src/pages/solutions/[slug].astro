@@ -7,7 +7,7 @@ import MicrosoftBadge from "../../components/MicrosoftBadge.astro";
 import SolutionDownload from "../../components/SolutionDownload.astro";
 import GraphCanvas from "../../components/graph/GraphCanvas";
 import WorkflowExplorer from "../../components/graph/WorkflowExplorer";
-import { agentProfiles, inventoryBlocks, solutionInventory } from "../../lib/inventory";
+import { agentProfiles, inventoryBlocks, sharedMcpServers, solutionInventory } from "../../lib/inventory";
 import { authorKey, solutionMakeup } from "../../lib/schema";
 import { withBase } from "../../lib/url";
 import { workflowConnectorNames, workflowMetadataNotice, workflowTriggerType } from "../../lib/workflowMetadata";
@@ -27,6 +27,7 @@ const guide = guides.find((entry) => entry.id === solution.id);
 const GuideContent = guide ? (await render(guide)).Content : null;
 const inventory = solutionInventory(data);
 const profiles = agentProfiles(data);
+const sharedMcp = sharedMcpServers(data);
 const makeup = solutionMakeup(inventory.agents, inventory.workflows);
 const contributorKey = authorKey(data.authorGithub, data.author);
 const updated = data.updatedAt ?? data.createdAt;
@@ -76,7 +77,7 @@ const heroWorkflow = data.workflows[0];
           </div>
         ) : (
           <div class="studio-canvas border-t border-border px-4 py-6 sm:px-8 sm:py-8">
-            <AgentMatrix agents={profiles} compact />
+            <AgentMatrix agents={profiles} sharedMcp={sharedMcp} compact />
           </div>
         )
       }
@@ -119,7 +120,7 @@ const heroWorkflow = data.workflows[0];
                   <h2 class="text-xl font-semibold text-ink">Agents and their components</h2>
                   <p class="mt-1 text-sm text-muted">The MCP servers, tools, and skills each agent uses, and which agents hand off to others. Hover a component for its description.</p>
                 </div>
-                <AgentMatrix agents={profiles} />
+                <AgentMatrix agents={profiles} sharedMcp={sharedMcp} />
               </>
             ) : (
               <div class="rounded-2xl border border-dashed border-border bg-elevated px-6 py-14 text-center text-muted">No agents are included in this solution.</div>

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { compareSolutionOrder, containedComponents, containsEveryComponent, parseSortMode } from "../src/lib/discovery";
-import { solutionInventory } from "../src/lib/inventory";
+import { sharedMcpServers, solutionInventory } from "../src/lib/inventory";
 
 test("sorts by newest using updated dates, creation dates, and name tie-breaks", () => {
   const solutions = [
@@ -73,4 +73,26 @@ test("Contains aggregates components across agents in the same solution", () => 
   });
   assert.equal(containsEveryComponent(containedComponents(inventory), ["mcp", "skill"]), true);
   assert.equal(containsEveryComponent(containedComponents(inventory), ["tool"]), false);
+});
+
+test("counts MCP servers shipped as connectors once, without double-counting ones attached to agents", () => {
+  const data = {
+    workflows: [],
+    agents: [{ id: "lead", schemaName: "lead_agent", name: "Lead", channels: [], toolCount: 1, skillCount: 0, connectedAgentCount: 0 }],
+    agentGraph: {
+      nodes: [
+        { id: "agent:lead", name: "Lead", type: "agent", position: { x: 0, y: 0 }, details: {} },
+        { id: "tool:orders", name: "Order Management MCP — Order Management MCP Server", type: "tool", position: { x: 0, y: 0 }, details: { description: "MCP server" } },
+      ],
+      edges: [{ id: "uses", source: "agent:lead", target: "tool:orders" }],
+    },
+    connectors: [
+      { id: "orders", name: "Order Management MCP", mcp: true },
+      { id: "warehouse", name: "Warehouse MCP", mcp: true },
+      { id: "weather", name: "Weather API", mcp: false },
+    ],
+  };
+  assert.deepEqual(sharedMcpServers(data).map((connector) => connector.name), ["Warehouse MCP"]);
+  assert.equal(solutionInventory(data).mcpServers, 2);
+  assert.equal(solutionInventory({ ...data, connectors: undefined }).mcpServers, 1);
 });

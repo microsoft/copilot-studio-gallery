@@ -8,15 +8,18 @@ import {
   type ComponentKind,
   type ConnectedAgentRef,
 } from "../lib/inventory";
+import type { ConnectorPreview } from "../lib/schema";
 import BlockIcon from "./BlockIcon.astro";
 
 interface Props {
   agents: AgentProfile[];
+  /** MCP servers packaged with the solution but not attached to a specific agent. */
+  sharedMcp?: ConnectorPreview[];
   /** Hero use: no anchors, so ids stay unique on the page. */
   compact?: boolean;
 }
 
-const { agents, compact = false } = Astro.props;
+const { agents, sharedMcp = [], compact = false } = Astro.props;
 const { teams, standalone } = agentTeams(agents);
 const KIND_ORDER: ComponentKind[] = ["mcp", "tool", "skill"];
 const columns = KIND_ORDER.filter((kind) => agents.some((agent) => agent.counts[kind] > 0));
@@ -143,4 +146,24 @@ function displayName(name: string): string {
       </div>
     );
   })}
+
+  {sharedMcp.length > 0 && (
+    <div class="agent-matrix__shared" role="row">
+      <div role="cell">
+        <p class="agent-matrix__shared-title">
+          <BlockIcon kind="mcp" class="agent-matrix__head-icon" />
+          {countLabel(sharedMcp.length, "MCP server")} included in this solution
+        </p>
+        <p class="agent-matrix__role">Packaged as custom connectors and shared by the agents and workflows. Connect each one to the agents that use it after import.</p>
+        <ul class="component-chips mt-2.5">
+          {sharedMcp.map((connector) => (
+            <li class="component-chip" data-kind="mcp" tabindex="0" data-tip={connector.description} title={connector.description ? undefined : connector.name}>
+              <BlockIcon kind="mcp" class="component-chip__icon" />
+              <span>{connector.name}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  )}
 </div>

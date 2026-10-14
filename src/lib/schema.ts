@@ -93,6 +93,14 @@ export const workflowSchema = z.object({
   graph: graphSchema,
 });
 
+// Custom connectors shipped inside the solution package (for example, inline MCP servers shared by agents and workflows).
+export const connectorSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  mcp: z.boolean(),
+});
+
 export const fileSummarySchema = z.object({
   path: z.string(),
   category: z.string(),
@@ -120,6 +128,7 @@ export const solutionSchema = z.object({
   agents: z.array(agentSchema),
   agentGraph: graphSchema,
   workflows: z.array(workflowSchema),
+  connectors: z.array(connectorSchema).default([]),
   files: z.array(fileSummarySchema),
 });
 
@@ -131,6 +140,7 @@ export type GraphData = z.infer<typeof graphSchema>;
 export type AgentPreview = z.infer<typeof agentSchema>;
 export type WorkflowPreview = z.infer<typeof workflowSchema>;
 export type FileSummary = z.infer<typeof fileSummarySchema>;
+export type ConnectorPreview = z.infer<typeof connectorSchema>;
 export type SolutionRecord = z.infer<typeof solutionSchema>;
 
 export function authorKey(github: string | undefined, author: string): string {

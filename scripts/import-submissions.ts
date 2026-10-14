@@ -9,6 +9,7 @@ import { parse as parseYaml } from "yaml";
 import {
   submissionMetadataSchema,
   type AgentPreview,
+  type ConnectorPreview,
   type FileSummary,
   type GraphData,
   type GraphEdge,
@@ -904,6 +905,34 @@ function rootComponentCount(customizations: unknown): number | undefined {
   return undefined;
 }
 
+const MCP_PROTOCOL_PATTERN = /^mcp/i;
+
+/** Reads custom connectors packaged in the solution; MCP servers declare an `x-ms-agentic-protocol`. */
+export async function inspectConnectors(files: SolutionFile[]): Promise<ConnectorPreview[]> {
+  const definitions = files.filter((file) => /^connector\/[^/]+_openapidefinition\.json$/i.test(file.path));
+  const connectors: ConnectorPreview[] = [];
+  for (const file of definitions) {
+    let definition: unknown;
+    try {
+      definition = JSON.parse(await readText(file));
+    } catch (error) {
+      throw new Error(`cannot parse connector ${file.path}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    const id = basename(file.path).replace(/_openapidefinition\.json$/i, "");
+    const info = record(field(record(definition) ?? {}, "info"));
+    const name = (info && scalar(info, "title")) ?? id;
+    const description = info ? safeValue(field(info, "description"))?.trim() : undefined;
+    const protocols = valuesForKey(definition, "x-ms-agentic-protocol").filter((value): value is string => typeof value === "string");
+    connectors.push({
+      id,
+      name,
+      ...(description ? { description } : {}),
+      mcp: protocols.some((protocol) => MCP_PROTOCOL_PATTERN.test(protocol)),
+    });
+  }
+  return connectors.sort((a, b) => a.name.localeCompare(b.name));
+}
+
 export function deterministicZip(files: SolutionFile[], solutionRoot: string): Buffer {
   const zip = new AdmZip();
   for (const file of [...files].sort((a, b) => a.path.localeCompare(b.path))) {
@@ -945,7 +974,11 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
   const solutionXml = parseXml(await readText(requiredFile(files, "solution.xml")));
   const customizationsXml = parseXml(await readText(requiredFile(files, "customizations.xml")));
   const derived = deriveSolutionFields(solutionXml, customizationsXml);
-  const [{ agents, graph }, workflows] = await Promise.all([inspectAgents(files), inspectWorkflows(files, customizationsXml)]);
+  const [{ agents, graph }, workflows, connectors] = await Promise.all([
+    inspectAgents(files),
+    inspectWorkflows(files, customizationsXml),
+    inspectConnectors(files),
+  ]);
   if (agents.length === 0 && workflows.length === 0) throw new Error("solution must contain at least one agent or workflow");
   const manifest = filesManifest(files);
   const componentCount = rootComponentCount(solutionXml) ?? manifest.filter((file) => ["bot", "component", "workflow"].includes(file.category)).length;
@@ -961,6 +994,7 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
     agents,
     agentGraph: graph,
     workflows,
+    connectors,
     files: manifest,
   };
   const readmePath = join(submissionPath, "README.md");
