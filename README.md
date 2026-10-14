@@ -9,12 +9,32 @@ The site uses Astro, Tailwind CSS, React Flow, and static GitHub Pages deploymen
 
 ## Features
 
-- Searchable, filterable gallery of complete solutions.
+- Searchable gallery of complete solutions, filterable by agents or workflows,
+  category, tag, contributor, and component types. The **Contains** filter requires
+  every selected type: for example, MCP servers and Skills must both be present
+  in the solution.
+- Separate Microsoft and community browsing sections that stay in place during
+  search and filtering, with their own matches and empty states. Homepage sorting
+  applies to community solutions; the dedicated
+  Microsoft listing has its own sort control. Both pages share the same search
+  and filter controls, and their navigation links carry the active filters and
+  sort order. Filters stay selected even when they have no Microsoft matches;
+  counts and results reflect the gallery being viewed.
 - One entry per solution, with Overview, Agents, Workflows, and Files tabs.
-- Interactive agent architecture graphs showing agents, tools, skills, and
-  connected-agent delegation.
-- Interactive workflow previews rendered from each export's saved designer graph.
+- Agent component tables listing each agent's tools, MCP servers, skills, and
+  connected agents.
+- Interactive workflow previews rendered from each export's saved designer graph,
+  preserving loop containers and parent-relative step positions, with agent steps
+  showing the invoked agent's components on hover or select.
+- Workflow nodes keep their submitted titles and separately identify connector
+  services and trigger types (such as HTTP, email, or manual) from export metadata.
+  Titles and metadata wrap without truncation. Missing types are explained once
+  per workflow and in node details, never guessed from the step title.
 - Deterministic downloadable ZIP rebuilt from the submitted exploded solution.
+- Compact downloads near the top of narrow solution pages, with a visible trust
+  checkbox and support disclaimer. The ZIP stays locked until the import warning
+  is acknowledged. Microsoft-provided samples and community examples have distinct
+  acknowledgement text; package metadata is available in the **Files** tab.
 - Contributor directory, individual contributor profiles, and JSON catalog endpoint.
 - Pull-request validation for metadata, solution structure, graph availability,
   unsafe filesystem entries, and generated output.
