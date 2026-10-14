@@ -1,5 +1,5 @@
 import type { CollectionEntry } from "astro:content";
-import { authorKey } from "./schema";
+import { CATEGORIES, authorKey, type Category } from "./schema";
 
 export type SolutionEntry = CollectionEntry<"solutions">;
 
@@ -14,6 +14,21 @@ export interface ContributorSummary {
   featured: number;
   latest?: string;
   solutions: SolutionEntry[];
+}
+
+export function collectCategories(solutions: SolutionEntry[]): Array<[Category, number]> {
+  return CATEGORIES.map((category): [Category, number] => [
+    category,
+    solutions.filter((solution) => solution.data.category === category).length,
+  ]);
+}
+
+/** Built by Microsoft first, then newest, then name — the gallery's default order. */
+export function compareSolutions(a: SolutionEntry, b: SolutionEntry): number {
+  const updated = (entry: SolutionEntry) => entry.data.updatedAt ?? entry.data.createdAt ?? "";
+  return Number(b.data.featured) - Number(a.data.featured)
+    || updated(b).localeCompare(updated(a))
+    || a.data.name.localeCompare(b.data.name);
 }
 
 export function collectTags(solutions: SolutionEntry[]): Array<[string, number]> {

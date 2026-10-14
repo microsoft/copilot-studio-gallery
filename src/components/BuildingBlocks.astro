@@ -1,0 +1,31 @@
+---
+import BlockIcon from "./BlockIcon.astro";
+import { BLOCK_KINDS, BLOCK_LABELS, countLabel, type BlockCounts } from "../lib/inventory";
+
+interface Props {
+  counts: BlockCounts;
+  /** sm: icon + number (cards). md: icon + number + label (detail pages). */
+  size?: "sm" | "md";
+  class?: string;
+}
+
+const { counts, size = "sm", class: className } = Astro.props;
+const blocks = BLOCK_KINDS.filter((kind) => (counts[kind] ?? 0) > 0).map((kind) => ({
+  kind,
+  count: counts[kind] ?? 0,
+  label: countLabel(counts[kind] ?? 0, ...BLOCK_LABELS[kind]),
+}));
+---
+
+{
+  blocks.length > 0 && (
+    <ul class:list={["building-blocks", `building-blocks--${size}`, className]} aria-label={`Contains ${blocks.map((block) => block.label).join(", ")}`}>
+      {blocks.map((block) => (
+        <li class="building-block" data-kind={block.kind} title={block.label}>
+          <BlockIcon kind={block.kind} class="building-block__icon" />
+          {size === "sm" ? <span class="building-block__count">{block.count}</span> : <span class="building-block__label">{block.label}</span>}
+        </li>
+      ))}
+    </ul>
+  )
+}
