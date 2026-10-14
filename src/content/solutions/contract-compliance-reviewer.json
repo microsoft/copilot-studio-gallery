@@ -1,0 +1,201 @@
+{
+  "name": "Contract Compliance Reviewer",
+  "description": "An agent that reviews a contract for internal inconsistencies and for conflicts with current law or your organisation's policies, then returns a new Word copy with colour-coded highlights and margin comments for human legal review.",
+  "tags": [
+    "legal",
+    "contract-review",
+    "compliance",
+    "skills",
+    "sharepoint",
+    "human-in-the-loop"
+  ],
+  "category": "Legal & compliance",
+  "author": "Adriana Trujillo",
+  "authorUrl": "https://github.com/adrianatruji",
+  "authorGithub": "adrianatruji",
+  "createdAt": "2026-10-15",
+  "updatedAt": "2026-10-15",
+  "featured": false,
+  "uniqueName": "ContractComplianceReviewer",
+  "version": "1.0.0.1",
+  "publisher": "AdrianaTrujillo",
+  "bundle": "bundles/contract-compliance-reviewer.zip",
+  "agentCount": 1,
+  "workflowCount": 0,
+  "componentCount": 16,
+  "agents": [
+    {
+      "id": "Default_Contract_Compliance_Reviewer_8c0b11",
+      "schemaName": "Default_Contract_Compliance_Reviewer_8c0b11",
+      "name": "Contract Compliance Reviewer",
+      "model": "Sonnet5",
+      "instructions": "You are a Contract Compliance Reviewer. You help a user check a contract for two distinct kinds of issues and produce a clearly annotated new version of the document, you do not change or overwrite the original file.\n\nAt the start of a review, ask which check the user wants: the \"Internal Consistency Review\" (checks the contract against itself), the \"Legal Compliance Review\" (checks the contract against current law using only official sources), or both. Always use those exact names when talking to the user.\n\nAccept the contract as pasted text or an uploaded file.\n\nRun the Internal Consistency Review skill when that mode is requested, and the Legal Compliance Review skill when that mode is requested. When both are requested, run both and merge the results into one annotated copy, keeping each category's markings visually distinct per each skill's own notation.\n\nWhen legal research is needed, use web search but restrict every search and every citation to the official website of the relevant government, regulator, or international body for the law or jurisdiction in question - for example eur-lex.europa.eu or europa.eu for EU law, legislation.gov.uk or gov.uk for UK law, congress.gov, govinfo.gov or the relevant federal agency's own .gov site for US federal law, or a body's own official site (e.g. opec.org) for sector-specific agreements. Never cite or rely on law firm blogs, news articles, forums, or general wikis as a source of legal fact.\n\nSave the result as a brand-new file named after the original plus the mode(s) run, e.g. \"<name> - Internal Consistency Review.docx\" or \"<name> - Full Review.docx\". In chat, also give the user a short summary table of every issue found: its location, its category, and - for legal issues — the citation and official source link.\n\nAlways remind the user and explicitly note at the top of the generated file, that this is an AI-assisted review and that a qualified legal professional should confirm any legal conclusions before they are re",
+      "channels": [],
+      "toolCount": 0,
+      "skillCount": 2,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:Default_Contract_Compliance_Reviewer_8c0b11",
+        "name": "Contract Compliance Reviewer",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "Sonnet5",
+          "instructions": "You are a Contract Compliance Reviewer. You help a user check a contract for two distinct kinds of issues and produce a clearly annotated new version of the document, you do not change or overwrite the original file.\n\nAt the start of a review, ask which check the user wants: the \"Internal Consistency Review\" (checks the contract against itself), the \"Legal Compliance Review\" (checks the contract against current law using only official sources), or both. Always use those exact names when talking to the user.\n\nAccept the contract as pasted text or an uploaded file.\n\nRun the Internal Consistency Review skill when that mode is requested, and the Legal Compliance Review skill when that mode is requested. When both are requested, run both and merge the results into one annotated copy, keeping each category's markings visually distinct per each skill's own notation.\n\nWhen legal research is needed, use web search but restrict every search and every citation to the official website of the relevant government, regulator, or international body for the law or jurisdiction in question - for example eur-lex.europa.eu or europa.eu for EU law, legislation.gov.uk or gov.uk for UK law, congress.gov, govinfo.gov or the relevant federal agency's own .gov site for US federal law, or a body's own official site (e.g. opec.org) for sector-specific agreements. Never cite or rely on law firm blogs, news articles, forums, or general wikis as a source of legal fact.\n\nSave the result as a brand-new file named after the original plus the mode(s) run, e.g. \"<name> - Internal Consistency Review.docx\" or \"<name> - Full Review.docx\". In chat, also give the user a short summary table of every issue found: its location, its category, and - for legal issues — the citation and official source link.\n\nAlways remind the user and explicitly note at the top of the generated file, that this is an AI-assisted review and that a qualified legal professional should confirm any legal conclusions before they are re",
+          "channels": [],
+          "toolCount": 0,
+          "skillCount": 2,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:Default_Contract_Compliance_Reviewer_8c0b11.skill.internal-consistency-review_HjC",
+        "name": "internal-consistency-review",
+        "type": "skill",
+        "position": {
+          "x": 58.00000000000003,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "Default_Contract_Compliance_Reviewer_8c0b11.skill.internal-consistency-review_HjC",
+          "description": "Use when the user asks for the Internal Consistency Review of a contract, or asks to check a contract for internal conflicts, inconsistencies between sections, or gaps and unfilled elements. Do NOT use for comparing the contract against external law - that is the separate Legal Compliance Review skill."
+        }
+      },
+      {
+        "id": "skill:Default_Contract_Compliance_Reviewer_8c0b11.skill.legal-compliance-review_2pp",
+        "name": "legal-compliance-review",
+        "type": "skill",
+        "position": {
+          "x": -282,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "Default_Contract_Compliance_Reviewer_8c0b11.skill.legal-compliance-review_2pp",
+          "description": "Use when the user asks for the Legal Compliance Review of a contract, or asks to check a contract against current law, regulations, or legal requirements. Do NOT use for checking the contract against itself for internal conflicts or gaps - that is the separate Internal Consistency Review skill."
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:Default_Contract_Compliance_Reviewer_8c0b11-includes-Default_Contract_Compliance_Reviewer_8c0b11.skill.internal-consistency-review_HjC",
+        "source": "agent:Default_Contract_Compliance_Reviewer_8c0b11",
+        "target": "skill:Default_Contract_Compliance_Reviewer_8c0b11.skill.internal-consistency-review_HjC",
+        "label": "includes"
+      },
+      {
+        "id": "agent:Default_Contract_Compliance_Reviewer_8c0b11-includes-Default_Contract_Compliance_Reviewer_8c0b11.skill.legal-compliance-review_2pp",
+        "source": "agent:Default_Contract_Compliance_Reviewer_8c0b11",
+        "target": "skill:Default_Contract_Compliance_Reviewer_8c0b11.skill.legal-compliance-review_2pp",
+        "label": "includes"
+      }
+    ]
+  },
+  "workflows": [],
+  "connectors": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 879
+    },
+    {
+      "path": "botcomponents/Default_Contract_Compliance_Reviewer_8c0b11.file.addcommentspy_CVgsX/botcomponent.xml",
+      "category": "component",
+      "size": 621
+    },
+    {
+      "path": "botcomponents/Default_Contract_Compliance_Reviewer_8c0b11.file.addcommentspy_CVgsX/filedata/add_comments.py",
+      "category": "component",
+      "size": 4850
+    },
+    {
+      "path": "botcomponents/Default_Contract_Compliance_Reviewer_8c0b11.file.addcommentspy_MBSfM/botcomponent.xml",
+      "category": "component",
+      "size": 625
+    },
+    {
+      "path": "botcomponents/Default_Contract_Compliance_Reviewer_8c0b11.file.addcommentspy_MBSfM/filedata/add_comments.py",
+      "category": "component",
+      "size": 4850
+    },
+    {
+      "path": "botcomponents/Default_Contract_Compliance_Reviewer_8c0b11.file.skillmd_Dkufm/botcomponent.xml",
+      "category": "component",
+      "size": 593
+    },
+    {
+      "path": "botcomponents/Default_Contract_Compliance_Reviewer_8c0b11.file.skillmd_Dkufm/filedata/SKILL.md",
+      "category": "component",
+      "size": 4646
+    },
+    {
+      "path": "botcomponents/Default_Contract_Compliance_Reviewer_8c0b11.file.skillmd_maMHB/botcomponent.xml",
+      "category": "component",
+      "size": 597
+    },
+    {
+      "path": "botcomponents/Default_Contract_Compliance_Reviewer_8c0b11.file.skillmd_maMHB/filedata/SKILL.md",
+      "category": "component",
+      "size": 3425
+    },
+    {
+      "path": "botcomponents/Default_Contract_Compliance_Reviewer_8c0b11.LegalDocumentsTest_RXDsoHpWlm9HjIoNKAx2j/botcomponent.xml",
+      "category": "component",
+      "size": 524
+    },
+    {
+      "path": "botcomponents/Default_Contract_Compliance_Reviewer_8c0b11.LegalDocumentsTest_RXDsoHpWlm9HjIoNKAx2j/data",
+      "category": "component",
+      "size": 179
+    },
+    {
+      "path": "botcomponents/Default_Contract_Compliance_Reviewer_8c0b11.skill.internal-consistency-review_HjC/botcomponent.xml",
+      "category": "component",
+      "size": 735
+    },
+    {
+      "path": "botcomponents/Default_Contract_Compliance_Reviewer_8c0b11.skill.internal-consistency-review_HjC/data",
+      "category": "component",
+      "size": 159
+    },
+    {
+      "path": "botcomponents/Default_Contract_Compliance_Reviewer_8c0b11.skill.legal-compliance-review_2pp/botcomponent.xml",
+      "category": "component",
+      "size": 719
+    },
+    {
+      "path": "botcomponents/Default_Contract_Compliance_Reviewer_8c0b11.skill.legal-compliance-review_2pp/data",
+      "category": "component",
+      "size": 155
+    },
+    {
+      "path": "bots/Default_Contract_Compliance_Reviewer_8c0b11/bot.xml",
+      "category": "bot",
+      "size": 410
+    },
+    {
+      "path": "bots/Default_Contract_Compliance_Reviewer_8c0b11/configuration.json",
+      "category": "bot",
+      "size": 2614
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 536
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 3933
+    }
+  ]
+}
