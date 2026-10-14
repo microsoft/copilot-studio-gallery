@@ -15,6 +15,7 @@ export const GET: APIRoute = async () => {
       category: solution.data.category,
       tags: solution.data.tags,
       author: solution.data.author,
+      authors: solution.data.authors,
       version: solution.data.version,
       makeup: solutionMakeup(inventory.agents, inventory.workflows),
       agentCount: inventory.agents,

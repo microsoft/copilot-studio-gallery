@@ -47,9 +47,25 @@ The slug must use lowercase letters, numbers, and single hyphens.
 }
 ```
 
-Required fields: `name`, `description`, `tags`, and `author`.
+Required fields: `name`, `description`, `tags`, and `author` (or `authors`).
 Recommended: `category`. Optional fields: `authorUrl`, `authorGithub`,
 `createdAt`, `updatedAt`, and `featured`.
+
+To credit more than one person, replace `author`, `authorUrl`, and
+`authorGithub` with an `authors` list. Each entry needs a `name` and can add a
+`github` handle (used for the avatar and to group contributions on one
+contributor page) and a `url`:
+
+```json
+"authors": [
+  { "name": "Your Name", "github": "your-login" },
+  { "name": "Teammate Name", "github": "teammate-login" },
+  { "name": "Colleague Without GitHub" }
+]
+```
+
+Every listed person gets their own avatar on the solution and their own
+contributor page.
 
 `category` is the one fixed category that best matches who uses the solution
 and the business activity it supports: `Customer service`, `Sales & marketing`,

@@ -4,7 +4,7 @@ import SolutionCard from "./SolutionCard.astro";
 import { collectCategories, collectContributors, collectTags, compareSolutions } from "../lib/catalog";
 import { CONTAINS_KINDS, containedComponents } from "../lib/discovery";
 import { COMPONENT_LABELS, solutionInventory } from "../lib/inventory";
-import { authorKey } from "../lib/schema";
+import { contributorKey } from "../lib/schema";
 import { withBase } from "../lib/url";
 
 interface Props {
@@ -42,8 +42,8 @@ function filterAttributes(solution: (typeof solutions)[number]) {
     "data-categories": data.category,
     "data-types": solutionTypes(solution).join(","),
     "data-contains": containedComponents(inventories.get(solution.id)!).join(","),
-    "data-author": authorKey(data.authorGithub, data.author),
-    "data-author-name": data.author.toLowerCase(),
+    "data-author": data.authors.map(contributorKey).join(","),
+    "data-author-name": data.authors.map((author) => [author.name, author.github ?? ""].join(" ")).join(" ").toLowerCase(),
     "data-agents": data.agents.map((agent) => agent.name).join(" ").toLowerCase(),
     "data-workflows": data.workflows.map((workflow) => workflow.name).join(" ").toLowerCase(),
     "data-featured": data.featured ? "1" : "0",
@@ -318,7 +318,7 @@ function filterAttributes(solution: (typeof solutions)[number]) {
       types: list(data.types),
       categories: list(data.categories, "|"),
       tags: list(data.tags),
-      authors: data.author ? [data.author] : [],
+      authors: list(data.author),
       contains: list(data.contains),
     }];
   }));

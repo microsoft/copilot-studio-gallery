@@ -1,8 +1,9 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import { inventoryBlocks, solutionInventory } from "../lib/inventory";
-import { authorKey, solutionMakeup } from "../lib/schema";
+import { solutionMakeup } from "../lib/schema";
 import { withBase } from "../lib/url";
+import AuthorCredit from "./AuthorCredit.astro";
 import BuildingBlocks from "./BuildingBlocks.astro";
 import MicrosoftBadge from "./MicrosoftBadge.astro";
 
@@ -15,13 +16,6 @@ const data = solution.data;
 const inventory = solutionInventory(data);
 const makeup = solutionMakeup(inventory.agents, inventory.workflows);
 const isDemo = data.tags.includes("demo");
-const contributorKey = authorKey(data.authorGithub, data.author);
-const initials = data.author
-  .split(/\s+/)
-  .filter((word) => /^[A-Za-z]/.test(word) && word.toLowerCase() !== "and")
-  .slice(0, 2)
-  .map((word) => word[0]!.toUpperCase())
-  .join("");
 ---
 
 <article class="product-card group relative flex h-full flex-col rounded-2xl border border-border bg-surface p-5">
@@ -34,18 +28,10 @@ const initials = data.author
   {data.category && <p class="mt-1 text-xs font-medium text-accent">{data.category}</p>}
   <p class="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-muted">{data.description}</p>
   <div class="mt-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5 border-t border-border pt-4">
-    <a
-      href={withBase(`/contributors/${contributorKey}`)}
-      class="relative z-20 inline-flex min-w-0 items-center gap-2 text-xs text-muted hover:text-accent"
-      data-author-key={contributorKey}
-    >
-      <span class="relative grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-full bg-accent-soft text-[9px] font-bold text-accent">
-        {initials}
-        {data.authorGithub && <img src={`https://github.com/${data.authorGithub}.png?size=48`} alt="" class="absolute inset-0 h-full w-full object-cover" loading="lazy" />}
-      </span>
-      <span>{data.author}</span>
+    <div class="relative z-20 inline-flex min-w-0 items-center gap-2 text-xs text-muted">
+      <AuthorCredit authors={data.authors} />
       {isDemo && <span class="rounded border border-dashed border-border px-1.5 py-px text-[10px] font-medium text-soft">Demo</span>}
-    </a>
+    </div>
     <BuildingBlocks counts={inventoryBlocks(inventory)} />
   </div>
 </article>

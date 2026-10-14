@@ -1,6 +1,6 @@
 import type { CollectionEntry } from "astro:content";
 import { isDemo } from "./discovery";
-import { CATEGORIES, authorKey, type Category } from "./schema";
+import { CATEGORIES, contributorKey, type Category } from "./schema";
 
 export type SolutionEntry = CollectionEntry<"solutions">;
 
@@ -46,30 +46,35 @@ export function collectTags(solutions: SolutionEntry[]): Array<[string, number]>
 export function collectContributors(solutions: SolutionEntry[]): ContributorSummary[] {
   const contributors = new Map<string, ContributorSummary>();
   for (const solution of solutions) {
-    const key = authorKey(solution.data.authorGithub, solution.data.author);
-    const existing = contributors.get(key);
     const updated = solution.data.updatedAt ?? solution.data.createdAt;
-    if (existing) {
-      existing.count += 1;
-      existing.agents += solution.data.agentCount;
-      existing.workflows += solution.data.workflowCount;
-      existing.featured += solution.data.featured ? 1 : 0;
-      if (updated && (!existing.latest || updated > existing.latest)) existing.latest = updated;
-      existing.solutions.push(solution);
-      continue;
+    for (const author of solution.data.authors) {
+      const key = contributorKey(author);
+      const existing = contributors.get(key);
+      if (existing) {
+        if (existing.solutions.includes(solution)) continue;
+        existing.count += 1;
+        existing.agents += solution.data.agentCount;
+        existing.workflows += solution.data.workflowCount;
+        existing.featured += solution.data.featured ? 1 : 0;
+        if (updated && (!existing.latest || updated > existing.latest)) existing.latest = updated;
+        if (!existing.github && author.github) existing.github = author.github;
+        if (!existing.url && author.url) existing.url = author.url;
+        existing.solutions.push(solution);
+        continue;
+      }
+      contributors.set(key, {
+        key,
+        name: author.name,
+        ...(author.github ? { github: author.github } : {}),
+        ...(author.url ? { url: author.url } : {}),
+        count: 1,
+        agents: solution.data.agentCount,
+        workflows: solution.data.workflowCount,
+        featured: solution.data.featured ? 1 : 0,
+        ...(updated ? { latest: updated } : {}),
+        solutions: [solution],
+      });
     }
-    contributors.set(key, {
-      key,
-      name: solution.data.author,
-      ...(solution.data.authorGithub ? { github: solution.data.authorGithub } : {}),
-      ...(solution.data.authorUrl ? { url: solution.data.authorUrl } : {}),
-      count: 1,
-      agents: solution.data.agentCount,
-      workflows: solution.data.workflowCount,
-      featured: solution.data.featured ? 1 : 0,
-      ...(updated ? { latest: updated } : {}),
-      solutions: [solution],
-    });
   }
 
   return [...contributors.values()]
