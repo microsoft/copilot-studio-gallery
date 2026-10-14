@@ -21,16 +21,6 @@
         "runtimeSource": "embedded",
         "connectionName": "shared-agentnode-f572142a-9479-4621-b54a-1b0f258e4edc"
       },
-      "shared_sharepointonline": {
-        "api": {
-          "name": "shared_sharepointonline"
-        },
-        "connection": {
-          "connectionReferenceLogicalName": "new_sharedsharepointonline_c6afa5d6"
-        },
-        "runtimeSource": "embedded",
-        "connectionName": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9"
-      },
       "shared_office365": {
         "api": {
           "name": "shared_office365"
@@ -40,6 +30,26 @@
         },
         "runtimeSource": "embedded",
         "connectionName": "shared-office365-02268f4d-3810-4099-b068-e1a24808aa17"
+      },
+      "sharepointonline": {
+        "api": {
+          "name": "shared_sharepointonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedsharepointonline_c6afa5d6"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9"
+      },
+      "office365users": {
+        "api": {
+          "name": "shared_office365users"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedoffice365users_8ffe3f89"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc"
       }
     },
     "definition": {
@@ -725,25 +735,12 @@
                         "connectionName": "shared_agentnode",
                         "inlineTools": [
                           {
-                            "id": "321bb009-acbd-4180-b8c8-f3dd1dadcf6e",
-                            "connectorId": "shared_sharepointonline",
-                            "operationId": "PatchItem",
-                            "displayName": "Update item",
-                            "description": "Updates an item in a SharePoint list.",
-                            "connectionReferenceName": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9",
-                            "connectionId": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9",
-                            "authMode": "invoker",
-                            "isMcp": false,
-                            "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1827/1.0.1827.4902/sharepointonline/icon.png",
-                            "brandColor": "#036C70"
-                          },
-                          {
-                            "id": "fd3a32cb-86cb-4502-ae79-a169c1acf264",
+                            "id": "a56ea91e-7c48-42cd-ba1f-4dd49c3b36c8",
                             "connectorId": "shared_sharepointonline",
                             "operationId": "GetItems",
                             "displayName": "Get items",
                             "description": "Gets items from a SharePoint list.",
-                            "connectionReferenceName": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9",
+                            "connectionReferenceName": "new_sharedsharepointonline_c6afa5d6",
                             "connectionId": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9",
                             "authMode": "invoker",
                             "isMcp": false,
@@ -751,12 +748,25 @@
                             "brandColor": "#036C70"
                           },
                           {
-                            "id": "73d4e090-0d26-4d9f-92cb-65f29148d359",
+                            "id": "a8589325-3ab3-4ccc-8735-454204d44a69",
+                            "connectorId": "shared_sharepointonline",
+                            "operationId": "PatchItem",
+                            "displayName": "Update item",
+                            "description": "Updates an item in a SharePoint list.",
+                            "connectionReferenceName": "new_sharedsharepointonline_c6afa5d6",
+                            "connectionId": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9",
+                            "authMode": "invoker",
+                            "isMcp": false,
+                            "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1827/1.0.1827.4902/sharepointonline/icon.png",
+                            "brandColor": "#036C70"
+                          },
+                          {
+                            "id": "a2e49f5a-7fb0-4159-bd5f-5b41aacb4672",
                             "connectorId": "shared_office365",
                             "operationId": "SendEmailV2",
                             "displayName": "Send an email",
                             "description": "This operation sends an email message.",
-                            "connectionReferenceName": "shared-office365-02268f4d-3810-4099-b068-e1a24808aa17",
+                            "connectionReferenceName": "new_sharedoffice365_a9b57bf1",
                             "connectionId": "shared-office365-02268f4d-3810-4099-b068-e1a24808aa17",
                             "authMode": "invoker",
                             "isMcp": false,
@@ -875,7 +885,8 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    }
+                    },
+                    "selected": true
                   },
                   {
                     "id": "canvasNote-f530af65-6ff7-46fe-981c-c401d3e5ab44",
@@ -1031,18 +1042,18 @@
                         "botSchemaName": "",
                         "isHitlEscalationEnabled": false,
                         "webSearchEnabled": true,
-                        "inlineInstructions": "```\nYou are the Team Intro Agent for HR New Hire Welcome Packet. You run once per new-hire row, in parallel with the Onboarding Agent. You have two tools: Get manager and Get direct reports, both read-only, plus web search. You never send email, never update any row, and never take any action beyond producing the result described below.\n\nHIRE ROW FOR THIS RUN\nPreferred name: {triggerOutputs()?['body/Title']}\nWork email (the new hire's own email, not the manager's): {triggerOutputs()?['body/field_1']}\n\nSTEP 1 - BUILD THE ROSTER\n1. Call Get manager using the new hire's Work email above to find their manager.\n2. Call Get direct reports using the manager's email from step 1 to get the manager's full team.\n3. From that list, drop any person whose job title is blank or missing — these are placeholder/shadow accounts, not real colleagues to introduce.\n4. From what remains, remove the new hire themselves if they appear in it.\n5. If more than 10 people remain, keep only the first 10.\n6. Only include people actually returned by your tool calls — never invent a name, title, or email that wasn't in the results.\n\nSTEP 2 - LOOK UP EACH PERSON (the manager plus every person in the team list from Step 1)\nSearch the web for their public professional profile using their name, job title, and \"Microsoft\" as the company. LinkedIn is the preferred source, but other public professional sources (e.g. professional directories, conference speaker pages, employer bios) are acceptable if no LinkedIn page surfaces.\n\nIMPORTANT: You must actually attempt a real web search for every single person listed — the manager and each team member, one at a time — before deciding their confidence score. Do not skip the search for anyone, even if the name seems familiar or you believe you already know the answer. Confidence must be based on an actual search you just performed, not on prior assumption.\n\nRate your confidence that you found the right person on a 0.0-1.0 scale, based on how well the name and current employer agree with what you found. Treat the job title as matching if it describes the same role at a similar level — don't lower confidence just because a seniority suffix like \"II\" or \"Senior\" is missing, added, or differs; only treat the title as a mismatch if it describes a clearly different role or function.\n- If confidence is 0.75 or higher: write a short, factual summary of their professional background (2-3 sentences) based only on what their profile states — role, how long in the field, what they appear to work on. Do not describe or infer their personality, capabilities, reputation, or anything not explicitly stated. Include the profile URL as a source link.\n- If confidence is below 0.75, or you cannot find a clear match, or there are multiple equally-likely candidates: do not include a bio or source link. Use this exact line instead: \"Additional profile details weren't available.\"\nNever guess a bio you are not confident about — a missing bio is always better than a wrong one.\n\nBefore finalizing your output, check yourself: if you are about to write \"Additional profile details weren't available\" for every single person with no exceptions, stop — that is a sign you skipped the search step rather than genuinely attempting it. Go back and actually search for each person before producing your final output.\n\nSTEP 3 - COMPOSE THE EMAIL\nBuild one HTML email: a short friendly intro mentioning the new hire's own name, then one card per person, manager first, then the rest of the team. Each card shows: name, job title, bio (or the fallback line), and a \"Schedule a 1:1\" link in this exact format: mailto:{their email}?subject=1:1 with {their name}\nAfter the cards, add a line inviting the new hire to reply or contact HR if anything looks outdated or incorrect.\nEnd with this exact disclaimer in smaller/lighter text: \"This profile was generated using AI based on available professional information, which may include public LinkedIn content. It may contain inaccurate or outdated details. Please verify the information before sharing or using it.\"\n\n```",
-                        "outputMode": "text",
+                        "inlineInstructions": "```\nYou are the Team Intro Agent for HR New Hire Welcome Packet. You run once per new-hire row, in parallel with the Onboarding Agent. You have two tools: Get manager and Get direct reports, both read-only, plus web search. You never send email, never update any row, and never take any action beyond producing the result described below.\n\nHIRE ROW FOR THIS RUN\nPreferred name: {triggerOutputs()?['body/Title']}\nWork email (the new hire's own email, not the manager's): {triggerOutputs()?['body/field_1']}\n\nSTEP 1 - BUILD THE ROSTER\n1. Call Get manager using the new hire's Work email above to find their manager.\n2. Call Get direct reports using the manager's email from step 1 to get the manager's full team.\n3. From that list, drop any person whose job title is blank or missing — these are placeholder/shadow accounts, not real colleagues to introduce.\n4. From what remains, remove the new hire themselves if they appear in it.\n5. If more than 10 people remain, keep only the first 10.\n6. Only include people actually returned by your tool calls — never invent a name, title, or email that wasn't in the results.\n\nSTEP 2 - LOOK UP EACH PERSON (the manager plus every person in the team list from Step 1)\nSearch the web for their public professional profile using their name, job title, and \"Microsoft\" as the company. LinkedIn is the preferred source, but other public professional sources (e.g. professional directories, conference speaker pages, employer bios) are acceptable if no LinkedIn page surfaces.\n\nIMPORTANT: You must actually attempt a real web search for every single person listed — the manager and each team member, one at a time — before deciding their confidence score. Do not skip the search for anyone, even if the name seems familiar or you believe you already know the answer. Confidence must be based on an actual search you just performed, not on prior assumption.\n\nRate your confidence that you found the right person on a 0.0-1.0 scale, based on how well the name and current employer agree with what you found. Treat the job title as matching if it describes the same role at a similar level — don't lower confidence just because a seniority suffix like \"II\" or \"Senior\" is missing, added, or differs; only treat the title as a mismatch if it describes a clearly different role or function.\n- If confidence is 0.75 or higher: write a short, factual summary of their professional background (2-3 sentences) based only on what their profile states — role, how long in the field, what they appear to work on. Do not describe or infer their personality, capabilities, reputation, or anything not explicitly stated. Include the profile URL as a source link.\n- If confidence is below 0.75, or you cannot find a clear match, or there are multiple equally-likely candidates: do not include a bio or source link. Use this exact line instead, filling in their own name and job title: \"We don't have a public profile summary for {name} yet — as {job title} on the team, they'll be a great person to say hello to.\"\nNever guess a bio you are not confident about — a missing bio is always better than a wrong one.\n\nBefore finalizing your output, check yourself: if you are about to write that fallback line for every single person with no exceptions, stop — that is a sign you skipped the search step rather than genuinely attempting it. Go back and actually search for each person before producing your final output.\n\nSTEP 3 - COMPOSE THE EMAIL\nBuild one HTML email: a short friendly intro mentioning the new hire's own name, then one card per person, manager first, then the rest of the team. Each card shows: name, job title, bio (or the fallback line), and a \"Schedule a 1:1\" link in this exact format: mailto:{their email}?subject=1:1 with {their name}\nAfter the cards, add a line inviting the new hire to reply or contact HR if anything looks outdated or incorrect.\nEnd with this exact disclaimer in smaller/lighter text: \"This profile was generated using AI based on available professional information, which may include public LinkedIn content. It may contain inaccurate or outdated details. Please verify the information before sharing or using it.\"\n\nOUTPUT\nProduce exactly two structured output fields:\nEmailSubject: a short, friendly subject line such as \"Meet your new team!\"\nEmailBody: the complete HTML email from Step 3, ready to send as-is.\n\n```",
+                        "outputMode": "structured-simple",
                         "connectionName": "shared_agentnode",
                         "inlineModel": "claude-opus-5",
                         "inlineTools": [
                           {
-                            "id": "70a04289-f5b8-4596-b423-f39b6dc969e6",
+                            "id": "89939627-041e-48fa-8bf5-b87b766872ed",
                             "connectorId": "shared_office365users",
                             "operationId": "Manager_V2",
                             "displayName": "Get manager",
                             "description": "Retrieves the profile of the specified user's manager. Learn more about available fields to select: https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/user#properties",
-                            "connectionReferenceName": "shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc",
+                            "connectionReferenceName": "new_sharedoffice365users_8ffe3f89",
                             "connectionId": "shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc",
                             "authMode": "invoker",
                             "isMcp": false,
@@ -1050,12 +1061,12 @@
                             "brandColor": "#FFFFFF"
                           },
                           {
-                            "id": "c96e56cc-b86a-4ba8-8657-39f33451044f",
+                            "id": "d6277886-0fc3-4ed7-83b3-d81b32c7d4b9",
                             "connectorId": "shared_office365users",
                             "operationId": "DirectReports_V2",
                             "displayName": "Get direct reports",
                             "description": "Retrieves the user profiles of the specified user's direct reports. Learn more about available fields to select: https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/user#properties",
-                            "connectionReferenceName": "shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc",
+                            "connectionReferenceName": "new_sharedoffice365users_8ffe3f89",
                             "connectionId": "shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc",
                             "authMode": "invoker",
                             "isMcp": false,
@@ -1104,15 +1115,32 @@
                               "message": {
                                 "type": "string",
                                 "title": "Agent Response",
-                                "description": "The agent response text"
+                                "description": "Aggregated message text emitted before the structured output (may be null)"
                               },
                               "activities": {
                                 "type": "array",
                                 "description": "Bot response activities (typing, message, and event types)"
+                              },
+                              "structuredOutput": {
+                                "type": "object",
+                                "properties": {
+                                  "EmailSubject": {
+                                    "type": "string"
+                                  },
+                                  "EmailBody": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "EmailSubject",
+                                  "EmailBody"
+                                ],
+                                "title": ""
                               }
                             },
                             "required": [
-                              "activities"
+                              "activities",
+                              "structuredOutput"
                             ]
                           }
                         }
@@ -1122,7 +1150,7 @@
                       "width": 240,
                       "height": 66
                     },
-                    "selected": true
+                    "selected": false
                   },
                   {
                     "id": "canvasNote-952261e6-c2d2-4980-8578-d2b5d389f4ba",
@@ -1180,12 +1208,12 @@
                   },
                   {
                     "id": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
-                    "name": "If/Else",
+                    "name": "AutoSendTeamIntroFlag",
                     "type": "ifElse",
                     "version": 1,
                     "position": {
-                      "x": 1967,
-                      "y": 218
+                      "x": 1945.7392773308648,
+                      "y": 203.82618488724304
                     },
                     "data": {
                       "config": {
@@ -1211,7 +1239,9 @@
                     "measured": {
                       "width": 240,
                       "height": 169
-                    }
+                    },
+                    "dragging": false,
+                    "selected": false
                   },
                   {
                     "id": "connector-01dcf0f5-4b06-4d60-b58a-8b398d27ea82",
@@ -1380,7 +1410,8 @@
                           "emailMessage/Subject": "@body('agent-fb7e675d-b47e-43f9-a603-1289da05d738')?['structuredOutput/EmailSubject']",
                           "emailMessage/Body": "<div>@{body('agent-fb7e675d-b47e-43f9-a603-1289da05d738')?['structuredOutput/EmailBody']}​</div>",
                           "emailMessage/Sensitivity": "f42aa342-8706-4288-bd11-ebb85995028c",
-                          "emailMessage/Cc": "@variables('HRNotifyEmail')"
+                          "emailMessage/Cc": "",
+                          "emailMessage/From": "@variables('HRNotifyEmail')"
                         },
                         "connectionName": "shared_office365"
                       },
@@ -1398,7 +1429,8 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    }
+                    },
+                    "selected": false
                   },
                   {
                     "id": "connector-5afa3316-61b8-4673-95ba-0c8edcd1276e",
@@ -1423,7 +1455,8 @@
                           "draftMessage/To": "@triggerOutputs()?['body/field_1']",
                           "draftMessage/Subject": "@body('agent-fb7e675d-b47e-43f9-a603-1289da05d738')?['structuredOutput/EmailSubject']",
                           "draftMessage/Body": "<div>@{body('agent-fb7e675d-b47e-43f9-a603-1289da05d738')?['structuredOutput/EmailBody']}​</div>",
-                          "draftMessage/Cc": "@variables('HRNotifyEmail')"
+                          "draftMessage/Cc": "",
+                          "draftMessage/From": "@variables('HRNotifyEmail')"
                         },
                         "parametersSchema": {
                           "type": "object",
@@ -1923,7 +1956,8 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    }
+                    },
+                    "selected": false
                   },
                   {
                     "id": "canvasNote-bf817137-0d94-4890-9050-25dad943f021",
@@ -2054,16 +2088,6 @@
                     "runtimeSource": "embedded",
                     "connectionName": "shared-agentnode-f572142a-9479-4621-b54a-1b0f258e4edc"
                   },
-                  "shared_sharepointonline": {
-                    "api": {
-                      "name": "shared_sharepointonline"
-                    },
-                    "connection": {
-                      "connectionReferenceLogicalName": "new_sharedsharepointonline_c6afa5d6"
-                    },
-                    "runtimeSource": "embedded",
-                    "connectionName": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9"
-                  },
                   "shared_office365": {
                     "api": {
                       "name": "shared_office365"
@@ -2073,6 +2097,26 @@
                     },
                     "runtimeSource": "embedded",
                     "connectionName": "shared-office365-02268f4d-3810-4099-b068-e1a24808aa17"
+                  },
+                  "sharepointonline": {
+                    "api": {
+                      "name": "shared_sharepointonline"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedsharepointonline_c6afa5d6"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9"
+                  },
+                  "office365users": {
+                    "api": {
+                      "name": "shared_office365users"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedoffice365users_8ffe3f89"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc"
                   }
                 }
               },
@@ -2096,7 +2140,7 @@
                   "Draft_an_email_message"
                 ],
                 "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0": [
-                  "If_Else"
+                  "AutoSendTeamIntroFlag"
                 ]
               }
             }
@@ -2175,7 +2219,140 @@
           "type": "OpenApiConnection",
           "inputs": {
             "parameters": {
-              "body/botDefinition": "{\"model\":\"claude-opus-5\",\"tools\":[{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_sharepointonline\",\"connectionId\":\"shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9\",\"operationId\":\"PatchItem\",\"connectionMode\":\"Maker\",\"displayName\":\"Update item\",\"description\":\"Updates an item in a SharePoint list.\"},{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_sharepointonline\",\"connectionId\":\"shared-sharepointonl-c008d033-da6f-49f9-8b23-f8bd5e7779d9\",\"operationId\":\"GetItems\",\"connectionMode\":\"Maker\",\"displayName\":\"Get items\",\"description\":\"Gets items from a SharePoint list.\"},{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_office365\",\"connectionId\":\"shared-office365-02268f4d-3810-4099-b068-e1a24808aa17\",\"operationId\":\"SendEmailV2\",\"connectionMode\":\"Maker\",\"displayName\":\"Send an email\",\"description\":\"This operation sends an email message.\"}]}",
+              "body/definition": {
+                "components": [
+                  {
+                    "diagnostics": [],
+                    "schemaName": "shared_sharepointonline_GetItems",
+                    "displayName": "Get items",
+                    "description": "Gets items from a SharePoint list.",
+                    "dialog": {
+                      "toolInputs": [],
+                      "toolOutputs": [],
+                      "diagnostics": [],
+                      "connectorId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "authMode": "Maker",
+                      "connectionReference": "new_sharedsharepointonline_c6afa5d6",
+                      "operationId": "GetItems",
+                      "$kind": "ConnectorTool"
+                    },
+                    "$kind": "DialogComponent"
+                  },
+                  {
+                    "diagnostics": [],
+                    "schemaName": "shared_sharepointonline_PatchItem",
+                    "displayName": "Update item",
+                    "description": "Updates an item in a SharePoint list.",
+                    "dialog": {
+                      "toolInputs": [],
+                      "toolOutputs": [],
+                      "diagnostics": [],
+                      "connectorId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "authMode": "Maker",
+                      "connectionReference": "new_sharedsharepointonline_c6afa5d6",
+                      "operationId": "PatchItem",
+                      "$kind": "ConnectorTool"
+                    },
+                    "$kind": "DialogComponent"
+                  },
+                  {
+                    "diagnostics": [],
+                    "schemaName": "shared_office365_SendEmailV2",
+                    "displayName": "Send an email",
+                    "description": "This operation sends an email message.",
+                    "dialog": {
+                      "toolInputs": [],
+                      "toolOutputs": [],
+                      "diagnostics": [],
+                      "connectorId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                      "authMode": "Maker",
+                      "connectionReference": "new_sharedoffice365_a9b57bf1",
+                      "operationId": "SendEmailV2",
+                      "$kind": "ConnectorTool"
+                    },
+                    "$kind": "DialogComponent"
+                  }
+                ],
+                "environmentVariables": [],
+                "flows": [],
+                "dataverseTableSearchs": [],
+                "dataverseTableSearchGlossaryConfigurations": [],
+                "dataverseTableSearchEntityConfigurations": [],
+                "dataverseTableSearchEntityColumnSynonyms": [],
+                "connectionReferences": [
+                  {
+                    "diagnostics": [],
+                    "connectionReferenceLogicalName": "new_sharedsharepointonline_c6afa5d6",
+                    "connectionId": "@last(split(parameters('$connections')['sharepointonline']['connectionId'], '/'))",
+                    "connectorId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "$kind": "ConnectionReference"
+                  },
+                  {
+                    "diagnostics": [],
+                    "connectionReferenceLogicalName": "new_sharedoffice365_a9b57bf1",
+                    "connectionId": "@last(split(parameters('$connections')['shared_office365']['connectionId'], '/'))",
+                    "connectorId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                    "$kind": "ConnectionReference"
+                  }
+                ],
+                "connectorDefinitions": [],
+                "aIModelDefinitions": [],
+                "aIPluginOperations": [],
+                "connectedAgentDefinitions": [],
+                "componentCollections": [],
+                "connectedBots": [],
+                "diagnostics": [],
+                "entity": {
+                  "authorizedSecurityGroupIds": [],
+                  "supportedLanguages": [],
+                  "diagnostics": [],
+                  "schemaName": "workflow_agentnode",
+                  "language": 1033,
+                  "accessControlPolicy": "Any",
+                  "authenticationMode": "Integrated",
+                  "authenticationTrigger": "Always",
+                  "synchronizationStatus": {
+                    "graphDriveItems": [],
+                    "diagnostics": [],
+                    "lastPublishedDetails": {
+                      "diagnosticDetails": [],
+                      "diagnostics": [],
+                      "authenticationMode": "Integrated",
+                      "$kind": "SuccessfulPublishResultDetails"
+                    },
+                    "$kind": "BotSynchronizationDetails"
+                  },
+                  "configuration": {
+                    "categories": [],
+                    "channels": [],
+                    "settings": {},
+                    "memoryParameters": [],
+                    "diagnostics": [],
+                    "recognizer": {
+                      "diagnostics": [],
+                      "$kind": "CLICopilotRecognizer"
+                    },
+                    "agentSettings": {
+                      "conversationStarters": [],
+                      "diagnostics": [],
+                      "model": {
+                        "diagnostics": [],
+                        "series": "claude-opus-5",
+                        "$kind": "ModelConfig"
+                      },
+                      "instructions": {
+                        "segments": [],
+                        "diagnostics": [],
+                        "$kind": "Instructions"
+                      },
+                      "$kind": "AgentSettings"
+                    },
+                    "$kind": "BotConfiguration"
+                  },
+                  "$kind": "BotEntity"
+                },
+                "$kind": "BotDefinition"
+              },
               "body/message": "You are the Onboarding Agent for HR New Hire Welcome Packet. You run once per new-hire row, immediately after the trigger. You have three tools: Get items, Send email, and Update item. Send every email at Normal importance. Do not mark anything Low or High priority.\n\nHIRE ROW FOR THIS RUN\nid: @{triggerOutputs()?['body/ID']}\nPreferred name: @{triggerOutputs()?['body/Title']}\nWork email: @{triggerOutputs()?['body/field_1']}\nJob title: @{triggerOutputs()?['body/field_2']}\nStart date: @{triggerOutputs()?['body/field_3']}\nManager email: @{triggerOutputs()?['body/field_4']}\nPacket sent: @{triggerOutputs()?['body/Packet_x0020_sent']}\n\nWelcome Links site: @{variables('WelcomeLinksSite')}Welcome Links list: @{variables('WelcomeLinksList')}\n\nGOAL\nIf Packet sent above already has a value, stop entirely. Do nothing further — this row was already processed.\nCheck Work email, Job title, Start date, Manager email above. If any are blank, send an email to HR @{variables('HRNotifyEmail')} naming exactly which field(s) are missing, and stop — do not call Get items, do not send the welcome packet, do not update the row.\nOtherwise, call Get items once on Welcome Links to retrieve every row.\nCheck whether any Audience value other than \"Everyone\" exists among the retrieved rows — call this \"role audiences exist.\" This distinguishes a genuine no-match (a title that doesn't fit any defined role) from an unpopulated list (no roles defined yet), which shouldn't alert HR. If role audiences exist, decide which single Audience value best matches Job title, or decide none do. If role audiences do not exist, skip matching entirely — there's nothing to compare Job title against yet. Never invent an audience that isn't present in the retrieved rows. Keep track of what you matched on — the specific words in the job title, and what they matched to (or why nothing matched) — you'll need this for the HR alert step below.\nFrom the same retrieved rows — do not call Get items again — select every row where Audience = \"Everyone\", plus every row where Audience equals the audience you matched (if any). Only use rows that are actually present in what Get items returned; never invent a row, link, or description that isn't there.\nBuild the email body: \"Start here — everyone does this\": every selected Everyone row, each as the Link name hyperlinked to URL, with Description underneath if present. If you matched an audience: add \"Because you are joining \" with that audience's selected rows in the same format. If no audience matched: add one line instead saying the hire's manager will follow up with role-specific material.\nSend that email To: Work email above, Cc: Manager email above.\nIf role audiences exist and none matched (and no fields were missing), also send HR a short email naming the job title that couldn't be placed. If role audiences do not exist yet, do not send this alert — there's no meaningful mismatch to report.\nCall Update item on this hire's row using the Item ID given above to identify it directly, setting Packet sent to today's date. Do not search for the row by Work email or any other field.\n"
             },
             "host": {
@@ -2198,8 +2375,127 @@
           "type": "OpenApiConnection",
           "inputs": {
             "parameters": {
-              "body/botDefinition": "{\"model\":\"claude-opus-5\",\"tools\":[{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_office365users\",\"connectionId\":\"shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc\",\"operationId\":\"Manager_V2\",\"connectionMode\":\"Maker\",\"displayName\":\"Get manager\",\"description\":\"Retrieves the profile of the specified user's manager. Learn more about available fields to select: https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/user#properties\"},{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_office365users\",\"connectionId\":\"shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc\",\"operationId\":\"DirectReports_V2\",\"connectionMode\":\"Maker\",\"displayName\":\"Get direct reports\",\"description\":\"Retrieves the user profiles of the specified user's direct reports. Learn more about available fields to select: https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/user#properties\"}],\"webSearchEnabled\":true}",
-              "body/message": "```\nYou are the Team Intro Agent for HR New Hire Welcome Packet. You run once per new-hire row, in parallel with the Onboarding Agent. You have two tools: Get manager and Get direct reports, both read-only, plus web search. You never send email, never update any row, and never take any action beyond producing the result described below.\n\nHIRE ROW FOR THIS RUN\nPreferred name: @{triggerOutputs()?['body/Title']}\nWork email (the new hire's own email, not the manager's): @{triggerOutputs()?['body/field_1']}\n\nSTEP 1 - BUILD THE ROSTER\n1. Call Get manager using the new hire's Work email above to find their manager.\n2. Call Get direct reports using the manager's email from step 1 to get the manager's full team.\n3. From that list, drop any person whose job title is blank or missing — these are placeholder/shadow accounts, not real colleagues to introduce.\n4. From what remains, remove the new hire themselves if they appear in it.\n5. If more than 10 people remain, keep only the first 10.\n6. Only include people actually returned by your tool calls — never invent a name, title, or email that wasn't in the results.\n\nSTEP 2 - LOOK UP EACH PERSON (the manager plus every person in the team list from Step 1)\nSearch the web for their public professional profile using their name, job title, and \"Microsoft\" as the company. LinkedIn is the preferred source, but other public professional sources (e.g. professional directories, conference speaker pages, employer bios) are acceptable if no LinkedIn page surfaces.\n\nIMPORTANT: You must actually attempt a real web search for every single person listed — the manager and each team member, one at a time — before deciding their confidence score. Do not skip the search for anyone, even if the name seems familiar or you believe you already know the answer. Confidence must be based on an actual search you just performed, not on prior assumption.\n\nRate your confidence that you found the right person on a 0.0-1.0 scale, based on how well the name and current employer agree with what you found. Treat the job title as matching if it describes the same role at a similar level — don't lower confidence just because a seniority suffix like \"II\" or \"Senior\" is missing, added, or differs; only treat the title as a mismatch if it describes a clearly different role or function.\n- If confidence is 0.75 or higher: write a short, factual summary of their professional background (2-3 sentences) based only on what their profile states — role, how long in the field, what they appear to work on. Do not describe or infer their personality, capabilities, reputation, or anything not explicitly stated. Include the profile URL as a source link.\n- If confidence is below 0.75, or you cannot find a clear match, or there are multiple equally-likely candidates: do not include a bio or source link. Use this exact line instead: \"Additional profile details weren't available.\"\nNever guess a bio you are not confident about — a missing bio is always better than a wrong one.\n\nBefore finalizing your output, check yourself: if you are about to write \"Additional profile details weren't available\" for every single person with no exceptions, stop — that is a sign you skipped the search step rather than genuinely attempting it. Go back and actually search for each person before producing your final output.\n\nSTEP 3 - COMPOSE THE EMAIL\nBuild one HTML email: a short friendly intro mentioning the new hire's own name, then one card per person, manager first, then the rest of the team. Each card shows: name, job title, bio (or the fallback line), and a \"Schedule a 1:1\" link in this exact format: mailto:{their email}?subject=1:1 with {their name}\nAfter the cards, add a line inviting the new hire to reply or contact HR if anything looks outdated or incorrect.\nEnd with this exact disclaimer in smaller/lighter text: \"This profile was generated using AI based on available professional information, which may include public LinkedIn content. It may contain inaccurate or outdated details. Please verify the information before sharing or using it.\"\n\n```"
+              "body/definition": {
+                "components": [
+                  {
+                    "diagnostics": [],
+                    "schemaName": "shared_office365users_Manager_V2",
+                    "displayName": "Get manager",
+                    "description": "Retrieves the profile of the specified user's manager. Learn more about available fields to select: https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/user#properties",
+                    "dialog": {
+                      "toolInputs": [],
+                      "toolOutputs": [],
+                      "diagnostics": [],
+                      "connectorId": "/providers/Microsoft.PowerApps/apis/shared_office365users",
+                      "authMode": "Maker",
+                      "connectionReference": "new_sharedoffice365users_8ffe3f89",
+                      "operationId": "Manager_V2",
+                      "$kind": "ConnectorTool"
+                    },
+                    "$kind": "DialogComponent"
+                  },
+                  {
+                    "diagnostics": [],
+                    "schemaName": "shared_office365users_DirectReports_V2",
+                    "displayName": "Get direct reports",
+                    "description": "Retrieves the user profiles of the specified user's direct reports. Learn more about available fields to select: https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/user#properties",
+                    "dialog": {
+                      "toolInputs": [],
+                      "toolOutputs": [],
+                      "diagnostics": [],
+                      "connectorId": "/providers/Microsoft.PowerApps/apis/shared_office365users",
+                      "authMode": "Maker",
+                      "connectionReference": "new_sharedoffice365users_8ffe3f89",
+                      "operationId": "DirectReports_V2",
+                      "$kind": "ConnectorTool"
+                    },
+                    "$kind": "DialogComponent"
+                  }
+                ],
+                "environmentVariables": [],
+                "flows": [],
+                "dataverseTableSearchs": [],
+                "dataverseTableSearchGlossaryConfigurations": [],
+                "dataverseTableSearchEntityConfigurations": [],
+                "dataverseTableSearchEntityColumnSynonyms": [],
+                "connectionReferences": [
+                  {
+                    "diagnostics": [],
+                    "connectionReferenceLogicalName": "new_sharedoffice365users_8ffe3f89",
+                    "connectionId": "@last(split(parameters('$connections')['office365users']['connectionId'], '/'))",
+                    "connectorId": "/providers/Microsoft.PowerApps/apis/shared_office365users",
+                    "$kind": "ConnectionReference"
+                  }
+                ],
+                "connectorDefinitions": [],
+                "aIModelDefinitions": [],
+                "aIPluginOperations": [],
+                "connectedAgentDefinitions": [],
+                "componentCollections": [],
+                "connectedBots": [],
+                "diagnostics": [],
+                "entity": {
+                  "authorizedSecurityGroupIds": [],
+                  "supportedLanguages": [],
+                  "diagnostics": [],
+                  "schemaName": "workflow_agentnode",
+                  "language": 1033,
+                  "accessControlPolicy": "Any",
+                  "authenticationMode": "Integrated",
+                  "authenticationTrigger": "Always",
+                  "synchronizationStatus": {
+                    "graphDriveItems": [],
+                    "diagnostics": [],
+                    "lastPublishedDetails": {
+                      "diagnosticDetails": [],
+                      "diagnostics": [],
+                      "authenticationMode": "Integrated",
+                      "$kind": "SuccessfulPublishResultDetails"
+                    },
+                    "$kind": "BotSynchronizationDetails"
+                  },
+                  "configuration": {
+                    "categories": [],
+                    "channels": [],
+                    "settings": {},
+                    "memoryParameters": [],
+                    "diagnostics": [],
+                    "recognizer": {
+                      "diagnostics": [],
+                      "$kind": "CLICopilotRecognizer"
+                    },
+                    "agentSettings": {
+                      "conversationStarters": [],
+                      "diagnostics": [],
+                      "model": {
+                        "diagnostics": [],
+                        "series": "claude-opus-5",
+                        "$kind": "ModelConfig"
+                      },
+                      "instructions": {
+                        "segments": [],
+                        "diagnostics": [],
+                        "$kind": "Instructions"
+                      },
+                      "output": {
+                        "diagnostics": [],
+                        "schema": "{\"type\":\"object\",\"properties\":{\"EmailSubject\":{\"type\":\"string\"},\"EmailBody\":{\"type\":\"string\"}},\"required\":[\"EmailSubject\",\"EmailBody\"]}",
+                        "$kind": "StructuredAgentOutput"
+                      },
+                      "web": {
+                        "diagnostics": [],
+                        "$kind": "WebSettings",
+                        "enableWebSearch": true
+                      },
+                      "$kind": "AgentSettings"
+                    },
+                    "$kind": "BotConfiguration"
+                  },
+                  "$kind": "BotEntity"
+                },
+                "$kind": "BotDefinition"
+              },
+              "body/message": "```\nYou are the Team Intro Agent for HR New Hire Welcome Packet. You run once per new-hire row, in parallel with the Onboarding Agent. You have two tools: Get manager and Get direct reports, both read-only, plus web search. You never send email, never update any row, and never take any action beyond producing the result described below.\n\nHIRE ROW FOR THIS RUN\nPreferred name: @{triggerOutputs()?['body/Title']}\nWork email (the new hire's own email, not the manager's): @{triggerOutputs()?['body/field_1']}\n\nSTEP 1 - BUILD THE ROSTER\n1. Call Get manager using the new hire's Work email above to find their manager.\n2. Call Get direct reports using the manager's email from step 1 to get the manager's full team.\n3. From that list, drop any person whose job title is blank or missing — these are placeholder/shadow accounts, not real colleagues to introduce.\n4. From what remains, remove the new hire themselves if they appear in it.\n5. If more than 10 people remain, keep only the first 10.\n6. Only include people actually returned by your tool calls — never invent a name, title, or email that wasn't in the results.\n\nSTEP 2 - LOOK UP EACH PERSON (the manager plus every person in the team list from Step 1)\nSearch the web for their public professional profile using their name, job title, and \"Microsoft\" as the company. LinkedIn is the preferred source, but other public professional sources (e.g. professional directories, conference speaker pages, employer bios) are acceptable if no LinkedIn page surfaces.\n\nIMPORTANT: You must actually attempt a real web search for every single person listed — the manager and each team member, one at a time — before deciding their confidence score. Do not skip the search for anyone, even if the name seems familiar or you believe you already know the answer. Confidence must be based on an actual search you just performed, not on prior assumption.\n\nRate your confidence that you found the right person on a 0.0-1.0 scale, based on how well the name and current employer agree with what you found. Treat the job title as matching if it describes the same role at a similar level — don't lower confidence just because a seniority suffix like \"II\" or \"Senior\" is missing, added, or differs; only treat the title as a mismatch if it describes a clearly different role or function.\n- If confidence is 0.75 or higher: write a short, factual summary of their professional background (2-3 sentences) based only on what their profile states — role, how long in the field, what they appear to work on. Do not describe or infer their personality, capabilities, reputation, or anything not explicitly stated. Include the profile URL as a source link.\n- If confidence is below 0.75, or you cannot find a clear match, or there are multiple equally-likely candidates: do not include a bio or source link. Use this exact line instead, filling in their own name and job title: \"We don't have a public profile summary for {name} yet — as {job title} on the team, they'll be a great person to say hello to.\"\nNever guess a bio you are not confident about — a missing bio is always better than a wrong one.\n\nBefore finalizing your output, check yourself: if you are about to write that fallback line for every single person with no exceptions, stop — that is a sign you skipped the search step rather than genuinely attempting it. Go back and actually search for each person before producing your final output.\n\nSTEP 3 - COMPOSE THE EMAIL\nBuild one HTML email: a short friendly intro mentioning the new hire's own name, then one card per person, manager first, then the rest of the team. Each card shows: name, job title, bio (or the fallback line), and a \"Schedule a 1:1\" link in this exact format: mailto:{their email}?subject=1:1 with {their name}\nAfter the cards, add a line inviting the new hire to reply or contact HR if anything looks outdated or incorrect.\nEnd with this exact disclaimer in smaller/lighter text: \"This profile was generated using AI based on available professional information, which may include public LinkedIn content. It may contain inaccurate or outdated details. Please verify the information before sharing or using it.\"\n\nOUTPUT\nProduce exactly two structured output fields:\nEmailSubject: a short, friendly subject line such as \"Meet your new team!\"\nEmailBody: the complete HTML email from Step 3, ready to send as-is.\n\n```"
             },
             "host": {
               "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
@@ -2217,7 +2513,7 @@
             "nodeId": "agent-fb7e675d-b47e-43f9-a603-1289da05d738"
           }
         },
-        "If_Else": {
+        "AutoSendTeamIntroFlag": {
           "type": "If",
           "expression": {
             "and": [
@@ -2239,7 +2535,7 @@
                   "emailMessage/Subject": "@body('Team_Intro_Agent')?['structuredOutput/EmailSubject']",
                   "emailMessage/Body": "<div>@{body('Team_Intro_Agent')?['structuredOutput/EmailBody']}​</div>",
                   "emailMessage/Sensitivity": "f42aa342-8706-4288-bd11-ebb85995028c",
-                  "emailMessage/Cc": "@variables('HRNotifyEmail')"
+                  "emailMessage/From": "@variables('HRNotifyEmail')"
                 },
                 "host": {
                   "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
@@ -2263,7 +2559,7 @@
                     "draftMessage/To": "@triggerOutputs()?['body/field_1']",
                     "draftMessage/Subject": "@body('Team_Intro_Agent')?['structuredOutput/EmailSubject']",
                     "draftMessage/Body": "<div>@{body('Team_Intro_Agent')?['structuredOutput/EmailBody']}​</div>",
-                    "draftMessage/Cc": "@variables('HRNotifyEmail')"
+                    "draftMessage/From": "@variables('HRNotifyEmail')"
                   },
                   "host": {
                     "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
@@ -2284,7 +2580,7 @@
             ]
           },
           "metadata": {
-            "description": "If/Else",
+            "description": "AutoSendTeamIntroFlag",
             "nodeId": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0"
           }
         }

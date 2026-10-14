@@ -54,15 +54,17 @@ email, then `Get direct reports` on the manager to get the manager's team. It
 drops anyone with a blank job title (shadow/placeholder directory accounts),
 removes the hire themselves if a timing quirk surfaces them in their own
 manager's list, and keeps at most 10 people — manager first. For the manager
-and each remaining person, it searches the web for a matching public LinkedIn
-profile and rates its own confidence (0.0–1.0) that it found the right
-person. At 0.75 or higher it writes a short, strictly factual 2–3 sentence
-bio with a source link; below that — or with no clear single match — it uses
-a fixed "Additional profile details weren't available" line instead of
-guessing. It composes one HTML email (the manager's card first, then the
-team), each card with a `mailto:` "Schedule a 1:1" link, and a disclaimer
-stating the bios are AI-generated from public information and may be
-inaccurate.
+and each remaining person, it searches the web for a matching public
+professional profile — LinkedIn preferred, falling back to other public
+professional sources (directories, conference speaker pages, employer bios)
+if no LinkedIn page surfaces — and rates its own confidence (0.0–1.0) that
+it found the right person. At 0.75 or higher it writes a short, strictly
+factual 2–3 sentence bio with a source link; below that — or with no clear
+single match — it uses a warm, name-and-title-specific fallback line instead
+of guessing, so the card never reads like an error even without a bio. It
+composes one HTML email (the manager's card first, then the team), each card
+with a `mailto:` "Schedule a 1:1" link, and a disclaimer stating the bios
+are AI-generated from public information and may be inaccurate.
 
 A deterministic If/Else then checks `AutoSendTeamIntro`: if `Yes`, **Send an
 email (V2)** sends it straight to the hire (Cc HR); if `No`, **Draft an email
@@ -90,7 +92,7 @@ the agent, so it's never affected by model variance.
 - **Notification routing** if you want a Teams post or a ticket instead of an
   email when a title can't be placed.
 - **Bio confidence threshold.** Team Intro Agent only writes a bio at ≥0.75
-  confidence of a correct LinkedIn match — raise or lower this in the agent's
+  confidence of a correct profile match — raise or lower this in the agent's
   instructions if you want it stricter, or more willing to take a guess.
 - **Auto-send vs. draft.** `AutoSendTeamIntro` is the only thing gating
   whether the team-intro email sends itself or waits for a human — flip the
