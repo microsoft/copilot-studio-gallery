@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { compareSolutionOrder, containedComponents, containsEveryComponent, parseSortMode } from "../src/lib/discovery";
+import { compareSolutionOrder, containedComponents, containsEveryComponent, isDemo, parseSortMode } from "../src/lib/discovery";
 import { sharedMcpServers, solutionInventory } from "../src/lib/inventory";
 
 test("sorts by newest using updated dates, creation dates, and name tie-breaks", () => {
@@ -21,6 +21,30 @@ test("sorts by newest using updated dates, creation dates, and name tie-breaks",
 test("name sorting ignores dates", () => {
   assert.ok(compareSolutionOrder({ name: "Alpha" }, { name: "Zulu", updatedAt: "2026-10-01" }, "name") < 0);
   assert.equal(compareSolutionOrder({ name: "Same" }, { name: "Same" }, "name"), 0);
+});
+
+test("demos sink to the bottom in every sort mode", () => {
+  const solutions = [
+    { name: "Alpha demo", createdAt: "2026-09-01", demo: true },
+    { name: "Bravo", createdAt: "2026-01-01" },
+    { name: "Charlie demo", createdAt: "2026-10-01", demo: true },
+    { name: "Delta", createdAt: "2026-02-01" },
+  ];
+  assert.deepEqual(
+    [...solutions].sort((a, b) => compareSolutionOrder(a, b, "newest")).map((solution) => solution.name),
+    ["Delta", "Bravo", "Charlie demo", "Alpha demo"],
+  );
+  assert.deepEqual(
+    [...solutions].sort((a, b) => compareSolutionOrder(a, b, "name")).map((solution) => solution.name),
+    ["Bravo", "Delta", "Alpha demo", "Charlie demo"],
+  );
+});
+
+test("isDemo matches the demo tag case-insensitively", () => {
+  assert.equal(isDemo(["sales", "demo"]), true);
+  assert.equal(isDemo(["Demo"]), true);
+  assert.equal(isDemo(["sales", "demonstration"]), false);
+  assert.equal(isDemo([]), false);
 });
 
 test("normalizes absent, invalid, and legacy sort modes to newest", () => {

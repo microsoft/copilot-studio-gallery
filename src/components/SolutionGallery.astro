@@ -258,7 +258,7 @@ function filterAttributes(solution: (typeof solutions)[number]) {
 </div>
 
 <script>
-  import { compareSolutionOrder, parseSortMode, type SortMode } from "../lib/discovery";
+  import { compareSolutionOrder, isDemo, parseSortMode, type SortMode } from "../lib/discovery";
   import {
     FACETS, MATCH_ANY, TYPES, cloneState, emptyState, filterParams, isFiltered,
     matches, sameState, stateFromUrl, type Facet, type FilterState, type SolutionRecord,
@@ -313,6 +313,7 @@ function filterAttributes(solution: (typeof solutions)[number]) {
     return [item, {
       name: data.name ?? "",
       updatedAt: data.updated,
+      demo: isDemo(list(data.tags)),
       text: [data.name, data.description, data.tags, data.categories, data.agents, data.workflows, data.authorName].join(" ").toLowerCase(),
       types: list(data.types),
       categories: list(data.categories, "|"),
