@@ -1,9 +1,27 @@
 import { z } from "astro/zod";
 
+// Fixed discovery categories: authored in metadata.json (one per solution) and validated here.
+export const CATEGORIES = [
+  "Customer service",
+  "Sales & marketing",
+  "IT & security",
+  "Operations",
+  "HR",
+  "Finance",
+  "Legal & compliance",
+  "Productivity & knowledge",
+] as const;
+
+export type Category = (typeof CATEGORIES)[number];
+
+// One category per solution: the main persona or business activity it serves. Tags carry everything else.
+const categorySchema = z.enum(CATEGORIES);
+
 export const submissionMetadataSchema = z.object({
   name: z.string().trim().min(1),
   description: z.string().trim().min(1).max(320),
   tags: z.array(z.string().trim().min(1).max(40)).min(1),
+  category: categorySchema,
   author: z.string().trim().min(1),
   authorUrl: z.url().optional(),
   authorGithub: z
@@ -25,6 +43,9 @@ export const graphNodeSchema = z.object({
   name: z.string(),
   type: z.string(),
   position: graphPositionSchema,
+  parentId: z.string().optional(),
+  width: z.number().positive().optional(),
+  height: z.number().positive().optional(),
   summary: z.string().optional(),
   details: z.record(z.string(), z.unknown()).default({}),
 });
@@ -74,6 +95,7 @@ export const solutionSchema = z.object({
   name: z.string(),
   description: z.string(),
   tags: z.array(z.string()).min(1),
+  category: categorySchema,
   author: z.string(),
   authorUrl: z.url().optional(),
   authorGithub: z.string().optional(),

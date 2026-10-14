@@ -8,6 +8,7 @@
     "multi-agent",
     "human-in-the-loop"
   ],
+  "category": "Customer service",
   "author": "Adriana Trujillo",
   "createdAt": "2026-08-11",
   "updatedAt": "2026-08-11",
@@ -276,8 +277,8 @@
       "id": "{62d468f3-4a55-1ba5-2ec3-ae1a4b3a4b35}",
       "name": "BlastBox Post Sales Service",
       "trigger": "When a new email arrives",
-      "nodeCount": 23,
-      "edgeCount": 22,
+      "nodeCount": 18,
+      "edgeCount": 20,
       "graph": {
         "nodes": [
           {
@@ -288,7 +289,13 @@
               "x": -173.36318146106169,
               "y": 560.3551575805192
             },
-            "details": {}
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When a new email arrives",
+              "apiName": "shared_office365",
+              "operationName": "OnNewEmailV3",
+              "operationType": "OpenApiConnectionNotification"
+            }
           },
           {
             "id": "classifyOnInlineAgent-cf2f15e8-2660-4732-b934-7431240f433b",
@@ -300,19 +307,6 @@
             },
             "details": {
               "model": "GPT55Chat"
-            }
-          },
-          {
-            "id": "canvasNote-a592e707-ed7b-4419-b23f-4a1265cb05c5",
-            "name": "Note",
-            "type": "canvasNote",
-            "position": {
-              "x": -184.00976257403167,
-              "y": 269.8319960199096
-            },
-            "details": {
-              "markdown": "Customer email arrives in Inbox with enquiry. Subject filter is \"BlastBox Customer Service\", a Post-Sales entry point",
-              "color": "yellow"
             }
           },
           {
@@ -491,45 +485,6 @@
             }
           },
           {
-            "id": "canvasNote-55701c44-ed9e-47e5-9956-8e4262503f3b",
-            "name": "Note 2",
-            "type": "canvasNote",
-            "position": {
-              "x": 232.61791522643375,
-              "y": 263.65601320945666
-            },
-            "details": {
-              "markdown": "Email is classified as Order Shipment Issue, Order Defect Issue, or Other if this is a post-sale generic enquiry, not tied to a specific order",
-              "color": "yellow"
-            }
-          },
-          {
-            "id": "canvasNote-3eb5c945-0bd1-4cde-9a53-b43376917c23",
-            "name": "Note 4",
-            "type": "canvasNote",
-            "position": {
-              "x": 2312.1449513388206,
-              "y": 227
-            },
-            "details": {
-              "markdown": "Agent builds a contextualized answer, specifying if problem comes from delivery disruptions or stock unavailability and gets new ETA. Next steps options always include \"wait\" and \"cancel/return\", and may include \"exchange\" if substitute exists.",
-              "color": "blue"
-            }
-          },
-          {
-            "id": "canvasNote-c1d662dc-14df-43dc-a503-84fa55f357a4",
-            "name": "Note 5",
-            "type": "canvasNote",
-            "position": {
-              "x": 1714.3555743703328,
-              "y": 884.1696096472868
-            },
-            "details": {
-              "markdown": "General enquiries are checked by calling existing Store Policy Agent, followed by an email action to send a structured reply to the customer",
-              "color": "green"
-            }
-          },
-          {
             "id": "connector-ef8cfaa6-a984-4216-b10a-3408c1c15675",
             "name": "Send reply: Thanks for waiting",
             "type": "connector",
@@ -548,19 +503,6 @@
                 "replyParameters/To": "@{triggerOutputs()?['body/from']}",
                 "replyParameters/Subject": "BlastBox Service - Your enquiry"
               }
-            }
-          },
-          {
-            "id": "canvasNote-258c5821-c40f-4722-8aaf-5467ce81b20f",
-            "name": "Note 4 2",
-            "type": "canvasNote",
-            "position": {
-              "x": 2310.9852399919387,
-              "y": 534
-            },
-            "details": {
-              "markdown": "Agent assesses if case qualifies for an automatic return/replacement, if the conditions may still apply due to exceptional circumstances, or if these options are unapplicable. When exception is considered, a human approves/disapproves. ",
-              "color": "red"
             }
           },
           {
@@ -694,12 +636,6 @@
             "sourceHandle": "category:f1efd1a5-76cc-4a05-a432-8d5b2fcc0839"
           },
           {
-            "id": "edge-canvasNote-a592e707-ed7b-4419-b23f-4a1265cb05c5-canvasNote-55701c44-ed9e-47e5-9956-8e4262503f3b-input",
-            "source": "canvasNote-a592e707-ed7b-4419-b23f-4a1265cb05c5",
-            "target": "canvasNote-55701c44-ed9e-47e5-9956-8e4262503f3b",
-            "targetHandle": "input"
-          },
-          {
             "id": "edge-ifElse-5d5fffd8-206d-45e5-bc24-6fc4f32b636c-condition:6c4633ad-a5c4-4c49-91ac-5a7d4fa0ee07-connector-ef8cfaa6-a984-4216-b10a-3408c1c15675",
             "source": "ifElse-5d5fffd8-206d-45e5-bc24-6fc4f32b636c",
             "target": "connector-ef8cfaa6-a984-4216-b10a-3408c1c15675",
@@ -731,11 +667,6 @@
             "id": "edge-connector-5f867ed3-6c32-4c2d-b747-251877850d50-end-5c7e1ace-643f-4e2d-bed7-8a71c340bc9b",
             "source": "connector-5f867ed3-6c32-4c2d-b747-251877850d50",
             "target": "end-5c7e1ace-643f-4e2d-bed7-8a71c340bc9b"
-          },
-          {
-            "id": "edge-end-5c7e1ace-643f-4e2d-bed7-8a71c340bc9b-canvasNote-c1d662dc-14df-43dc-a503-84fa55f357a4",
-            "source": "end-5c7e1ace-643f-4e2d-bed7-8a71c340bc9b",
-            "target": "canvasNote-c1d662dc-14df-43dc-a503-84fa55f357a4"
           }
         ]
       }
@@ -744,8 +675,8 @@
       "id": "{44d64f96-1130-9b19-8209-34093d4416a3}",
       "name": "BlastBox Weekly Inventory Health",
       "trigger": "Start",
-      "nodeCount": 21,
-      "edgeCount": 18,
+      "nodeCount": 14,
+      "edgeCount": 16,
       "graph": {
         "nodes": [
           {
@@ -756,19 +687,8 @@
               "x": 248,
               "y": 461.54541015625
             },
-            "details": {}
-          },
-          {
-            "id": "canvasNote-4bf9bd4b-1e72-438a-add1-a13e7b9626e7",
-            "name": "Note",
-            "type": "canvasNote",
-            "position": {
-              "x": 238,
-              "y": 290
-            },
             "details": {
-              "markdown": "Set as manual and indicate users to turn on Recurrence to recreate real life scenario without risk of missing turning off the \"Enabled\" workflow toggle",
-              "color": "yellow"
+              "triggerType": "manual"
             }
           },
           {
@@ -794,7 +714,9 @@
               "x": 1248.5117621145687,
               "y": 301.8746192221007
             },
-            "details": {}
+            "details": {},
+            "width": 1907,
+            "height": 697
           },
           {
             "id": "ifElse-9777a477-05d5-449f-a1a0-3018afd17ef8",
@@ -804,6 +726,7 @@
               "x": 68.39399609619318,
               "y": 172
             },
+            "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
             "details": {}
           },
           {
@@ -814,6 +737,7 @@
               "x": 731.7164948835252,
               "y": 80
             },
+            "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
             "details": {
               "displayName": "Human review",
               "apiName": "shared_advancedapprovals",
@@ -845,6 +769,7 @@
               "x": 1063.5857849535041,
               "y": 80
             },
+            "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
             "details": {}
           },
           {
@@ -855,6 +780,7 @@
               "x": 396.2245207435917,
               "y": 439
             },
+            "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
             "details": {}
           },
           {
@@ -865,6 +791,7 @@
               "x": 393.3538031286964,
               "y": 80
             },
+            "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
             "details": {
               "botSchemaName": "",
               "mode": "inline",
@@ -914,6 +841,7 @@
               "x": 395.7750977873575,
               "y": 245.8781549651269
             },
+            "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
             "details": {
               "displayName": "Office 365 Outlook",
               "apiName": "shared_office365",
@@ -935,85 +863,8 @@
               "x": 732.7884644323713,
               "y": 245.54526527681014
             },
+            "parentId": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
             "details": {}
-          },
-          {
-            "id": "canvasNote-4dbca523-4495-4732-a107-e7eb2ca4fd3d",
-            "name": "Note 2",
-            "type": "canvasNote",
-            "position": {
-              "x": 556.2230943460634,
-              "y": 286.6630664568835
-            },
-            "details": {
-              "markdown": "Extract basic inventory data for each gaming SKU in the inventory, leaving out discontinued SKUs: Stock aging state, inbound stock flag, status notes",
-              "color": "yellow"
-            }
-          },
-          {
-            "id": "canvasNote-ef40d563-4df7-4aff-b6ec-72bc9a0f5f07",
-            "name": "Note 2 2",
-            "type": "canvasNote",
-            "position": {
-              "x": 892.9761614297805,
-              "y": 287.4124976243503
-            },
-            "details": {
-              "markdown": "Initialize array of SKU notes related to store manager approved changes in pricing, to be communicated to employees",
-              "color": "yellow"
-            }
-          },
-          {
-            "id": "canvasNote-331b3285-c7e6-48a6-b6cb-306bd502888d",
-            "name": "Note 2 2 2",
-            "type": "canvasNote",
-            "position": {
-              "x": 3402.93884376098,
-              "y": 447.143631857203
-            },
-            "details": {
-              "markdown": "Create ready-to-send data table and communication draft, communicating relevant SKU updates to store employees",
-              "color": "yellow"
-            }
-          },
-          {
-            "id": "canvasNote-77809ff8-3725-4dbb-a6f5-aecd8d9518a7",
-            "name": "Note 3",
-            "type": "canvasNote",
-            "position": {
-              "x": 1424.345573133879,
-              "y": 80
-            },
-            "details": {
-              "markdown": "Ask store manager for promo or clearance choice and confirm desired price ceiling/floor for SKUs with stale stock",
-              "color": "blue"
-            }
-          },
-          {
-            "id": "canvasNote-5562054e-7d46-4bd8-83ed-b5b162183334",
-            "name": "Note 3 2",
-            "type": "canvasNote",
-            "position": {
-              "x": 1119.724769871198,
-              "y": 228.07204197032797
-            },
-            "details": {
-              "markdown": "Request reorder inbound to provider when a good-selling item has been flagged. Note for store employees to keep price and item visible.",
-              "color": "red"
-            }
-          },
-          {
-            "id": "canvasNote-17b034a9-13e2-49dc-95c7-9dccaee7b587",
-            "name": "Note 3 2 2",
-            "type": "canvasNote",
-            "position": {
-              "x": 822.7977080471219,
-              "y": 409.4950792669853
-            },
-            "details": {
-              "markdown": "Note for store employees to keep price of other SKUs, until further notice",
-              "color": "green"
-            }
           },
           {
             "id": "end-2c543046-775a-471f-ab3b-5cc5c32a18bf",
@@ -1109,18 +960,6 @@
             "target": "loop-a4fc4348-44fb-49ea-8236-2acf87569028",
             "sourceHandle": "output",
             "targetHandle": "internal-target"
-          },
-          {
-            "id": "edge-canvasNote-4bf9bd4b-1e72-438a-add1-a13e7b9626e7-canvasNote-4dbca523-4495-4732-a107-e7eb2ca4fd3d-input",
-            "source": "canvasNote-4bf9bd4b-1e72-438a-add1-a13e7b9626e7",
-            "target": "canvasNote-4dbca523-4495-4732-a107-e7eb2ca4fd3d",
-            "targetHandle": "input"
-          },
-          {
-            "id": "edge-canvasNote-4dbca523-4495-4732-a107-e7eb2ca4fd3d-canvasNote-ef40d563-4df7-4aff-b6ec-72bc9a0f5f07-input",
-            "source": "canvasNote-4dbca523-4495-4732-a107-e7eb2ca4fd3d",
-            "target": "canvasNote-ef40d563-4df7-4aff-b6ec-72bc9a0f5f07",
-            "targetHandle": "input"
           },
           {
             "id": "edge-variable-c0edc099-3a8a-41fd-bf72-c4c0204c6a28-output-loop-a4fc4348-44fb-49ea-8236-2acf87569028-internal-target",

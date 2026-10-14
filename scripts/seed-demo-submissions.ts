@@ -1,11 +1,13 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import type { Category } from "../src/lib/schema";
 
 type DemoSubmission = {
   slug: string;
   name: string;
   description: string;
   tags: string[];
+  category: Category;
   author: string;
   authorGithub?: string;
   createdAt: string;
@@ -24,6 +26,7 @@ const demos: DemoSubmission[] = [
     name: "Customer Support Triage",
     description: "Classifies incoming cases, drafts grounded answers, and routes high-risk issues to a human queue.",
     tags: ["support", "customer-service", "ai", "human-in-the-loop", "demo"],
+    category: "Customer service",
     author: "Maya Chen",
     authorGithub: "mayachen",
     createdAt: "2026-08-13",
@@ -40,6 +43,7 @@ const demos: DemoSubmission[] = [
     name: "Sales Account Brief Generator",
     description: "Turns CRM history, open opportunities, and recent news into a concise pre-meeting account brief.",
     tags: ["sales", "crm", "research", "productivity", "demo"],
+    category: "Sales & marketing",
     author: "Jon Bell",
     authorGithub: "jonbell",
     createdAt: "2026-08-12",
@@ -56,6 +60,7 @@ const demos: DemoSubmission[] = [
     name: "Employee Onboarding Guide",
     description: "Coordinates a new hire checklist and answers policy, benefits, and first-week questions.",
     tags: ["hr", "onboarding", "knowledge", "beginner", "demo"],
+    category: "HR",
     author: "Priya Raman",
     authorGithub: "priyaraman",
     createdAt: "2026-08-10",
@@ -71,6 +76,7 @@ const demos: DemoSubmission[] = [
     name: "Incident Response Coordinator",
     description: "Collects service signals, assembles a response channel, and keeps stakeholders updated through resolution.",
     tags: ["it-ops", "incident-response", "teams", "automation", "demo"],
+    category: "IT & security",
     author: "Elliot Stone",
     authorGithub: "elliotstone",
     createdAt: "2026-08-09",
@@ -87,6 +93,7 @@ const demos: DemoSubmission[] = [
     name: "Contract Review Assistant",
     description: "Extracts key clauses, flags policy deviations, and prepares a review packet for legal approval.",
     tags: ["document-ops", "legal", "compliance", "human-in-the-loop", "demo"],
+    category: "Legal & compliance",
     author: "Sofia Alvarez",
     authorGithub: "sofiaalvarez",
     createdAt: "2026-08-08",
@@ -103,6 +110,7 @@ const demos: DemoSubmission[] = [
     name: "Campaign Content Engine",
     description: "Builds a channel-ready campaign kit from one brief with brand, audience, and approval controls.",
     tags: ["marketing", "content", "brand", "approval", "demo"],
+    category: "Sales & marketing",
     author: "Maya Chen",
     authorGithub: "mayachen",
     createdAt: "2026-08-07",
@@ -118,6 +126,7 @@ const demos: DemoSubmission[] = [
     name: "Invoice Exception Handler",
     description: "Validates invoice data, resolves routine mismatches, and routes material exceptions for finance review.",
     tags: ["finance", "document-ops", "automation", "approval", "demo"],
+    category: "Finance",
     author: "Noah Williams",
     authorGithub: "noahwilliams",
     createdAt: "2026-08-06",
@@ -131,6 +140,7 @@ const demos: DemoSubmission[] = [
     name: "Field Service Dispatch",
     description: "Prioritizes service requests, finds the right technician, and keeps customers informed of arrival changes.",
     tags: ["operations", "field-service", "scheduling", "customer-service", "demo"],
+    category: "Operations",
     author: "Amina Yusuf",
     authorGithub: "aminayusuf",
     createdAt: "2026-08-05",
@@ -144,6 +154,7 @@ const demos: DemoSubmission[] = [
     name: "Knowledge Gap Finder",
     description: "Analyzes unresolved conversations to identify missing articles and drafts evidence-backed outlines.",
     tags: ["knowledge", "support", "analytics", "ai", "demo"],
+    category: "Customer service",
     author: "Priya Raman",
     authorGithub: "priyaraman",
     createdAt: "2026-08-04",
@@ -157,6 +168,7 @@ const demos: DemoSubmission[] = [
     name: "Security Access Review",
     description: "Explains access anomalies, gathers manager evidence, and produces an auditable review decision.",
     tags: ["security", "it-ops", "compliance", "approval", "demo"],
+    category: "IT & security",
     author: "Elliot Stone",
     authorGithub: "elliotstone",
     createdAt: "2026-08-03",
@@ -172,6 +184,7 @@ const demos: DemoSubmission[] = [
     name: "Store Feedback Analyzer",
     description: "Summarizes store feedback, detects recurring product issues, and prepares action themes for operations.",
     tags: ["retail", "analytics", "customer-service", "beginner", "demo"],
+    category: "Operations",
     author: "Amina Yusuf",
     authorGithub: "aminayusuf",
     createdAt: "2026-08-02",
@@ -185,6 +198,7 @@ const demos: DemoSubmission[] = [
     name: "Project Status Narrator",
     description: "Combines delivery signals into a plain-language status update with risks, decisions, and next actions.",
     tags: ["productivity", "project-management", "reporting", "beginner", "demo"],
+    category: "Productivity & knowledge",
     author: "Noah Williams",
     authorGithub: "noahwilliams",
     createdAt: "2026-08-01",
@@ -243,6 +257,7 @@ for (const demo of demos) {
       name: demo.name,
       description: demo.description,
       tags: demo.tags,
+      category: demo.category,
       author: demo.author,
       ...(demo.authorGithub ? { authorGithub: demo.authorGithub } : {}),
       createdAt: demo.createdAt,

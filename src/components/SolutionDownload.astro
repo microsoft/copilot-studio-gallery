@@ -1,0 +1,76 @@
+---
+import type { SolutionRecord } from "../lib/schema";
+import { withBase } from "../lib/url";
+
+interface Props {
+  solution: Pick<SolutionRecord, "bundle" | "featured">;
+  idPrefix: string;
+  compact?: boolean;
+}
+
+const { solution, idPrefix, compact = false } = Astro.props;
+const acknowledgementId = `${idPrefix}-trust-ack`;
+const disclaimerId = `${idPrefix}-disclaimer`;
+const acknowledgementText = solution.featured
+  ? "I understand this is an open-source sample from Microsoft."
+  : "I'll review this community-provided example and only import it if I trust the source.";
+---
+
+<div data-solution-download role="group" aria-label="Download solution" class:list={["grid gap-3 rounded-xl border border-border bg-elevated p-3.5", compact && "sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-5"]}>
+  <div class="min-w-0">
+    <label for={acknowledgementId} class="flex cursor-pointer items-start gap-2 text-xs font-medium leading-relaxed text-ink">
+      <input type="checkbox" id={acknowledgementId} data-trust-ack aria-describedby={disclaimerId} class="mt-0.5 h-3.5 w-3.5 shrink-0 cursor-pointer rounded border-border accent-accent" />
+      <span>{acknowledgementText}</span>
+    </label>
+    <p id={disclaimerId} class="mt-2 pl-[1.375rem] text-xs leading-relaxed text-muted">
+      This {solution.featured ? "sample" : "community example"} is provided as-is and is not covered by Microsoft Support.
+      The underlying Copilot Studio and Power Platform products retain their standard support.{" "}
+      Importing can create or modify resources and use your connections and permissions.{" "}
+      <a href="https://github.com/microsoft/copilot-studio-gallery/blob/main/SUPPORT.md" target="_blank" rel="noopener" class="underline underline-offset-2 hover:text-ink">Support details</a>
+    </p>
+  </div>
+  <a
+    data-download-gated
+    data-download-url={withBase(`/${solution.bundle}`)}
+    download
+    aria-disabled="true"
+    tabindex="-1"
+    class:list={[
+      "inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-[0.625rem] bg-accent px-4 py-2.5 text-sm font-semibold text-accent-fg opacity-50",
+      "w-full self-center",
+      compact && "sm:w-auto",
+    ]}
+  >
+    Download ZIP
+  </a>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-solution-download]").forEach((root) => {
+    const acknowledgement = root.querySelector<HTMLInputElement>("[data-trust-ack]");
+    const download = root.querySelector<HTMLAnchorElement>("[data-download-gated]");
+    if (!acknowledgement || !download || !download.dataset.downloadUrl) {
+      throw new Error("Missing solution download acknowledgement or URL");
+    }
+    const url = download.dataset.downloadUrl;
+
+    const syncDownload = () => {
+      const enabled = acknowledgement.checked;
+      download.classList.toggle("cursor-not-allowed", !enabled);
+      download.classList.toggle("opacity-50", !enabled);
+      download.classList.toggle("hover:bg-accent-hover", enabled);
+      download.setAttribute("aria-disabled", String(!enabled));
+      download.tabIndex = enabled ? 0 : -1;
+      if (enabled) download.href = url;
+      else download.removeAttribute("href");
+    };
+
+    download.addEventListener("click", (event) => {
+      if (acknowledgement.checked) return;
+      event.preventDefault();
+      acknowledgement.focus();
+    });
+    acknowledgement.addEventListener("change", syncDownload);
+    syncDownload();
+  });
+</script>
