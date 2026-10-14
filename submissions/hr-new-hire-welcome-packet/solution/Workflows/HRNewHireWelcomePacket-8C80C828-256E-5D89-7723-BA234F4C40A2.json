@@ -60,7 +60,7 @@
           "type": "OpenApiConnection",
           "inputs": {
             "parameters": {
-              "dataset": "https://yourtenant.sharepoint.com/teams/YourSiteName",
+              "dataset": "https://microsoftapc.sharepoint.com/teams/HROnboardingTemplateDemo",
               "table": "a30b7182-2410-4f48-8d05-7dbade2d2ce6"
             },
             "host": {
@@ -97,7 +97,7 @@
                           "operationName": "GetOnNewItems",
                           "connectionName": "shared_sharepointonline-1",
                           "inputs": {
-                            "dataset": "https://yourtenant.sharepoint.com/teams/YourSiteName",
+                            "dataset": "https://microsoftapc.sharepoint.com/teams/HROnboardingTemplateDemo",
                             "table": "a30b7182-2410-4f48-8d05-7dbade2d2ce6"
                           },
                           "displayName": "When an item is created",
@@ -701,8 +701,7 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    },
-                    "selected": false
+                    }
                   },
                   {
                     "id": "agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514",
@@ -812,12 +811,12 @@
                             "variableName": "HRNotifyEmail",
                             "mode": "initialize",
                             "type": "string",
-                            "value": "hr@contoso.com",
+                            "value": "pulkitbhagat@microsoft.com",
                             "valueRich": {
                               "segments": [
                                 {
                                   "type": "static",
-                                  "value": "hr@contoso.com"
+                                  "value": "pulkitbhagat@microsoft.com"
                                 }
                               ]
                             }
@@ -827,12 +826,12 @@
                             "variableName": "WelcomeLinksSite",
                             "mode": "initialize",
                             "type": "string",
-                            "value": "https://yourtenant.sharepoint.com/teams/YourSiteName",
+                            "value": "https://microsoftapc.sharepoint.com/teams/HROnboardingTemplateDemo",
                             "valueRich": {
                               "segments": [
                                 {
                                   "type": "static",
-                                  "value": "https://yourtenant.sharepoint.com/teams/YourSiteName"
+                                  "value": "https://microsoftapc.sharepoint.com/teams/HROnboardingTemplateDemo"
                                 }
                               ]
                             }
@@ -857,7 +856,7 @@
                             "variableName": "AutoSendTeamIntro",
                             "mode": "initialize",
                             "type": "boolean",
-                            "value": "false"
+                            "value": "true"
                           }
                         ]
                       },
@@ -876,8 +875,7 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    },
-                    "selected": false
+                    }
                   },
                   {
                     "id": "canvasNote-f530af65-6ff7-46fe-981c-c401d3e5ab44",
@@ -905,8 +903,7 @@
                       "width": 232,
                       "height": 300
                     },
-                    "resizing": false,
-                    "dragging": false
+                    "resizing": false
                   },
                   {
                     "id": "canvasNote-0aa7edc5-01f8-4cc3-83ee-80af0d1d4177",
@@ -934,9 +931,7 @@
                       "width": 235,
                       "height": 696
                     },
-                    "resizing": false,
-                    "dragging": false,
-                    "selected": false
+                    "resizing": false
                   },
                   {
                     "id": "canvasNote-a53507e7-a46f-4b75-9ec6-e6e13b2aeec4",
@@ -964,8 +959,7 @@
                       "width": 227,
                       "height": 478
                     },
-                    "resizing": false,
-                    "dragging": false
+                    "resizing": false
                   },
                   {
                     "id": "canvasNote-aa583182-e79a-4075-8057-c3fe9a45ad41",
@@ -992,8 +986,7 @@
                     "measured": {
                       "width": 250,
                       "height": 200
-                    },
-                    "dragging": false
+                    }
                   },
                   {
                     "id": "canvasNote-5f327463-8646-4cfb-a13e-b131d3053b95",
@@ -1020,8 +1013,7 @@
                     "measured": {
                       "width": 250,
                       "height": 224
-                    },
-                    "dragging": false
+                    }
                   },
                   {
                     "id": "agent-fb7e675d-b47e-43f9-a603-1289da05d738",
@@ -1039,8 +1031,8 @@
                         "botSchemaName": "",
                         "isHitlEscalationEnabled": false,
                         "webSearchEnabled": true,
-                        "inlineInstructions": "```\nYou are the Team Intro Agent for HR New Hire Welcome Packet. You run once per new-hire row, in parallel with the Onboarding Agent. You have two tools: Get manager and Get direct reports, both read-only, plus web search. You never send email, never update any row, and never take any action beyond producing the result described below.\n\nHIRE ROW FOR THIS RUN\nPreferred name: {triggerOutputs()?['body/Title']}\nWork email (the new hire's own email, not the manager's): {triggerOutputs()?['body/field_1']}\n\nSTEP 1 - BUILD THE ROSTER\n1. Call Get manager using the new hire's Work email above to find their manager.\n2. Call Get direct reports using the manager's email from step 1 to get the manager's full team.\n3. From that list, drop any person whose job title is blank or missing — these are placeholder/shadow accounts, not real colleagues to introduce.\n4. From what remains, remove the new hire themselves if they appear in it.\n5. If more than 10 people remain, keep only the first 10.\n6. Only include people actually returned by your tool calls — never invent a name, title, or email that wasn't in the results.\n\nSTEP 2 - LOOK UP EACH PERSON (the manager plus every person in the team list from Step 1)\nSearch the web for their public LinkedIn profile using their name, job title, and \"Microsoft\" as the company.\nRate your confidence that you found the right person on a 0.0-1.0 scale, based on how well the name, current employer, and job title all agree with what you found.\n- If confidence is 0.75 or higher: write a short, factual summary of their professional background (2-3 sentences) based only on what their profile states — role, how long in the field, what they appear to work on. Do not describe or infer their personality, capabilities, reputation, or anything not explicitly stated. Include the profile URL as a source link.\n- If confidence is below 0.75, or you cannot find a clear match, or there are multiple equally-likely candidates: do not include a bio or source link. Use this exact line instead: \"Additional profile details weren't available.\"\nNever guess a bio you are not confident about — a missing bio is always better than a wrong one.\n\nSTEP 3 - COMPOSE THE EMAIL\nBuild one HTML email: a short friendly intro mentioning the new hire's own name, then one card per person, manager first, then the rest of the team. Each card shows: name, job title, bio (or the fallback line), and a \"Schedule a 1:1\" link in this exact format: mailto:{their email}?subject=1:1 with {their name}\nAfter the cards, add a line inviting the new hire to reply or contact HR if anything looks outdated or incorrect.\nEnd with this exact disclaimer in smaller/lighter text: \"This profile was generated using AI based on available professional information, which may include public LinkedIn content. It may contain inaccurate or outdated details. Please verify the information before sharing or using it.\"\n\nOUTPUT\nProduce exactly two structured output fields:\nEmailSubject: a short, friendly subject line such as \"Meet your new team!\"\nEmailBody: the complete HTML email from Step 3, ready to send as-is.\n\n```",
-                        "outputMode": "structured-simple",
+                        "inlineInstructions": "```\nYou are the Team Intro Agent for HR New Hire Welcome Packet. You run once per new-hire row, in parallel with the Onboarding Agent. You have two tools: Get manager and Get direct reports, both read-only, plus web search. You never send email, never update any row, and never take any action beyond producing the result described below.\n\nHIRE ROW FOR THIS RUN\nPreferred name: {triggerOutputs()?['body/Title']}\nWork email (the new hire's own email, not the manager's): {triggerOutputs()?['body/field_1']}\n\nSTEP 1 - BUILD THE ROSTER\n1. Call Get manager using the new hire's Work email above to find their manager.\n2. Call Get direct reports using the manager's email from step 1 to get the manager's full team.\n3. From that list, drop any person whose job title is blank or missing — these are placeholder/shadow accounts, not real colleagues to introduce.\n4. From what remains, remove the new hire themselves if they appear in it.\n5. If more than 10 people remain, keep only the first 10.\n6. Only include people actually returned by your tool calls — never invent a name, title, or email that wasn't in the results.\n\nSTEP 2 - LOOK UP EACH PERSON (the manager plus every person in the team list from Step 1)\nSearch the web for their public professional profile using their name, job title, and \"Microsoft\" as the company. LinkedIn is the preferred source, but other public professional sources (e.g. professional directories, conference speaker pages, employer bios) are acceptable if no LinkedIn page surfaces.\n\nIMPORTANT: You must actually attempt a real web search for every single person listed — the manager and each team member, one at a time — before deciding their confidence score. Do not skip the search for anyone, even if the name seems familiar or you believe you already know the answer. Confidence must be based on an actual search you just performed, not on prior assumption.\n\nRate your confidence that you found the right person on a 0.0-1.0 scale, based on how well the name and current employer agree with what you found. Treat the job title as matching if it describes the same role at a similar level — don't lower confidence just because a seniority suffix like \"II\" or \"Senior\" is missing, added, or differs; only treat the title as a mismatch if it describes a clearly different role or function.\n- If confidence is 0.75 or higher: write a short, factual summary of their professional background (2-3 sentences) based only on what their profile states — role, how long in the field, what they appear to work on. Do not describe or infer their personality, capabilities, reputation, or anything not explicitly stated. Include the profile URL as a source link.\n- If confidence is below 0.75, or you cannot find a clear match, or there are multiple equally-likely candidates: do not include a bio or source link. Use this exact line instead: \"Additional profile details weren't available.\"\nNever guess a bio you are not confident about — a missing bio is always better than a wrong one.\n\nBefore finalizing your output, check yourself: if you are about to write \"Additional profile details weren't available\" for every single person with no exceptions, stop — that is a sign you skipped the search step rather than genuinely attempting it. Go back and actually search for each person before producing your final output.\n\nSTEP 3 - COMPOSE THE EMAIL\nBuild one HTML email: a short friendly intro mentioning the new hire's own name, then one card per person, manager first, then the rest of the team. Each card shows: name, job title, bio (or the fallback line), and a \"Schedule a 1:1\" link in this exact format: mailto:{their email}?subject=1:1 with {their name}\nAfter the cards, add a line inviting the new hire to reply or contact HR if anything looks outdated or incorrect.\nEnd with this exact disclaimer in smaller/lighter text: \"This profile was generated using AI based on available professional information, which may include public LinkedIn content. It may contain inaccurate or outdated details. Please verify the information before sharing or using it.\"\n\n```",
+                        "outputMode": "text",
                         "connectionName": "shared_agentnode",
                         "inlineModel": "claude-opus-5",
                         "inlineTools": [
@@ -1099,7 +1091,8 @@
                             "EmailSubject",
                             "EmailBody"
                           ]
-                        }
+                        },
+                        "inlineKnowledge": []
                       },
                       "outcomes": [
                         {
@@ -1111,32 +1104,15 @@
                               "message": {
                                 "type": "string",
                                 "title": "Agent Response",
-                                "description": "Aggregated message text emitted before the structured output (may be null)"
+                                "description": "The agent response text"
                               },
                               "activities": {
                                 "type": "array",
                                 "description": "Bot response activities (typing, message, and event types)"
-                              },
-                              "structuredOutput": {
-                                "type": "object",
-                                "properties": {
-                                  "EmailSubject": {
-                                    "type": "string"
-                                  },
-                                  "EmailBody": {
-                                    "type": "string"
-                                  }
-                                },
-                                "required": [
-                                  "EmailSubject",
-                                  "EmailBody"
-                                ],
-                                "title": ""
                               }
                             },
                             "required": [
-                              "activities",
-                              "structuredOutput"
+                              "activities"
                             ]
                           }
                         }
@@ -1145,7 +1121,8 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    }
+                    },
+                    "selected": true
                   },
                   {
                     "id": "canvasNote-952261e6-c2d2-4980-8578-d2b5d389f4ba",
@@ -1172,8 +1149,7 @@
                     "measured": {
                       "width": 250,
                       "height": 464
-                    },
-                    "selected": false
+                    }
                   },
                   {
                     "id": "canvasNote-80de7f4d-2ba5-4fd7-9aad-4b16c0ee6350",
@@ -1200,8 +1176,7 @@
                     "measured": {
                       "width": 250,
                       "height": 188
-                    },
-                    "dragging": false
+                    }
                   },
                   {
                     "id": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
@@ -1209,7 +1184,7 @@
                     "type": "ifElse",
                     "version": 1,
                     "position": {
-                      "x": 1933,
+                      "x": 1967,
                       "y": 218
                     },
                     "data": {
@@ -1244,7 +1219,7 @@
                     "type": "connector",
                     "version": 1,
                     "position": {
-                      "x": 2273.1906585181187,
+                      "x": 2307.1906585181187,
                       "y": 210.5
                     },
                     "data": {
@@ -1423,9 +1398,7 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    },
-                    "dragging": false,
-                    "selected": false
+                    }
                   },
                   {
                     "id": "connector-5afa3316-61b8-4673-95ba-0c8edcd1276e",
@@ -1433,7 +1406,7 @@
                     "type": "connector",
                     "version": 1,
                     "position": {
-                      "x": 2278.1947118102125,
+                      "x": 2312.1947118102125,
                       "y": 345.05091844460566
                     },
                     "data": {
@@ -1950,8 +1923,7 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    },
-                    "dragging": false
+                    }
                   },
                   {
                     "id": "canvasNote-bf817137-0d94-4890-9050-25dad943f021",
@@ -1978,9 +1950,7 @@
                     "measured": {
                       "width": 250,
                       "height": 184
-                    },
-                    "dragging": false,
-                    "selected": false
+                    }
                   },
                   {
                     "id": "canvasNote-dd2afdec-8a33-41cf-990a-228dbfd2b9d8",
@@ -2007,9 +1977,7 @@
                     "measured": {
                       "width": 250,
                       "height": 228
-                    },
-                    "dragging": false,
-                    "selected": false
+                    }
                   }
                 ],
                 "edges": [
@@ -2036,11 +2004,6 @@
                     "targetHandle": "input"
                   },
                   {
-                    "id": "edge-agent-fb7e675d-b47e-43f9-a603-1289da05d738-ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
-                    "source": "agent-fb7e675d-b47e-43f9-a603-1289da05d738",
-                    "target": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0"
-                  },
-                  {
                     "id": "edge-ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0-condition:a1df2617-5651-4873-9a20-2ca13152851d-connector-01dcf0f5-4b06-4d60-b58a-8b398d27ea82",
                     "source": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
                     "target": "connector-01dcf0f5-4b06-4d60-b58a-8b398d27ea82",
@@ -2063,6 +2026,11 @@
                     "source": "canvasNote-952261e6-c2d2-4980-8578-d2b5d389f4ba",
                     "target": "canvasNote-bf817137-0d94-4890-9050-25dad943f021",
                     "targetHandle": "input"
+                  },
+                  {
+                    "id": "edge-agent-fb7e675d-b47e-43f9-a603-1289da05d738-ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
+                    "source": "agent-fb7e675d-b47e-43f9-a603-1289da05d738",
+                    "target": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0"
                   }
                 ],
                 "connectionReferences": {
@@ -2143,7 +2111,7 @@
               {
                 "name": "HRNotifyEmail",
                 "type": "String",
-                "value": "hr@contoso.com"
+                "value": "pulkitbhagat@microsoft.com"
               }
             ]
           },
@@ -2159,7 +2127,7 @@
               {
                 "name": "WelcomeLinksSite",
                 "type": "String",
-                "value": "https://yourtenant.sharepoint.com/teams/YourSiteName"
+                "value": "https://microsoftapc.sharepoint.com/teams/HROnboardingTemplateDemo"
               }
             ]
           },
@@ -2193,7 +2161,7 @@
               {
                 "name": "AutoSendTeamIntro",
                 "type": "Boolean",
-                "value": false
+                "value": true
               }
             ]
           },
@@ -2230,8 +2198,8 @@
           "type": "OpenApiConnection",
           "inputs": {
             "parameters": {
-              "body/botDefinition": "{\"model\":\"claude-opus-5\",\"tools\":[{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_office365users\",\"connectionId\":\"shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc\",\"operationId\":\"Manager_V2\",\"connectionMode\":\"Maker\",\"displayName\":\"Get manager\",\"description\":\"Retrieves the profile of the specified user's manager. Learn more about available fields to select: https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/user#properties\"},{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_office365users\",\"connectionId\":\"shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc\",\"operationId\":\"DirectReports_V2\",\"connectionMode\":\"Maker\",\"displayName\":\"Get direct reports\",\"description\":\"Retrieves the user profiles of the specified user's direct reports. Learn more about available fields to select: https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/user#properties\"}],\"outputFormat\":\"JsonSchema\",\"structuredOutputSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"EmailSubject\\\":{\\\"type\\\":\\\"string\\\"},\\\"EmailBody\\\":{\\\"type\\\":\\\"string\\\"}},\\\"required\\\":[\\\"EmailSubject\\\",\\\"EmailBody\\\"]}\",\"webSearchEnabled\":true}",
-              "body/message": "```\nYou are the Team Intro Agent for HR New Hire Welcome Packet. You run once per new-hire row, in parallel with the Onboarding Agent. You have two tools: Get manager and Get direct reports, both read-only, plus web search. You never send email, never update any row, and never take any action beyond producing the result described below.\n\nHIRE ROW FOR THIS RUN\nPreferred name: @{triggerOutputs()?['body/Title']}\nWork email (the new hire's own email, not the manager's): @{triggerOutputs()?['body/field_1']}\n\nSTEP 1 - BUILD THE ROSTER\n1. Call Get manager using the new hire's Work email above to find their manager.\n2. Call Get direct reports using the manager's email from step 1 to get the manager's full team.\n3. From that list, drop any person whose job title is blank or missing — these are placeholder/shadow accounts, not real colleagues to introduce.\n4. From what remains, remove the new hire themselves if they appear in it.\n5. If more than 10 people remain, keep only the first 10.\n6. Only include people actually returned by your tool calls — never invent a name, title, or email that wasn't in the results.\n\nSTEP 2 - LOOK UP EACH PERSON (the manager plus every person in the team list from Step 1)\nSearch the web for their public LinkedIn profile using their name, job title, and \"Microsoft\" as the company.\nRate your confidence that you found the right person on a 0.0-1.0 scale, based on how well the name, current employer, and job title all agree with what you found.\n- If confidence is 0.75 or higher: write a short, factual summary of their professional background (2-3 sentences) based only on what their profile states — role, how long in the field, what they appear to work on. Do not describe or infer their personality, capabilities, reputation, or anything not explicitly stated. Include the profile URL as a source link.\n- If confidence is below 0.75, or you cannot find a clear match, or there are multiple equally-likely candidates: do not include a bio or source link. Use this exact line instead: \"Additional profile details weren't available.\"\nNever guess a bio you are not confident about — a missing bio is always better than a wrong one.\n\nSTEP 3 - COMPOSE THE EMAIL\nBuild one HTML email: a short friendly intro mentioning the new hire's own name, then one card per person, manager first, then the rest of the team. Each card shows: name, job title, bio (or the fallback line), and a \"Schedule a 1:1\" link in this exact format: mailto:{their email}?subject=1:1 with {their name}\nAfter the cards, add a line inviting the new hire to reply or contact HR if anything looks outdated or incorrect.\nEnd with this exact disclaimer in smaller/lighter text: \"This profile was generated using AI based on available professional information, which may include public LinkedIn content. It may contain inaccurate or outdated details. Please verify the information before sharing or using it.\"\n\nOUTPUT\nProduce exactly two structured output fields:\nEmailSubject: a short, friendly subject line such as \"Meet your new team!\"\nEmailBody: the complete HTML email from Step 3, ready to send as-is.\n\n```"
+              "body/botDefinition": "{\"model\":\"claude-opus-5\",\"tools\":[{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_office365users\",\"connectionId\":\"shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc\",\"operationId\":\"Manager_V2\",\"connectionMode\":\"Maker\",\"displayName\":\"Get manager\",\"description\":\"Retrieves the profile of the specified user's manager. Learn more about available fields to select: https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/user#properties\"},{\"type\":\"connector\",\"connectorId\":\"/providers/Microsoft.PowerApps/apis/shared_office365users\",\"connectionId\":\"shared-office365user-288373d3-22e3-497c-97d5-a37fbd1b00dc\",\"operationId\":\"DirectReports_V2\",\"connectionMode\":\"Maker\",\"displayName\":\"Get direct reports\",\"description\":\"Retrieves the user profiles of the specified user's direct reports. Learn more about available fields to select: https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/user#properties\"}],\"webSearchEnabled\":true}",
+              "body/message": "```\nYou are the Team Intro Agent for HR New Hire Welcome Packet. You run once per new-hire row, in parallel with the Onboarding Agent. You have two tools: Get manager and Get direct reports, both read-only, plus web search. You never send email, never update any row, and never take any action beyond producing the result described below.\n\nHIRE ROW FOR THIS RUN\nPreferred name: @{triggerOutputs()?['body/Title']}\nWork email (the new hire's own email, not the manager's): @{triggerOutputs()?['body/field_1']}\n\nSTEP 1 - BUILD THE ROSTER\n1. Call Get manager using the new hire's Work email above to find their manager.\n2. Call Get direct reports using the manager's email from step 1 to get the manager's full team.\n3. From that list, drop any person whose job title is blank or missing — these are placeholder/shadow accounts, not real colleagues to introduce.\n4. From what remains, remove the new hire themselves if they appear in it.\n5. If more than 10 people remain, keep only the first 10.\n6. Only include people actually returned by your tool calls — never invent a name, title, or email that wasn't in the results.\n\nSTEP 2 - LOOK UP EACH PERSON (the manager plus every person in the team list from Step 1)\nSearch the web for their public professional profile using their name, job title, and \"Microsoft\" as the company. LinkedIn is the preferred source, but other public professional sources (e.g. professional directories, conference speaker pages, employer bios) are acceptable if no LinkedIn page surfaces.\n\nIMPORTANT: You must actually attempt a real web search for every single person listed — the manager and each team member, one at a time — before deciding their confidence score. Do not skip the search for anyone, even if the name seems familiar or you believe you already know the answer. Confidence must be based on an actual search you just performed, not on prior assumption.\n\nRate your confidence that you found the right person on a 0.0-1.0 scale, based on how well the name and current employer agree with what you found. Treat the job title as matching if it describes the same role at a similar level — don't lower confidence just because a seniority suffix like \"II\" or \"Senior\" is missing, added, or differs; only treat the title as a mismatch if it describes a clearly different role or function.\n- If confidence is 0.75 or higher: write a short, factual summary of their professional background (2-3 sentences) based only on what their profile states — role, how long in the field, what they appear to work on. Do not describe or infer their personality, capabilities, reputation, or anything not explicitly stated. Include the profile URL as a source link.\n- If confidence is below 0.75, or you cannot find a clear match, or there are multiple equally-likely candidates: do not include a bio or source link. Use this exact line instead: \"Additional profile details weren't available.\"\nNever guess a bio you are not confident about — a missing bio is always better than a wrong one.\n\nBefore finalizing your output, check yourself: if you are about to write \"Additional profile details weren't available\" for every single person with no exceptions, stop — that is a sign you skipped the search step rather than genuinely attempting it. Go back and actually search for each person before producing your final output.\n\nSTEP 3 - COMPOSE THE EMAIL\nBuild one HTML email: a short friendly intro mentioning the new hire's own name, then one card per person, manager first, then the rest of the team. Each card shows: name, job title, bio (or the fallback line), and a \"Schedule a 1:1\" link in this exact format: mailto:{their email}?subject=1:1 with {their name}\nAfter the cards, add a line inviting the new hire to reply or contact HR if anything looks outdated or incorrect.\nEnd with this exact disclaimer in smaller/lighter text: \"This profile was generated using AI based on available professional information, which may include public LinkedIn content. It may contain inaccurate or outdated details. Please verify the information before sharing or using it.\"\n\n```"
             },
             "host": {
               "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
