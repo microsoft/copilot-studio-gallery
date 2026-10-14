@@ -198,7 +198,7 @@ const demos: DemoSubmission[] = [
     name: "Project Status Narrator",
     description: "Combines delivery signals into a plain-language status update with risks, decisions, and next actions.",
     tags: ["productivity", "project-management", "reporting", "beginner", "demo"],
-    category: "Productivity & knowledge",
+    category: "Project & communications management",
     author: "Noah Williams",
     authorGithub: "noahwilliams",
     createdAt: "2026-08-01",
