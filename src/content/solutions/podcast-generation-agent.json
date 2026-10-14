@@ -1,0 +1,191 @@
+{
+  "name": "Podcast Generation Agent",
+  "description": "Turns topics, newsletters, articles, and notes into a two-host podcast with a transcript, multi-voice SSML, and optional narrated audio.",
+  "tags": [
+    "content",
+    "podcast",
+    "audio",
+    "text-to-speech",
+    "ssml"
+  ],
+  "category": "Productivity & knowledge",
+  "author": "Remi Dyon",
+  "authorUrl": "https://github.com/raemone",
+  "authorGithub": "raemone",
+  "createdAt": "2026-07-28",
+  "updatedAt": "2026-07-28",
+  "featured": false,
+  "uniqueName": "PodcastGenerationAgent",
+  "version": "1.0.0.1",
+  "publisher": "Remi Dyon",
+  "bundle": "bundles/podcast-generation-agent.zip",
+  "agentCount": 1,
+  "workflowCount": 0,
+  "componentCount": 12,
+  "agents": [
+    {
+      "id": "cr88d_podcastdemo_OMpe9u",
+      "schemaName": "cr88d_podcastdemo_OMpe9u",
+      "name": "Podcast Agent Demo",
+      "model": "Sonnet46",
+      "instructions": "When a user asks for podcast generation:\n- call the generating podcast script tool \n- once the script is ready call the convert text to speech with SSML​‌\n- Retrieve output and generate a wav file for download by the user (post it to the chat)​‌​‌\n\nAlways include reasoning steps and progress to the end user by sending regular messages about what you are doing between each major steps.​​‌",
+      "channels": [
+        "MsTeams",
+        "Microsoft365Copilot"
+      ],
+      "toolCount": 1,
+      "skillCount": 1,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:cr88d_podcastdemo_OMpe9u",
+        "name": "Podcast Agent Demo",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "Sonnet46",
+          "instructions": "When a user asks for podcast generation:\n- call the generating podcast script tool \n- once the script is ready call the convert text to speech with SSML​‌\n- Retrieve output and generate a wav file for download by the user (post it to the chat)​‌​‌\n\nAlways include reasoning steps and progress to the end user by sending regular messages about what you are doing between each major steps.​​‌",
+          "channels": [
+            "MsTeams",
+            "Microsoft365Copilot"
+          ],
+          "toolCount": 1,
+          "skillCount": 1,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:cr88d_podcastdemo_OMpe9u.skill.generating-podcast-script_Jt6",
+        "name": "generating-podcast-script",
+        "type": "skill",
+        "position": {
+          "x": 58.00000000000003,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cr88d_podcastdemo_OMpe9u.skill.generating-podcast-script_Jt6",
+          "description": "Use this skill whenever the user asks to write, generate, or create a podcast script or podcast episode — from a topic, or from source material such as a news digest, newsletter, email review, or set of articles — and optionally convert it to audio with Azure Text-to-Speech. Handles the initial request and every follow-up refinement (source, topic, length, cast, narration) in the same task."
+        }
+      },
+      {
+        "id": "tool:cr88d_podcastdemo_OMpe9u.tool.ConverttexttospeechwithSSML_VGp",
+        "name": "Convert text to speech with SSML",
+        "type": "tool",
+        "position": {
+          "x": -282,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cr88d_podcastdemo_OMpe9u.tool.ConverttexttospeechwithSSML_VGp",
+          "operation": "ConvertTextToSpeechWithSSML",
+          "description": "Convert text to speech by using Speech Synthesis Markup Language (SSML)"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:cr88d_podcastdemo_OMpe9u-includes-cr88d_podcastdemo_OMpe9u.skill.generating-podcast-script_Jt6",
+        "source": "agent:cr88d_podcastdemo_OMpe9u",
+        "target": "skill:cr88d_podcastdemo_OMpe9u.skill.generating-podcast-script_Jt6",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cr88d_podcastdemo_OMpe9u-uses-cr88d_podcastdemo_OMpe9u.tool.ConverttexttospeechwithSSML_VGp",
+        "source": "agent:cr88d_podcastdemo_OMpe9u",
+        "target": "tool:cr88d_podcastdemo_OMpe9u.tool.ConverttexttospeechwithSSML_VGp",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 610
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 425
+    },
+    {
+      "path": "botcomponents/cr88d_podcastdemo_OMpe9u.file.metadatajson_3bwQq/botcomponent.xml",
+      "category": "component",
+      "size": 545
+    },
+    {
+      "path": "botcomponents/cr88d_podcastdemo_OMpe9u.file.metadatajson_3bwQq/filedata/metadata.json",
+      "category": "component",
+      "size": 540
+    },
+    {
+      "path": "botcomponents/cr88d_podcastdemo_OMpe9u.file.readmemd_jxKnE/botcomponent.xml",
+      "category": "component",
+      "size": 541
+    },
+    {
+      "path": "botcomponents/cr88d_podcastdemo_OMpe9u.file.readmemd_jxKnE/filedata/README.md",
+      "category": "component",
+      "size": 3817
+    },
+    {
+      "path": "botcomponents/cr88d_podcastdemo_OMpe9u.file.skillmd_A9jgI/botcomponent.xml",
+      "category": "component",
+      "size": 538
+    },
+    {
+      "path": "botcomponents/cr88d_podcastdemo_OMpe9u.file.skillmd_A9jgI/filedata/SKILL.md",
+      "category": "component",
+      "size": 9996
+    },
+    {
+      "path": "botcomponents/cr88d_podcastdemo_OMpe9u.skill.generating-podcast-script_Jt6/botcomponent.xml",
+      "category": "component",
+      "size": 787
+    },
+    {
+      "path": "botcomponents/cr88d_podcastdemo_OMpe9u.skill.generating-podcast-script_Jt6/data",
+      "category": "component",
+      "size": 114
+    },
+    {
+      "path": "botcomponents/cr88d_podcastdemo_OMpe9u.tool.ConverttexttospeechwithSSML_VGp/botcomponent.xml",
+      "category": "component",
+      "size": 469
+    },
+    {
+      "path": "botcomponents/cr88d_podcastdemo_OMpe9u.tool.ConverttexttospeechwithSSML_VGp/data",
+      "category": "component",
+      "size": 261
+    },
+    {
+      "path": "bots/cr88d_podcastdemo_OMpe9u/bot.xml",
+      "category": "bot",
+      "size": 36253
+    },
+    {
+      "path": "bots/cr88d_podcastdemo_OMpe9u/configuration.json",
+      "category": "bot",
+      "size": 1599
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 1166
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 3911
+    }
+  ]
+}
