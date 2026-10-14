@@ -282,11 +282,14 @@ test("drops designer notes from workflow graphs", () => {
   assert.deepEqual(graph.edges.map((edge) => edge.id), ["flow"]);
 });
 
-test("requires one category from the fixed category list", async () => {
+test("accepts a missing category but only one category from the fixed list", async () => {
   const metadataPath = join(workspace, "submissions/demo-agent/metadata.json");
   const { readFile } = await import("node:fs/promises");
-  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
-  for (const category of [undefined, "", "Not a category", ["HR"]]) {
+  const { category: _omitted, ...withoutCategory } = JSON.parse(await readFile(metadataPath, "utf8"));
+  await writeFile(metadataPath, JSON.stringify(withoutCategory));
+  await importSubmissions({ root: workspace, check: true });
+  const metadata = withoutCategory;
+  for (const category of ["", "Not a category", ["HR"]]) {
     await writeFile(metadataPath, JSON.stringify({ ...metadata, category }));
     await assert.rejects(() => importSubmissions({ root: workspace, check: true }), /invalid metadata\.json/);
   }
