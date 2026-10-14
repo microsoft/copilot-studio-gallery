@@ -43,6 +43,9 @@ export const graphNodeSchema = z.object({
   name: z.string(),
   type: z.string(),
   position: graphPositionSchema,
+  parentId: z.string().optional(),
+  width: z.number().positive().optional(),
+  height: z.number().positive().optional(),
   summary: z.string().optional(),
   details: z.record(z.string(), z.unknown()).default({}),
 });

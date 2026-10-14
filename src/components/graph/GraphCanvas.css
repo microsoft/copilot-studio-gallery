@@ -73,7 +73,7 @@
 
 .catalog-node {
   --node-color: var(--graph-action);
-  width: 14rem;
+  width: 15rem;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--node-color) 74%, var(--cp-border));
   border-radius: 0.75rem;
@@ -106,10 +106,19 @@
   cursor: pointer;
 }
 
-.catalog-node[data-kind="start"],
-.catalog-node[data-kind="end"] {
-  width: 10rem;
-  border-radius: 9999px;
+.catalog-node--container {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  border-style: dashed;
+  background: color-mix(in srgb, var(--node-color) 4%, transparent);
+  box-shadow: none;
+}
+
+.catalog-node--container > .catalog-node__body {
+  width: 15rem;
+  max-width: 100%;
+  pointer-events: auto;
 }
 
 .catalog-node__body {
@@ -141,29 +150,35 @@
 }
 
 .catalog-node__copy {
+  flex: 1;
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .catalog-node__type {
-  overflow: hidden;
+  display: block;
   color: var(--cp-text-soft);
   font-family: "Segoe UI Variable Text", "Segoe UI", sans-serif;
-  font-size: 0.58rem;
+  font-size: 0.625rem;
   letter-spacing: 0.08em;
-  text-overflow: ellipsis;
   text-transform: uppercase;
-  white-space: nowrap;
 }
 
 .catalog-node__name {
-  display: -webkit-box;
-  overflow: hidden;
+  display: block;
   margin-top: 0.12rem;
-  font-size: 0.78rem;
+  font-size: 0.875rem;
   font-weight: 650;
-  line-height: 1.25;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  line-height: 1.35;
+}
+
+.catalog-node__metadata {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--cp-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 /* Connection points are an editing affordance; this canvas is read-only. */

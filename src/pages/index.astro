@@ -3,7 +3,8 @@ import { getCollection } from "astro:content";
 import Layout from "../layouts/Layout.astro";
 import SolutionCard from "../components/SolutionCard.astro";
 import { collectCategories, collectContributors, collectTags, compareSolutions } from "../lib/catalog";
-import { solutionInventory } from "../lib/inventory";
+import { CONTAINS_KINDS, containedComponents } from "../lib/discovery";
+import { COMPONENT_LABELS, solutionInventory } from "../lib/inventory";
 import { authorKey } from "../lib/schema";
 import { withBase } from "../lib/url";
 
@@ -13,6 +14,9 @@ const tags = collectTags(solutions);
 const categories = collectCategories(solutions);
 const contributors = collectContributors(solutions);
 const microsoftSolutions = solutions.filter((solution) => solution.data.featured);
+const communitySolutions = solutions.filter((solution) => !solution.data.featured);
+const communityCount = communitySolutions.length;
+const inventories = new Map(solutions.map((solution) => [solution.id, solutionInventory(solution.data)]));
 const typeChoices = [
   { value: "", label: "All" },
   { value: "agents", label: "Agents" },
@@ -20,8 +24,26 @@ const typeChoices = [
 ];
 
 function solutionTypes(solution: (typeof solutions)[number]): string[] {
-  const inventory = solutionInventory(solution.data);
+  const inventory = inventories.get(solution.id)!;
   return [inventory.agents > 0 && "agents", inventory.workflows > 0 && "workflows"].filter((value): value is string => Boolean(value));
+}
+
+function filterAttributes(solution: (typeof solutions)[number]) {
+  const data = solution.data;
+  return {
+    "data-name": data.name.toLowerCase(),
+    "data-description": data.description.toLowerCase(),
+    "data-tags": data.tags.join(",").toLowerCase(),
+    "data-categories": data.category,
+    "data-types": solutionTypes(solution).join(","),
+    "data-contains": containedComponents(inventories.get(solution.id)!).join(","),
+    "data-author": authorKey(data.authorGithub, data.author),
+    "data-author-name": data.author.toLowerCase(),
+    "data-agents": data.agents.map((agent) => agent.name).join(" ").toLowerCase(),
+    "data-workflows": data.workflows.map((workflow) => workflow.name).join(" ").toLowerCase(),
+    "data-featured": data.featured ? "1" : "0",
+    "data-updated": data.updatedAt ?? data.createdAt ?? "",
+  };
 }
 ---
 
@@ -41,21 +63,13 @@ function solutionTypes(solution: (typeof solutions)[number]): string[] {
 
   <section class="border-b border-border bg-surface" aria-label="Find solutions">
     <div class="mx-auto w-full max-w-gallery px-4 py-4 sm:px-6">
-      <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+      <div class="grid">
         <label class="relative">
           <span class="sr-only">Search solutions</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-soft" aria-hidden="true">
             <circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path>
           </svg>
           <input id="solution-search" type="search" autocomplete="off" placeholder="Search agents, workflows, use cases, or contributors…" class="h-11 w-full rounded-lg border border-border bg-elevated pl-10 pr-3 text-sm text-ink placeholder:text-soft" />
-        </label>
-        <label class="flex items-center gap-2">
-          <span class="hidden text-sm text-muted sm:inline">Sort by</span>
-          <select id="sort-select" aria-label="Sort solutions" class="h-11 w-full rounded-lg border border-border bg-elevated px-3 text-sm text-ink sm:w-52">
-            <option value="featured">Built by Microsoft first</option>
-            <option value="newest">Newest</option>
-            <option value="name">Name</option>
-          </select>
         </label>
       </div>
 
@@ -73,7 +87,7 @@ function solutionTypes(solution: (typeof solutions)[number]): string[] {
           <div class="fixed-options" role="radiogroup" aria-label="Solution type">
             {typeChoices.map((choice, index) => (
               <button type="button" role="radio" data-type-choice={choice.value} aria-checked={index === 0 ? "true" : "false"} tabindex={index === 0 ? "0" : "-1"} class="fixed-choice">
-                {choice.label}<span data-type-count={choice.value} class="facet-count"></span>
+                {choice.label}
               </button>
             ))}
           </div>
@@ -91,7 +105,7 @@ function solutionTypes(solution: (typeof solutions)[number]): string[] {
         </button>
       </header>
       <div class="dialog-body px-5 sm:px-6">
-        <p id="filters-scope" class="pt-5 text-sm text-muted">Match any selected category or contributor, and require every selected tag.</p>
+        <p id="filters-scope" class="pt-5 text-sm text-muted">Match any selected category or contributor, and require every selected tag and component type.</p>
         <p id="filters-context" class="mt-1 text-sm text-muted"></p>
         <div id="draft-selections" hidden class="mt-3 flex flex-wrap gap-2" aria-label="Selected filters"></div>
 
@@ -101,7 +115,20 @@ function solutionTypes(solution: (typeof solutions)[number]): string[] {
             {typeChoices.map((choice) => (
               <label class="option-label">
                 <input type="radio" name="draft-type" value={choice.value} />
-                <span class="check-option">{choice.label}<span data-draft-type-count={choice.value} class="facet-count"></span></span>
+                <span class="check-option">{choice.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset class="filter-section">
+          <legend>Contains <span data-selection-count="contains" class="text-sm font-normal text-muted"></span></legend>
+          <p class="mb-3 text-sm text-muted">Require every selected component type.</p>
+          <div class="flex flex-wrap gap-2 p-1">
+            {CONTAINS_KINDS.map((kind) => (
+              <label class="option-label" data-facet-option="contains" data-value={kind} data-name={COMPONENT_LABELS[kind].plural}>
+                <input type="checkbox" name="filter-contains" value={kind} />
+                <span class="check-option">{COMPONENT_LABELS[kind].plural}<span data-facet-count="contains" data-value={kind} class="facet-count"></span></span>
               </label>
             ))}
           </div>
@@ -177,69 +204,61 @@ function solutionTypes(solution: (typeof solutions)[number]): string[] {
       <section id="built-by-microsoft" data-microsoft-row class="border-b border-border bg-elevated" aria-labelledby="built-by-microsoft-title">
         <div class="mx-auto w-full max-w-gallery px-4 py-10 sm:px-6">
           <div class="flex items-end justify-between gap-4">
-            <div>
-              <p class="text-xs font-semibold text-accent">Built by Microsoft</p>
-              <h2 id="built-by-microsoft-title" class="mt-1 text-2xl font-semibold tracking-[-0.02em] text-ink">Solutions from Microsoft</h2>
+            <div class="min-w-0">
+              <h2 id="built-by-microsoft-title" class="text-2xl font-semibold tracking-[-0.02em] text-ink">Built by Microsoft</h2>
+              <p id="microsoft-result-count" class="mt-1 text-sm font-medium text-muted" aria-live="polite">{microsoftSolutions.length} {microsoftSolutions.length === 1 ? "solution" : "solutions"}</p>
             </div>
             {microsoftSolutions.length > MICROSOFT_ROW_SIZE && (
-              <a href={withBase("/built-by-microsoft")} class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent">
+              <a data-microsoft-more href={withBase("/built-by-microsoft")} class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent">
                 Show more <span class="text-soft">({microsoftSolutions.length})</span><span aria-hidden="true">→</span>
               </a>
             )}
           </div>
-          <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {microsoftSolutions.slice(0, MICROSOFT_ROW_SIZE).map((solution, index) => (
-              <div class:list={[index === 2 && "sm:hidden xl:block"]}>
+          <div id="microsoft-gallery" class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {microsoftSolutions.map((solution, index) => (
+              <div class:list={["solution-item", index >= MICROSOFT_ROW_SIZE && "hidden", index === 2 && "sm:hidden xl:block"]} {...filterAttributes(solution)}>
                 <SolutionCard solution={solution} />
               </div>
             ))}
           </div>
+          <p id="microsoft-empty" class="mt-6 hidden text-sm text-muted">No Microsoft solutions match these filters.</p>
         </div>
       </section>
     )
   }
 
-  <section id="solution-catalog" class="scroll-mt-20 bg-page">
+  <section id="solution-catalog" class="scroll-mt-20 bg-page" aria-labelledby="catalog-heading">
     <div class="mx-auto w-full max-w-gallery px-4 py-10 sm:px-6">
-      <div class="mb-6 flex items-end justify-between gap-4">
-        <div>
-          <p class="text-xs font-semibold text-accent">Community library</p>
-          <h2 class="mt-1 text-2xl font-semibold tracking-[-0.02em] text-ink">All solutions</h2>
+      <div class="mb-6 flex items-start justify-between gap-4 sm:items-center">
+        <div class="min-w-0">
+          <h2 id="catalog-heading" class="text-2xl font-semibold tracking-[-0.02em] text-ink">Built by the community</h2>
+          <p id="result-count" class="mt-1 text-sm font-medium text-muted" aria-live="polite">{communityCount} {communityCount === 1 ? "solution" : "solutions"}</p>
         </div>
-        <p id="result-count" class="shrink-0 pb-1 text-sm font-medium text-muted" aria-live="polite">{solutions.length} solutions</p>
+        <label class="flex shrink-0 items-center gap-2">
+          <span class="hidden text-sm text-muted sm:inline">Sort community</span>
+          <select id="sort-select" aria-label="Sort community solutions" class="h-11 w-28 rounded-lg border border-border bg-elevated px-3 text-sm text-ink sm:w-40">
+            <option value="newest">Newest</option>
+            <option value="name">Name</option>
+          </select>
+        </label>
       </div>
       <div id="gallery" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {
-          solutions.map((solution) => (
-            <article
-              class="solution-item"
-              data-name={solution.data.name.toLowerCase()}
-              data-description={solution.data.description.toLowerCase()}
-              data-tags={solution.data.tags.join(",").toLowerCase()}
-              data-categories={solution.data.category}
-              data-types={solutionTypes(solution).join(",")}
-              data-author={authorKey(solution.data.authorGithub, solution.data.author)}
-              data-author-name={solution.data.author.toLowerCase()}
-              data-agents={solution.data.agents.map((agent) => agent.name).join(" ").toLowerCase()}
-              data-workflows={solution.data.workflows.map((workflow) => workflow.name).join(" ").toLowerCase()}
-              data-featured={solution.data.featured ? "1" : "0"}
-              data-updated={solution.data.updatedAt ?? solution.data.createdAt ?? ""}
-            >
+          communitySolutions.map((solution) => (
+            <div class="solution-item" {...filterAttributes(solution)}>
               <SolutionCard solution={solution} />
-            </article>
+            </div>
           ))
         }
       </div>
-      <div id="empty-state" class:list={["rounded-2xl border border-dashed border-border bg-elevated px-6 py-14 text-center", solutions.length ? "hidden" : ""]}>
-        <p class="text-lg font-semibold text-ink">{solutions.length ? "No solutions match these filters" : "The first solution is on its way"}</p>
-        <p class="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-muted">
-          {solutions.length ? "Clear one or more filters to widen the gallery." : "Contribute an exploded Copilot Studio solution to make its agents and workflows visible before import."}
+      <div id="empty-state" class:list={["text-sm text-muted", communityCount > 0 && "hidden"]}>
+        <p id="empty-heading" class="font-medium text-ink">{solutions.length ? "No community solutions yet" : "The first solution is on its way"}</p>
+        <p id="empty-description" class="mt-1 leading-relaxed">
+          Contribute an exploded Copilot Studio solution to make its agents and workflows visible before import.
         </p>
-        {solutions.length > 0 && (
-          <button type="button" data-clear-filters class="mt-5 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent">
-            Clear all filters
-          </button>
-        )}
+        <button type="button" data-clear-filters hidden class="mt-3 font-semibold text-link underline underline-offset-4">
+          Clear all filters
+        </button>
       </div>
       <div id="scroll-sentinel" class="flex h-16 items-end justify-center text-sm text-soft" aria-live="polite">
         <span id="load-status">Scroll to load more</span>
@@ -249,34 +268,37 @@ function solutionTypes(solution: (typeof solutions)[number]): string[] {
 </Layout>
 
 <script>
-  type Facet = "categories" | "tags" | "authors";
+  import { compareSolutionOrder, containsEveryComponent, parseSortMode, type SortMode, type SortableSolution } from "../lib/discovery";
+
+  type Facet = "categories" | "tags" | "authors" | "contains";
   type SolutionType = "" | "agents" | "workflows";
-  type SortMode = "featured" | "newest" | "name";
   interface FilterState {
     query: string;
     type: SolutionType;
     categories: Set<string>;
     tags: Set<string>;
     authors: Set<string>;
+    contains: Set<string>;
   }
-  interface SolutionRecord {
+  interface SolutionRecord extends SortableSolution {
     text: string;
     types: string[];
     categories: string[];
     tags: string[];
     authors: string[];
+    contains: string[];
   }
 
-  const FACETS: Facet[] = ["categories", "tags", "authors"];
-  // Categories and contributors are alternatives (match any); tags narrow (match all).
+  const FACETS: Facet[] = ["contains", "categories", "tags", "authors"];
+  // Categories and contributors are alternatives; tags and component types narrow.
   const MATCH_ANY = new Set<Facet>(["categories", "authors"]);
-  const URL_PARAMS: Record<Facet, string> = { categories: "category", tags: "tag", authors: "author" };
-  const FACET_NOUN: Record<Facet, string> = { categories: "category", tags: "tag", authors: "contributor" };
+  const URL_PARAMS: Record<Facet, string> = { categories: "category", tags: "tag", authors: "author", contains: "contains" };
+  const FACET_NOUN: Record<Facet, string> = { categories: "category", tags: "tag", authors: "contributor", contains: "component" };
   const TYPES: SolutionType[] = ["agents", "workflows"];
   // Links shared before the type filter replaced the makeup dropdown.
   const LEGACY_MAKEUP: Record<string, SolutionType> = { Agents: "agents", Workflows: "workflows", "Agents + workflows": "" };
-  const SORTS: SortMode[] = ["featured", "newest", "name"];
   const BATCH = 9;
+  const MICROSOFT_ROW_SIZE = 3;
 
   function required<T extends Element>(selector: string, root: ParentNode = document): T {
     const element = root.querySelector<T>(selector);
@@ -286,13 +308,20 @@ function solutionTypes(solution: (typeof solutions)[number]): string[] {
 
   const gallery = required<HTMLElement>("#gallery");
   const items = Array.from(gallery.querySelectorAll<HTMLElement>(".solution-item"));
+  const microsoftGallery = document.querySelector<HTMLElement>("#microsoft-gallery");
+  const microsoftItems = Array.from(microsoftGallery?.querySelectorAll<HTMLElement>(".solution-item") ?? []);
   const search = required<HTMLInputElement>("#solution-search");
   const sort = required<HTMLSelectElement>("#sort-select");
   const count = required<HTMLElement>("#result-count");
   const empty = required<HTMLElement>("#empty-state");
+  const emptyHeading = required<HTMLElement>("#empty-heading");
+  const emptyDescription = required<HTMLElement>("#empty-description");
+  const browseEmptyHeading = emptyHeading.textContent;
+  const browseEmptyDescription = emptyDescription.textContent;
+  const clearFilters = required<HTMLButtonElement>("[data-clear-filters]");
   const sentinel = required<HTMLElement>("#scroll-sentinel");
   const loadStatus = required<HTMLElement>("#load-status");
-  const microsoftRow = document.querySelector<HTMLElement>("[data-microsoft-row]");
+  const microsoftMore = document.querySelector<HTMLElement>("[data-microsoft-more]");
   const trigger = required<HTMLButtonElement>("#filters-trigger");
   const triggerCount = required<HTMLElement>("#filters-count");
   const filterOptions = required<HTMLElement>("#filter-options");
@@ -309,29 +338,32 @@ function solutionTypes(solution: (typeof solutions)[number]): string[] {
   const pickerSearches = Array.from(dialog.querySelectorAll<HTMLInputElement>("[data-picker-search]"));
   const draftTypeInputs = Array.from(dialog.querySelectorAll<HTMLInputElement>('input[name="draft-type"]'));
 
-  const records = new Map<HTMLElement, SolutionRecord>(items.map((item) => {
+  const records = new Map<HTMLElement, SolutionRecord>([...microsoftItems, ...items].map((item) => {
     const data = item.dataset;
     const list = (value: string | undefined, separator = ",") => (value ?? "").split(separator).filter(Boolean);
     return [item, {
+      name: data.name ?? "",
+      updatedAt: data.updated,
       text: [data.name, data.description, data.tags, data.categories, data.agents, data.workflows, data.authorName].join(" ").toLowerCase(),
       types: list(data.types),
       categories: list(data.categories, "|"),
       tags: list(data.tags),
       authors: data.author ? [data.author] : [],
+      contains: list(data.contains),
     }];
   }));
 
-  const labels: Record<Facet, Map<string, string>> = { categories: new Map(), tags: new Map(), authors: new Map() };
+  const labels: Record<Facet, Map<string, string>> = { categories: new Map(), tags: new Map(), authors: new Map(), contains: new Map() };
   const avatars = new Map<string, string>();
   facetOptions.forEach((option) => {
     const facet = option.dataset.facetOption as Facet;
     const value = option.dataset.value ?? "";
-    labels[facet].set(value, facet === "authors" ? option.dataset.name ?? value : value);
+    labels[facet].set(value, option.dataset.name ?? value);
     if (facet === "authors" && option.dataset.github) avatars.set(value, `https://github.com/${option.dataset.github}.png?size=40`);
   });
 
   function emptyState(): FilterState {
-    return { query: "", type: "", categories: new Set(), tags: new Set(), authors: new Set() };
+    return { query: "", type: "", categories: new Set(), tags: new Set(), authors: new Set(), contains: new Set() };
   }
 
   function cloneState(state: FilterState): FilterState {
@@ -341,6 +373,7 @@ function solutionTypes(solution: (typeof solutions)[number]): string[] {
       categories: new Set(state.categories),
       tags: new Set(state.tags),
       authors: new Set(state.authors),
+      contains: new Set(state.contains),
     };
   }
 
@@ -368,24 +401,25 @@ function solutionTypes(solution: (typeof solutions)[number]): string[] {
     return state;
   }
 
-  function matches(record: SolutionRecord, state: FilterState, ignore?: Facet | "type"): boolean {
+  function matches(record: SolutionRecord, state: FilterState, ignore?: Facet): boolean {
     if (state.query && !record.text.includes(state.query)) return false;
-    if (ignore !== "type" && state.type && !record.types.includes(state.type)) return false;
+    if (state.type && !record.types.includes(state.type)) return false;
     return FACETS.every((facet) => {
       const selected = state[facet];
       if (facet === ignore || selected.size === 0) return true;
+      if (facet === "contains") return containsEveryComponent(record.contains, selected);
       return MATCH_ANY.has(facet)
         ? record[facet].some((value) => selected.has(value))
         : [...selected].every((value) => record[facet].includes(value));
     });
   }
 
-  function facetCounts(state: FilterState, facet: Facet | "type"): Map<string, number> {
+  function facetCounts(state: FilterState, facet: Facet): Map<string, number> {
     const counts = new Map<string, number>();
-    const ignore = facet === "type" || MATCH_ANY.has(facet) ? facet : undefined;
+    const ignore = MATCH_ANY.has(facet) ? facet : undefined;
     for (const record of records.values()) {
       if (!matches(record, state, ignore)) continue;
-      const values = facet === "type" ? ["", ...record.types] : record[facet];
+      const values = record[facet];
       new Set(values).forEach((value) => counts.set(value, (counts.get(value) ?? 0) + 1));
     }
     return counts;
@@ -394,12 +428,13 @@ function solutionTypes(solution: (typeof solutions)[number]): string[] {
   let applied = stateFromUrl(new URLSearchParams(location.search));
   let draft = cloneState(applied);
   let matched: HTMLElement[] = items;
+  let microsoftMatched: HTMLElement[] = microsoftItems;
   let shown = BATCH;
   let searchTimer: number | undefined;
   let previousOverflow = "";
 
   function sortMode(): SortMode {
-    return SORTS.find((mode) => mode === sort.value) ?? "featured";
+    return parseSortMode(sort.value);
   }
 
   function syncUrl() {
@@ -409,28 +444,23 @@ function solutionTypes(solution: (typeof solutions)[number]): string[] {
     FACETS.forEach((facet) => {
       if (applied[facet].size) params.set(URL_PARAMS[facet], [...applied[facet]].join(","));
     });
-    if (sortMode() !== "featured") params.set("sort", sortMode());
+    if (sortMode() !== "newest") params.set("sort", sortMode());
     history.replaceState(history.state, "", `${location.pathname}${params.size ? `?${params}` : ""}${location.hash}`);
   }
 
   function compare(a: HTMLElement, b: HTMLElement): number {
-    const byName = (a.dataset.name ?? "").localeCompare(b.dataset.name ?? "");
-    const byNewest = (b.dataset.updated ?? "").localeCompare(a.dataset.updated ?? "");
-    switch (sortMode()) {
-      case "name":
-        return byName;
-      case "newest":
-        return byNewest || byName;
-      default:
-        return Number(b.dataset.featured) - Number(a.dataset.featured) || byNewest || byName;
-    }
+    const left = records.get(a)!;
+    const right = records.get(b)!;
+    return compareSolutionOrder(left, right, sortMode());
   }
 
   function computeMatched() {
     matched = items.filter((item) => matches(records.get(item)!, applied)).sort(compare);
+    microsoftMatched = microsoftItems.filter((item) => matches(records.get(item)!, applied));
   }
 
   function render() {
+    const filtered = isFiltered(applied);
     const visible = new Set(matched);
     gallery.append(...matched, ...items.filter((item) => !visible.has(item)));
     items.forEach((item) => item.classList.add("hidden"));
@@ -442,7 +472,28 @@ function solutionTypes(solution: (typeof solutions)[number]): string[] {
         ? `Showing ${Math.min(shown, matched.length)} of ${matched.length} · scroll to load more`
         : `All ${matched.length} loaded`;
     empty.classList.toggle("hidden", matched.length > 0);
-    microsoftRow?.classList.toggle("hidden", isFiltered(applied));
+    emptyHeading.textContent = filtered ? "No community solutions match these filters." : browseEmptyHeading;
+    emptyDescription.textContent = filtered ? "Clear one or more filters to widen the gallery." : browseEmptyDescription;
+    clearFilters.hidden = !filtered;
+    if (microsoftGallery) {
+      microsoftItems.forEach((item) => {
+        item.classList.add("hidden");
+        item.classList.remove("sm:hidden", "xl:block");
+      });
+      const preview = filtered ? microsoftMatched : microsoftMatched.slice(0, MICROSOFT_ROW_SIZE);
+      preview.forEach((item, index) => {
+        item.classList.remove("hidden");
+        if (!filtered && index === 2) item.classList.add("sm:hidden", "xl:block");
+      });
+      required<HTMLElement>("#microsoft-result-count").textContent = `${microsoftMatched.length} ${microsoftMatched.length === 1 ? "solution" : "solutions"}`;
+      required<HTMLElement>("#microsoft-empty").classList.toggle("hidden", microsoftMatched.length > 0);
+      microsoftGallery.classList.toggle("hidden", microsoftMatched.length === 0);
+      microsoftMore?.classList.toggle("hidden", filtered);
+      microsoftMore?.classList.toggle("inline-flex", !filtered);
+    }
+    sentinel.classList.toggle("hidden", matched.length === 0);
+    loadObserver.unobserve(sentinel);
+    if (shown < matched.length) loadObserver.observe(sentinel);
   }
 
   function selectionChips(container: HTMLElement, state: FilterState, remove: (facet: Facet, value: string) => void): number {
@@ -491,11 +542,6 @@ function solutionTypes(solution: (typeof solutions)[number]): string[] {
       button.setAttribute("aria-checked", String(selected));
       button.tabIndex = selected ? 0 : -1;
     });
-    const typeCounts = facetCounts(applied, "type");
-    document.querySelectorAll<HTMLElement>("[data-type-count]").forEach((element) => {
-      element.textContent = String(typeCounts.get(element.dataset.typeCount ?? "") ?? 0);
-    });
-
     const total = selectionChips(appliedFilters, applied, (facet, value) => {
       const chips = Array.from(appliedFilters.querySelectorAll<HTMLButtonElement>("button"));
       const index = chips.findIndex((chip) => chip.dataset.filterKey === `${facet}:${value}`);
@@ -520,11 +566,8 @@ function solutionTypes(solution: (typeof solutions)[number]): string[] {
   }
 
   function paintDraft() {
-    const draftTypeCounts = facetCounts(draft, "type");
     draftTypeInputs.forEach((input) => {
       input.checked = input.value === draft.type;
-      const countElement = input.parentElement?.querySelector<HTMLElement>("[data-draft-type-count]");
-      if (countElement) countElement.textContent = String(draftTypeCounts.get(input.value) ?? 0);
     });
     facetOptions.forEach((option) => {
       const facet = option.dataset.facetOption as Facet;
@@ -670,17 +713,17 @@ function solutionTypes(solution: (typeof solutions)[number]): string[] {
   });
   sort.addEventListener("change", refresh);
 
-  new IntersectionObserver((entries) => {
+  const loadObserver = new IntersectionObserver((entries) => {
     if (!entries[0]?.isIntersecting || shown >= matched.length) return;
     shown = Math.min(shown + BATCH, matched.length);
     render();
-  }, { rootMargin: "400px" }).observe(sentinel);
+  }, { rootMargin: "400px" });
 
   const initialParams = new URLSearchParams(location.search);
   search.value = initialParams.get("q") ?? "";
-  sort.value = SORTS.find((mode) => mode === initialParams.get("sort")) ?? "featured";
+  sort.value = parseSortMode(initialParams.get("sort"));
   computeMatched();
   render();
   paintFilterBar();
-  if (initialParams.has("makeup")) syncUrl();
+  if (["makeup", "sort", "contains"].some((param) => initialParams.has(param))) syncUrl();
 </script>

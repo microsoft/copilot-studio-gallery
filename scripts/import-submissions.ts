@@ -750,15 +750,25 @@ function configText(config: UnknownRecord, name: string): string | undefined {
   return segments.length > 0 ? segments.join("\n").slice(0, 400) : undefined;
 }
 
+const CONNECTOR_DETAIL_FIELDS = ["displayName", "apiName", "connectorDisplayName", "apiDisplayName", "operationName", "operationId", "operationType"];
+
 function safeWorkflowDetails(node: UnknownRecord, type: string): Record<string, unknown> {
   const data = record(field(node, "data"));
   const config = data ? record(field(data, "config")) ?? data : record(field(node, "config")) ?? node;
   const lower = type.toLowerCase();
   let details: Record<string, unknown>;
-  if (lower.includes("note") || scalar(config, "markdown") !== undefined) {
+  if (lower === "start" || lower.includes("trigger")) {
+    const connector = record(field(config, "connector")) ?? config;
+    const http = record(field(config, "http"));
+    details = {
+      ...allowedScalars(config, ["triggerType", "method", "operation", "description", "frequency", "interval"]),
+      ...allowedScalars(connector, CONNECTOR_DETAIL_FIELDS),
+      ...(http ? allowedScalars(http, ["method"]) : {}),
+    };
+  } else if (lower.includes("note") || scalar(config, "markdown") !== undefined) {
     details = allowedScalars(config, ["markdown", "color"]);
   } else if (lower.includes("connector") || lower.includes("openapi") || scalar(config, "apiName") !== undefined) {
-    details = allowedScalars(config, ["displayName", "apiName", "operationName", "operationType"]);
+    details = allowedScalars(config, CONNECTOR_DETAIL_FIELDS);
     const parameters = safeParameters(field(config, "parameters"));
     if (Object.keys(parameters).length > 0) details.parameters = parameters;
   } else if (lower.includes("agent") || scalar(config, "botSchemaName") !== undefined) {
@@ -779,8 +789,6 @@ function safeWorkflowDetails(node: UnknownRecord, type: string): Record<string, 
     details = allowedScalars(config, ["runStatus"]);
   } else if (lower.includes("classif") || lower.includes("input") || lower.includes("model")) {
     details = allowedScalars(config, ["category", "input", "model"]);
-  } else if (lower.includes("trigger")) {
-    details = allowedScalars(config, ["method", "operation", "description"]);
   } else {
     details = allowedScalars(config, ["category", "input", "model", "description"]);
   }
@@ -792,6 +800,7 @@ const WORKFLOW_ANNOTATION_TYPES = new Set(["canvasNote"]);
 
 export function normalizeWorkflowGraph(graph: UnknownRecord): GraphData {
   const rawNodes = array(graph.nodes).map(record).filter((node): node is UnknownRecord => Boolean(node));
+  const savedSizes = new Map<string, { width: number; height: number }>();
   const nodes = rawNodes.map((node, index): GraphNode => {
     const id = safeId(scalar(node, "id", "nodeId") ?? `node-${index + 1}`, `node-${index + 1}`);
     const data = record(field(node, "data"));
@@ -800,8 +809,44 @@ export function normalizeWorkflowGraph(graph: UnknownRecord): GraphData {
     const position = record(field(node, "position", "layout"));
     const x = Number(scalar(position ?? {}, "x") ?? scalar(node, "x") ?? index * 220);
     const y = Number(scalar(position ?? {}, "y") ?? scalar(node, "y") ?? 0);
-    return { id, name, type, position: { x: Number.isFinite(x) ? x : index * 220, y: Number.isFinite(y) ? y : 0 }, details: safeWorkflowDetails(node, type) };
+    const parentId = safeId(scalar(node, "parentId", "parentNode") ?? "", "");
+    const measured = record(field(node, "measured")) ?? {};
+    savedSizes.set(id, {
+      width: Number(scalar(node, "width") ?? scalar(measured, "width")),
+      height: Number(scalar(node, "height") ?? scalar(measured, "height")),
+    });
+    return {
+      id, name, type,
+      position: { x: Number.isFinite(x) ? x : index * 220, y: Number.isFinite(y) ? y : 0 },
+      ...(parentId ? { parentId } : {}),
+      details: safeWorkflowDetails(node, type),
+    };
   }).filter((node) => !WORKFLOW_ANNOTATION_TYPES.has(node.type));
+  const byId = new Map(nodes.map((node) => [node.id, node]));
+  if (byId.size !== nodes.length) throw new Error("workflow graph contains duplicate node ids");
+  const ordered: GraphNode[] = [];
+  const visiting = new Set<string>();
+  const visited = new Set<string>();
+  const visit = (node: GraphNode): void => {
+    if (visiting.has(node.id)) throw new Error(`workflow container hierarchy contains a cycle at ${node.id}`);
+    if (visited.has(node.id)) return;
+    visiting.add(node.id);
+    if (node.parentId) {
+      const parent = byId.get(node.parentId);
+      if (!parent) throw new Error(`workflow node ${node.id} refers to missing container ${node.parentId}`);
+      const size = savedSizes.get(parent.id);
+      if (!size || !Number.isFinite(size.width) || size.width <= 0 || !Number.isFinite(size.height) || size.height <= 0) {
+        throw new Error(`workflow container ${parent.id} is missing valid saved dimensions`);
+      }
+      parent.width = size.width;
+      parent.height = size.height;
+      visit(parent);
+    }
+    visiting.delete(node.id);
+    visited.add(node.id);
+    ordered.push(node);
+  };
+  nodes.forEach(visit);
   const knownIds = new Set(nodes.map((node) => node.id));
   const edges = array(graph.edges).map(record).filter((edge): edge is UnknownRecord => Boolean(edge)).flatMap((edge, index): GraphEdge[] => {
     const source = safeId(scalar(edge, "source") ?? "", "");
@@ -811,7 +856,7 @@ export function normalizeWorkflowGraph(graph: UnknownRecord): GraphData {
     const targetHandle = scalar(edge, "targetHandle");
     return [{ id: safeId(scalar(edge, "id") ?? `${source}-${target}-${index}`, `edge-${index}`), source, target, ...(sourceHandle ? { sourceHandle } : {}), ...(targetHandle ? { targetHandle } : {}) }];
   });
-  return { nodes, edges };
+  return { nodes: ordered, edges };
 }
 
 export async function inspectWorkflows(files: SolutionFile[], customizations: unknown): Promise<WorkflowPreview[]> {

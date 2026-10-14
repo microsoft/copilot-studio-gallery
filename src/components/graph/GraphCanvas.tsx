@@ -26,10 +26,12 @@ import {
   type ComponentKind,
 } from "../../lib/inventory";
 import type { GraphData, GraphNode } from "../../lib/schema";
+import { isWorkflowTrigger, workflowNodeMetadata } from "../../lib/workflowMetadata";
 import "./GraphCanvas.css";
 
 type CatalogNodeData = {
   source: GraphNode;
+  absolutePosition: { x: number; y: number };
   agent?: AgentProfile;
 };
 
@@ -37,7 +39,7 @@ type CatalogNode = Node<CatalogNodeData, "catalog">;
 // Designer positions are already ~300px apart; a light stretch keeps labels clear without shrinking the fitted view.
 const WORKFLOW_LAYOUT_SCALE_X = 1.1;
 const WORKFLOW_LAYOUT_SCALE_Y = 1.35;
-const READABLE_ZOOM = 0.62;
+const READABLE_ZOOM = 0.85;
 
 const ICONS: Record<string, string> = {
   start: "IN",
@@ -102,10 +104,12 @@ function CatalogNodeView({ data, selected }: NodeProps<CatalogNode>) {
   const source = data.source;
   const typeLabel = isAgentStep(source)
     ? agentStepLabel(source, data.agent)
-    : isMcpNode(source) ? "MCP server" : humanize(source.type);
+    : isMcpNode(source) ? "MCP server" : isWorkflowTrigger(source) ? "Trigger" : humanize(source.type);
+  const metadata = workflowNodeMetadata(source);
+  const isContainer = source.width !== undefined && source.height !== undefined;
   return (
     <div
-      className="catalog-node"
+      className={`catalog-node${isContainer ? " catalog-node--container" : ""}`}
       data-kind={source.type}
       data-visual={graphVisualKind(source)}
       data-agent-step={isAgentStep(source) ? "true" : undefined}
@@ -115,6 +119,14 @@ function CatalogNodeView({ data, selected }: NodeProps<CatalogNode>) {
       <Handle type="target" id="target-right" position={Position.Right} />
       <Handle type="target" id="target-bottom" position={Position.Bottom} />
       <Handle type="target" id="target-left" position={Position.Left} />
+      {isContainer && (
+        <>
+          <Handle type="target" id="external-input" position={Position.Left} />
+          <Handle type="source" id="external-output" position={Position.Right} />
+          <Handle type="source" id="internal-source" position={Position.Right} style={{ left: 16, right: "auto" }} />
+          <Handle type="target" id="internal-target" position={Position.Left} style={{ left: "auto", right: 16 }} />
+        </>
+      )}
       <div className="catalog-node__body">
         <span className="catalog-node__icon" aria-hidden="true">
           <GraphNodeIcon source={source} />
@@ -122,6 +134,7 @@ function CatalogNodeView({ data, selected }: NodeProps<CatalogNode>) {
         <span className="catalog-node__copy">
           <span className="catalog-node__type">{typeLabel}</span>
           <span className="catalog-node__name">{source.name}</span>
+          {metadata?.value && <span className="catalog-node__metadata">{metadata.value}</span>}
         </span>
       </div>
       <Handle type="source" id="source-top" position={Position.Top} />
@@ -255,6 +268,9 @@ function displayValue(value: unknown): string {
 
 function branchLabel(handle: string | undefined): string | undefined {
   if (!handle) return undefined;
+  if (handle === "input" || handle === "output") return undefined;
+  if (handle === "internal-source") return "Each item";
+  if (handle === "external-output") return "After loop";
   if (handle === "else") return "Else";
   if (handle === "default-category") return "Default";
   if (handle.startsWith("condition:")) return "Condition";
@@ -262,12 +278,12 @@ function branchLabel(handle: string | undefined): string | undefined {
   return humanize(handle);
 }
 
-function nearestHandles(source: GraphNode, target: GraphNode): {
+function nearestHandles(source: CatalogNode, target: CatalogNode): {
   sourceHandle: string;
   targetHandle: string;
 } {
-  const dx = target.position.x - source.position.x;
-  const dy = target.position.y - source.position.y;
+  const dx = target.data.absolutePosition.x - source.data.absolutePosition.x;
+  const dy = target.data.absolutePosition.y - source.data.absolutePosition.y;
   if (Math.abs(dx) > Math.abs(dy)) {
     return dx >= 0
       ? { sourceHandle: "source-right", targetHandle: "target-left" }
@@ -303,33 +319,47 @@ function Canvas({
   }, []);
 
   const nodes = useMemo<CatalogNode[]>(
-    () =>
-      graph.nodes.map((node) => {
+    () => {
+      const positions = new Map<string, { x: number; y: number }>();
+      return graph.nodes.map((node) => {
         const agent = isAgentStep(node) ? resolveWorkflowAgent(node, agents) : undefined;
+        const metadata = workflowNodeMetadata(node);
+        const parent = node.parentId ? positions.get(node.parentId) : undefined;
+        if (node.parentId && !parent) throw new Error(`Workflow container ${node.parentId} must precede ${node.id}`);
+        const position = {
+          x: node.position.x * WORKFLOW_LAYOUT_SCALE_X,
+          y: node.position.y * WORKFLOW_LAYOUT_SCALE_Y,
+        };
+        const absolutePosition = { x: position.x + (parent?.x ?? 0), y: position.y + (parent?.y ?? 0) };
+        positions.set(node.id, absolutePosition);
+        const isContainer = node.width !== undefined && node.height !== undefined;
         return {
           id: node.id,
           type: "catalog",
-          position: {
-            x: node.position.x * WORKFLOW_LAYOUT_SCALE_X,
-            y: node.position.y * WORKFLOW_LAYOUT_SCALE_Y,
-          },
-          data: { source: node, ...(agent ? { agent } : {}) },
-          width: node.type === "start" || node.type === "end" ? 160 : 224,
-          height: 72,
+          position,
+          ...(node.parentId ? { parentId: node.parentId } : {}),
+          data: { source: node, absolutePosition, ...(agent ? { agent } : {}) },
+          width: node.width !== undefined ? node.width * WORKFLOW_LAYOUT_SCALE_X : 240,
+          ...(node.height !== undefined ? { height: node.height * WORKFLOW_LAYOUT_SCALE_Y } : {}),
+          initialHeight: metadata?.value ? 112 : 88,
+          zIndex: isContainer ? 0 : 1,
+          ...(isContainer ? { style: { pointerEvents: "none" as const } } : {}),
+          ariaLabel: [node.name, metadata?.value].filter(Boolean).join(" · "),
           draggable: false,
           selectable: !compact,
         };
-      }),
+      });
+    },
     [agents, compact, graph.nodes],
   );
 
   // Computed from node positions so it works before ReactFlow has measured anything (fitView silently no-ops then).
   const showInitialView = useMemo(() => (width: number, height: number) => {
     if (nodes.length === 0) return;
-    const minX = Math.min(...nodes.map((node) => node.position.x));
-    const minY = Math.min(...nodes.map((node) => node.position.y));
-    const maxX = Math.max(...nodes.map((node) => node.position.x + (node.width ?? 224)));
-    const maxY = Math.max(...nodes.map((node) => node.position.y + (node.height ?? 72)));
+    const minX = Math.min(...nodes.map((node) => node.data.absolutePosition.x));
+    const minY = Math.min(...nodes.map((node) => node.data.absolutePosition.y));
+    const maxX = Math.max(...nodes.map((node) => node.data.absolutePosition.x + (node.width ?? 240)));
+    const maxY = Math.max(...nodes.map((node) => node.data.absolutePosition.y + (node.height ?? node.initialHeight ?? 88)));
     const padding = compact ? 24 : 48;
     const fitZoom = Math.min((width - padding * 2) / (maxX - minX), (height - padding * 2) / (maxY - minY), 1.1);
     if (compact || fitZoom >= READABLE_ZOOM) {
@@ -344,9 +374,9 @@ function Canvas({
     // Too wide to read when fitted: start at a readable zoom from the trigger, and let people pan the rest.
     const zoom = READABLE_ZOOM;
     const contentHeight = (maxY - minY) * zoom;
-    const trigger = nodes.find((node) => node.data.source.type === "start")
-      ?? nodes.reduce((first, node) => (node.position.x < first.position.x ? node : first));
-    const triggerCenter = trigger.position.y + (trigger.height ?? 72) / 2;
+    const trigger = nodes.find((node) => isWorkflowTrigger(node.data.source))
+      ?? nodes.reduce((first, node) => (node.data.absolutePosition.x < first.data.absolutePosition.x ? node : first));
+    const triggerCenter = trigger.data.absolutePosition.y + (trigger.height ?? trigger.initialHeight ?? 88) / 2;
     const y = contentHeight < height - padding * 2
       ? (height - contentHeight) / 2 - minY * zoom
       : Math.min(padding - minY * zoom, Math.max(height - padding - maxY * zoom, height / 2 - triggerCenter * zoom));
@@ -367,25 +397,30 @@ function Canvas({
     observer.observe(element);
     return () => observer.disconnect();
   }, [graph, showInitialView]);
-  const graphNodeById = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
+  const graphNodeById = useMemo(() => new Map(nodes.map((node) => [node.id, node])), [nodes]);
   const edges = useMemo<FlowEdge[]>(
     () =>
       graph.edges.map((edge) => {
         const sourceNode = graphNodeById.get(edge.source);
         const color = sourceNode
-          ? graphVisualColor(graphVisualKind(sourceNode))
+          ? graphVisualColor(graphVisualKind(sourceNode.data.source))
           : "var(--cp-border-strong)";
         const targetNode = graphNodeById.get(edge.target);
-        const handles = sourceNode && targetNode
+        const handles: { sourceHandle?: string; targetHandle?: string } = sourceNode && targetNode
           ? nearestHandles(sourceNode, targetNode)
           : {};
+        const sourcePort = sourceNode?.data.source.width !== undefined && (edge.sourceHandle === "internal-source" || edge.sourceHandle === "external-output")
+          ? edge.sourceHandle : undefined;
+        const targetPort = targetNode?.data.source.width !== undefined && (edge.targetHandle === "internal-target" || edge.targetHandle === "external-input")
+          ? edge.targetHandle : undefined;
         const label = edge.label ?? branchLabel(edge.sourceHandle);
         return {
           id: edge.id,
           source: edge.source,
           target: edge.target,
           type: "flow" as const,
-          ...handles,
+          sourceHandle: sourcePort ?? (targetPort ? "source-right" : handles.sourceHandle),
+          targetHandle: targetPort ?? (sourcePort ? "target-left" : handles.targetHandle),
           data: { color, ...(label ? { label } : {}) },
           markerEnd: { type: MarkerType.ArrowClosed, color, width: 14, height: 14 },
         };
@@ -414,6 +449,7 @@ function Canvas({
   };
 
   const source = selected?.source;
+  const metadata = source ? workflowNodeMetadata(source) : undefined;
 
   return (
     <div
@@ -460,7 +496,8 @@ function Canvas({
             zoomable
             style={{ width: 150, height: 96 }}
             position="bottom-right"
-            nodeColor={(node) => graphVisualColor(graphVisualKind((node as CatalogNode).data.source))}
+            nodeColor={(node) => (node as CatalogNode).data.source.width !== undefined ? "transparent" : graphVisualColor(graphVisualKind((node as CatalogNode).data.source))}
+            nodeStrokeColor={(node) => (node as CatalogNode).data.source.width !== undefined ? graphVisualColor(graphVisualKind((node as CatalogNode).data.source)) : "none"}
           />
         )}
       </ReactFlow>
@@ -476,7 +513,7 @@ function Canvas({
         <aside className="graph-detail" aria-label={`${source.name} details`}>
           <div className="graph-detail__header">
             <div>
-              <p className="catalog-node__type">{isAgentStep(source) ? agentStepLabel(source, selected.agent) : humanize(source.type)}</p>
+              <p className="catalog-node__type">{isAgentStep(source) ? agentStepLabel(source, selected.agent) : isWorkflowTrigger(source) ? "Trigger" : humanize(source.type)}</p>
               <h3>{source.name}</h3>
             </div>
             <button type="button" className="graph-detail__close" onClick={() => setSelected(null)} aria-label="Close node details">
@@ -484,6 +521,12 @@ function Canvas({
             </button>
           </div>
           <dl className="graph-detail__content">
+            {metadata && (
+              <div className="graph-detail__field">
+                <dt>{metadata.label}</dt>
+                <dd>{metadata.value ?? "Not included in this export."}</dd>
+              </div>
+            )}
             {isAgentStep(source) && <AgentStepDetails source={source} agent={selected.agent} />}
             {source.summary && (
               <div className="graph-detail__field">

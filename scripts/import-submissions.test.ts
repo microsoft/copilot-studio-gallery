@@ -203,6 +203,69 @@ test("rejects a workflow without exactly one saved graph", () => {
   assert.throws(() => extractSavedGraph({ name: "no graph", nodes: [] }), /exactly one saved designer graph/);
 });
 
+test("preserves saved loop containers and relative child positions, ordering parents first", () => {
+  const graph = normalizeWorkflowGraph({
+    nodes: [
+      { id: "keep-price", name: "Set SKU: Keep price", type: "variable", parentId: "loop", position: { x: 396, y: 439 }, measured: { width: 240, height: 66 }, data: { config: {} } },
+      { id: "start", name: "Start", type: "start", position: { x: 248, y: 461 } },
+      { id: "loop", name: "Loop over each active SKU", type: "loop", position: { x: 1248, y: 301 }, width: 1907, height: 697, style: { background: "private-style" } },
+      { id: "note", type: "canvasNote", parentId: "loop", position: { x: 900, y: 400 } },
+    ],
+    edges: [
+      { id: "enter", source: "start", target: "loop", targetHandle: "external-input" },
+      { id: "iterate", source: "loop", target: "keep-price", sourceHandle: "internal-source" },
+      { id: "return", source: "keep-price", target: "loop", targetHandle: "internal-target" },
+    ],
+  });
+  assert.deepEqual(graph.nodes.map((node) => node.id), ["loop", "keep-price", "start"]);
+  assert.deepEqual(graph.nodes[0], {
+    id: "loop", name: "Loop over each active SKU", type: "loop", position: { x: 1248, y: 301 },
+    width: 1907, height: 697, details: {},
+  });
+  assert.deepEqual(graph.nodes[1], {
+    id: "keep-price", name: "Set SKU: Keep price", type: "variable", position: { x: 396, y: 439 },
+    parentId: "loop", details: {},
+  });
+  assert.equal(graph.edges[0].targetHandle, "external-input");
+  assert.equal(graph.edges[1].sourceHandle, "internal-source");
+  assert.equal(graph.edges[2].targetHandle, "internal-target");
+  assert.equal(JSON.stringify(graph).includes("private-style"), false);
+});
+
+test("preserves nested containers with saved measured dimensions and legacy parentNode references", () => {
+  const graph = normalizeWorkflowGraph({
+    nodes: [
+      { id: "step", type: "connector", parentId: "inner", position: { x: 40, y: 80 } },
+      { id: "inner", type: "loop", parentNode: "outer", position: { x: 80, y: 120 }, measured: { width: 500, height: 300 } },
+      { id: "outer", type: "loop", position: { x: 1000, y: 500 }, measured: { width: 1000, height: 600 } },
+    ],
+    edges: [],
+  });
+  assert.deepEqual(graph.nodes.map(({ id, parentId, position, width, height }) => ({ id, parentId, position, width, height })), [
+    { id: "outer", parentId: undefined, position: { x: 1000, y: 500 }, width: 1000, height: 600 },
+    { id: "inner", parentId: "outer", position: { x: 80, y: 120 }, width: 500, height: 300 },
+    { id: "step", parentId: "inner", position: { x: 40, y: 80 }, width: undefined, height: undefined },
+  ]);
+});
+
+test("rejects broken workflow hierarchies instead of overlapping children on the main canvas", () => {
+  assert.throws(() => normalizeWorkflowGraph({ nodes: [{ id: "step", parentId: "missing" }], edges: [] }), /missing container missing/);
+  assert.throws(() => normalizeWorkflowGraph({ nodes: [{ id: "step" }, { id: "step" }], edges: [] }), /duplicate node ids/);
+  assert.throws(() => normalizeWorkflowGraph({
+    nodes: [
+      { id: "a", parentId: "b", width: 600, height: 400 },
+      { id: "b", parentId: "a", width: 600, height: 400 },
+    ],
+    edges: [],
+  }), /hierarchy contains a cycle/);
+  for (const width of [undefined, 0, -1, "Infinity", "not a number"]) {
+    assert.throws(() => normalizeWorkflowGraph({
+      nodes: [{ id: "loop", width, height: 400 }, { id: "step", parentId: "loop" }],
+      edges: [],
+    }), /missing valid saved dimensions/);
+  }
+});
+
 test("drops designer notes from workflow graphs", () => {
   const graph = normalizeWorkflowGraph({
     nodes: [
