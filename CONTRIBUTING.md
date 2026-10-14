@@ -38,6 +38,7 @@ The slug must use lowercase letters, numbers, and single hyphens.
   "name": "Customer Service Operations",
   "description": "Agents and workflows for triage, policy review, and assisted resolution.",
   "tags": ["customer-service", "triage", "human-in-the-loop"],
+  "category": "Customer service",
   "author": "Your Name",
   "authorUrl": "https://github.com/your-login",
   "createdAt": "2026-08-12",
@@ -46,11 +47,22 @@ The slug must use lowercase letters, numbers, and single hyphens.
 }
 ```
 
-Required fields: `name`, `description`, `tags`, and `author`. Optional fields:
-`authorUrl`, `authorGithub`, `createdAt`, `updatedAt`, and `featured`.
+Required fields: `name`, `description`, `tags`, `category`, and `author`.
+Optional fields: `authorUrl`, `authorGithub`, `createdAt`, `updatedAt`, and
+`featured`.
 
-Solution identity, version, publisher, component counts, agents, and workflows
+`category` is the one fixed category that best matches who uses the solution
+and the business activity it supports: `Customer service`, `Sales & marketing`,
+`IT & security`, `Operations`, `HR`, `Finance`, `Legal & compliance`, or
+`Productivity & knowledge`. Use `tags` for anything more specific.
+
+`featured: true` marks a solution as **Built by Microsoft**. Leave it `false`
+unless the solution was built by a Microsoft team.
+
+Solution identity, version, publisher, agents, workflows, and their components
 are derived from the exploded payload and cannot be overridden in metadata.
+Whether a solution appears under Agents or Workflows comes from what it
+contains. Designer notes in workflow canvases are not shown in the gallery.
 
 ### `README.md`
 

@@ -1,0 +1,135 @@
+{
+  "name": "Inbound Request Triage",
+  "description": "A shared mailbox workflow that classifies inbound requests, acknowledges the sender, and routes an internal summary to the owning team using an agent-selected address.",
+  "tags": [
+    "operations",
+    "email-triage",
+    "routing",
+    "classification",
+    "shared-mailbox"
+  ],
+  "category": "Operations",
+  "author": "Jasmita Lamba and Isha Gautam",
+  "createdAt": "2026-09-03",
+  "updatedAt": "2026-09-04",
+  "featured": false,
+  "uniqueName": "InboundRequestTriageandRouting",
+  "version": "1.0.0.7",
+  "publisher": "Default Publisher for orgef3b0de5",
+  "bundle": "bundles/inbound-request-triage.zip",
+  "agentCount": 0,
+  "workflowCount": 1,
+  "componentCount": 1,
+  "agents": [],
+  "agentGraph": {
+    "nodes": [],
+    "edges": []
+  },
+  "workflows": [
+    {
+      "id": "{879e5c9e-a749-f111-bec7-7ced8d17c48d}",
+      "name": "Inbound Request Triage Routing",
+      "trigger": "When a new email arrives",
+      "nodeCount": 4,
+      "edgeCount": 3,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-4a2b4084-f46a-4102-a7c2-d15a56b3ebcd",
+            "name": "When a new email arrives",
+            "type": "start",
+            "position": {
+              "x": 97.70260329000592,
+              "y": 351.648698354997
+            },
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When a new email arrives",
+              "apiName": "shared_office365",
+              "operationName": "OnNewEmailV3",
+              "operationType": "OpenApiConnectionNotification"
+            }
+          },
+          {
+            "id": "agent-3e0ef057-51af-4d8b-966a-1d3a7be8ceb2",
+            "name": "Agent-Request Handler",
+            "type": "agent",
+            "position": {
+              "x": 1061.0823953083564,
+              "y": 356.6119102065713
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are an expert Inbound Request Orchestrator.\n\nExtracted information from the email:\nsubject: {triggerOutputs()?['body/subject']}\nbody: {triggerOutputs()?['body/body']}\nrequestor: {triggerOutputs()?['body/from']}\n\nCRITICAL CLASSIFICATION RULES - Follow this priority order STRICTLY:\n1. HR / Onboarding: \"new joiner\", \"new hire\", \"onboarding\", \"new employee\", \"start date\", \"joining\", \"maternity lea"
+            }
+          },
+          {
+            "id": "variable-74eca6db-182d-487b-acb4-8b99af7ec4ca",
+            "name": "Configuration",
+            "type": "variable",
+            "position": {
+              "x": 426.65053748988737,
+              "y": 348.2026032900059
+            },
+            "details": {}
+          },
+          {
+            "id": "classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8",
+            "name": "Classify",
+            "type": "classifyOnInlineAgent",
+            "position": {
+              "x": 743,
+              "y": 348
+            },
+            "details": {
+              "model": "GPT5Chat"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-4a2b4084-f46a-4102-a7c2-d15a56b3ebcd-variable-74eca6db-182d-487b-acb4-8b99af7ec4ca",
+            "source": "start-4a2b4084-f46a-4102-a7c2-d15a56b3ebcd",
+            "target": "variable-74eca6db-182d-487b-acb4-8b99af7ec4ca"
+          },
+          {
+            "id": "edge-variable-74eca6db-182d-487b-acb4-8b99af7ec4ca-classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8",
+            "source": "variable-74eca6db-182d-487b-acb4-8b99af7ec4ca",
+            "target": "classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8"
+          },
+          {
+            "id": "edge-classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8-category:400ba2f5-34fd-4448-b1a0-b8ff25bfcc83-agent-3e0ef057-51af-4d8b-966a-1d3a7be8ceb2-input",
+            "source": "classifyOnInlineAgent-35409323-e0fa-4dea-885a-45a8d3c8e9b8",
+            "target": "agent-3e0ef057-51af-4d8b-966a-1d3a7be8ceb2",
+            "sourceHandle": "category:400ba2f5-34fd-4448-b1a0-b8ff25bfcc83",
+            "targetHandle": "input"
+          }
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 258
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 4068
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4259
+    },
+    {
+      "path": "Workflows/InboundRequestTriageRouting-879E5C9E-A749-F111-BEC7-7CED8D17C48D.json",
+      "category": "workflow",
+      "size": 88483
+    }
+  ]
+}
