@@ -1,0 +1,146 @@
+---
+import {
+  COMPONENT_LABELS,
+  agentAnchor,
+  agentTeams,
+  countLabel,
+  type AgentProfile,
+  type ComponentKind,
+  type ConnectedAgentRef,
+} from "../lib/inventory";
+import BlockIcon from "./BlockIcon.astro";
+
+interface Props {
+  agents: AgentProfile[];
+  /** Hero use: no anchors, so ids stay unique on the page. */
+  compact?: boolean;
+}
+
+const { agents, compact = false } = Astro.props;
+const { teams, standalone } = agentTeams(agents);
+const KIND_ORDER: ComponentKind[] = ["mcp", "tool", "skill"];
+const columns = KIND_ORDER.filter((kind) => agents.some((agent) => agent.counts[kind] > 0));
+const CHANNEL_LABELS: Record<string, string> = { MsTeams: "Teams", msteams: "Teams", webchat: "Web chat" };
+
+type Row =
+  | { type: "agent"; agent: AgentProfile; depth: 0 | 1; role: string; last?: boolean; hasChildren?: boolean }
+  | { type: "external"; ref: ConnectedAgentRef; last: boolean }
+  | { type: "group"; label: string };
+
+function handoffNote(agent: AgentProfile): string {
+  return agent.connectedAgents.length ? `hands off to ${agent.connectedAgents.map((connected) => connected.name).join(", ")}` : "";
+}
+
+function roleLine(base: string, agent: AgentProfile, extra = ""): string {
+  const channels = agent.channels.map((channel) => CHANNEL_LABELS[channel] ?? channel);
+  return [base, extra, ...channels].filter(Boolean).join(" · ");
+}
+
+const rows: Row[] = [];
+for (const team of teams) {
+  const children = team.delegates.length + team.external.length;
+  rows.push({
+    type: "agent",
+    agent: team.lead,
+    depth: 0,
+    role: roleLine("Lead agent", team.lead, `hands off to ${countLabel(children, "agent")} below`),
+    hasChildren: children > 0,
+  });
+  team.delegates.forEach((delegate, index) => {
+    // A specialist's own hand-offs are named, never expanded into another level.
+    rows.push({ type: "agent", agent: delegate, depth: 1, role: roleLine("Specialist", delegate, handoffNote(delegate)), last: index === children - 1 });
+  });
+  team.external.forEach((ref, index) => rows.push({ type: "external", ref, last: team.delegates.length + index === children - 1 }));
+}
+if (teams.length > 0 && standalone.length > 0) rows.push({ type: "group", label: "Also in this solution" });
+for (const agent of standalone) {
+  rows.push({ type: "agent", agent, depth: 0, role: roleLine(teams.length ? "Standalone agent" : "Agent", agent, handoffNote(agent)) });
+}
+
+function componentsFor(agent: AgentProfile, kind: ComponentKind) {
+  return agent.components.filter((component) => component.kind === kind);
+}
+
+function displayName(name: string): string {
+  return name.split(" — ")[0]!.trim() || name;
+}
+---
+
+<div
+  class:list={["agent-matrix", compact && "agent-matrix--compact"]}
+  style={`--matrix-columns:${Math.max(columns.length, 1)}`}
+  role="table"
+  aria-label="Agents and their components"
+>
+  <div class="agent-matrix__head" role="row">
+    <span role="columnheader">Agent</span>
+    {columns.length > 0
+      ? columns.map((kind) => (
+          <span role="columnheader" data-kind={kind}>
+            <BlockIcon kind={kind} class="agent-matrix__head-icon" />
+            {COMPONENT_LABELS[kind].plural}
+          </span>
+        ))
+      : <span role="columnheader">Components</span>}
+  </div>
+
+  {rows.map((row) => {
+    if (row.type === "group") {
+      return <div class="agent-matrix__group" role="row"><span role="cell">{row.label}</span></div>;
+    }
+    if (row.type === "external") {
+      return (
+        <div class="agent-matrix__row agent-matrix__row--external" role="row" data-depth="1" data-last={row.last ? "true" : undefined}>
+          <div class="agent-matrix__agent" role="rowheader">
+            <span class="agent-matrix__avatar" aria-hidden="true"><BlockIcon kind="agent" /></span>
+            <div class="min-w-0">
+              <p class="agent-matrix__name">{row.ref.name}</p>
+              <p class="agent-matrix__role">Connected agent outside this solution</p>
+            </div>
+          </div>
+          {(columns.length ? columns : [null]).map(() => <div class="agent-matrix__cell" role="cell"><span class="agent-matrix__none">—</span></div>)}
+        </div>
+      );
+    }
+    const { agent } = row;
+    return (
+      <div
+        id={compact ? undefined : agentAnchor(agent.schemaName)}
+        class="agent-matrix__row"
+        role="row"
+        data-depth={row.depth}
+        data-lead={row.hasChildren ? "true" : undefined}
+        data-last={row.last ? "true" : undefined}
+      >
+        <div class="agent-matrix__agent" role="rowheader">
+          <span class="agent-matrix__avatar" aria-hidden="true"><BlockIcon kind="agent" /></span>
+          <div class="min-w-0">
+            <p class="agent-matrix__name">{agent.name}</p>
+            <p class="agent-matrix__role">{row.role}</p>
+          </div>
+        </div>
+        {columns.length > 0
+          ? columns.map((kind) => {
+              const items = componentsFor(agent, kind);
+              return (
+                <div class="agent-matrix__cell" role="cell" data-label={COMPONENT_LABELS[kind].plural}>
+                  {items.length > 0 ? (
+                    <ul class="component-chips">
+                      {items.map((item) => (
+                        <li class="component-chip" data-kind={kind} tabindex="0" data-tip={item.description} title={item.description ? undefined : item.name}>
+                          <BlockIcon kind={kind} class="component-chip__icon" />
+                          <span>{displayName(item.name)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <span class="agent-matrix__none" aria-label={`No ${COMPONENT_LABELS[kind].plural}`}>—</span>
+                  )}
+                </div>
+              );
+            })
+          : <div class="agent-matrix__cell" role="cell"><span class="agent-matrix__none">No MCP servers, tools, or skills</span></div>}
+      </div>
+    );
+  })}
+</div>
