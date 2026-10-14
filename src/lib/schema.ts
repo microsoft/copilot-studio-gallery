@@ -6,17 +6,24 @@ export const CATEGORIES = [
   "Sales & marketing",
   "IT & security",
   "Operations",
+  "Project & communications management",
   "HR",
   "Finance",
   "Legal & compliance",
   "Productivity & knowledge",
+  // Catch-all until contributors can propose their own categories.
+  "Other",
 ] as const;
 
 export type Category = (typeof CATEGORIES)[number];
 
 // At most one category per solution: the main persona or business activity it serves. Tags carry everything else.
 // Optional so submissions that predate categories still validate; uncategorized solutions simply skip the category filter.
-const categorySchema = z.enum(CATEGORIES).optional();
+const categorySchema = z
+  .enum(CATEGORIES, {
+    error: () => `category must be one of: ${CATEGORIES.join(", ")}. See submissions/README.md#choose-a-category, or leave category out.`,
+  })
+  .optional();
 
 export const submissionMetadataSchema = z.object({
   name: z.string().trim().min(1),

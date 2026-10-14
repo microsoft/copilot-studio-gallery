@@ -53,8 +53,12 @@ Recommended: `category`. Optional fields: `authorUrl`, `authorGithub`,
 
 `category` is the one fixed category that best matches who uses the solution
 and the business activity it supports: `Customer service`, `Sales & marketing`,
-`IT & security`, `Operations`, `HR`, `Finance`, `Legal & compliance`, or
-`Productivity & knowledge`. Use `tags` for anything more specific. Solutions
+`IT & security`, `Operations`, `Project & communications management`, `HR`, `Finance`,
+`Legal & compliance`, `Productivity & knowledge`, or `Other`. See
+[Choose a category](submissions/README.md#choose-a-category) for who each one
+is for. Contributors can't add new values yet: use `Other` and suggest one in
+your pull request.
+Use `tags` for anything more specific. Solutions
 without a category still appear in the gallery, but not under category filters.
 
 `featured: true` marks a solution as **Built by Microsoft**. Leave it `false`
