@@ -8,6 +8,7 @@
     "human-in-the-loop",
     "mcp"
   ],
+  "category": "Project & communications management",
   "author": "Adriana Trujillo",
   "authorUrl": "https://github.com/adrianatruji",
   "authorGithub": "adrianatruji",
@@ -31,8 +32,8 @@
       "id": "{9cb0b6d8-89d8-ed3e-959f-8404cf72d5cb}",
       "name": "Meeting Coordinator",
       "trigger": "When a to-do is created",
-      "nodeCount": 29,
-      "edgeCount": 26,
+      "nodeCount": 19,
+      "edgeCount": 22,
       "graph": {
         "nodes": [
           {
@@ -43,7 +44,13 @@
               "x": 100,
               "y": 380
             },
-            "details": {}
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When a new to-do in a specific folder is created",
+              "apiName": "shared_todo",
+              "operationName": "OnNewToDoInFolderV2",
+              "operationType": "OpenApiConnection"
+            }
           },
           {
             "id": "agent-167eb026-c530-4602-8f74-22a3bacf88a2",
@@ -70,7 +77,9 @@
             },
             "details": {
               "expression": "@equals(variables('Exit'), true)\n"
-            }
+            },
+            "width": 1581,
+            "height": 676
           },
           {
             "id": "agent-1a2c350c-c482-4a0d-907b-8c410467963c",
@@ -80,6 +89,7 @@
               "x": 60,
               "y": 80
             },
+            "parentId": "loop-a92b9a5d-7724-42df-b7ea-7c98bca56680",
             "details": {
               "botSchemaName": "",
               "mode": "inline",
@@ -127,7 +137,21 @@
               "x": 343,
               "y": 80
             },
+            "parentId": "loop-a92b9a5d-7724-42df-b7ea-7c98bca56680",
             "details": {}
+          },
+          {
+            "id": "loop-81fe6058-9d0b-464d-b83a-a45d9ce7d19c",
+            "name": "For each attendee",
+            "type": "loop",
+            "position": {
+              "x": 626,
+              "y": 336
+            },
+            "parentId": "loop-a92b9a5d-7724-42df-b7ea-7c98bca56680",
+            "details": {},
+            "width": 623,
+            "height": 300
           },
           {
             "id": "connector-8c6ab8dc-c8d2-4119-9f3d-e51e6e3c2728",
@@ -137,6 +161,7 @@
               "x": 61.0197636904677,
               "y": 80
             },
+            "parentId": "loop-81fe6058-9d0b-464d-b83a-a45d9ce7d19c",
             "details": {
               "displayName": "Microsoft Teams",
               "apiName": "shared_teams",
@@ -157,6 +182,7 @@
               "x": 626,
               "y": 80
             },
+            "parentId": "loop-a92b9a5d-7724-42df-b7ea-7c98bca56680",
             "details": {}
           },
           {
@@ -167,16 +193,7 @@
               "x": 1301,
               "y": 336
             },
-            "details": {}
-          },
-          {
-            "id": "loop-81fe6058-9d0b-464d-b83a-a45d9ce7d19c",
-            "name": "For each attendee",
-            "type": "loop",
-            "position": {
-              "x": 626,
-              "y": 336
-            },
+            "parentId": "loop-a92b9a5d-7724-42df-b7ea-7c98bca56680",
             "details": {}
           },
           {
@@ -187,6 +204,7 @@
               "x": 343,
               "y": 80
             },
+            "parentId": "loop-81fe6058-9d0b-464d-b83a-a45d9ce7d19c",
             "details": {
               "displayName": "Microsoft Dataverse",
               "apiName": "shared_commondataserviceforapps",
@@ -256,6 +274,7 @@
               "x": 627.0667238173664,
               "y": 194.91441645168265
             },
+            "parentId": "loop-a92b9a5d-7724-42df-b7ea-7c98bca56680",
             "details": {}
           },
           {
@@ -269,136 +288,6 @@
             "details": {
               "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
               "description": "Compose outputs from multiple actions into a single output."
-            }
-          },
-          {
-            "id": "canvasNote-8be2598d-c1c9-400f-ac01-e940aaf8d491",
-            "name": "Note",
-            "type": "canvasNote",
-            "position": {
-              "x": 95.44573723217718,
-              "y": -100.78788271731719
-            },
-            "details": {
-              "markdown": "Note: In this sample, we use to-do actions as a trigger to create meetings based on a to-do list associated to a mail (personal or shared).\nTailor this trigger to the conditions that suit your case: When a task in created in planner, when a row is added in a Dataverse table, etc.",
-              "color": "yellow"
-            }
-          },
-          {
-            "id": "canvasNote-819ffa6d-208a-4004-83b4-7a0e488baba5",
-            "name": "Note 2",
-            "type": "canvasNote",
-            "position": {
-              "x": 371.4398529343181,
-              "y": -102.20651095246143
-            },
-            "details": {
-              "markdown": "Config: Replace `Fallback Mail Owner` variable with the email address of the mailbox that should receive a notification if the agent aborts its mission.",
-              "color": "blue"
-            }
-          },
-          {
-            "id": "canvasNote-0f7d50ee-5be0-473e-b946-becff17973f9",
-            "name": "Note 3",
-            "type": "canvasNote",
-            "position": {
-              "x": 666.812493092152,
-              "y": 48.55505302042286
-            },
-            "details": {
-              "markdown": "Note: In this sample, we use Microsoft Teams team member types to classify required VS optional meeting attendees.\nTailor the required/optional composition and data source to your needs (e.g. a stakeholder field in a ServiceNow record)",
-              "color": "yellow"
-            }
-          },
-          {
-            "id": "canvasNote-4ff90932-ab13-4ee1-a19e-a0e1a7bcab7a",
-            "name": "Note 3 2",
-            "type": "canvasNote",
-            "position": {
-              "x": 963.0249616516467,
-              "y": -181.9115410252894
-            },
-            "details": {
-              "markdown": "Note: The following variables use dynamic inputs configurable based on the triggers and data sources you choose to use:\n- `ProjectName` (string)\n- `MeetingType` (string)\n- `RequiredAttendees` (array) \n- `OptionalAttendees` (array)\n- `AllAttendees` (array that unions RequiredAttendees and OptionalAttendees)\n\nAll three arrays must be in an acceptable Outlook-connector format, example: [\n\"john@contos",
-              "color": "yellow"
-            }
-          },
-          {
-            "id": "canvasNote-cfc02c44-1d4e-4756-b43e-f8fafd55765d",
-            "name": "Note 2 2",
-            "type": "canvasNote",
-            "position": {
-              "x": 1628.4312694607963,
-              "y": -191.45943644686872
-            },
-            "details": {
-              "markdown": "Config: Inside \"Meeting Coordinator\", adjust # Scheduling Rules to your preferences (e.g. timezone, meeting types, duration). Proposed slots will be presented to attendees in the timezone chosen. ",
-              "color": "blue"
-            }
-          },
-          {
-            "id": "canvasNote-666cd462-2791-4b7d-81f0-b502fbbe0fa1",
-            "name": "Note 2 3",
-            "type": "canvasNote",
-            "position": {
-              "x": 663.458005413291,
-              "y": -179.12869599022198
-            },
-            "details": {
-              "markdown": "Config: Tailor \"MeetingType\" options in the `structuredoutput` list and the #Step 2 instructions according to your context.",
-              "color": "blue"
-            }
-          },
-          {
-            "id": "canvasNote-07177653-bc9b-4c94-8b35-2b310d686014",
-            "name": "Note 3 3",
-            "type": "canvasNote",
-            "position": {
-              "x": 1630.5768228524964,
-              "y": 32.540563553131264
-            },
-            "details": {
-              "markdown": "Note: In this sample, we use an adaptive card with exactly 5 placeholders for 5 proposed slots to be voted. If you decide to increase or decrease this number across the \"Meeting Coordinator\" instructions, note the card in \"Send slots card\" must be adjusted too (won't be adjusted dynamically).\nIf you wish to use other variations of \"Meeting Coordinator\" instructions, such as adjusting the slots ran",
-              "color": "yellow"
-            }
-          },
-          {
-            "id": "canvasNote-261cbca4-2f1f-4536-9574-05848b80785a",
-            "name": "Note 3 3 2",
-            "type": "canvasNote",
-            "position": {
-              "x": 2201.864274420735,
-              "y": 31.899947918845527
-            },
-            "details": {
-              "markdown": "Note: In this sample, we use a timeout of 24H for the adaptive card node, and a timeout of 32H for  the \"Loop until slot is found\" (with maximum 5 iterations). Consider adjusting this to your needs, as well as the informative notes in the adaptive card. ",
-              "color": "yellow"
-            }
-          },
-          {
-            "id": "canvasNote-de4bacb1-02a6-4f65-9148-b14a9d269882",
-            "name": "Note 3 3 2 2",
-            "type": "canvasNote",
-            "position": {
-              "x": 2542.770243558274,
-              "y": 36.55944451590099
-            },
-            "details": {
-              "markdown": "Note: In this sample, we use Dataverse as the system of record for storing the Coordination Runs (suitable slots found in one attempt) and Votes (ranking of proposed slots by recipients). \nTailor the \"Add new Vote row\" and Dataverse references in \"Meeting Coordinator\" instructions if you wish to use a different system of record.",
-              "color": "yellow"
-            }
-          },
-          {
-            "id": "canvasNote-4ebd780d-b545-4917-8a3a-0d34dc7f676a",
-            "name": "Note 2 2 2",
-            "type": "canvasNote",
-            "position": {
-              "x": 3492.8977837170614,
-              "y": 25.772287478715285
-            },
-            "details": {
-              "markdown": "Config: In \"Create event\", choose the same `Timezone` from the dropdown as the one you set in the # Scheduling Rules of \"Meeting Coordinator\"\n",
-              "color": "blue"
             }
           },
           {
@@ -558,30 +447,6 @@
             "id": "edge-builtinFunction-a60621bf-1658-4b1e-adfc-856209b63f5a-connector-9627c018-2042-4d3d-bbdb-a4948ed78ba3",
             "source": "builtinFunction-a60621bf-1658-4b1e-adfc-856209b63f5a",
             "target": "connector-9627c018-2042-4d3d-bbdb-a4948ed78ba3"
-          },
-          {
-            "id": "edge-canvasNote-8be2598d-c1c9-400f-ac01-e940aaf8d491-canvasNote-819ffa6d-208a-4004-83b4-7a0e488baba5-input",
-            "source": "canvasNote-8be2598d-c1c9-400f-ac01-e940aaf8d491",
-            "target": "canvasNote-819ffa6d-208a-4004-83b4-7a0e488baba5",
-            "targetHandle": "input"
-          },
-          {
-            "id": "edge-canvasNote-819ffa6d-208a-4004-83b4-7a0e488baba5-canvasNote-0f7d50ee-5be0-473e-b946-becff17973f9-input",
-            "source": "canvasNote-819ffa6d-208a-4004-83b4-7a0e488baba5",
-            "target": "canvasNote-0f7d50ee-5be0-473e-b946-becff17973f9",
-            "targetHandle": "input"
-          },
-          {
-            "id": "edge-canvasNote-0f7d50ee-5be0-473e-b946-becff17973f9-canvasNote-4ff90932-ab13-4ee1-a19e-a0e1a7bcab7a-input",
-            "source": "canvasNote-0f7d50ee-5be0-473e-b946-becff17973f9",
-            "target": "canvasNote-4ff90932-ab13-4ee1-a19e-a0e1a7bcab7a",
-            "targetHandle": "input"
-          },
-          {
-            "id": "edge-canvasNote-261cbca4-2f1f-4536-9574-05848b80785a-canvasNote-de4bacb1-02a6-4f65-9148-b14a9d269882-input",
-            "source": "canvasNote-261cbca4-2f1f-4536-9574-05848b80785a",
-            "target": "canvasNote-de4bacb1-02a6-4f65-9148-b14a9d269882",
-            "targetHandle": "input"
           },
           {
             "id": "edge-ifElse-dccfafdd-c735-435c-8b5c-347dc477d851-condition:7f023f19-03c3-47e2-a3d8-b1c03d741deb-connector-d83849e4-c5ea-46f1-ab52-806c089abf12",
