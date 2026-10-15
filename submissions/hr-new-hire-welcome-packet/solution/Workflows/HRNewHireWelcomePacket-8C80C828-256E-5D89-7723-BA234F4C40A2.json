@@ -885,8 +885,7 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    },
-                    "selected": true
+                    }
                   },
                   {
                     "id": "canvasNote-f530af65-6ff7-46fe-981c-c401d3e5ab44",
@@ -898,23 +897,24 @@
                       "y": 362.97032703416107
                     },
                     "width": 232,
-                    "height": 300,
+                    "height": 320,
                     "style": {
                       "width": 232,
-                      "height": 300
+                      "height": 320
                     },
                     "data": {
                       "config": {
-                        "markdown": "Fires when a row is added to New Hires. \n\nSite/list are set directly here, reselect them in this trigger to point at your own list. \n\nAfter doing so, every \"field_N\" dynamic-content token in Onboarding Agent's prompt will break (SharePoint assigns these per-list) — reopen the agent and re-insert each one from the dynamic content picker against your own list's columns.\n",
+                        "markdown": "Fires when a row is added to New Hires. \n\n\nSite/list are set directly here, reselect them in this trigger to point at your own list. \n\n\nAfter doing so, every \"field_N\" dynamic-content token in both Onboarding Agent's and Team Intro Agent's prompts will break (SharePoint assigns these per-list) — reopen each agent and re-insert each one from the dynamic content picker against your own list's columns.\n",
                         "color": "yellow"
                       },
                       "outcomes": []
                     },
                     "measured": {
                       "width": 232,
-                      "height": 300
+                      "height": 320
                     },
-                    "resizing": false
+                    "resizing": false,
+                    "selected": false
                   },
                   {
                     "id": "canvasNote-0aa7edc5-01f8-4cc3-83ee-80af0d1d4177",
@@ -954,23 +954,24 @@
                       "y": 329.33064018429559
                     },
                     "width": 227,
-                    "height": 478,
+                    "height": 504,
                     "style": {
                       "width": 227,
-                      "height": 478
+                      "height": 504
                     },
                     "data": {
                       "config": {
-                        "markdown": "Onboarding Agent — runs once per new-hire row, right after the trigger. Stops if Packet sent is already set. Alerts HR and stops if any required field was missing. Otherwise: calls Get items once on Welcome Links, decides which audience the job title matches (or that none do) and which rows belong in the email — the agent does this selection itself, not a SharePoint filter — emails the hire (Cc manager), alerts HR if no audience matched, then stamps Packet sent.\n",
+                        "markdown": "Onboarding Agent — runs once per new-hire row, right after the trigger. Stops if Packet sent is already set. Alerts HR and stops if any required field was missing. Otherwise: calls Get items once on Welcome Links, decides which audience the job title matches (or that none do) and which rows belong in the email — the agent does this selection itself, not a SharePoint filter — emails the hire (Cc manager), alerts HR if no audience matched, then stamps Packet sent. This agent's prompt references triggerOutputs()?['body/field_1'] through field_4 — these break if you re-point the trigger at your own list (SharePoint assigns field_N per list); reopen this agent and re-insert each one from the dynamic content picker.\n",
                         "color": "yellow"
                       },
                       "outcomes": []
                     },
                     "measured": {
                       "width": 227,
-                      "height": 478
+                      "height": 504
                     },
-                    "resizing": false
+                    "resizing": false,
+                    "selected": false
                   },
                   {
                     "id": "canvasNote-aa583182-e79a-4075-8057-c3fe9a45ad41",
@@ -1149,8 +1150,7 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    },
-                    "selected": false
+                    }
                   },
                   {
                     "id": "canvasNote-952261e6-c2d2-4980-8578-d2b5d389f4ba",
@@ -1162,22 +1162,23 @@
                       "y": 383.40930102872517
                     },
                     "width": 250,
-                    "height": 464,
+                    "height": 644,
                     "style": {
                       "width": 250,
-                      "height": 464
+                      "height": 644
                     },
                     "data": {
                       "config": {
-                        "markdown": "Team Intro Agent — runs in parallel with Onboarding Agent off the same trigger, not blocking or blocked by it. Builds the new hire's team roster via Get manager + Get direct reports (Office 365 Users, read-only), drops blank-title/shadow accounts and the new hire's own self-match, caps at 10 people. For the manager plus each person, searches the web for a public LinkedIn match and writes a short factual bio only when confidence ≥0.75 — otherwise uses a fixed fallback line, never guesses. Composes the full HTML email (manager first, then team, each with a mailto: 'Schedule a 1:1' link) and outputs EmailSubject/EmailBody. Never sends email or updates any row itself — the If/Else + Send/Draft nodes downstream handle delivery.",
+                        "markdown": "Team Intro Agent — runs in parallel with Onboarding Agent off the same trigger, not blocking or blocked by it. Builds the new hire's team roster via Get manager + Get direct reports (Office 365 Users, read-only), drops blank-title/shadow accounts and the new hire's own self-match, caps at 10 people. For the manager plus each person, searches the web for a public professional profile (LinkedIn preferred, other public sources as fallback) and writes a short factual bio only when confidence ≥0.75 — otherwise uses a warm, name-specific fallback line, never guesses. Composes the full HTML email (manager first, then team, each with a mailto: 'Schedule a 1:1' link) and outputs EmailSubject/EmailBody. Never sends email or updates any row itself — the If/Else + Send/Draft nodes downstream handle delivery. This agent's prompt references triggerOutputs()?['body/Title'] and ['body/field_1'] — these break if you re-point the trigger at your own list; reopen this agent and re-insert each one from the dynamic content picker.\n",
                         "color": "yellow"
                       },
                       "outcomes": []
                     },
                     "measured": {
                       "width": 250,
-                      "height": 464
-                    }
+                      "height": 644
+                    },
+                    "selected": false
                   },
                   {
                     "id": "canvasNote-80de7f4d-2ba5-4fd7-9aad-4b16c0ee6350",
@@ -1239,9 +1240,7 @@
                     "measured": {
                       "width": 240,
                       "height": 169
-                    },
-                    "dragging": false,
-                    "selected": false
+                    }
                   },
                   {
                     "id": "connector-01dcf0f5-4b06-4d60-b58a-8b398d27ea82",
@@ -1429,8 +1428,7 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    },
-                    "selected": false
+                    }
                   },
                   {
                     "id": "connector-5afa3316-61b8-4673-95ba-0c8edcd1276e",
@@ -1956,8 +1954,7 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    },
-                    "selected": false
+                    }
                   },
                   {
                     "id": "canvasNote-bf817137-0d94-4890-9050-25dad943f021",
@@ -1969,22 +1966,23 @@
                       "y": 440.05154984038421
                     },
                     "width": 250,
-                    "height": 184,
+                    "height": 264,
                     "style": {
                       "width": 250,
-                      "height": 184
+                      "height": 264
                     },
                     "data": {
                       "config": {
-                        "markdown": "If AutoSendTeamIntro is Yes → Send an email (V2) sends directly to the new hire, CC HR. Else → Draft an email message creates the same email as a draft in HR's mailbox for manual review. Both branches use the same To/Subject/Body/CC from Team Intro Agent's output.",
+                        "markdown": "If AutoSendTeamIntro is Yes → Send an email (V2) sends directly to the new hire, CC HR. Else → Draft an email message creates the same email as a draft in HR's mailbox for manual review. Both branches read Subject/Body from Team Intro Agent's output. \"To\" in both is the Work email column from New Hires (triggerOutputs()?['body/field_1']) — not from the agent — same field Onboarding Agent uses.\n",
                         "color": "yellow"
                       },
                       "outcomes": []
                     },
                     "measured": {
                       "width": 250,
-                      "height": 184
-                    }
+                      "height": 264
+                    },
+                    "selected": false
                   },
                   {
                     "id": "canvasNote-dd2afdec-8a33-41cf-990a-228dbfd2b9d8",
