@@ -16,6 +16,25 @@ The importer derives the published agent and workflow previews and rebuilds a
 deterministic `<slug>.zip` whose archive root is the contents of `solution/`.
 Gallery sidecars are excluded.
 
+## Choose a hero workflow
+
+`previewWorkflow` in `metadata.json` is **mandatory whenever the solution
+contains workflows**, including a solution with only one workflow. It selects
+the workflow shown in the solution's top preview:
+
+```json
+"previewWorkflow": "Invoice Processing - Revised"
+```
+
+Use a `WorkflowId` or an exact, unique workflow display name from
+`solution/customizations.xml`. IDs stay stable when display names change.
+Replace the template placeholder with your selection.
+
+**CI fails if the required selection is missing, empty, unknown, or ambiguous.**
+Both `npm run check:submissions` and `npm run import:submissions` enforce this
+rule; there is no automatic first-workflow fallback. For agent-only solutions,
+remove `previewWorkflow` entirely.
+
 ## Choose a category
 
 `category` in `metadata.json` is optional but recommended. It places your

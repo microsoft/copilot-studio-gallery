@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
-import { cp, lstat, mkdir, rm, symlink, writeFile } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
+import { cp, lstat, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import test from "node:test";
 import AdmZip from "adm-zip";
 import { isMcpNode } from "../src/lib/graphVisuals";
+import { solutionSchema } from "../src/lib/schema";
 import {
   SubmissionImportError,
   deriveSolutionFields,
@@ -71,6 +73,7 @@ test("imports metadata while retaining derived solution identity", async () => {
   assert.ok(record.agentGraph.nodes.every((node: { position: { x: number; y: number } }) => Number.isFinite(node.position.x) && Number.isFinite(node.position.y)));
   assert.equal(record.agentGraph.edges.filter((edge: { label: string; source: string }) => edge.source === "agent:support").length, 3);
   assert.equal(record.workflows[0].name, "Branched workflow");
+  assert.equal(record.previewWorkflow, record.workflows[0].id);
   const workflowNodes = record.workflows[0].graph.nodes;
   assert.deepEqual(workflowNodes.find((node: { id: string }) => node.id === "respond").details, {
     displayName: "Reply",
@@ -84,6 +87,83 @@ test("imports metadata while retaining derived solution identity", async () => {
     mode: "delegate",
     tools: ["Search"],
   });
+});
+
+test("selects a non-first hero workflow by ID or name and publishes its canonical ID", async () => {
+  const submission = join(workspace, "submissions/demo-agent");
+  const metadataPath = join(submission, "metadata.json");
+  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  const customizationsPath = join(submission, "solution/customizations.xml");
+  await cp(join(submission, "solution/Workflows/branched.json"), join(submission, "solution/Workflows/alternate.json"));
+  const customizations = await readFile(customizationsPath, "utf8");
+  await writeFile(customizationsPath, customizations.replace("</Workflows>", "<Workflow><Name>Second workflow</Name><JsonFileName>alternate.json</JsonFileName><WorkflowId>workflow-002</WorkflowId></Workflow></Workflows>"));
+
+  for (const previewWorkflow of ["workflow-002", "  Second workflow  "]) {
+    await writeFile(metadataPath, JSON.stringify({ ...metadata, previewWorkflow }));
+    await importSubmissions({ root: workspace });
+    const record = JSON.parse(await readFile(join(workspace, "src/content/solutions/demo-agent.json"), "utf8"));
+    assert.equal(record.workflows[0].id, "workflow-001");
+    assert.equal(record.previewWorkflow, "workflow-002");
+    const zip = new AdmZip(await readFile(join(workspace, "public/bundles/demo-agent.zip")));
+    assert.equal(zip.getEntry("metadata.json"), null);
+  }
+});
+
+test("rejects invalid hero selections rather than falling back to another workflow", async () => {
+  const metadataPath = join(workspace, "submissions/demo-agent/metadata.json");
+  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  for (const previewWorkflow of ["missing-workflow", "", "   ", 7, null]) {
+    await writeFile(metadataPath, JSON.stringify({ ...metadata, previewWorkflow }));
+    await assert.rejects(() => importSubmissions({ root: workspace, check: true }), /previewWorkflow/);
+  }
+});
+
+test("rejects missing hero selections in both CI command paths without writing artifacts", async () => {
+  const metadataPath = join(workspace, "submissions/demo-agent/metadata.json");
+  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  delete metadata.previewWorkflow;
+  await writeFile(metadataPath, JSON.stringify(metadata));
+
+  for (const check of [false, true]) {
+    await assert.rejects(() => importSubmissions({ root: workspace, check }), /previewWorkflow is required in metadata\.json/);
+    const result = spawnSync(process.execPath, [
+      "--import", "tsx", join(process.cwd(), "scripts/import-submissions.ts"), ...(check ? ["--check"] : []),
+    ], { cwd: workspace, encoding: "utf8", timeout: 30_000 });
+    assert.ifError(result.error);
+    assert.equal(result.status, 1, result.stderr);
+    assert.match(result.stderr, /demo-agent/);
+    assert.match(result.stderr, /previewWorkflow is required in metadata\.json/);
+    assert.equal(result.stdout, "");
+  }
+  await assert.rejects(() => lstat(join(workspace, "src/content/solutions/demo-agent.json")));
+  await assert.rejects(() => lstat(join(workspace, "src/content/guides/demo-agent.md")));
+  await assert.rejects(() => lstat(join(workspace, "public/bundles/demo-agent.zip")));
+});
+
+test("generated content requires a valid hero ID only when workflows are present", async () => {
+  await importSubmissions({ root: workspace });
+  const record = JSON.parse(await readFile(join(workspace, "src/content/solutions/demo-agent.json"), "utf8"));
+  solutionSchema.parse(record);
+  assert.throws(() => solutionSchema.parse({ ...record, previewWorkflow: undefined }), /previewWorkflow is required/);
+  assert.throws(() => solutionSchema.parse({ ...record, previewWorkflow: "missing" }), /previewWorkflow must identify/);
+  assert.throws(() => solutionSchema.parse({ ...record, previewWorkflow: "Branched workflow" }), /previewWorkflow must identify/);
+  const agentOnly = { ...record, workflows: [], workflowCount: 0, previewWorkflow: undefined };
+  solutionSchema.parse(agentOnly);
+  assert.throws(() => solutionSchema.parse({ ...agentOnly, previewWorkflow: record.previewWorkflow }), /previewWorkflow must identify/);
+});
+
+test("keeps agent-only submissions valid but rejects a workflow selection on them", async () => {
+  const metadataPath = join(workspace, "submissions/demo-agent/metadata.json");
+  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  delete metadata.previewWorkflow;
+  await writeFile(metadataPath, JSON.stringify(metadata));
+  await rm(join(workspace, "submissions/demo-agent/solution/Workflows/branched.json"));
+  await importSubmissions({ root: workspace, check: true });
+  await importSubmissions({ root: workspace });
+  const record = JSON.parse(await readFile(join(workspace, "src/content/solutions/demo-agent.json"), "utf8"));
+  assert.equal(record.previewWorkflow, undefined);
+  await writeFile(metadataPath, JSON.stringify({ ...metadata, previewWorkflow: "workflow-001" }));
+  await assert.rejects(() => importSubmissions({ root: workspace, check: true }), /previewWorkflow.*does not match/);
 });
 
 test("check mode validates inputs without requiring or writing generated artifacts", async () => {
@@ -103,6 +183,18 @@ test("ignores hidden and template submission directories", async () => {
   await mkdir(join(workspace, "submissions/.draft"), { recursive: true });
   const report = await importSubmissions({ root: workspace, check: true });
   assert.deepEqual(report.imported, ["demo-agent"]);
+});
+
+test("seeded demos satisfy the explicit hero requirement", async () => {
+  const result = spawnSync(process.execPath, [
+    "--import", "tsx", join(process.cwd(), "scripts/seed-demo-submissions.ts"),
+  ], { cwd: workspace, encoding: "utf8", timeout: 30_000 });
+  assert.ifError(result.error);
+  assert.equal(result.status, 0, result.stderr);
+  const report = await importSubmissions({ root: workspace, check: true });
+  assert.ok(report.imported.includes("customer-support-triage"));
+  assert.ok(report.imported.includes("invoice-exception-handler"));
+  assert.ok(report.imported.includes("knowledge-gap-finder"));
 });
 
 test("maps XML components and normalizes tools, skills, and delegation", () => {

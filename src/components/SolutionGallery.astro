@@ -195,13 +195,21 @@ function filterAttributes(solution: (typeof solutions)[number]) {
     !microsoftOnly && microsoftSolutions.length > 0 && (
       <section id="built-by-microsoft" data-microsoft-row class="border-b border-border bg-elevated" aria-labelledby="built-by-microsoft-title">
         <div class="mx-auto w-full max-w-gallery px-4 py-10 sm:px-6">
-          <div class="flex items-end justify-between gap-4">
-            <div class="min-w-0">
-              <h2 id="built-by-microsoft-title" class="text-2xl font-semibold tracking-[-0.02em] text-ink">Built by Microsoft</h2>
-              <p id="microsoft-result-count" class="mt-1 text-sm font-medium text-muted" aria-live="polite">{microsoftSolutions.length} {microsoftSolutions.length === 1 ? "solution" : "solutions"}</p>
-            </div>
-            <a data-microsoft-more data-gallery-link href={withBase("/built-by-microsoft")} aria-label="View Microsoft gallery" class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent">
-              View gallery <span aria-hidden="true">→</span>
+          <h2 id="built-by-microsoft-title" class="text-2xl font-semibold tracking-[-0.02em] text-ink">Built by Microsoft</h2>
+          <div class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+            <p id="microsoft-result-count" class="font-medium text-muted" aria-live="polite">{microsoftSolutions.length} {microsoftSolutions.length === 1 ? "solution" : "solutions"}</p>
+            <a
+              data-microsoft-more
+              data-gallery-link
+              href={withBase("/built-by-microsoft")}
+              aria-label="View more from Microsoft"
+              class:list={[
+                "items-center gap-1.5 font-semibold text-link underline-offset-4 hover:underline",
+                microsoftSolutions.length > MICROSOFT_ROW_SIZE ? "inline-flex" : "hidden",
+                microsoftSolutions.length === MICROSOFT_ROW_SIZE && "sm:inline-flex xl:hidden",
+              ]}
+            >
+              View more <span aria-hidden="true">→</span>
             </a>
           </div>
           <div id="microsoft-gallery" class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -405,6 +413,13 @@ function filterAttributes(solution: (typeof solutions)[number]) {
       required<HTMLElement>("#microsoft-result-count").textContent = `${microsoftMatched.length} ${microsoftMatched.length === 1 ? "solution" : "solutions"}`;
       required<HTMLElement>("#microsoft-empty").classList.toggle("hidden", microsoftMatched.length > 0);
       microsoftGallery.classList.toggle("hidden", microsoftMatched.length === 0);
+      const more = required<HTMLAnchorElement>("[data-microsoft-more]");
+      const moreAtEverySize = !filtered && microsoftMatched.length > MICROSOFT_ROW_SIZE;
+      const moreAtTwoColumns = !filtered && microsoftMatched.length === MICROSOFT_ROW_SIZE;
+      more.classList.toggle("inline-flex", moreAtEverySize);
+      more.classList.toggle("hidden", !moreAtEverySize);
+      more.classList.toggle("sm:inline-flex", moreAtTwoColumns);
+      more.classList.toggle("xl:hidden", moreAtTwoColumns);
     }
     sentinel.classList.toggle("hidden", matched.length === 0);
     loadObserver.unobserve(sentinel);

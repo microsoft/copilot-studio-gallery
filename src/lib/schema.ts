@@ -48,6 +48,7 @@ export const submissionMetadataSchema = z
     createdAt: z.iso.date().optional(),
     updatedAt: z.iso.date().optional(),
     featured: z.boolean().default(false),
+    previewWorkflow: z.string().trim().min(1).optional(),
   })
   .superRefine((metadata, ctx) => {
     if (metadata.authors && (metadata.author || metadata.authorUrl || metadata.authorGithub)) {
@@ -138,6 +139,7 @@ export const solutionSchema = z.object({
   createdAt: z.iso.date().optional(),
   updatedAt: z.iso.date().optional(),
   featured: z.boolean().default(false),
+  previewWorkflow: z.string().min(1).optional(),
   uniqueName: z.string(),
   version: z.string(),
   publisher: z.string().optional(),
@@ -150,6 +152,12 @@ export const solutionSchema = z.object({
   workflows: z.array(workflowSchema),
   connectors: z.array(connectorSchema).default([]),
   files: z.array(fileSummarySchema),
+}).refine((solution) => solution.workflows.length === 0 || solution.previewWorkflow !== undefined, {
+  path: ["previewWorkflow"],
+  message: "previewWorkflow is required when the solution contains workflows",
+}).refine((solution) => solution.previewWorkflow === undefined || solution.workflows.some((workflow) => workflow.id === solution.previewWorkflow), {
+  path: ["previewWorkflow"],
+  message: "previewWorkflow must identify a workflow in this solution",
 });
 
 export type SubmissionMetadata = z.infer<typeof submissionMetadataSchema>;

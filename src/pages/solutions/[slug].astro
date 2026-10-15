@@ -6,12 +6,12 @@ import BuildingBlocks from "../../components/BuildingBlocks.astro";
 import MicrosoftBadge from "../../components/MicrosoftBadge.astro";
 import SolutionDownload from "../../components/SolutionDownload.astro";
 import GraphCanvas from "../../components/graph/GraphCanvas";
-import WorkflowExplorer from "../../components/graph/WorkflowExplorer";
+import WorkflowTable from "../../components/WorkflowTable.astro";
 import { agentProfiles, inventoryBlocks, sharedMcpServers, solutionInventory } from "../../lib/inventory";
 import { solutionMakeup } from "../../lib/schema";
 import AuthorCredit from "../../components/AuthorCredit.astro";
 import { withBase } from "../../lib/url";
-import { workflowConnectorNames, workflowMetadataNotice, workflowTriggerType } from "../../lib/workflowMetadata";
+import { resolvePreviewWorkflow } from "../../lib/workflowMetadata";
 
 export async function getStaticPaths() {
   const solutions = await getCollection("solutions");
@@ -34,7 +34,7 @@ const updated = data.updatedAt ?? data.createdAt;
 const categoryCounts = new Map<string, number>();
 for (const file of data.files) categoryCounts.set(file.category, (categoryCounts.get(file.category) ?? 0) + 1);
 const categories = [...categoryCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-const heroWorkflow = data.workflows[0];
+const heroWorkflow = resolvePreviewWorkflow(data.workflows, data.previewWorkflow);
 ---
 
 <Layout title={data.name} description={data.description}>
@@ -66,10 +66,19 @@ const heroWorkflow = data.workflows[0];
       </div>
       {
         heroWorkflow ? (
-          <div class="solution-hero-preview relative hidden overflow-hidden border-t border-border bg-elevated text-muted sm:block">
+          <div
+            id="workflow-preview"
+            role="region"
+            aria-labelledby="workflow-preview-title"
+            class="solution-hero-preview relative hidden overflow-hidden border-t border-border bg-elevated text-muted sm:block"
+          >
+            <div class="border-b border-border bg-surface px-4 py-3 sm:px-6">
+              <p class="text-xs font-medium text-muted">Workflow preview</p>
+              <h2 id="workflow-preview-title" class="mt-1 break-words text-sm font-semibold text-ink">{heroWorkflow.name}</h2>
+            </div>
             <GraphCanvas
               graph={heroWorkflow.graph}
-              label={`${heroWorkflow.name} workflow preview`}
+              label={`${heroWorkflow.name} workflow graph`}
               agents={profiles}
               compact
               client:media="(min-width: 640px)"
@@ -92,8 +101,8 @@ const heroWorkflow = data.workflows[0];
         <div class="overflow-x-auto border-b border-border">
           <div id="detail-tabs" class="flex min-w-max gap-1" role="tablist" aria-label="Solution sections">
             <button type="button" role="tab" aria-selected="true" aria-controls="panel-overview" data-tab="overview" class="detail-tab border-b-2 border-accent px-4 py-3 text-sm font-semibold text-accent">Overview</button>
-            <button type="button" role="tab" aria-selected="false" aria-controls="panel-agents" data-tab="agents" class="detail-tab border-b-2 border-border px-4 py-3 text-sm font-semibold text-muted hover:text-ink">Agents <span class="ml-1 text-xs text-soft">{inventory.agents}</span></button>
-            <button type="button" role="tab" aria-selected="false" aria-controls="panel-workflows" data-tab="workflows" class="detail-tab border-b-2 border-border px-4 py-3 text-sm font-semibold text-muted hover:text-ink">Workflows <span class="ml-1 text-xs text-soft">{inventory.workflows}</span></button>
+            {inventory.agents > 0 && <button type="button" role="tab" aria-selected="false" aria-controls="panel-agents" data-tab="agents" class="detail-tab border-b-2 border-border px-4 py-3 text-sm font-semibold text-muted hover:text-ink">Agents <span class="ml-1 text-xs text-soft">{inventory.agents}</span></button>}
+            {inventory.workflows > 0 && <button type="button" role="tab" aria-selected="false" aria-controls="panel-workflows" data-tab="workflows" class="detail-tab border-b-2 border-border px-4 py-3 text-sm font-semibold text-muted hover:text-ink">Workflows <span class="ml-1 text-xs text-soft">{inventory.workflows}</span></button>}
             <button type="button" role="tab" aria-selected="false" aria-controls="panel-files" data-tab="files" class="detail-tab border-b-2 border-border px-4 py-3 text-sm font-semibold text-muted hover:text-ink">Files <span class="ml-1 text-xs text-soft">{data.files.length}</span></button>
           </div>
         </div>
@@ -106,54 +115,31 @@ const heroWorkflow = data.workflows[0];
               <div class="rounded-2xl border border-border bg-surface p-6">
                 <h2 class="text-xl font-semibold text-ink">Inside this solution</h2>
                 <p class="mt-3 leading-relaxed text-muted">{data.description}</p>
-                <p class="mt-3 text-sm text-muted">Explore the Agents and Workflows tabs to inspect the generated architecture and saved workflow canvases.</p>
+                <p class="mt-3 text-sm text-muted">Explore the solution's components and package contents in the tabs above.</p>
               </div>
             )
           }
         </section>
 
-        <section id="panel-agents" role="tabpanel" data-panel="agents" class="hidden pt-7">
-          {
-            profiles.length ? (
-              <>
-                <div class="mb-5">
-                  <h2 class="text-xl font-semibold text-ink">Agents and their components</h2>
-                  <p class="mt-1 text-sm text-muted">The MCP servers, tools, and skills each agent uses, and which agents hand off to others. Hover a component for its description.</p>
-                </div>
-                <AgentMatrix agents={profiles} sharedMcp={sharedMcp} />
-              </>
-            ) : (
-              <div class="rounded-2xl border border-dashed border-border bg-elevated px-6 py-14 text-center text-muted">No agents are included in this solution.</div>
-            )
-          }
-        </section>
+        {inventory.agents > 0 && (
+          <section id="panel-agents" role="tabpanel" data-panel="agents" class="hidden pt-7">
+            <div class="mb-5">
+              <h2 class="text-xl font-semibold text-ink">Agents and their components</h2>
+              <p class="mt-1 text-sm text-muted">The MCP servers, tools, and skills each agent uses, and which agents hand off to others. Hover a component for its description.</p>
+            </div>
+            <AgentMatrix agents={profiles} sharedMcp={sharedMcp} />
+          </section>
+        )}
 
-        <section id="panel-workflows" role="tabpanel" data-panel="workflows" class="hidden pt-7">
-          <div class="mb-4">
-            <h2 class="text-xl font-semibold text-ink">Workflow canvases</h2>
-            <p class="mt-1 text-sm text-muted">These positions and connections come from the saved designer graph in the exported solution. Hover or select an agent step to see its components.</p>
-          </div>
-          <div class="grid gap-3 sm:hidden">
-            {
-              data.workflows.map((workflow) => (
-                <article class="rounded-2xl border border-border bg-surface p-4 card-shadow">
-                  <h3 class="font-semibold text-ink">{workflow.name}</h3>
-                  <div class="mt-3 flex flex-wrap gap-3 text-xs text-muted">
-                    {workflow.trigger && <span>Trigger: {workflow.trigger}</span>}
-                    {workflowTriggerType(workflow) && <span>Type: {workflowTriggerType(workflow)}</span>}
-                    <span>{workflow.nodeCount} steps</span>
-                    <span>{workflow.edgeCount} connections</span>
-                  </div>
-                  {workflowConnectorNames(workflow).length > 0 && <p class="mt-2 text-xs text-muted">Connectors: {workflowConnectorNames(workflow).join(", ")}</p>}
-                  {workflowMetadataNotice(workflow) && <p class="mt-2 text-xs leading-relaxed text-muted">{workflowMetadataNotice(workflow)}</p>}
-                </article>
-              ))
-            }
-          </div>
-          <div class="hidden sm:block">
-            <WorkflowExplorer workflows={data.workflows} agents={profiles} client:media="(min-width: 640px)" />
-          </div>
-        </section>
+        {inventory.workflows > 0 && (
+          <section id="panel-workflows" role="tabpanel" data-panel="workflows" class="hidden pt-7">
+            <div class="mb-4">
+              <h2 class="text-xl font-semibold text-ink">Workflows and their components</h2>
+              <p class="mt-1 text-sm text-muted">Triggers, steps, connector services, and agent calls in each workflow.</p>
+            </div>
+            <WorkflowTable workflows={data.workflows} agents={profiles} />
+          </section>
+        )}
 
         <section id="panel-files" role="tabpanel" data-panel="files" class="hidden pt-7">
           <div class="rounded-2xl border border-border bg-surface p-5 card-shadow">

@@ -346,11 +346,11 @@ function Canvas({
           ...(isContainer ? { style: { pointerEvents: "none" as const } } : {}),
           ariaLabel: [node.name, metadata?.value].filter(Boolean).join(" · "),
           draggable: false,
-          selectable: !compact,
+          selectable: true,
         };
       });
     },
-    [agents, compact, graph.nodes],
+    [agents, graph.nodes],
   );
 
   // Computed from node positions so it works before ReactFlow has measured anything (fitView silently no-ops then).
@@ -435,7 +435,7 @@ function Canvas({
   };
 
   const showPeek = (event: ReactMouseEvent, node: CatalogNode) => {
-    if (compact || !node.data.agent || !wrapper.current) return;
+    if (!node.data.agent || !wrapper.current) return;
     const element = (event.target as Element).closest(".react-flow__node");
     if (!element) return;
     const bounds = wrapper.current.getBoundingClientRect();
@@ -467,7 +467,7 @@ function Canvas({
         <button type="button" onClick={() => void fitView({ padding: 0.18, duration: 250 })}>
           Fit
         </button>
-        {!compact && <button type="button" onClick={() => void toggleFullscreen()}>Full screen</button>}
+        <button type="button" onClick={() => void toggleFullscreen()}>Full screen</button>
       </div>
       <ReactFlow<CatalogNode, FlowEdge>
         nodes={nodes}
@@ -479,7 +479,6 @@ function Canvas({
         nodesDraggable={false}
         nodesConnectable={false}
         onNodeClick={(_, node) => {
-          if (compact) return;
           setPeek(null);
           setSelected(node.data);
         }}
@@ -509,7 +508,7 @@ function Canvas({
           <p className="agent-peek__hint">Click the step for details</p>
         </div>
       )}
-      {!compact && selected && source && (
+      {selected && source && (
         <aside className="graph-detail" aria-label={`${source.name} details`}>
           <div className="graph-detail__header">
             <div>

@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { normalizeWorkflowGraph } from "./import-submissions";
 import { graphVisualKind } from "../src/lib/graphVisuals";
-import { connectorName, triggerType, workflowConnectorNames, workflowMetadataNotice, workflowNodeMetadata, workflowTriggerType } from "../src/lib/workflowMetadata";
-import type { GraphNode } from "../src/lib/schema";
+import { workflowAgentCalls, type AgentProfile } from "../src/lib/inventory";
+import { connectorName, resolvePreviewWorkflow, triggerType, workflowConnectorNames, workflowMetadataNotice, workflowNodeMetadata, workflowTriggerType } from "../src/lib/workflowMetadata";
+import type { GraphNode, WorkflowPreview } from "../src/lib/schema";
 
 function node(type: string, config: Record<string, unknown>, name = "Submitted step title"): GraphNode {
   return normalizeWorkflowGraph({
@@ -11,6 +12,29 @@ function node(type: string, config: Record<string, unknown>, name = "Submitted s
     edges: [],
   }).nodes[0]!;
 }
+
+test("requires an explicit hero for both single-workflow and multi-workflow solutions", () => {
+  const workflows: WorkflowPreview[] = [
+    { id: "one", name: "First", nodeCount: 0, edgeCount: 0, graph: { nodes: [], edges: [] } },
+    { id: "two", name: "Second", nodeCount: 0, edgeCount: 0, graph: { nodes: [], edges: [] } },
+  ];
+  assert.throws(() => resolvePreviewWorkflow([workflows[0]!]), /previewWorkflow is required/);
+  assert.throws(() => resolvePreviewWorkflow(workflows), /previewWorkflow is required/);
+  assert.equal(resolvePreviewWorkflow(workflows, "two"), workflows[1]);
+  assert.equal(resolvePreviewWorkflow(workflows, "Second"), workflows[1]);
+  assert.equal(resolvePreviewWorkflow([]), undefined);
+  assert.throws(() => resolvePreviewWorkflow(workflows, "missing"), /does not match/);
+  assert.throws(() => resolvePreviewWorkflow([], "one"), /does not match/);
+});
+
+test("rejects ambiguous hero names and gives stable IDs precedence over names", () => {
+  const first: WorkflowPreview = { id: "one", name: "Shared name", nodeCount: 0, edgeCount: 0, graph: { nodes: [], edges: [] } };
+  const second = { ...first, id: "two" };
+  assert.throws(() => resolvePreviewWorkflow([first, second], "Shared name"), /matches multiple/);
+  assert.equal(resolvePreviewWorkflow([first, second], "two"), second);
+  assert.equal(resolvePreviewWorkflow([first, { ...second, name: "one" }], "one"), first);
+  assert.throws(() => resolvePreviewWorkflow([first, { ...second, id: "one" }], "one"), /matches multiple/);
+});
 
 test("identifies nested email trigger metadata without publishing connection payloads", () => {
   const trigger = node("start", {
@@ -87,7 +111,7 @@ test("does not infer missing connector and trigger types from user-authored name
   assert.equal(workflowTriggerType({ graph: { nodes: [], edges: [] } }), undefined);
 });
 
-test("phone workflow summaries list distinct connector services without including triggers", () => {
+test("workflow summaries list distinct connector services without including triggers", () => {
   const graph = {
     nodes: [
       node("start", { triggerType: "manual" }),
@@ -99,6 +123,32 @@ test("phone workflow summaries list distinct connector services without includin
   };
   assert.deepEqual(workflowConnectorNames({ graph }), ["Microsoft Teams"]);
   assert.equal(workflowMetadataNotice({ graph }), "Some connector identities aren't included in this export.");
+});
+
+test("workflow summaries distinguish inline, classifier, and called agents using exported metadata", () => {
+  const profiles: AgentProfile[] = [{
+    schemaName: "support_agent", name: "Support Agent", channels: [], components: [], connectedAgents: [], counts: { mcp: 0, tool: 0, skill: 0 },
+  }];
+  const graph = {
+    nodes: [
+      node("start", { triggerType: "manual" }),
+      node("connector", { apiName: "shared_teams" }, "Call an agent"),
+      node("agent", { mode: "inline" }, "Extract"),
+      node("classifyOnInlineAgent", {}, "Classify"),
+      node("agent", { botSchemaName: "SUPPORT_AGENT" }, "Handle request"),
+      node("agent", { botSchemaName: "external_agent" }, "Escalate"),
+      node("agent", {}, "Unspecified agent"),
+    ],
+    edges: [],
+  };
+  assert.deepEqual(workflowAgentCalls({ graph }, profiles), [
+    { name: "Extract", kind: "Inline agent" },
+    { name: "Classify", kind: "Inline classifier" },
+    { name: "Support Agent", kind: "Agent call" },
+    { name: "external_agent", kind: "Agent call" },
+    { name: "Unspecified agent", kind: "Agent call" },
+  ]);
+  assert.deepEqual(workflowAgentCalls({ graph: { nodes: [node("connector", {}, "Agent step")], edges: [] } }), []);
 });
 
 test("explains missing metadata once per workflow without treating it as a service name", () => {

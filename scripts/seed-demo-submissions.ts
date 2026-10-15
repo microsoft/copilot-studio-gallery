@@ -251,6 +251,7 @@ for (const demo of demos) {
     join(base, "metadata.json"),
     `${JSON.stringify({
       name: demo.name,
+      ...(hasWorkflow ? { previewWorkflow: `${demo.slug}-workflow` } : {}),
       description: demo.description,
       tags: demo.tags,
       category: demo.category,

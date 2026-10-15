@@ -18,6 +18,7 @@ import {
   type SubmissionMetadata,
   type WorkflowPreview,
 } from "../src/lib/schema";
+import { resolvePreviewWorkflow } from "../src/lib/workflowMetadata";
 
 const MAX_FILE_BYTES = 2 * 1024 * 1024;
 const MAX_TOTAL_BYTES = 25 * 1024 * 1024;
@@ -980,10 +981,12 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
     inspectConnectors(files),
   ]);
   if (agents.length === 0 && workflows.length === 0) throw new Error("solution must contain at least one agent or workflow");
+  const previewWorkflow = resolvePreviewWorkflow(workflows, metadata.previewWorkflow)?.id;
   const manifest = filesManifest(files);
   const componentCount = rootComponentCount(solutionXml) ?? manifest.filter((file) => ["bot", "component", "workflow"].includes(file.category)).length;
   const record: SolutionRecord = {
     ...metadata,
+    ...(previewWorkflow ? { previewWorkflow } : {}),
     uniqueName: derived.uniqueName,
     version: derived.version,
     ...(derived.publisher ? { publisher: derived.publisher } : {}),

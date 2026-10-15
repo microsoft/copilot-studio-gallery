@@ -19,13 +19,25 @@ The site uses Astro, Tailwind CSS, React Flow, and static GitHub Pages deploymen
   Microsoft listing has its own sort control. Both pages share the same search
   and filter controls, and their navigation links carry the active filters and
   sort order. Filters stay selected even when they have no Microsoft matches;
-  counts and results reflect the gallery being viewed.
-- One entry per solution, with Overview, Agents, Workflows, and Files tabs.
+  counts and results reflect the gallery being viewed. The homepage's
+  **View more** link sits beside the Microsoft solution count
+  and appears only when the responsive preview leaves additional cards hidden.
+- One entry per solution, with Overview and Files tabs. Agents and Workflows
+  tabs appear only when those assets are present.
 - Agent component tables listing each agent's tools, MCP servers, skills, and
   connected agents.
-- Interactive workflow previews rendered from each export's saved designer graph,
-  preserving loop containers and parent-relative step positions, with agent steps
-  showing the invoked agent's components on hover or select.
+- An informational workflow table listing each workflow's trigger, steps,
+  connector services, and agent calls, including inline agents.
+  It shares the Agents roster's icon-led rows and typography, with step counts
+  beneath workflow names. There is no second canvas or preview selector.
+  On phones, rows stack into compact summaries.
+- Every submission containing workflows must set `previewWorkflow` in
+  `metadata.json` to a workflow ID or unique display name, even with only one
+  workflow. CI rejects missing or invalid selections; there is no automatic
+  default. Agent-only submissions omit this field.
+- The hero renders each export's saved designer graph, preserving loop containers
+  and parent-relative step positions. Zoom, full-screen viewing, and node details
+  remain available, with agent steps showing their components on hover or select.
 - Workflow nodes keep their submitted titles and separately identify connector
   services and trigger types (such as HTTP, email, or manual) from export metadata.
   Titles and metadata wrap without truncation. Missing types are explained once

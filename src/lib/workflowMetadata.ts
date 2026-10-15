@@ -1,5 +1,21 @@
 import type { GraphNode, WorkflowPreview } from "./schema";
 
+export function resolvePreviewWorkflow(workflows: readonly WorkflowPreview[], selection?: string): WorkflowPreview | undefined {
+  if (selection === undefined) {
+    if (workflows.length === 0) return undefined;
+    throw new Error("previewWorkflow is required in metadata.json when the solution contains workflows. Select a workflow ID or an exact, unique workflow name.");
+  }
+  const ids = workflows.filter((workflow) => workflow.id === selection);
+  const matches = ids.length ? ids : workflows.filter((workflow) => workflow.name === selection);
+  if (matches.length === 0) {
+    throw new Error(`previewWorkflow "${selection}" does not match a workflow in this solution. Use a workflow ID or an exact, unique workflow name.`);
+  }
+  if (matches.length > 1) {
+    throw new Error(`previewWorkflow "${selection}" matches multiple workflows. Use a unique workflow ID.`);
+  }
+  return matches[0];
+}
+
 const CONNECTOR_NAMES: Record<string, string> = {
   shared_office365: "Office 365 Outlook",
   shared_outlook: "Outlook.com",

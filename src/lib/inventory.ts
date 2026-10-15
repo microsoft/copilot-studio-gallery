@@ -1,5 +1,5 @@
 import { isMcpNode } from "./graphVisuals";
-import type { AgentPreview, ConnectorPreview, GraphNode, SolutionRecord } from "./schema";
+import type { AgentPreview, ConnectorPreview, GraphNode, SolutionRecord, WorkflowPreview } from "./schema";
 
 export type ComponentKind = "tool" | "mcp" | "skill";
 
@@ -198,4 +198,11 @@ export function resolveWorkflowAgent(node: GraphNode, profiles: AgentProfile[]):
 
 export function isAgentStep(node: GraphNode): boolean {
   return node.type === "agent" || node.type === "classifyOnInlineAgent";
+}
+
+export function workflowAgentCalls(workflow: Pick<WorkflowPreview, "graph">, profiles: AgentProfile[] = []) {
+  return workflow.graph.nodes.filter(isAgentStep).map((node) => ({
+    name: resolveWorkflowAgent(node, profiles)?.name ?? text(node.details.botSchemaName) ?? node.name,
+    kind: node.type === "classifyOnInlineAgent" ? "Inline classifier" : node.details.mode === "inline" ? "Inline agent" : "Agent call",
+  }));
 }
