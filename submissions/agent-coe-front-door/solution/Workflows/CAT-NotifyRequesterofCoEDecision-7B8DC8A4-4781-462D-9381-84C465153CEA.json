@@ -1,0 +1,2993 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "cat_decisionnotifications_dataverse"
+        },
+        "runtimeSource": "embedded"
+      },
+      "shared_office365": {
+        "api": {
+          "name": "shared_office365"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "cat_decisionnotifications_outlook"
+        },
+        "runtimeSource": "embedded"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "When_decision_changes": {
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "parameters": {
+              "subscriptionRequest/message": 3,
+              "subscriptionRequest/entityname": "cat_agentintakerequest",
+              "subscriptionRequest/scope": 4,
+              "subscriptionRequest/filteringattributes": "cat_status",
+              "subscriptionRequest/filterexpression": "cat_status eq 100000003 or cat_status eq 100000004"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "SubscribeWebhookTrigger",
+              "connectionName": "shared_commondataserviceforapps"
+            }
+          },
+          "runtimeConfiguration": {
+            "concurrency": {
+              "runs": 1
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "CAT - Notify Requester of CoE Decision",
+                "nodes": [
+                  {
+                    "id": "start-4716c7e4-f1db-5cb4-b9ea-0df0d1d992d8",
+                    "name": "When decision changes",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 560,
+                      "y": 120
+                    },
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "connector",
+                        "connector": {
+                          "apiName": "shared_commondataserviceforapps",
+                          "operationName": "SubscribeWebhookTrigger",
+                          "connectionName": "shared_commondataserviceforapps",
+                          "displayName": "When decision changes",
+                          "brandColor": "#088142",
+                          "operationType": "OpenApiConnectionWebhook",
+                          "triggerBatchMode": "Single",
+                          "inputs": {
+                            "subscriptionRequest/message": 3,
+                            "subscriptionRequest/entityname": "cat_agentintakerequest",
+                            "subscriptionRequest/scope": 4,
+                            "subscriptionRequest/filteringattributes": "cat_status",
+                            "subscriptionRequest/filterexpression": "cat_status eq 100000003 or cat_status eq 100000004"
+                          },
+                          "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1831/1.0.1831.5064/commondataserviceforapps/icon.png",
+                          "parametersSchema": {
+                            "type": "object",
+                            "properties": {
+                              "subscriptionRequest": {
+                                "type": "object",
+                                "title": "Subscription request",
+                                "properties": {
+                                  "message": {
+                                    "type": "integer",
+                                    "title": "Change type",
+                                    "x-ms-dynamic-list": {
+                                      "operationId": "GetOptionSetMetadata",
+                                      "parameters": {
+                                        "entityName": {
+                                          "value": "callbackregistration"
+                                        },
+                                        "attributeMetadataId": {
+                                          "value": "58bac6af-4394-424f-bbc8-e64843941942"
+                                        },
+                                        "type": {
+                                          "value": "Picklist"
+                                        }
+                                      },
+                                      "itemsPath": "value",
+                                      "itemValuePath": "value",
+                                      "itemTitlePath": "label/userLocalizedLabel/label"
+                                    },
+                                    "description": "Choose when the flow triggers",
+                                    "x-ms-visibility": "important",
+                                    "x-ms-property-name-alias": "subscriptionRequest/message"
+                                  },
+                                  "entityname": {
+                                    "type": "string",
+                                    "title": "Table name",
+                                    "x-ms-dynamic-list": {
+                                      "operationId": "GetEntities",
+                                      "parameters": {},
+                                      "itemsPath": "value",
+                                      "itemValuePath": "LogicalName",
+                                      "itemTitlePath": "DisplayCollectionName/UserLocalizedLabel/Label"
+                                    },
+                                    "description": "Choose a table",
+                                    "x-ms-visibility": "important",
+                                    "x-ms-property-name-alias": "subscriptionRequest/entityname"
+                                  },
+                                  "scope": {
+                                    "type": "integer",
+                                    "title": "Scope",
+                                    "x-ms-dynamic-list": {
+                                      "operationId": "GetScopeFilters",
+                                      "parameters": {
+                                        "entityName": {
+                                          "parameterReference": "subscriptionRequest/entityname",
+                                          "required": true
+                                        }
+                                      },
+                                      "itemsPath": "value",
+                                      "itemValuePath": "Value",
+                                      "itemTitlePath": "DisplayName"
+                                    },
+                                    "description": "Choose a scope to limit which rows can trigger the flow",
+                                    "x-ms-visibility": "important",
+                                    "x-ms-property-name-alias": "subscriptionRequest/scope"
+                                  },
+                                  "filteringattributes": {
+                                    "type": "string",
+                                    "title": "Select columns",
+                                    "description": "Enter a comma-separated list of column unique names. The flow triggers if any of the columns is present in the update payload regardless of if data is modified",
+                                    "x-ms-visibility": "important",
+                                    "x-ms-property-name-alias": "subscriptionRequest/filteringattributes"
+                                  },
+                                  "filterexpression": {
+                                    "type": "string",
+                                    "title": "Filter rows",
+                                    "description": "Odata expression to limit rows that can trigger the flow, eg. statecode eq 0",
+                                    "x-ms-visibility": "important",
+                                    "x-ms-property-name-alias": "subscriptionRequest/filterexpression"
+                                  },
+                                  "postponeuntil": {
+                                    "type": "string",
+                                    "title": "Delay until",
+                                    "description": "Enter a time to delay the trigger evaluation, eg. 2020-01-01T10:10:00Z",
+                                    "x-ms-visibility": "advanced",
+                                    "x-ms-property-name-alias": "subscriptionRequest/postponeuntil"
+                                  },
+                                  "runas": {
+                                    "type": "integer",
+                                    "title": "Run as",
+                                    "x-ms-dynamic-list": {
+                                      "operationId": "GetOptionSetMetadata",
+                                      "parameters": {
+                                        "entityName": {
+                                          "value": "callbackregistration"
+                                        },
+                                        "attributeMetadataId": {
+                                          "value": "8249fb1c-94a3-4e5b-9869-c1f61d7c1047"
+                                        },
+                                        "type": {
+                                          "value": "Picklist"
+                                        }
+                                      },
+                                      "itemsPath": "value",
+                                      "itemValuePath": "value",
+                                      "itemTitlePath": "label/userLocalizedLabel/label"
+                                    },
+                                    "description": "Choose the running user for steps where invoker connections are used",
+                                    "x-ms-visibility": "advanced",
+                                    "x-ms-property-name-alias": "subscriptionRequest/runas"
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "title": "Name",
+                                    "description": "Callback registration name. Value will be replaced with workflow id",
+                                    "x-ms-visibility": "internal",
+                                    "x-ms-property-name-alias": "subscriptionRequest/name"
+                                  }
+                                },
+                                "required": [
+                                  "entityname",
+                                  "message",
+                                  "scope"
+                                ],
+                                "description": "Subscription request",
+                                "x-ms-property-name-alias": "subscriptionRequest"
+                              }
+                            },
+                            "required": [
+                              "subscriptionRequest"
+                            ]
+                          },
+                          "outputSchema": {
+                            "webhook": {
+                              "type": "object",
+                              "properties": {
+                                "body": {
+                                  "type": "object",
+                                  "x-ms-dynamic-properties": {
+                                    "operationId": "GetMetadataForGetEntityCUDTrigger",
+                                    "parameters": {
+                                      "entityName": {
+                                        "parameterReference": "subscriptionRequest/entityname",
+                                        "required": true
+                                      }
+                                    },
+                                    "itemValuePath": "schema"
+                                  },
+                                  "description": "A Table item.",
+                                  "x-ms-property-name-alias": "body"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "cat_agentname": {
+                                "type": "string",
+                                "title": "Agent / opportunity name",
+                                "description": "The working name of the agent or opportunity, used to identify it in conversation and on the backlog.",
+                                "maxLength": 200,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_agentname"
+                              },
+                              "cat_agentintakerequestid": {
+                                "type": "string",
+                                "title": "Agent Intake Request",
+                                "format": "guid",
+                                "description": "Unique identifier for entity instances",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_agentintakerequestid"
+                              },
+                              "cat_agentsoffered": {
+                                "type": "string",
+                                "title": "Agents offered",
+                                "maxLength": 500,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_agentsoffered"
+                              },
+                              "cat_status": {
+                                "type": "integer",
+                                "title": "Approval status",
+                                "format": "int32",
+                                "description": "The CoE decision on the request.",
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/cat_status"
+                              },
+                              "cat_buildstatus": {
+                                "type": "integer",
+                                "title": "Build status",
+                                "format": "int32",
+                                "description": "Where the build has reached once approved.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_buildstatus"
+                              },
+                              "cat_department": {
+                                "type": "integer",
+                                "title": "Business area",
+                                "format": "int32",
+                                "description": "The part of the organisation the request comes from.",
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/cat_department"
+                              },
+                              "cat_businessproblem": {
+                                "type": "string",
+                                "title": "Business problem",
+                                "description": "Why it is needed.",
+                                "maxLength": 4000,
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/cat_businessproblem"
+                              },
+                              "cat_decisioncomments": {
+                                "type": "string",
+                                "title": "Comments shared with requester",
+                                "description": "Requester-facing CoE comments included in approval and rejection emails. Do not enter internal-only notes.",
+                                "maxLength": 4000,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_decisioncomments"
+                              },
+                              "_createdonbehalfby_type": {
+                                "type": "string",
+                                "title": "Created By (Delegate) (Table Name)",
+                                "description": "Unique identifier of the delegate user who created the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_createdonbehalfby_type"
+                              },
+                              "_createdonbehalfby_value@Microsoft.Dynamics.CRM.lookuplogicalname": {
+                                "type": "string",
+                                "title": "Created By (Delegate) (Type)",
+                                "description": "Unique identifier of the delegate user who created the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_createdonbehalfby_value@Microsoft.Dynamics.CRM.lookuplogicalname"
+                              },
+                              "_createdonbehalfby_value": {
+                                "type": "string",
+                                "title": "Created By (Delegate) (Value)",
+                                "description": "Unique identifier of the delegate user who created the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_createdonbehalfby_value"
+                              },
+                              "_createdby_type": {
+                                "type": "string",
+                                "title": "Created By (Table Name)",
+                                "description": "Unique identifier of the user who created the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_createdby_type"
+                              },
+                              "_createdby_value@Microsoft.Dynamics.CRM.lookuplogicalname": {
+                                "type": "string",
+                                "title": "Created By (Type)",
+                                "description": "Unique identifier of the user who created the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_createdby_value@Microsoft.Dynamics.CRM.lookuplogicalname"
+                              },
+                              "_createdby_value": {
+                                "type": "string",
+                                "title": "Created By (Value)",
+                                "description": "Unique identifier of the user who created the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_createdby_value"
+                              },
+                              "createdon": {
+                                "type": "string",
+                                "title": "Created On",
+                                "format": "date-time",
+                                "description": "Date and time when the record was created.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/createdon"
+                              },
+                              "cat_datasources": {
+                                "type": "string",
+                                "title": "Data sources",
+                                "description": "The data and systems the solution would need to read or write.",
+                                "maxLength": 4000,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_datasources"
+                              },
+                              "cat_notificationerror": {
+                                "type": "string",
+                                "title": "Decision notification error",
+                                "description": "Operational error and flow run reference. Review before retrying ambiguous deliveries.",
+                                "maxLength": 4000,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_notificationerror"
+                              },
+                              "cat_notificationsenton": {
+                                "type": "string",
+                                "title": "Decision notification sent on",
+                                "format": "date-time",
+                                "description": "UTC time when the email connector accepted the most recent decision email.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_notificationsenton"
+                              },
+                              "cat_notificationstatus": {
+                                "type": "integer",
+                                "title": "Decision notification status",
+                                "format": "int32",
+                                "description": "Sending or Needs review blocks automatic retries until an operator verifies delivery.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_notificationstatus"
+                              },
+                              "cat_deflectionreason": {
+                                "type": "integer",
+                                "title": "Deflection reason",
+                                "format": "int32",
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/cat_deflectionreason"
+                              },
+                              "cat_description": {
+                                "type": "string",
+                                "title": "Description",
+                                "description": "What the requester wants, in their own words.",
+                                "maxLength": 2000,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_description"
+                              },
+                              "cat_expectedusers": {
+                                "type": "integer",
+                                "title": "Expected users (count)",
+                                "format": "int32",
+                                "description": "Roughly how many people will use it. Who they are is recorded in Target users.",
+                                "maximum": 1000000000,
+                                "minimum": 0,
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/cat_expectedusers"
+                              },
+                              "cat_governancezone": {
+                                "type": "integer",
+                                "title": "Governance zone",
+                                "format": "int32",
+                                "description": "The zone from the CoE governance review criteria: Green, Yellow or Red. Read from the guidance, never inferred.",
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/cat_governancezone"
+                              },
+                              "importsequencenumber": {
+                                "type": "integer",
+                                "title": "Import Sequence Number",
+                                "format": "int32",
+                                "description": "Sequence number of the import that created this record.",
+                                "maximum": 2147483647,
+                                "minimum": -2147483648,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/importsequencenumber"
+                              },
+                              "cat_lastnotifieddecision": {
+                                "type": "integer",
+                                "title": "Last notified decision",
+                                "format": "int32",
+                                "description": "Last decision accepted by the email service; used to suppress duplicate decision emails.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_lastnotifieddecision"
+                              },
+                              "_modifiedonbehalfby_type": {
+                                "type": "string",
+                                "title": "Modified By (Delegate) (Table Name)",
+                                "description": "Unique identifier of the delegate user who modified the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_modifiedonbehalfby_type"
+                              },
+                              "_modifiedonbehalfby_value@Microsoft.Dynamics.CRM.lookuplogicalname": {
+                                "type": "string",
+                                "title": "Modified By (Delegate) (Type)",
+                                "description": "Unique identifier of the delegate user who modified the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_modifiedonbehalfby_value@Microsoft.Dynamics.CRM.lookuplogicalname"
+                              },
+                              "_modifiedonbehalfby_value": {
+                                "type": "string",
+                                "title": "Modified By (Delegate) (Value)",
+                                "description": "Unique identifier of the delegate user who modified the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_modifiedonbehalfby_value"
+                              },
+                              "_modifiedby_type": {
+                                "type": "string",
+                                "title": "Modified By (Table Name)",
+                                "description": "Unique identifier of the user who modified the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_modifiedby_type"
+                              },
+                              "_modifiedby_value@Microsoft.Dynamics.CRM.lookuplogicalname": {
+                                "type": "string",
+                                "title": "Modified By (Type)",
+                                "description": "Unique identifier of the user who modified the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_modifiedby_value@Microsoft.Dynamics.CRM.lookuplogicalname"
+                              },
+                              "_modifiedby_value": {
+                                "type": "string",
+                                "title": "Modified By (Value)",
+                                "description": "Unique identifier of the user who modified the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_modifiedby_value"
+                              },
+                              "modifiedon": {
+                                "type": "string",
+                                "title": "Modified On",
+                                "format": "date-time",
+                                "description": "Date and time when the record was modified.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/modifiedon"
+                              },
+                              "cat_proposednextactions": {
+                                "type": "string",
+                                "title": "Next step",
+                                "description": "The operational follow-up agreed with the requester.",
+                                "maxLength": 4000,
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/cat_proposednextactions"
+                              },
+                              "_ownerid_type": {
+                                "type": "string",
+                                "title": "Owner (Table Name)",
+                                "description": "Owner Id",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_ownerid_type"
+                              },
+                              "_ownerid_value@Microsoft.Dynamics.CRM.lookuplogicalname": {
+                                "type": "string",
+                                "title": "Owner (Type)",
+                                "description": "Owner Id",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_ownerid_value@Microsoft.Dynamics.CRM.lookuplogicalname"
+                              },
+                              "_ownerid_value": {
+                                "type": "string",
+                                "title": "Owner (Value)",
+                                "description": "Owner Id",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_ownerid_value"
+                              },
+                              "_owningbusinessunit_type": {
+                                "type": "string",
+                                "title": "Owning Business Unit (Table Name)",
+                                "description": "Unique identifier for the business unit that owns the record",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_owningbusinessunit_type"
+                              },
+                              "_owningbusinessunit_value@Microsoft.Dynamics.CRM.lookuplogicalname": {
+                                "type": "string",
+                                "title": "Owning Business Unit (Type)",
+                                "description": "Unique identifier for the business unit that owns the record",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_owningbusinessunit_value@Microsoft.Dynamics.CRM.lookuplogicalname"
+                              },
+                              "_owningbusinessunit_value": {
+                                "type": "string",
+                                "title": "Owning Business Unit (Value)",
+                                "description": "Unique identifier for the business unit that owns the record",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_owningbusinessunit_value"
+                              },
+                              "_owningteam_type": {
+                                "type": "string",
+                                "title": "Owning Team (Table Name)",
+                                "description": "Unique identifier for the team that owns the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_owningteam_type"
+                              },
+                              "_owningteam_value@Microsoft.Dynamics.CRM.lookuplogicalname": {
+                                "type": "string",
+                                "title": "Owning Team (Type)",
+                                "description": "Unique identifier for the team that owns the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_owningteam_value@Microsoft.Dynamics.CRM.lookuplogicalname"
+                              },
+                              "_owningteam_value": {
+                                "type": "string",
+                                "title": "Owning Team (Value)",
+                                "description": "Unique identifier for the team that owns the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_owningteam_value"
+                              },
+                              "_owninguser_type": {
+                                "type": "string",
+                                "title": "Owning User (Table Name)",
+                                "description": "Unique identifier for the user that owns the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_owninguser_type"
+                              },
+                              "_owninguser_value@Microsoft.Dynamics.CRM.lookuplogicalname": {
+                                "type": "string",
+                                "title": "Owning User (Type)",
+                                "description": "Unique identifier for the user that owns the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_owninguser_value@Microsoft.Dynamics.CRM.lookuplogicalname"
+                              },
+                              "_owninguser_value": {
+                                "type": "string",
+                                "title": "Owning User (Value)",
+                                "description": "Unique identifier for the user that owns the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_owninguser_value"
+                              },
+                              "cat_proposedsolution": {
+                                "type": "string",
+                                "title": "Proposed solution",
+                                "description": "What is being proposed to solve the problem — the shape of the agent or approach, not the business case.",
+                                "maxLength": 4000,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_proposedsolution"
+                              },
+                              "cat_requesttype": {
+                                "type": "integer",
+                                "title": "Recommended agent type",
+                                "format": "int32",
+                                "description": "The agent type the front door matched in the governance guidance.",
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/cat_requesttype"
+                              },
+                              "overriddencreatedon": {
+                                "type": "string",
+                                "title": "Record Created On",
+                                "format": "date-time",
+                                "description": "Date and time that the record was migrated.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/overriddencreatedon"
+                              },
+                              "cat_requestid": {
+                                "type": "string",
+                                "title": "Request ID",
+                                "description": "",
+                                "maxLength": 100,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_requestid"
+                              },
+                              "cat_requestedoutcome": {
+                                "type": "string",
+                                "title": "Requested outcome",
+                                "maxLength": 4000,
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/cat_requestedoutcome"
+                              },
+                              "cat_requestername": {
+                                "type": "string",
+                                "title": "Requester",
+                                "description": "Who raised it, taken from signed-in context.",
+                                "maxLength": 200,
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/cat_requestername"
+                              },
+                              "cat_requesteremail": {
+                                "type": "string",
+                                "title": "Requester email",
+                                "description": "One confirmed requester work email. Never infer this from a shared maker connection.",
+                                "maxLength": 100,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_requesteremail"
+                              },
+                              "cat_selfbuildoffered": {
+                                "type": "boolean",
+                                "title": "Self-build offered",
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/cat_selfbuildoffered"
+                              },
+                              "cat_sourceconversation": {
+                                "type": "string",
+                                "title": "Source conversation",
+                                "maxLength": 200,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_sourceconversation"
+                              },
+                              "cat_sponsorrole": {
+                                "type": "string",
+                                "title": "Sponsor role",
+                                "maxLength": 200,
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/cat_sponsorrole"
+                              },
+                              "statecode": {
+                                "type": "integer",
+                                "title": "Status",
+                                "format": "int32",
+                                "description": "Status of the Agent Intake Request",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/statecode"
+                              },
+                              "statuscode": {
+                                "type": "integer",
+                                "title": "Status Reason",
+                                "format": "int32",
+                                "description": "Reason for the status of the Agent Intake Request",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/statuscode"
+                              },
+                              "cat_submittedon": {
+                                "type": "string",
+                                "title": "Submitted on",
+                                "format": "date-time",
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/cat_submittedon"
+                              },
+                              "cat_supportroute": {
+                                "type": "integer",
+                                "title": "Support route",
+                                "format": "int32",
+                                "description": "Whether the requester builds it themselves or the CoE supports the build.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_supportroute"
+                              },
+                              "cat_targetusers": {
+                                "type": "string",
+                                "title": "Target users",
+                                "description": "Who the anticipated audience is. Record the count separately in Expected users.",
+                                "maxLength": 400,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cat_targetusers"
+                              },
+                              "timezoneruleversionnumber": {
+                                "type": "integer",
+                                "title": "Time Zone Rule Version Number",
+                                "format": "int32",
+                                "description": "For internal use only.",
+                                "maximum": 2147483647,
+                                "minimum": -1,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/timezoneruleversionnumber"
+                              },
+                              "cat_timeline": {
+                                "type": "integer",
+                                "title": "Timeline",
+                                "format": "int32",
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/cat_timeline"
+                              },
+                              "utcconversiontimezonecode": {
+                                "type": "integer",
+                                "title": "UTC Conversion Time Zone Code",
+                                "format": "int32",
+                                "description": "Time zone code that was in use when the record was created.",
+                                "maximum": 2147483647,
+                                "minimum": -1,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/utcconversiontimezonecode"
+                              },
+                              "versionnumber": {
+                                "type": "integer",
+                                "title": "Version Number",
+                                "format": "int64",
+                                "description": "Version Number",
+                                "maximum": 9223372036854776000,
+                                "minimum": -9223372036854776000,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/versionnumber"
+                              }
+                            },
+                            "required": []
+                          }
+                        }
+                      ],
+                      "settings": {
+                        "runtimeConfiguration": {
+                          "concurrency": {
+                            "runs": 1
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "name": "Process notification",
+                    "type": "scope",
+                    "version": 1,
+                    "position": {
+                      "x": 890,
+                      "y": 120
+                    },
+                    "data": {
+                      "config": {
+                        "description": ""
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "width": 5660,
+                    "height": 426,
+                    "style": {
+                      "width": 5660,
+                      "height": 426
+                    },
+                    "measured": {
+                      "width": 5660,
+                      "height": 426
+                    }
+                  },
+                  {
+                    "id": "connector-24309bda-1510-5cb1-902c-282e0693015a",
+                    "name": "Get request",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 60,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "GetItem",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "cat_agentintakerequests",
+                          "recordId": "@triggerBody()?['cat_agentintakerequestid']"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d",
+                    "name": "Is new current decision",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 390,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "f7673e1a-aef0-522f-8e20-a44196040724",
+                            "name": "True",
+                            "expression": "@and(equals(body('Get_request')?['cat_status'], triggerBody()?['cat_status']), not(equals(body('Get_request')?['cat_lastnotifieddecision'], triggerBody()?['cat_status'])))"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:f7673e1a-aef0-522f-8e20-a44196040724",
+                          "label": "True"
+                        },
+                        {
+                          "id": "else",
+                          "label": "False"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "ifElse-0bae221e-4642-5067-b28e-e315bcebb043",
+                    "name": "Require unambiguous prior attempt",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 720,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "c272de0c-b4a6-5682-8ffe-06984fd881bd",
+                            "name": "True",
+                            "expression": "@not(or(equals(body('Get_request')?['cat_notificationstatus'], 100000001), equals(body('Get_request')?['cat_notificationstatus'], 100000004)))"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:c272de0c-b4a6-5682-8ffe-06984fd881bd",
+                          "label": "True"
+                        },
+                        {
+                          "id": "else",
+                          "label": "False"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "connector-601e16fb-13da-5eee-af8b-4711f6117d7c",
+                    "name": "Record DeliveryNeedsReview",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 1050,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "UpdateRecord",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "cat_agentintakerequests",
+                          "recordId": "@triggerBody()?['cat_agentintakerequestid']",
+                          "item/cat_notificationstatus": 100000004,
+                          "item/cat_notificationerror": "@concat('DeliveryNeedsReview: A previous delivery needs operator review. Do not resend blindly. Run ', trigger()?['clientTrackingId'])"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "end-e576c0f6-bec5-5adf-8ad0-6ce5e5302e80",
+                    "name": "Stop DeliveryNeedsReview",
+                    "type": "end",
+                    "version": 1,
+                    "position": {
+                      "x": 1380,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "runStatus": "Failed",
+                        "errorCode": "DeliveryNeedsReview",
+                        "errorMessage": "A previous delivery needs operator review. Do not resend blindly."
+                      },
+                      "outcomes": [],
+                      "settings": {
+                        "runAfter": {
+                          "connector-601e16fb-13da-5eee-af8b-4711f6117d7c": [
+                            "Succeeded",
+                            "Failed",
+                            "TimedOut",
+                            "Skipped"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "ifElse-590b5db7-f055-52da-bbf3-755e2a1495e2",
+                    "name": "Require requester email",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 1050,
+                      "y": 190
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "c1ea9f70-e25e-5bee-90da-15d434f1cc7e",
+                            "name": "True",
+                            "expression": "@and(equals(length(split(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), '@')), 2), not(empty(first(split(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), '@')))), contains(last(split(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), '@')), '.'), not(contains(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), ';')), not(contains(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), ',')), not(contains(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), ' ')), not(contains(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), '<')), not(contains(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), '>')), not(contains(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), '\r')), not(contains(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), '\n')), not(contains(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), '\t')))"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:c1ea9f70-e25e-5bee-90da-15d434f1cc7e",
+                          "label": "True"
+                        },
+                        {
+                          "id": "else",
+                          "label": "False"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "connector-85b57b69-9f7c-505b-a0e1-0d9f7b9461dc",
+                    "name": "Record InvalidRequesterEmail",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 1380,
+                      "y": 190
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "UpdateRecord",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "cat_agentintakerequests",
+                          "recordId": "@triggerBody()?['cat_agentintakerequestid']",
+                          "item/cat_notificationstatus": 100000003,
+                          "item/cat_notificationerror": "@concat('InvalidRequesterEmail: Provide exactly one valid requester work email on the request. Run ', trigger()?['clientTrackingId'])"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "end-187488c9-ec1b-5851-b336-89fbd8679555",
+                    "name": "Stop InvalidRequesterEmail",
+                    "type": "end",
+                    "version": 1,
+                    "position": {
+                      "x": 1710,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "runStatus": "Failed",
+                        "errorCode": "InvalidRequesterEmail",
+                        "errorMessage": "Provide exactly one valid requester work email on the request."
+                      },
+                      "outcomes": [],
+                      "settings": {
+                        "runAfter": {
+                          "connector-85b57b69-9f7c-505b-a0e1-0d9f7b9461dc": [
+                            "Succeeded",
+                            "Failed",
+                            "TimedOut",
+                            "Skipped"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "connector-2ef5a08e-1181-5c36-b1a2-420d992f2ea8",
+                    "name": "Get configuration",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 1380,
+                      "y": 300
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "ListRecords",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "environmentvariabledefinitions",
+                          "$select": "defaultvalue,schemaname",
+                          "$filter": "schemaname eq 'cat_DecisionNotificationSettings'",
+                          "$expand": "environmentvariabledefinition_environmentvariablevalue($select=value)"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "ifElse-dbff35f7-420e-5d73-9f90-72818e0b20dd",
+                    "name": "Require one configuration",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 1710,
+                      "y": 190
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "7a9e3ed4-5c8e-5378-8b98-8612d478fdde",
+                            "name": "True",
+                            "expression": "@equals(length(body('Get_configuration')?['value']), 1)"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:7a9e3ed4-5c8e-5378-8b98-8612d478fdde",
+                          "label": "True"
+                        },
+                        {
+                          "id": "else",
+                          "label": "False"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "connector-bbeda01d-233a-5443-bd4b-99577e42cc67",
+                    "name": "Record MissingNotificationConfiguration",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 2040,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "UpdateRecord",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "cat_agentintakerequests",
+                          "recordId": "@triggerBody()?['cat_agentintakerequestid']",
+                          "item/cat_notificationstatus": 100000003,
+                          "item/cat_notificationerror": "@concat('MissingNotificationConfiguration: Exactly one decision-notification settings definition is required. Run ', trigger()?['clientTrackingId'])"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "end-301f704a-e12d-5b10-b3a3-9e6d65439b48",
+                    "name": "Stop MissingNotificationConfiguration",
+                    "type": "end",
+                    "version": 1,
+                    "position": {
+                      "x": 2370,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "runStatus": "Failed",
+                        "errorCode": "MissingNotificationConfiguration",
+                        "errorMessage": "Exactly one decision-notification settings definition is required."
+                      },
+                      "outcomes": [],
+                      "settings": {
+                        "runAfter": {
+                          "connector-bbeda01d-233a-5443-bd4b-99577e42cc67": [
+                            "Succeeded",
+                            "Failed",
+                            "TimedOut",
+                            "Skipped"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "ifElse-b815bc99-f258-54b6-9908-8f7e92c418d7",
+                    "name": "Require one current value",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 2040,
+                      "y": 190
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "a297d9be-8a2b-583e-a2dd-5a81ea3ea94a",
+                            "name": "True",
+                            "expression": "@lessOrEquals(length(first(body('Get_configuration')?['value'])?['environmentvariabledefinition_environmentvariablevalue']), 1)"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:a297d9be-8a2b-583e-a2dd-5a81ea3ea94a",
+                          "label": "True"
+                        },
+                        {
+                          "id": "else",
+                          "label": "False"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "connector-69f15252-4bfe-508e-8ef8-f801a909b4b5",
+                    "name": "Record AmbiguousNotificationConfiguration",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 2370,
+                      "y": 190
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "UpdateRecord",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "cat_agentintakerequests",
+                          "recordId": "@triggerBody()?['cat_agentintakerequestid']",
+                          "item/cat_notificationstatus": 100000003,
+                          "item/cat_notificationerror": "@concat('AmbiguousNotificationConfiguration: Keep at most one current settings value; resolve duplicate values before sending. Run ', trigger()?['clientTrackingId'])"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "end-fa8fd0c4-6ccd-5e82-9b41-757a9c90142f",
+                    "name": "Stop AmbiguousNotificationConfiguration",
+                    "type": "end",
+                    "version": 1,
+                    "position": {
+                      "x": 2700,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "runStatus": "Failed",
+                        "errorCode": "AmbiguousNotificationConfiguration",
+                        "errorMessage": "Keep at most one current settings value; resolve duplicate values before sending."
+                      },
+                      "outcomes": [],
+                      "settings": {
+                        "runAfter": {
+                          "connector-69f15252-4bfe-508e-8ef8-f801a909b4b5": [
+                            "Succeeded",
+                            "Failed",
+                            "TimedOut",
+                            "Skipped"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-cdea51c6-d9a0-5ccc-902e-76c7b5a5fbad",
+                    "name": "Parse configuration",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 2370,
+                      "y": 300
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "parseJson",
+                        "operationName": "parseJson",
+                        "displayName": "Parse JSON",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "content": "@json(if(empty(first(body('Get_configuration')?['value'])?['environmentvariabledefinition_environmentvariablevalue']), first(body('Get_configuration')?['value'])?['defaultvalue'], first(first(body('Get_configuration')?['value'])?['environmentvariabledefinition_environmentvariablevalue'])?['value']))",
+                          "schema": {
+                            "type": "object",
+                            "required": [
+                              "coeContact",
+                              "approval",
+                              "rejection"
+                            ],
+                            "properties": {
+                              "coeContact": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "approval": {
+                                "type": "object",
+                                "required": [
+                                  "subject",
+                                  "body",
+                                  "defaultNextStep"
+                                ],
+                                "properties": {
+                                  "subject": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "body": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "defaultNextStep": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                }
+                              },
+                              "rejection": {
+                                "type": "object",
+                                "required": [
+                                  "subject",
+                                  "body",
+                                  "defaultNextStep"
+                                ],
+                                "properties": {
+                                  "subject": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "body": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "defaultNextStep": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-5daff0ef-2a25-59b2-a4b3-195ee11d1e7a",
+                    "name": "Select template",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 2700,
+                      "y": 190
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@if(equals(triggerBody()?['cat_status'], 100000003), body('Parse_configuration')?['approval'], body('Parse_configuration')?['rejection'])"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "ifElse-db810c84-aecf-55a1-9550-7c57c5d8a550",
+                    "name": "Validate template",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 3030,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "808f82c1-cc05-5934-8684-0687d7b14ca9",
+                            "name": "True",
+                            "expression": "@and(contains(outputs('Select_template')?['body'], '{{request_reference}}'), contains(outputs('Select_template')?['body'], '{{request_name}}'), contains(outputs('Select_template')?['body'], '{{decision}}'), or(equals(triggerBody()?['cat_status'], 100000004), contains(outputs('Select_template')?['body'], '{{route}}')), contains(outputs('Select_template')?['body'], '{{next_step}}'), contains(outputs('Select_template')?['body'], '{{comments}}'), contains(outputs('Select_template')?['body'], '{{request_summary}}'), contains(outputs('Select_template')?['body'], '{{coe_contact}}'), not(empty(trim(body('Parse_configuration')?['coeContact']))), not(empty(trim(outputs('Select_template')?['defaultNextStep']))))"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:808f82c1-cc05-5934-8684-0687d7b14ca9",
+                          "label": "True"
+                        },
+                        {
+                          "id": "else",
+                          "label": "False"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "connector-13d6f9a4-0b67-5f93-b0a5-5bfbd80ed70c",
+                    "name": "Record InvalidNotificationTemplate",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 3360,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "UpdateRecord",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "cat_agentintakerequests",
+                          "recordId": "@triggerBody()?['cat_agentintakerequestid']",
+                          "item/cat_notificationstatus": 100000003,
+                          "item/cat_notificationerror": "@concat('InvalidNotificationTemplate: The selected body must retain all documented placeholders, next-step guidance, and CoE contact. Run ', trigger()?['clientTrackingId'])"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "end-c156aacf-f702-5701-9926-b0adc954e5a2",
+                    "name": "Stop InvalidNotificationTemplate",
+                    "type": "end",
+                    "version": 1,
+                    "position": {
+                      "x": 3690,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "runStatus": "Failed",
+                        "errorCode": "InvalidNotificationTemplate",
+                        "errorMessage": "The selected body must retain all documented placeholders, next-step guidance, and CoE contact."
+                      },
+                      "outcomes": [],
+                      "settings": {
+                        "runAfter": {
+                          "connector-13d6f9a4-0b67-5f93-b0a5-5bfbd80ed70c": [
+                            "Succeeded",
+                            "Failed",
+                            "TimedOut",
+                            "Skipped"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-05c32439-5c1c-515e-9445-1d3cd2143727",
+                    "name": "Email body",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 4020,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@replace(replace(replace(replace(replace(replace(replace(replace(replace(outputs('Select_template')?['body'], '{{request_reference}}', replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(coalesce(body('Get_request')?['cat_requestid'], body('Get_request')?['cat_agentintakerequestid']), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0A'), '<br/>')), '{{request_name}}', replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(coalesce(body('Get_request')?['cat_agentname'], 'Agent Front Door request'), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0A'), '<br/>')), '{{decision}}', replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(if(equals(triggerBody()?['cat_status'], 100000003), 'approved', 'rejected'), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0A'), '<br/>')), '{{route}}', replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(if(equals(triggerBody()?['cat_status'], 100000004), '', if(equals(body('Get_request')?['cat_supportroute'], 100000000), 'Self-build', if(equals(body('Get_request')?['cat_supportroute'], 100000001), 'CoE support', 'Confirm the delivery route with the CoE'))), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0A'), '<br/>')), '{{next_step}}', replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(if(or(equals(triggerBody()?['cat_status'], 100000004), empty(trim(coalesce(body('Get_request')?['cat_proposednextactions'], '')))), outputs('Select_template')?['defaultNextStep'], body('Get_request')?['cat_proposednextactions']), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0A'), '<br/>')), '{{comments}}', replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(if(empty(trim(coalesce(body('Get_request')?['cat_decisioncomments'], ''))), 'No additional requester-facing comments were provided.', body('Get_request')?['cat_decisioncomments']), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0A'), '<br/>')), '{{request_summary}}', outputs('Request_summary')), '{{coe_contact}}', replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(body('Parse_configuration')?['coeContact'], '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0A'), '<br/>')), '{{request_link}}', '')"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-e93b6339-3f31-5926-a47a-be740ea13a9c",
+                    "name": "Email subject",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 4350,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(outputs('Select_template')?['subject'], '{{request_reference}}', coalesce(body('Get_request')?['cat_requestid'], body('Get_request')?['cat_agentintakerequestid'])), '{{request_name}}', coalesce(body('Get_request')?['cat_agentname'], 'Agent Front Door request')), '{{decision}}', if(equals(triggerBody()?['cat_status'], 100000003), 'approved', 'rejected')), '{{route}}', if(equals(triggerBody()?['cat_status'], 100000004), '', if(equals(body('Get_request')?['cat_supportroute'], 100000000), 'Self-build', if(equals(body('Get_request')?['cat_supportroute'], 100000001), 'CoE support', 'Confirm the delivery route with the CoE')))), '{{next_step}}', if(or(equals(triggerBody()?['cat_status'], 100000004), empty(trim(coalesce(body('Get_request')?['cat_proposednextactions'], '')))), outputs('Select_template')?['defaultNextStep'], body('Get_request')?['cat_proposednextactions'])), '{{comments}}', if(empty(trim(coalesce(body('Get_request')?['cat_decisioncomments'], ''))), 'No additional requester-facing comments were provided.', body('Get_request')?['cat_decisioncomments'])), '{{request_summary}}', ''), '{{coe_contact}}', body('Parse_configuration')?['coeContact']), decodeUriComponent('%0D'), ''), decodeUriComponent('%0A'), '')"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "connector-ede53fee-61b1-5914-8447-83256c56b1b5",
+                    "name": "Mark sending",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 4680,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "UpdateRecord",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "cat_agentintakerequests",
+                          "recordId": "@triggerBody()?['cat_agentintakerequestid']",
+                          "item/cat_notificationstatus": 100000001,
+                          "item/cat_notificationerror": ""
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "connector-8a6cf751-e269-5bb1-a9fc-e56b42d97d58",
+                    "name": "Send decision email",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 5010,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_office365",
+                        "displayName": "Office 365 Outlook",
+                        "brandColor": "#0078d4",
+                        "operationName": "SendEmailV2",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_office365",
+                        "parameters": {
+                          "emailMessage/To": "@trim(coalesce(body('Get_request')?['cat_requesteremail'], ''))",
+                          "emailMessage/Subject": "@outputs('Email_subject')",
+                          "emailMessage/Body": "@outputs('Email_body')",
+                          "emailMessage/Importance": "Normal"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "connector-f3b9bd7b-183f-5716-98b7-a890c5f00fa8",
+                    "name": "Record sent",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 5340,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "UpdateRecord",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "cat_agentintakerequests",
+                          "recordId": "@triggerBody()?['cat_agentintakerequestid']",
+                          "item/cat_notificationstatus": 100000002,
+                          "item/cat_lastnotifieddecision": "@triggerBody()?['cat_status']",
+                          "item/cat_notificationsenton": "@utcNow()",
+                          "item/cat_notificationerror": ""
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-62cb2ef3-2917-5475-90e9-3afe29876409",
+                    "name": "Request summary items",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 3360,
+                      "y": 190
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@concat(if(empty(if(greater(length(trim(string(coalesce(body('Get_request')?['cat_businessproblem'], '')))), 500), concat(substring(trim(string(coalesce(body('Get_request')?['cat_businessproblem'], ''))), 0, 500), '...'), trim(string(coalesce(body('Get_request')?['cat_businessproblem'], ''))))), '', concat('<li><strong>Business problem:</strong> ', replace(replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(if(greater(length(trim(string(coalesce(body('Get_request')?['cat_businessproblem'], '')))), 500), concat(substring(trim(string(coalesce(body('Get_request')?['cat_businessproblem'], ''))), 0, 500), '...'), trim(string(coalesce(body('Get_request')?['cat_businessproblem'], '')))), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0D'), ''), decodeUriComponent('%0A'), '<br/>'), '</li>')), if(empty(if(greater(length(trim(string(coalesce(body('Get_request')?['cat_requestedoutcome'], '')))), 500), concat(substring(trim(string(coalesce(body('Get_request')?['cat_requestedoutcome'], ''))), 0, 500), '...'), trim(string(coalesce(body('Get_request')?['cat_requestedoutcome'], ''))))), '', concat('<li><strong>Requested outcome:</strong> ', replace(replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(if(greater(length(trim(string(coalesce(body('Get_request')?['cat_requestedoutcome'], '')))), 500), concat(substring(trim(string(coalesce(body('Get_request')?['cat_requestedoutcome'], ''))), 0, 500), '...'), trim(string(coalesce(body('Get_request')?['cat_requestedoutcome'], '')))), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0D'), ''), decodeUriComponent('%0A'), '<br/>'), '</li>')), if(empty(if(greater(length(trim(string(coalesce(body('Get_request')?['cat_targetusers'], '')))), 500), concat(substring(trim(string(coalesce(body('Get_request')?['cat_targetusers'], ''))), 0, 500), '...'), trim(string(coalesce(body('Get_request')?['cat_targetusers'], ''))))), '', concat('<li><strong>Target users:</strong> ', replace(replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(if(greater(length(trim(string(coalesce(body('Get_request')?['cat_targetusers'], '')))), 500), concat(substring(trim(string(coalesce(body('Get_request')?['cat_targetusers'], ''))), 0, 500), '...'), trim(string(coalesce(body('Get_request')?['cat_targetusers'], '')))), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0D'), ''), decodeUriComponent('%0A'), '<br/>'), '</li>')), if(empty(if(greater(length(trim(string(coalesce(body('Get_request')?['cat_expectedusers'], '')))), 500), concat(substring(trim(string(coalesce(body('Get_request')?['cat_expectedusers'], ''))), 0, 500), '...'), trim(string(coalesce(body('Get_request')?['cat_expectedusers'], ''))))), '', concat('<li><strong>Expected users:</strong> ', replace(replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(if(greater(length(trim(string(coalesce(body('Get_request')?['cat_expectedusers'], '')))), 500), concat(substring(trim(string(coalesce(body('Get_request')?['cat_expectedusers'], ''))), 0, 500), '...'), trim(string(coalesce(body('Get_request')?['cat_expectedusers'], '')))), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0D'), ''), decodeUriComponent('%0A'), '<br/>'), '</li>')), if(empty(body('Get_request')?['cat_submittedon']), '', concat('<li><strong>Submitted:</strong> ', formatDateTime(body('Get_request')?['cat_submittedon'], 'd MMMM yyyy'), ' (UTC)</li>')))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-ae3296ae-9d24-5cb1-9f21-703823599b5a",
+                    "name": "Request summary",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 3690,
+                      "y": 190
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@if(empty(outputs('Request_summary_items')), '<p><strong>Request summary:</strong> No additional summary details were recorded.</p>', concat('<p><strong>Request summary</strong></p><ul>', outputs('Request_summary_items'), '</ul>'))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-d6d9ed1b-7f5f-504c-9a69-ad846777d32a",
+                    "name": "Skip duplicate or superseded decision",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 720,
+                      "y": 190
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "No email: this decision was already notified or is no longer current."
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+                    "name": "Handle failure",
+                    "type": "scope",
+                    "version": 1,
+                    "position": {
+                      "x": 6620,
+                      "y": 120
+                    },
+                    "data": {
+                      "config": {
+                        "description": ""
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00": [
+                            "Failed",
+                            "TimedOut"
+                          ]
+                        }
+                      }
+                    },
+                    "width": 1040,
+                    "height": 206,
+                    "style": {
+                      "width": 1040,
+                      "height": 206
+                    },
+                    "measured": {
+                      "width": 1040,
+                      "height": 206
+                    }
+                  },
+                  {
+                    "id": "connector-6c1d458f-d19f-5678-a7ec-db74781c82cc",
+                    "name": "Get failure state",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 60,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "GetItem",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "cat_agentintakerequests",
+                          "recordId": "@triggerBody()?['cat_agentintakerequestid']"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "connector-5fe163f3-8482-5f33-983c-9fabcd0d837b",
+                    "name": "Record failure",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 390,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "UpdateRecord",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "cat_agentintakerequests",
+                          "recordId": "@triggerBody()?['cat_agentintakerequestid']",
+                          "item/cat_notificationstatus": "@if(or(equals(body('Get_failure_state')?['cat_notificationstatus'], 100000001), equals(body('Get_failure_state')?['cat_notificationstatus'], 100000004)), 100000004, 100000003)",
+                          "item/cat_notificationerror": "@concat('Decision notification failed. Run ', trigger()?['clientTrackingId'], '. Inspect run history. If delivery needs review, check sender Sent Items and recipient delivery before manually retrying; never resend blindly.')"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "parentId": "scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "end-dce197d4-d01c-59f6-931f-490e1aacfe25",
+                    "name": "Fail run",
+                    "type": "end",
+                    "version": 1,
+                    "position": {
+                      "x": 720,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "runStatus": "Failed",
+                        "errorCode": "DecisionNotificationFailed",
+                        "errorMessage": "The decision notification did not complete. Check the request notification status and flow run history."
+                      },
+                      "outcomes": [],
+                      "settings": {
+                        "runAfter": {
+                          "connector-5fe163f3-8482-5f33-983c-9fabcd0d837b": [
+                            "Succeeded",
+                            "Failed",
+                            "TimedOut",
+                            "Skipped"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+                    "measured": {
+                      "width": 260,
+                      "height": 66
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-4716c7e4-f1db-5cb4-b9ea-0df0d1d992d8-scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "source": "start-4716c7e4-f1db-5cb4-b9ea-0df0d1d992d8",
+                    "target": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "targetHandle": "external-input"
+                  },
+                  {
+                    "id": "edge-scope-abc18b48-b281-5b65-af2d-94b23e7f9c00-connector-24309bda-1510-5cb1-902c-282e0693015a",
+                    "source": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "target": "connector-24309bda-1510-5cb1-902c-282e0693015a",
+                    "sourceHandle": "internal-source"
+                  },
+                  {
+                    "id": "edge-connector-24309bda-1510-5cb1-902c-282e0693015a-ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d",
+                    "source": "connector-24309bda-1510-5cb1-902c-282e0693015a",
+                    "target": "ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d"
+                  },
+                  {
+                    "id": "edge-ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d-ifElse-0bae221e-4642-5067-b28e-e315bcebb043",
+                    "source": "ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d",
+                    "target": "ifElse-0bae221e-4642-5067-b28e-e315bcebb043",
+                    "sourceHandle": "condition:f7673e1a-aef0-522f-8e20-a44196040724"
+                  },
+                  {
+                    "id": "edge-ifElse-0bae221e-4642-5067-b28e-e315bcebb043-connector-601e16fb-13da-5eee-af8b-4711f6117d7c",
+                    "source": "ifElse-0bae221e-4642-5067-b28e-e315bcebb043",
+                    "target": "connector-601e16fb-13da-5eee-af8b-4711f6117d7c",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-connector-601e16fb-13da-5eee-af8b-4711f6117d7c-end-e576c0f6-bec5-5adf-8ad0-6ce5e5302e80",
+                    "source": "connector-601e16fb-13da-5eee-af8b-4711f6117d7c",
+                    "target": "end-e576c0f6-bec5-5adf-8ad0-6ce5e5302e80"
+                  },
+                  {
+                    "id": "edge-ifElse-0bae221e-4642-5067-b28e-e315bcebb043-ifElse-590b5db7-f055-52da-bbf3-755e2a1495e2",
+                    "source": "ifElse-0bae221e-4642-5067-b28e-e315bcebb043",
+                    "target": "ifElse-590b5db7-f055-52da-bbf3-755e2a1495e2"
+                  },
+                  {
+                    "id": "edge-ifElse-590b5db7-f055-52da-bbf3-755e2a1495e2-connector-85b57b69-9f7c-505b-a0e1-0d9f7b9461dc",
+                    "source": "ifElse-590b5db7-f055-52da-bbf3-755e2a1495e2",
+                    "target": "connector-85b57b69-9f7c-505b-a0e1-0d9f7b9461dc",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-connector-85b57b69-9f7c-505b-a0e1-0d9f7b9461dc-end-187488c9-ec1b-5851-b336-89fbd8679555",
+                    "source": "connector-85b57b69-9f7c-505b-a0e1-0d9f7b9461dc",
+                    "target": "end-187488c9-ec1b-5851-b336-89fbd8679555"
+                  },
+                  {
+                    "id": "edge-ifElse-590b5db7-f055-52da-bbf3-755e2a1495e2-connector-2ef5a08e-1181-5c36-b1a2-420d992f2ea8",
+                    "source": "ifElse-590b5db7-f055-52da-bbf3-755e2a1495e2",
+                    "target": "connector-2ef5a08e-1181-5c36-b1a2-420d992f2ea8"
+                  },
+                  {
+                    "id": "edge-connector-2ef5a08e-1181-5c36-b1a2-420d992f2ea8-ifElse-dbff35f7-420e-5d73-9f90-72818e0b20dd",
+                    "source": "connector-2ef5a08e-1181-5c36-b1a2-420d992f2ea8",
+                    "target": "ifElse-dbff35f7-420e-5d73-9f90-72818e0b20dd"
+                  },
+                  {
+                    "id": "edge-ifElse-dbff35f7-420e-5d73-9f90-72818e0b20dd-connector-bbeda01d-233a-5443-bd4b-99577e42cc67",
+                    "source": "ifElse-dbff35f7-420e-5d73-9f90-72818e0b20dd",
+                    "target": "connector-bbeda01d-233a-5443-bd4b-99577e42cc67",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-connector-bbeda01d-233a-5443-bd4b-99577e42cc67-end-301f704a-e12d-5b10-b3a3-9e6d65439b48",
+                    "source": "connector-bbeda01d-233a-5443-bd4b-99577e42cc67",
+                    "target": "end-301f704a-e12d-5b10-b3a3-9e6d65439b48"
+                  },
+                  {
+                    "id": "edge-ifElse-dbff35f7-420e-5d73-9f90-72818e0b20dd-ifElse-b815bc99-f258-54b6-9908-8f7e92c418d7",
+                    "source": "ifElse-dbff35f7-420e-5d73-9f90-72818e0b20dd",
+                    "target": "ifElse-b815bc99-f258-54b6-9908-8f7e92c418d7"
+                  },
+                  {
+                    "id": "edge-ifElse-b815bc99-f258-54b6-9908-8f7e92c418d7-connector-69f15252-4bfe-508e-8ef8-f801a909b4b5",
+                    "source": "ifElse-b815bc99-f258-54b6-9908-8f7e92c418d7",
+                    "target": "connector-69f15252-4bfe-508e-8ef8-f801a909b4b5",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-connector-69f15252-4bfe-508e-8ef8-f801a909b4b5-end-fa8fd0c4-6ccd-5e82-9b41-757a9c90142f",
+                    "source": "connector-69f15252-4bfe-508e-8ef8-f801a909b4b5",
+                    "target": "end-fa8fd0c4-6ccd-5e82-9b41-757a9c90142f"
+                  },
+                  {
+                    "id": "edge-ifElse-b815bc99-f258-54b6-9908-8f7e92c418d7-builtinFunction-cdea51c6-d9a0-5ccc-902e-76c7b5a5fbad",
+                    "source": "ifElse-b815bc99-f258-54b6-9908-8f7e92c418d7",
+                    "target": "builtinFunction-cdea51c6-d9a0-5ccc-902e-76c7b5a5fbad"
+                  },
+                  {
+                    "id": "edge-builtinFunction-cdea51c6-d9a0-5ccc-902e-76c7b5a5fbad-builtinFunction-5daff0ef-2a25-59b2-a4b3-195ee11d1e7a",
+                    "source": "builtinFunction-cdea51c6-d9a0-5ccc-902e-76c7b5a5fbad",
+                    "target": "builtinFunction-5daff0ef-2a25-59b2-a4b3-195ee11d1e7a"
+                  },
+                  {
+                    "id": "edge-builtinFunction-5daff0ef-2a25-59b2-a4b3-195ee11d1e7a-ifElse-db810c84-aecf-55a1-9550-7c57c5d8a550",
+                    "source": "builtinFunction-5daff0ef-2a25-59b2-a4b3-195ee11d1e7a",
+                    "target": "ifElse-db810c84-aecf-55a1-9550-7c57c5d8a550"
+                  },
+                  {
+                    "id": "edge-ifElse-db810c84-aecf-55a1-9550-7c57c5d8a550-connector-13d6f9a4-0b67-5f93-b0a5-5bfbd80ed70c",
+                    "source": "ifElse-db810c84-aecf-55a1-9550-7c57c5d8a550",
+                    "target": "connector-13d6f9a4-0b67-5f93-b0a5-5bfbd80ed70c",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-connector-13d6f9a4-0b67-5f93-b0a5-5bfbd80ed70c-end-c156aacf-f702-5701-9926-b0adc954e5a2",
+                    "source": "connector-13d6f9a4-0b67-5f93-b0a5-5bfbd80ed70c",
+                    "target": "end-c156aacf-f702-5701-9926-b0adc954e5a2"
+                  },
+                  {
+                    "id": "edge-builtinFunction-ae3296ae-9d24-5cb1-9f21-703823599b5a-builtinFunction-05c32439-5c1c-515e-9445-1d3cd2143727",
+                    "source": "builtinFunction-ae3296ae-9d24-5cb1-9f21-703823599b5a",
+                    "target": "builtinFunction-05c32439-5c1c-515e-9445-1d3cd2143727"
+                  },
+                  {
+                    "id": "edge-builtinFunction-05c32439-5c1c-515e-9445-1d3cd2143727-builtinFunction-e93b6339-3f31-5926-a47a-be740ea13a9c",
+                    "source": "builtinFunction-05c32439-5c1c-515e-9445-1d3cd2143727",
+                    "target": "builtinFunction-e93b6339-3f31-5926-a47a-be740ea13a9c"
+                  },
+                  {
+                    "id": "edge-builtinFunction-e93b6339-3f31-5926-a47a-be740ea13a9c-connector-ede53fee-61b1-5914-8447-83256c56b1b5",
+                    "source": "builtinFunction-e93b6339-3f31-5926-a47a-be740ea13a9c",
+                    "target": "connector-ede53fee-61b1-5914-8447-83256c56b1b5"
+                  },
+                  {
+                    "id": "edge-connector-ede53fee-61b1-5914-8447-83256c56b1b5-connector-8a6cf751-e269-5bb1-a9fc-e56b42d97d58",
+                    "source": "connector-ede53fee-61b1-5914-8447-83256c56b1b5",
+                    "target": "connector-8a6cf751-e269-5bb1-a9fc-e56b42d97d58"
+                  },
+                  {
+                    "id": "edge-connector-8a6cf751-e269-5bb1-a9fc-e56b42d97d58-connector-f3b9bd7b-183f-5716-98b7-a890c5f00fa8",
+                    "source": "connector-8a6cf751-e269-5bb1-a9fc-e56b42d97d58",
+                    "target": "connector-f3b9bd7b-183f-5716-98b7-a890c5f00fa8"
+                  },
+                  {
+                    "id": "edge-ifElse-db810c84-aecf-55a1-9550-7c57c5d8a550-builtinFunction-62cb2ef3-2917-5475-90e9-3afe29876409",
+                    "source": "ifElse-db810c84-aecf-55a1-9550-7c57c5d8a550",
+                    "target": "builtinFunction-62cb2ef3-2917-5475-90e9-3afe29876409"
+                  },
+                  {
+                    "id": "edge-builtinFunction-62cb2ef3-2917-5475-90e9-3afe29876409-builtinFunction-ae3296ae-9d24-5cb1-9f21-703823599b5a",
+                    "source": "builtinFunction-62cb2ef3-2917-5475-90e9-3afe29876409",
+                    "target": "builtinFunction-ae3296ae-9d24-5cb1-9f21-703823599b5a"
+                  },
+                  {
+                    "id": "edge-ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d-builtinFunction-d6d9ed1b-7f5f-504c-9a69-ad846777d32a",
+                    "source": "ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d",
+                    "target": "builtinFunction-d6d9ed1b-7f5f-504c-9a69-ad846777d32a",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d-scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "source": "ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d",
+                    "target": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-scope-abc18b48-b281-5b65-af2d-94b23e7f9c00-scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+                    "source": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+                    "target": "scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+                    "sourceHandle": "external-output",
+                    "targetHandle": "external-input"
+                  },
+                  {
+                    "id": "edge-scope-a058d416-427b-52c1-8f83-0bf5d987d412-connector-6c1d458f-d19f-5678-a7ec-db74781c82cc",
+                    "source": "scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+                    "target": "connector-6c1d458f-d19f-5678-a7ec-db74781c82cc",
+                    "sourceHandle": "internal-source"
+                  },
+                  {
+                    "id": "edge-connector-6c1d458f-d19f-5678-a7ec-db74781c82cc-connector-5fe163f3-8482-5f33-983c-9fabcd0d837b",
+                    "source": "connector-6c1d458f-d19f-5678-a7ec-db74781c82cc",
+                    "target": "connector-5fe163f3-8482-5f33-983c-9fabcd0d837b"
+                  },
+                  {
+                    "id": "edge-connector-5fe163f3-8482-5f33-983c-9fabcd0d837b-end-dce197d4-d01c-59f6-931f-490e1aacfe25",
+                    "source": "connector-5fe163f3-8482-5f33-983c-9fabcd0d837b",
+                    "target": "end-dce197d4-d01c-59f6-931f-490e1aacfe25"
+                  },
+                  {
+                    "id": "edge-end-dce197d4-d01c-59f6-931f-490e1aacfe25-scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+                    "source": "end-dce197d4-d01c-59f6-931f-490e1aacfe25",
+                    "target": "scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+                    "targetHandle": "internal-target"
+                  }
+                ],
+                "connectionReferences": {
+                  "shared_commondataserviceforapps": {
+                    "api": {
+                      "name": "shared_commondataserviceforapps"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "cat_decisionnotifications_dataverse"
+                    },
+                    "runtimeSource": "embedded"
+                  },
+                  "shared_office365": {
+                    "api": {
+                      "name": "shared_office365"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "cat_decisionnotifications_outlook"
+                    },
+                    "runtimeSource": "embedded"
+                  }
+                }
+              },
+              "nodeActionMapping": {
+                "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00": [
+                  "Process_notification"
+                ],
+                "connector-24309bda-1510-5cb1-902c-282e0693015a": [
+                  "Get_request"
+                ],
+                "ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d": [
+                  "Is_new_current_decision"
+                ],
+                "ifElse-0bae221e-4642-5067-b28e-e315bcebb043": [
+                  "Require_unambiguous_prior_attempt"
+                ],
+                "connector-601e16fb-13da-5eee-af8b-4711f6117d7c": [
+                  "Record_DeliveryNeedsReview"
+                ],
+                "end-e576c0f6-bec5-5adf-8ad0-6ce5e5302e80": [
+                  "Stop_DeliveryNeedsReview"
+                ],
+                "ifElse-590b5db7-f055-52da-bbf3-755e2a1495e2": [
+                  "Require_requester_email"
+                ],
+                "connector-85b57b69-9f7c-505b-a0e1-0d9f7b9461dc": [
+                  "Record_InvalidRequesterEmail"
+                ],
+                "end-187488c9-ec1b-5851-b336-89fbd8679555": [
+                  "Stop_InvalidRequesterEmail"
+                ],
+                "connector-2ef5a08e-1181-5c36-b1a2-420d992f2ea8": [
+                  "Get_configuration"
+                ],
+                "ifElse-dbff35f7-420e-5d73-9f90-72818e0b20dd": [
+                  "Require_one_configuration"
+                ],
+                "connector-bbeda01d-233a-5443-bd4b-99577e42cc67": [
+                  "Record_MissingNotificationConfiguration"
+                ],
+                "end-301f704a-e12d-5b10-b3a3-9e6d65439b48": [
+                  "Stop_MissingNotificationConfiguration"
+                ],
+                "ifElse-b815bc99-f258-54b6-9908-8f7e92c418d7": [
+                  "Require_one_current_value"
+                ],
+                "connector-69f15252-4bfe-508e-8ef8-f801a909b4b5": [
+                  "Record_AmbiguousNotificationConfiguration"
+                ],
+                "end-fa8fd0c4-6ccd-5e82-9b41-757a9c90142f": [
+                  "Stop_AmbiguousNotificationConfiguration"
+                ],
+                "builtinFunction-cdea51c6-d9a0-5ccc-902e-76c7b5a5fbad": [
+                  "Parse_configuration"
+                ],
+                "builtinFunction-5daff0ef-2a25-59b2-a4b3-195ee11d1e7a": [
+                  "Select_template"
+                ],
+                "ifElse-db810c84-aecf-55a1-9550-7c57c5d8a550": [
+                  "Validate_template"
+                ],
+                "connector-13d6f9a4-0b67-5f93-b0a5-5bfbd80ed70c": [
+                  "Record_InvalidNotificationTemplate"
+                ],
+                "end-c156aacf-f702-5701-9926-b0adc954e5a2": [
+                  "Stop_InvalidNotificationTemplate"
+                ],
+                "builtinFunction-05c32439-5c1c-515e-9445-1d3cd2143727": [
+                  "Email_body"
+                ],
+                "builtinFunction-e93b6339-3f31-5926-a47a-be740ea13a9c": [
+                  "Email_subject"
+                ],
+                "connector-ede53fee-61b1-5914-8447-83256c56b1b5": [
+                  "Mark_sending"
+                ],
+                "connector-8a6cf751-e269-5bb1-a9fc-e56b42d97d58": [
+                  "Send_decision_email"
+                ],
+                "connector-f3b9bd7b-183f-5716-98b7-a890c5f00fa8": [
+                  "Record_sent"
+                ],
+                "builtinFunction-62cb2ef3-2917-5475-90e9-3afe29876409": [
+                  "Request_summary_items"
+                ],
+                "builtinFunction-ae3296ae-9d24-5cb1-9f21-703823599b5a": [
+                  "Request_summary"
+                ],
+                "builtinFunction-d6d9ed1b-7f5f-504c-9a69-ad846777d32a": [
+                  "Skip_duplicate_or_superseded_decision"
+                ],
+                "scope-a058d416-427b-52c1-8f83-0bf5d987d412": [
+                  "Handle_failure"
+                ],
+                "connector-6c1d458f-d19f-5678-a7ec-db74781c82cc": [
+                  "Get_failure_state"
+                ],
+                "connector-5fe163f3-8482-5f33-983c-9fabcd0d837b": [
+                  "Record_failure"
+                ],
+                "end-dce197d4-d01c-59f6-931f-490e1aacfe25": [
+                  "Fail_run"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "actions": {
+        "Process_notification": {
+          "type": "Scope",
+          "actions": {
+            "Get_request": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "GetItem",
+                  "connectionName": "shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cat_agentintakerequests",
+                  "recordId": "@triggerBody()?['cat_agentintakerequestid']"
+                }
+              },
+              "runAfter": {},
+              "metadata": {
+                "description": "Get request",
+                "nodeId": "connector-24309bda-1510-5cb1-902c-282e0693015a"
+              }
+            },
+            "Is_new_current_decision": {
+              "type": "If",
+              "runAfter": {
+                "Get_request": [
+                  "Succeeded"
+                ]
+              },
+              "expression": "@and(equals(body('Get_request')?['cat_status'], triggerBody()?['cat_status']), not(equals(body('Get_request')?['cat_lastnotifieddecision'], triggerBody()?['cat_status'])))",
+              "actions": {
+                "Require_unambiguous_prior_attempt": {
+                  "type": "If",
+                  "expression": "@not(or(equals(body('Get_request')?['cat_notificationstatus'], 100000001), equals(body('Get_request')?['cat_notificationstatus'], 100000004)))",
+                  "runAfter": {},
+                  "actions": {},
+                  "else": {
+                    "actions": {
+                      "Record_DeliveryNeedsReview": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                            "operationId": "UpdateRecord",
+                            "connectionName": "shared_commondataserviceforapps"
+                          },
+                          "parameters": {
+                            "entityName": "cat_agentintakerequests",
+                            "recordId": "@triggerBody()?['cat_agentintakerequestid']",
+                            "item/cat_notificationstatus": 100000004,
+                            "item/cat_notificationerror": "@concat('DeliveryNeedsReview: A previous delivery needs operator review. Do not resend blindly. Run ', trigger()?['clientTrackingId'])"
+                          }
+                        },
+                        "runAfter": {},
+                        "metadata": {
+                          "description": "Record DeliveryNeedsReview",
+                          "nodeId": "connector-601e16fb-13da-5eee-af8b-4711f6117d7c"
+                        }
+                      },
+                      "Stop_DeliveryNeedsReview": {
+                        "type": "Terminate",
+                        "inputs": {
+                          "runStatus": "Failed",
+                          "runError": {
+                            "code": "DeliveryNeedsReview",
+                            "message": "A previous delivery needs operator review. Do not resend blindly."
+                          }
+                        },
+                        "runAfter": {
+                          "Record_DeliveryNeedsReview": [
+                            "Succeeded",
+                            "Failed",
+                            "TimedOut",
+                            "Skipped"
+                          ]
+                        },
+                        "metadata": {
+                          "description": "Stop DeliveryNeedsReview",
+                          "nodeId": "end-e576c0f6-bec5-5adf-8ad0-6ce5e5302e80"
+                        }
+                      }
+                    }
+                  },
+                  "metadata": {
+                    "description": "Require unambiguous prior attempt",
+                    "nodeId": "ifElse-0bae221e-4642-5067-b28e-e315bcebb043"
+                  }
+                },
+                "Require_requester_email": {
+                  "type": "If",
+                  "expression": "@and(equals(length(split(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), '@')), 2), not(empty(first(split(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), '@')))), contains(last(split(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), '@')), '.'), not(contains(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), ';')), not(contains(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), ',')), not(contains(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), ' ')), not(contains(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), '<')), not(contains(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), '>')), not(contains(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), '\r')), not(contains(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), '\n')), not(contains(trim(coalesce(body('Get_request')?['cat_requesteremail'], '')), '\t')))",
+                  "runAfter": {
+                    "Require_unambiguous_prior_attempt": [
+                      "Succeeded"
+                    ]
+                  },
+                  "actions": {},
+                  "else": {
+                    "actions": {
+                      "Record_InvalidRequesterEmail": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                            "operationId": "UpdateRecord",
+                            "connectionName": "shared_commondataserviceforapps"
+                          },
+                          "parameters": {
+                            "entityName": "cat_agentintakerequests",
+                            "recordId": "@triggerBody()?['cat_agentintakerequestid']",
+                            "item/cat_notificationstatus": 100000003,
+                            "item/cat_notificationerror": "@concat('InvalidRequesterEmail: Provide exactly one valid requester work email on the request. Run ', trigger()?['clientTrackingId'])"
+                          }
+                        },
+                        "runAfter": {},
+                        "metadata": {
+                          "description": "Record InvalidRequesterEmail",
+                          "nodeId": "connector-85b57b69-9f7c-505b-a0e1-0d9f7b9461dc"
+                        }
+                      },
+                      "Stop_InvalidRequesterEmail": {
+                        "type": "Terminate",
+                        "inputs": {
+                          "runStatus": "Failed",
+                          "runError": {
+                            "code": "InvalidRequesterEmail",
+                            "message": "Provide exactly one valid requester work email on the request."
+                          }
+                        },
+                        "runAfter": {
+                          "Record_InvalidRequesterEmail": [
+                            "Succeeded",
+                            "Failed",
+                            "TimedOut",
+                            "Skipped"
+                          ]
+                        },
+                        "metadata": {
+                          "description": "Stop InvalidRequesterEmail",
+                          "nodeId": "end-187488c9-ec1b-5851-b336-89fbd8679555"
+                        }
+                      }
+                    }
+                  },
+                  "metadata": {
+                    "description": "Require requester email",
+                    "nodeId": "ifElse-590b5db7-f055-52da-bbf3-755e2a1495e2"
+                  }
+                },
+                "Get_configuration": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "ListRecords",
+                      "connectionName": "shared_commondataserviceforapps"
+                    },
+                    "parameters": {
+                      "entityName": "environmentvariabledefinitions",
+                      "$select": "defaultvalue,schemaname",
+                      "$filter": "schemaname eq 'cat_DecisionNotificationSettings'",
+                      "$expand": "environmentvariabledefinition_environmentvariablevalue($select=value)"
+                    }
+                  },
+                  "runAfter": {
+                    "Require_requester_email": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "description": "Get configuration",
+                    "nodeId": "connector-2ef5a08e-1181-5c36-b1a2-420d992f2ea8"
+                  }
+                },
+                "Require_one_configuration": {
+                  "type": "If",
+                  "expression": "@equals(length(body('Get_configuration')?['value']), 1)",
+                  "runAfter": {
+                    "Get_configuration": [
+                      "Succeeded"
+                    ]
+                  },
+                  "actions": {},
+                  "else": {
+                    "actions": {
+                      "Record_MissingNotificationConfiguration": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                            "operationId": "UpdateRecord",
+                            "connectionName": "shared_commondataserviceforapps"
+                          },
+                          "parameters": {
+                            "entityName": "cat_agentintakerequests",
+                            "recordId": "@triggerBody()?['cat_agentintakerequestid']",
+                            "item/cat_notificationstatus": 100000003,
+                            "item/cat_notificationerror": "@concat('MissingNotificationConfiguration: Exactly one decision-notification settings definition is required. Run ', trigger()?['clientTrackingId'])"
+                          }
+                        },
+                        "runAfter": {},
+                        "metadata": {
+                          "description": "Record MissingNotificationConfiguration",
+                          "nodeId": "connector-bbeda01d-233a-5443-bd4b-99577e42cc67"
+                        }
+                      },
+                      "Stop_MissingNotificationConfiguration": {
+                        "type": "Terminate",
+                        "inputs": {
+                          "runStatus": "Failed",
+                          "runError": {
+                            "code": "MissingNotificationConfiguration",
+                            "message": "Exactly one decision-notification settings definition is required."
+                          }
+                        },
+                        "runAfter": {
+                          "Record_MissingNotificationConfiguration": [
+                            "Succeeded",
+                            "Failed",
+                            "TimedOut",
+                            "Skipped"
+                          ]
+                        },
+                        "metadata": {
+                          "description": "Stop MissingNotificationConfiguration",
+                          "nodeId": "end-301f704a-e12d-5b10-b3a3-9e6d65439b48"
+                        }
+                      }
+                    }
+                  },
+                  "metadata": {
+                    "description": "Require one configuration",
+                    "nodeId": "ifElse-dbff35f7-420e-5d73-9f90-72818e0b20dd"
+                  }
+                },
+                "Require_one_current_value": {
+                  "type": "If",
+                  "expression": "@lessOrEquals(length(first(body('Get_configuration')?['value'])?['environmentvariabledefinition_environmentvariablevalue']), 1)",
+                  "runAfter": {
+                    "Require_one_configuration": [
+                      "Succeeded"
+                    ]
+                  },
+                  "actions": {},
+                  "else": {
+                    "actions": {
+                      "Record_AmbiguousNotificationConfiguration": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                            "operationId": "UpdateRecord",
+                            "connectionName": "shared_commondataserviceforapps"
+                          },
+                          "parameters": {
+                            "entityName": "cat_agentintakerequests",
+                            "recordId": "@triggerBody()?['cat_agentintakerequestid']",
+                            "item/cat_notificationstatus": 100000003,
+                            "item/cat_notificationerror": "@concat('AmbiguousNotificationConfiguration: Keep at most one current settings value; resolve duplicate values before sending. Run ', trigger()?['clientTrackingId'])"
+                          }
+                        },
+                        "runAfter": {},
+                        "metadata": {
+                          "description": "Record AmbiguousNotificationConfiguration",
+                          "nodeId": "connector-69f15252-4bfe-508e-8ef8-f801a909b4b5"
+                        }
+                      },
+                      "Stop_AmbiguousNotificationConfiguration": {
+                        "type": "Terminate",
+                        "inputs": {
+                          "runStatus": "Failed",
+                          "runError": {
+                            "code": "AmbiguousNotificationConfiguration",
+                            "message": "Keep at most one current settings value; resolve duplicate values before sending."
+                          }
+                        },
+                        "runAfter": {
+                          "Record_AmbiguousNotificationConfiguration": [
+                            "Succeeded",
+                            "Failed",
+                            "TimedOut",
+                            "Skipped"
+                          ]
+                        },
+                        "metadata": {
+                          "description": "Stop AmbiguousNotificationConfiguration",
+                          "nodeId": "end-fa8fd0c4-6ccd-5e82-9b41-757a9c90142f"
+                        }
+                      }
+                    }
+                  },
+                  "metadata": {
+                    "description": "Require one current value",
+                    "nodeId": "ifElse-b815bc99-f258-54b6-9908-8f7e92c418d7"
+                  }
+                },
+                "Parse_configuration": {
+                  "type": "ParseJson",
+                  "runAfter": {
+                    "Require_one_current_value": [
+                      "Succeeded"
+                    ]
+                  },
+                  "inputs": {
+                    "content": "@json(if(empty(first(body('Get_configuration')?['value'])?['environmentvariabledefinition_environmentvariablevalue']), first(body('Get_configuration')?['value'])?['defaultvalue'], first(first(body('Get_configuration')?['value'])?['environmentvariabledefinition_environmentvariablevalue'])?['value']))",
+                    "schema": {
+                      "type": "object",
+                      "required": [
+                        "coeContact",
+                        "approval",
+                        "rejection"
+                      ],
+                      "properties": {
+                        "coeContact": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "approval": {
+                          "type": "object",
+                          "required": [
+                            "subject",
+                            "body",
+                            "defaultNextStep"
+                          ],
+                          "properties": {
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "body": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "defaultNextStep": {
+                              "type": "string",
+                              "minLength": 1
+                            }
+                          }
+                        },
+                        "rejection": {
+                          "type": "object",
+                          "required": [
+                            "subject",
+                            "body",
+                            "defaultNextStep"
+                          ],
+                          "properties": {
+                            "subject": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "body": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "defaultNextStep": {
+                              "type": "string",
+                              "minLength": 1
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "metadata": {
+                    "description": "Parse configuration",
+                    "nodeId": "builtinFunction-cdea51c6-d9a0-5ccc-902e-76c7b5a5fbad"
+                  }
+                },
+                "Select_template": {
+                  "type": "Compose",
+                  "inputs": "@if(equals(triggerBody()?['cat_status'], 100000003), body('Parse_configuration')?['approval'], body('Parse_configuration')?['rejection'])",
+                  "runAfter": {
+                    "Parse_configuration": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "description": "Select template",
+                    "nodeId": "builtinFunction-5daff0ef-2a25-59b2-a4b3-195ee11d1e7a"
+                  }
+                },
+                "Validate_template": {
+                  "type": "If",
+                  "expression": "@and(contains(outputs('Select_template')?['body'], '{{request_reference}}'), contains(outputs('Select_template')?['body'], '{{request_name}}'), contains(outputs('Select_template')?['body'], '{{decision}}'), or(equals(triggerBody()?['cat_status'], 100000004), contains(outputs('Select_template')?['body'], '{{route}}')), contains(outputs('Select_template')?['body'], '{{next_step}}'), contains(outputs('Select_template')?['body'], '{{comments}}'), contains(outputs('Select_template')?['body'], '{{request_summary}}'), contains(outputs('Select_template')?['body'], '{{coe_contact}}'), not(empty(trim(body('Parse_configuration')?['coeContact']))), not(empty(trim(outputs('Select_template')?['defaultNextStep']))))",
+                  "runAfter": {
+                    "Select_template": [
+                      "Succeeded"
+                    ]
+                  },
+                  "actions": {},
+                  "else": {
+                    "actions": {
+                      "Record_InvalidNotificationTemplate": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                            "operationId": "UpdateRecord",
+                            "connectionName": "shared_commondataserviceforapps"
+                          },
+                          "parameters": {
+                            "entityName": "cat_agentintakerequests",
+                            "recordId": "@triggerBody()?['cat_agentintakerequestid']",
+                            "item/cat_notificationstatus": 100000003,
+                            "item/cat_notificationerror": "@concat('InvalidNotificationTemplate: The selected body must retain all documented placeholders, next-step guidance, and CoE contact. Run ', trigger()?['clientTrackingId'])"
+                          }
+                        },
+                        "runAfter": {},
+                        "metadata": {
+                          "description": "Record InvalidNotificationTemplate",
+                          "nodeId": "connector-13d6f9a4-0b67-5f93-b0a5-5bfbd80ed70c"
+                        }
+                      },
+                      "Stop_InvalidNotificationTemplate": {
+                        "type": "Terminate",
+                        "inputs": {
+                          "runStatus": "Failed",
+                          "runError": {
+                            "code": "InvalidNotificationTemplate",
+                            "message": "The selected body must retain all documented placeholders, next-step guidance, and CoE contact."
+                          }
+                        },
+                        "runAfter": {
+                          "Record_InvalidNotificationTemplate": [
+                            "Succeeded",
+                            "Failed",
+                            "TimedOut",
+                            "Skipped"
+                          ]
+                        },
+                        "metadata": {
+                          "description": "Stop InvalidNotificationTemplate",
+                          "nodeId": "end-c156aacf-f702-5701-9926-b0adc954e5a2"
+                        }
+                      }
+                    }
+                  },
+                  "metadata": {
+                    "description": "Validate template",
+                    "nodeId": "ifElse-db810c84-aecf-55a1-9550-7c57c5d8a550"
+                  }
+                },
+                "Email_body": {
+                  "type": "Compose",
+                  "inputs": "@replace(replace(replace(replace(replace(replace(replace(replace(replace(outputs('Select_template')?['body'], '{{request_reference}}', replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(coalesce(body('Get_request')?['cat_requestid'], body('Get_request')?['cat_agentintakerequestid']), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0A'), '<br/>')), '{{request_name}}', replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(coalesce(body('Get_request')?['cat_agentname'], 'Agent Front Door request'), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0A'), '<br/>')), '{{decision}}', replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(if(equals(triggerBody()?['cat_status'], 100000003), 'approved', 'rejected'), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0A'), '<br/>')), '{{route}}', replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(if(equals(triggerBody()?['cat_status'], 100000004), '', if(equals(body('Get_request')?['cat_supportroute'], 100000000), 'Self-build', if(equals(body('Get_request')?['cat_supportroute'], 100000001), 'CoE support', 'Confirm the delivery route with the CoE'))), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0A'), '<br/>')), '{{next_step}}', replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(if(or(equals(triggerBody()?['cat_status'], 100000004), empty(trim(coalesce(body('Get_request')?['cat_proposednextactions'], '')))), outputs('Select_template')?['defaultNextStep'], body('Get_request')?['cat_proposednextactions']), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0A'), '<br/>')), '{{comments}}', replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(if(empty(trim(coalesce(body('Get_request')?['cat_decisioncomments'], ''))), 'No additional requester-facing comments were provided.', body('Get_request')?['cat_decisioncomments']), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0A'), '<br/>')), '{{request_summary}}', outputs('Request_summary')), '{{coe_contact}}', replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(body('Parse_configuration')?['coeContact'], '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0A'), '<br/>')), '{{request_link}}', '')",
+                  "runAfter": {
+                    "Request_summary": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "description": "Email body",
+                    "nodeId": "builtinFunction-05c32439-5c1c-515e-9445-1d3cd2143727"
+                  }
+                },
+                "Email_subject": {
+                  "type": "Compose",
+                  "inputs": "@replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(outputs('Select_template')?['subject'], '{{request_reference}}', coalesce(body('Get_request')?['cat_requestid'], body('Get_request')?['cat_agentintakerequestid'])), '{{request_name}}', coalesce(body('Get_request')?['cat_agentname'], 'Agent Front Door request')), '{{decision}}', if(equals(triggerBody()?['cat_status'], 100000003), 'approved', 'rejected')), '{{route}}', if(equals(triggerBody()?['cat_status'], 100000004), '', if(equals(body('Get_request')?['cat_supportroute'], 100000000), 'Self-build', if(equals(body('Get_request')?['cat_supportroute'], 100000001), 'CoE support', 'Confirm the delivery route with the CoE')))), '{{next_step}}', if(or(equals(triggerBody()?['cat_status'], 100000004), empty(trim(coalesce(body('Get_request')?['cat_proposednextactions'], '')))), outputs('Select_template')?['defaultNextStep'], body('Get_request')?['cat_proposednextactions'])), '{{comments}}', if(empty(trim(coalesce(body('Get_request')?['cat_decisioncomments'], ''))), 'No additional requester-facing comments were provided.', body('Get_request')?['cat_decisioncomments'])), '{{request_summary}}', ''), '{{coe_contact}}', body('Parse_configuration')?['coeContact']), decodeUriComponent('%0D'), ''), decodeUriComponent('%0A'), '')",
+                  "runAfter": {
+                    "Email_body": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "description": "Email subject",
+                    "nodeId": "builtinFunction-e93b6339-3f31-5926-a47a-be740ea13a9c"
+                  }
+                },
+                "Mark_sending": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "UpdateRecord",
+                      "connectionName": "shared_commondataserviceforapps"
+                    },
+                    "parameters": {
+                      "entityName": "cat_agentintakerequests",
+                      "recordId": "@triggerBody()?['cat_agentintakerequestid']",
+                      "item/cat_notificationstatus": 100000001,
+                      "item/cat_notificationerror": ""
+                    }
+                  },
+                  "runAfter": {
+                    "Email_subject": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "description": "Mark sending",
+                    "nodeId": "connector-ede53fee-61b1-5914-8447-83256c56b1b5"
+                  }
+                },
+                "Send_decision_email": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                      "operationId": "SendEmailV2",
+                      "connectionName": "shared_office365"
+                    },
+                    "parameters": {
+                      "emailMessage/To": "@trim(coalesce(body('Get_request')?['cat_requesteremail'], ''))",
+                      "emailMessage/Subject": "@outputs('Email_subject')",
+                      "emailMessage/Body": "@outputs('Email_body')",
+                      "emailMessage/Importance": "Normal"
+                    },
+                    "retryPolicy": {
+                      "type": "none"
+                    }
+                  },
+                  "runAfter": {
+                    "Mark_sending": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "description": "Send decision email",
+                    "nodeId": "connector-8a6cf751-e269-5bb1-a9fc-e56b42d97d58"
+                  }
+                },
+                "Record_sent": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "UpdateRecord",
+                      "connectionName": "shared_commondataserviceforapps"
+                    },
+                    "parameters": {
+                      "entityName": "cat_agentintakerequests",
+                      "recordId": "@triggerBody()?['cat_agentintakerequestid']",
+                      "item/cat_notificationstatus": 100000002,
+                      "item/cat_lastnotifieddecision": "@triggerBody()?['cat_status']",
+                      "item/cat_notificationsenton": "@utcNow()",
+                      "item/cat_notificationerror": ""
+                    }
+                  },
+                  "runAfter": {
+                    "Send_decision_email": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "description": "Record sent",
+                    "nodeId": "connector-f3b9bd7b-183f-5716-98b7-a890c5f00fa8"
+                  }
+                },
+                "Request_summary_items": {
+                  "type": "Compose",
+                  "inputs": "@concat(if(empty(if(greater(length(trim(string(coalesce(body('Get_request')?['cat_businessproblem'], '')))), 500), concat(substring(trim(string(coalesce(body('Get_request')?['cat_businessproblem'], ''))), 0, 500), '...'), trim(string(coalesce(body('Get_request')?['cat_businessproblem'], ''))))), '', concat('<li><strong>Business problem:</strong> ', replace(replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(if(greater(length(trim(string(coalesce(body('Get_request')?['cat_businessproblem'], '')))), 500), concat(substring(trim(string(coalesce(body('Get_request')?['cat_businessproblem'], ''))), 0, 500), '...'), trim(string(coalesce(body('Get_request')?['cat_businessproblem'], '')))), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0D'), ''), decodeUriComponent('%0A'), '<br/>'), '</li>')), if(empty(if(greater(length(trim(string(coalesce(body('Get_request')?['cat_requestedoutcome'], '')))), 500), concat(substring(trim(string(coalesce(body('Get_request')?['cat_requestedoutcome'], ''))), 0, 500), '...'), trim(string(coalesce(body('Get_request')?['cat_requestedoutcome'], ''))))), '', concat('<li><strong>Requested outcome:</strong> ', replace(replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(if(greater(length(trim(string(coalesce(body('Get_request')?['cat_requestedoutcome'], '')))), 500), concat(substring(trim(string(coalesce(body('Get_request')?['cat_requestedoutcome'], ''))), 0, 500), '...'), trim(string(coalesce(body('Get_request')?['cat_requestedoutcome'], '')))), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0D'), ''), decodeUriComponent('%0A'), '<br/>'), '</li>')), if(empty(if(greater(length(trim(string(coalesce(body('Get_request')?['cat_targetusers'], '')))), 500), concat(substring(trim(string(coalesce(body('Get_request')?['cat_targetusers'], ''))), 0, 500), '...'), trim(string(coalesce(body('Get_request')?['cat_targetusers'], ''))))), '', concat('<li><strong>Target users:</strong> ', replace(replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(if(greater(length(trim(string(coalesce(body('Get_request')?['cat_targetusers'], '')))), 500), concat(substring(trim(string(coalesce(body('Get_request')?['cat_targetusers'], ''))), 0, 500), '...'), trim(string(coalesce(body('Get_request')?['cat_targetusers'], '')))), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0D'), ''), decodeUriComponent('%0A'), '<br/>'), '</li>')), if(empty(if(greater(length(trim(string(coalesce(body('Get_request')?['cat_expectedusers'], '')))), 500), concat(substring(trim(string(coalesce(body('Get_request')?['cat_expectedusers'], ''))), 0, 500), '...'), trim(string(coalesce(body('Get_request')?['cat_expectedusers'], ''))))), '', concat('<li><strong>Expected users:</strong> ', replace(replace(replace(replace(replace(replace(replace(replace(replace(string(coalesce(if(greater(length(trim(string(coalesce(body('Get_request')?['cat_expectedusers'], '')))), 500), concat(substring(trim(string(coalesce(body('Get_request')?['cat_expectedusers'], ''))), 0, 500), '...'), trim(string(coalesce(body('Get_request')?['cat_expectedusers'], '')))), '')), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '\"', '&quot;'), '''', '&#39;'), '{', '&#123;'), '}', '&#125;'), decodeUriComponent('%0D'), ''), decodeUriComponent('%0A'), '<br/>'), '</li>')), if(empty(body('Get_request')?['cat_submittedon']), '', concat('<li><strong>Submitted:</strong> ', formatDateTime(body('Get_request')?['cat_submittedon'], 'd MMMM yyyy'), ' (UTC)</li>')))",
+                  "runAfter": {
+                    "Validate_template": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "description": "Request summary items",
+                    "nodeId": "builtinFunction-62cb2ef3-2917-5475-90e9-3afe29876409"
+                  }
+                },
+                "Request_summary": {
+                  "type": "Compose",
+                  "inputs": "@if(empty(outputs('Request_summary_items')), '<p><strong>Request summary:</strong> No additional summary details were recorded.</p>', concat('<p><strong>Request summary</strong></p><ul>', outputs('Request_summary_items'), '</ul>'))",
+                  "runAfter": {
+                    "Request_summary_items": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "description": "Request summary",
+                    "nodeId": "builtinFunction-ae3296ae-9d24-5cb1-9f21-703823599b5a"
+                  }
+                }
+              },
+              "else": {
+                "actions": {
+                  "Skip_duplicate_or_superseded_decision": {
+                    "type": "Compose",
+                    "inputs": "No email: this decision was already notified or is no longer current.",
+                    "runAfter": {},
+                    "metadata": {
+                      "description": "Skip duplicate or superseded decision",
+                      "nodeId": "builtinFunction-d6d9ed1b-7f5f-504c-9a69-ad846777d32a"
+                    }
+                  }
+                }
+              },
+              "metadata": {
+                "description": "Is new current decision",
+                "nodeId": "ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d"
+              }
+            }
+          },
+          "runAfter": {},
+          "metadata": {
+            "description": "Process notification",
+            "nodeId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00"
+          }
+        },
+        "Handle_failure": {
+          "type": "Scope",
+          "actions": {
+            "Get_failure_state": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "GetItem",
+                  "connectionName": "shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cat_agentintakerequests",
+                  "recordId": "@triggerBody()?['cat_agentintakerequestid']"
+                }
+              },
+              "runAfter": {},
+              "metadata": {
+                "description": "Get failure state",
+                "nodeId": "connector-6c1d458f-d19f-5678-a7ec-db74781c82cc"
+              }
+            },
+            "Record_failure": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "UpdateRecord",
+                  "connectionName": "shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "cat_agentintakerequests",
+                  "recordId": "@triggerBody()?['cat_agentintakerequestid']",
+                  "item/cat_notificationstatus": "@if(or(equals(body('Get_failure_state')?['cat_notificationstatus'], 100000001), equals(body('Get_failure_state')?['cat_notificationstatus'], 100000004)), 100000004, 100000003)",
+                  "item/cat_notificationerror": "@concat('Decision notification failed. Run ', trigger()?['clientTrackingId'], '. Inspect run history. If delivery needs review, check sender Sent Items and recipient delivery before manually retrying; never resend blindly.')"
+                }
+              },
+              "runAfter": {
+                "Get_failure_state": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "description": "Record failure",
+                "nodeId": "connector-5fe163f3-8482-5f33-983c-9fabcd0d837b"
+              }
+            },
+            "Fail_run": {
+              "type": "Terminate",
+              "inputs": {
+                "runStatus": "Failed",
+                "runError": {
+                  "code": "DecisionNotificationFailed",
+                  "message": "The decision notification did not complete. Check the request notification status and flow run history."
+                }
+              },
+              "runAfter": {
+                "Record_failure": [
+                  "Succeeded",
+                  "Failed",
+                  "TimedOut",
+                  "Skipped"
+                ]
+              },
+              "metadata": {
+                "description": "Fail run",
+                "nodeId": "end-dce197d4-d01c-59f6-931f-490e1aacfe25"
+              }
+            }
+          },
+          "runAfter": {
+            "Process_notification": [
+              "Failed",
+              "TimedOut"
+            ]
+          },
+          "metadata": {
+            "description": "Handle failure",
+            "nodeId": "scope-a058d416-427b-52c1-8f83-0bf5d987d412"
+          }
+        }
+      },
+      "metadata": {
+        "telemetryMetadata": {
+          "creationSource": "WorkflowDesigner",
+          "modifiedSources": "WorkflowDesigner"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
