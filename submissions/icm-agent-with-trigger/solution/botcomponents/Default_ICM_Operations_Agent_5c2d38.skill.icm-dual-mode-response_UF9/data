@@ -1,0 +1,65 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: icm-dual-mode-response
+  description: "Runs the ICM Operations Agent's two response procedures: a Conversational Mode chat reply (with on-request exports) and an Autonomous/Trigger Mode structured output (Executive Summary plus ICM List JSON). Use when the agent has an incident or operational query to answer and needs to decide, retrieve, and format the response for the current invocation, whether triggered by an interactive chat message or by an automated trigger supplying a natural-language query. Do NOT use this for constructing the OData filter itself or for resolving team/service identifiers -- those stay in the agent's own instructions."
+  ---
+  <!-- bic:source=generated -->
+  # ICM dual-mode response
+
+  This skill runs every time the agent is about to answer an incident-related query. First decide which mode the current invocation is running in, retrieve the data with the right ICM tool, then shape the output for that mode.
+
+  ## Step 1: Determine the mode
+
+  - **Conversational Mode** -- the current invocation is an interactive chat message from a user.
+  - **Autonomous / Trigger Mode** -- the current invocation was started automatically by a trigger that supplied a natural-language query (for example, "Get all active incidents from the past week for my team"), with no user available to reply to.
+
+  Everything below branches on this decision, so make it before retrieving data.
+
+  ## Step 2: Retrieve the data with the right ICM tool
+
+  Use these dedicated ICM tools in both modes -- never fabricate data, only use fields a tool response actually returns:
+
+  - **Get incident**: when a specific incident identifier is given (e.g. "ICM 123456789"), fetch that incident by its Id and treat the response as the source of truth.
+  - **Search incidents**: for an operational or aggregated query (e.g. "open ICMs for the Payments area", "incidents owned by <owner-email>"), run this tool with an OData `$filter` built from the query, following the agent's own Filtering Guidance for allowed fields, Severity/Status values, and the `SERVICE\Team` format for `OwningTeamId`.
+  - **Get on-call contacts**: for a "who's on call" question, call this tool (optionally scoped to a team Id) and read the on-call contacts it returns.
+  - **Search ICM teams**: when you only know a team by name and need its public Id (to build a `SERVICE\Team` identifier for a filter), call this tool with the team name and use the `publicId` it returns.
+
+  If a required field (Id, severity, status, owner, createdBy, createdDate, title) is missing from a tool's response, carry it forward as the literal string "not available in response". When asked for the latest status, return only the most recent status value the response provided -- do not infer progression or a timeline beyond what was returned.
+
+  ## Step 3A: Conversational Mode -- shape a chat reply
+
+  - Reply directly in chat, in a clear, concise, human-readable form suitable for an incident review.
+  - If the result has more than 5 incidents, format them as a table (one row per incident, using the required fields).
+  - If the user asked for one specific aspect (e.g. just the status, or just the severity), return only that aspect unless they ask for more.
+  - If the user asks for a count, return only the number -- do not also list each incident.
+  - If no incident ID was given and the request is ambiguous, ask the user to clarify or provide an incident ID. Never assume intent or guess the incident scope.
+  - If the user asks for a capability the agent does not have, state that limitation plainly instead of attempting a workaround.
+  - On request, produce an export instead of (or alongside) the chat reply:
+    - **Excel export**: valid JSON array of incident objects, each with `id`, `status`, `severity`, `owner`, `createdBy`, `createdDate`, `title`. Cap each array at 20 incidents; if the full list is longer, split it into multiple 20-item arrays and produce all of them -- never omit incidents from a requested full list.
+    - **Word executive summary export**: plain text (never JSON), executive tone, with these sections in this exact order: 1. Overview, 2. Key Metrics (counts, status, severity), 3. Latest Resolved Incidents (up to 3), 4. Latest Active Incidents (up to 3), 5. Mitigation Actions Taken (from available data only, else "not available in response"), 6. Actionable Recommendations (data-driven, non-speculative).
+    - After producing either export, do not offer to send it by email.
+
+  ## Step 3B: Autonomous / Trigger Mode -- shape structured output
+
+  - Do not ask follow-up questions, and do not produce any chat reply -- there is no user to respond to. Attempt a best-effort retrieval using whatever query text the trigger supplied.
+  - Produce exactly two structured outputs, every time, and never return raw ICM data as chat text:
+    1. **Executive Summary** (Word-style, plain text, not JSON) using the same six sections and order as the Word export above: Overview; Key Metrics; Latest Resolved Incidents (up to 3); Latest Active Incidents (up to 3); Mitigation Actions Taken; Actionable Recommendations. Any missing detail is stated as "not available in response".
+    2. **ICM List** (Excel-style): valid JSON only, no surrounding prose, using this schema and capped at 20 incidents per array (split into multiple arrays for more):
+       ```json
+       [{"id": "", "status": "", "severity": "", "owner": "", "createdBy": "", "createdDate": "", "title": ""}]
+       ```
+  - If the retrieval is still ambiguous or the requested data is unsupported after a best-effort attempt, return empty structured outputs rather than guessing:
+    - ICM List: `[]`
+    - Executive Summary: "Overview: not available in response. Key Metrics: not available in response. Latest Resolved Incidents: not available in response. Latest Active Incidents: not available in response. Mitigation Actions Taken: not available in response. Actionable Recommendations: not available in response."
+  Mail the summary to user.
+
+  ## Error handling
+
+  - **Conversational Mode**: never surface a raw error message. Explain the failure in plain language and suggest a concrete next step, such as verifying the incident ID, checking permissions, or confirming ICM connectivity.
+  - **Autonomous / Trigger Mode**: never surface a raw error and never produce chat output. Return the same empty ICM List (`[]`) and empty Executive Summary text shown in Step 3B.
+
+  ## Data integrity
+
+  Treat every ICM tool response as authoritative and never invent incident details. Any field a response omits is reported as "not available in response" rather than left blank or guessed.
+authoringSource: Generated

@@ -1,0 +1,49 @@
+kind: ExternalTriggerConfiguration
+externalTriggerSource:
+  kind: AgentRecurrenceTrigger
+  callbackMessage:
+    segments:
+      - kind: StaticSegment
+        value: Get all incidents assigned to me this past week and send the summary in mail to me. If there is no list if ICM even then send email summary saying that you don't have any ICM in last week.
+
+      - kind: StaticSegment
+        value: " @{triggerBody()}"
+
+  inputs:
+    - name: frequency
+      displayName: Frequency
+      description: How often the trigger fires (e.g., Hour, Day, Week).
+      value:
+        kind: ValueReference
+        type: "{\"type\":\"string\"}"
+        defaultValue: "\"Week\""
+
+      isValueOverridable: true
+
+    - name: interval
+      displayName: Interval
+      description: The number of frequency units between each firing.
+      value:
+        kind: ValueReference
+        type: "{\"type\":\"string\"}"
+        defaultValue: "\"1\""
+
+      isValueOverridable: true
+
+    - name: startTime
+      displayName: Start time
+      description: When the recurrence begins.
+      value:
+        kind: ValueReference
+        type: "{\"type\":\"string\"}"
+        defaultValue: "\"<start-time>\""
+
+    - name: timeZone
+      displayName: Time zone
+      description: Windows time zone id used to interpret start time and schedule.
+      value:
+        kind: ValueReference
+        type: "{\"type\":\"string\"}"
+        defaultValue: "\"<time-zone>\""
+
+  authMode: Invoker
