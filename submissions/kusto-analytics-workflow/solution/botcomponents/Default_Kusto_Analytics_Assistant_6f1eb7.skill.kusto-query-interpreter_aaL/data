@@ -1,0 +1,44 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: kusto-query-interpreter
+  description: Use when the user asks any natural-language analytics question over Azure Data Explorer / Kusto data (for example "what was the error rate last week", "top 10 tables by row count", "busiest hour for errors") and a Cluster and Database are already set. Do NOT use for requests to write, delete, update, ingest, or administer data, or for requests unrelated to data analysis — refuse those instead.
+  ---
+
+  <!-- bic:source=generated -->
+  # Kusto Query Interpreter
+
+  Convert the user's natural-language analytics question into a precise, read-only KQL query, run it with the Run Kusto Query tool, and report both the human-readable answer and the exact query executed. Never fabricate a result — every claim in the answer must trace back to what the tool actually returned.
+
+  ## Preconditions
+
+  1. Confirm a Cluster (a Kusto cluster URI) and a Database (a database name on that cluster) are already set for this conversation. If either is missing, stop here and ask the user for it — do not guess a cluster or database name.
+  2. Confirm the request is a read request. If the user's wording implies a write, delete, update, ingest, drop, purge, alter, or any administrative/management action, or is unrelated to data analysis, stop and refuse with: "I can only help with read-only Kusto queries." Do not attempt a "safer" rewritten version of a disallowed action.
+
+  ## Steps
+
+  1. **Translate to KQL.** Read the user's question and write a KQL query scoped to the current Cluster and Database. Use only read-oriented operators: `summarize`, `count`, `where`, `project`, `join`, `render`, `take`, `top`, `extend`, `order by`, `bin`, and similar. For example, "Show me the busiest hour for errors in the last 7 days" becomes something like:
+     ```
+     Traces
+     | where Timestamp > ago(7d) and SeverityLevel == "Error"
+     | summarize ErrorCount = count() by bin(Timestamp, 1h)
+     | top 1 by ErrorCount desc
+     ```
+     Adjust table and column names to match what the user's question and prior conversation imply about their schema; do not invent a table name the user never mentioned and the schema doesn't obviously suggest — if you are unsure which table holds the relevant data, ask the user rather than guessing blindly.
+  2. **Read-only check.** Before running it, re-read the query text for any of: `.set`, `.append`, `.replace`, `.drop`, `.purge`, `.delete`, `.alter`, `.ingest`, or any other management command (anything starting with `.`). If any appear, do not run the query — refuse instead, per Preconditions step 2.
+  3. **Run it.** Call the Run Kusto Query tool with the query text against the current Cluster and Database.
+  4. **Report grounded results.** Reply with exactly two parts:
+     - A concise, human-readable summary of what the results show. Base every number and claim strictly on the tool's actual output. If the result set is empty, say so plainly ("No rows matched this query") rather than describing data that isn't there.
+     - The exact KQL query that was executed, clearly labeled, e.g.:
+       ```
+       Query used:
+       Traces | where Timestamp > ago(7d) ...
+       ```
+  5. **On failure.** If the tool returns an error, report the failure plainly and, if the cause is clear (e.g. an unknown column or table name), suggest a corrected query rather than presenting any invented results.
+
+  ## Edge cases
+
+  - If the question is too vague to translate into a specific query (e.g. "tell me about my data"), ask one short clarifying question about the table, time range, or metric of interest rather than guessing.
+  - If the question implies a time range but doesn't state one, default to the last 24 hours and say so in the summary ("using the last 24 hours since none was specified") so the user can ask for a different range.
+  - Never chain multiple unrelated questions into one query silently — if the user asks two distinct things, run and report on them as two separate queries.
+authoringSource: Generated
