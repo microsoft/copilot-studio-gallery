@@ -387,16 +387,30 @@ function Canvas({
     const element = wrapper.current;
     if (!element) return;
     let shown = false;
+    let wasFullscreen = false;
+    let frame: number | undefined;
     const observer = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect;
-      if (!shown && width > 0 && height > 0) {
+      if (width <= 0 || height <= 0) return;
+      const fullscreen = document.fullscreenElement === element;
+      const shouldFit = fullscreen || wasFullscreen;
+      if (!shown || shouldFit) {
         shown = true;
-        requestAnimationFrame(() => showInitialView(width, height));
+        if (frame !== undefined) cancelAnimationFrame(frame);
+        // Let React Flow's resize observer update its viewport dimensions first.
+        frame = requestAnimationFrame(() => {
+          if (shouldFit) void fitView({ padding: 0.18, duration: 250 });
+          else showInitialView(width, height);
+        });
       }
+      wasFullscreen = fullscreen;
     });
     observer.observe(element);
-    return () => observer.disconnect();
-  }, [graph, showInitialView]);
+    return () => {
+      observer.disconnect();
+      if (frame !== undefined) cancelAnimationFrame(frame);
+    };
+  }, [fitView, graph, showInitialView]);
   const graphNodeById = useMemo(() => new Map(nodes.map((node) => [node.id, node])), [nodes]);
   const edges = useMemo<FlowEdge[]>(
     () =>

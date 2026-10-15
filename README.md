@@ -38,6 +38,7 @@ The site uses Astro, Tailwind CSS, React Flow, and static GitHub Pages deploymen
 - The hero renders each export's saved designer graph, preserving loop containers
   and parent-relative step positions. Zoom, full-screen viewing, and node details
   remain available, with agent steps showing their components on hover or select.
+  Full-screen transitions automatically refit the graph to the resized canvas.
 - Workflow nodes keep their submitted titles and separately identify connector
   services and trigger types (such as HTTP, email, or manual) from export metadata.
   Titles and metadata wrap without truncation. Missing types are explained once
