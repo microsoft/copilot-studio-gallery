@@ -1,0 +1,2568 @@
+{
+  "name": "Agent CoE Front Door",
+  "description": "A governance front door for agent ideas: a reuse-first intake agent that checks your agent inventory before anyone builds, a CoE triage app for reviewers, and automatic decision emails back to requesters.",
+  "tags": [
+    "governance",
+    "coe",
+    "intake",
+    "triage",
+    "dataverse",
+    "human-in-the-loop"
+  ],
+  "category": "Operations",
+  "createdAt": "2026-10-15",
+  "updatedAt": "2026-10-15",
+  "featured": false,
+  "previewWorkflow": "{7b8dc8a4-4781-462d-9381-84c465153cea}",
+  "author": "Sandra Boucenna",
+  "authors": [
+    {
+      "name": "Sandra Boucenna",
+      "github": "SandraBcna"
+    }
+  ],
+  "uniqueName": "AgentCoEFrontDoor",
+  "version": "1.0.0.0",
+  "publisher": "CAT",
+  "bundle": "bundles/agent-coe-front-door.zip",
+  "agentCount": 1,
+  "workflowCount": 2,
+  "componentCount": 16,
+  "agents": [
+    {
+      "id": "cre2b_agentcoefrontdoor",
+      "schemaName": "cre2b_agentcoefrontdoor",
+      "name": "Agent CoE Front Door",
+      "model": "claude-opus-5",
+      "instructions": "You are the Agent CoE Front Door. You help people across the organisation understand the problem they are trying to solve and work out the most appropriate path to solve it — using an agent that already exists, building one themselves, or asking the CoE for support. You are a collaborative adviser first, and an intake system only when that is genuinely the right route.\n\nYOUR PRIMARY PURPOSE IS COLLABORATIVE ADVICE. Understand the user's problem and work with them to identify the most appropriate path. Help them understand their options — existing solutions, self-build, and CoE-supported development — and what each would mean for them. A conversation that ends without a request because you helped the user find a better route is a success. A conversation that ends in a request because that route is genuinely right is equally a success. Your job is the right outcome, not a particular one.\n\nSTART BY UNDERSTANDING, NOT BY FILTERING. Open by exploring the problem with the user. Work naturally through:\n\nWhat problem are you trying to solve, and who for?\n\nIs there already an agent or solution that addresses it?\n\nCould this reasonably be self-built?\n\nWould you like CoE support with it?\n\nWhat data would it use, and would it need to write into any system?\n\nAsk these conversationally, one or two at a time, and use what you learn. Never run them as a checklist.\n\nSINGLE RESPONSE PRINCIPLE. You are the only agent that speaks to the user. Skills return their findings to you, and you combine those findings into one reply. Never pass a skill's response through unchanged, never announce that you are consulting another component, and never produce two messages for one user turn.\n\nEXPLORE BEFORE YOU RAISE A REQUEST. For a concrete need, use agent-advisor to check the internal Agent Catalogue, the Tenant Agent Inventory, relevant first-party Microsoft agents and existing Microsoft/CoE templates before recommending a new build. Offer the best verified match, not a mandatory menu of altern",
+      "channels": [],
+      "toolCount": 1,
+      "skillCount": 2,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:cre2b_agentcoefrontdoor",
+        "name": "Agent CoE Front Door",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "claude-opus-5",
+          "instructions": "You are the Agent CoE Front Door. You help people across the organisation understand the problem they are trying to solve and work out the most appropriate path to solve it — using an agent that already exists, building one themselves, or asking the CoE for support. You are a collaborative adviser first, and an intake system only when that is genuinely the right route.\n\nYOUR PRIMARY PURPOSE IS COLLABORATIVE ADVICE. Understand the user's problem and work with them to identify the most appropriate path. Help them understand their options — existing solutions, self-build, and CoE-supported development — and what each would mean for them. A conversation that ends without a request because you helped the user find a better route is a success. A conversation that ends in a request because that route is genuinely right is equally a success. Your job is the right outcome, not a particular one.\n\nSTART BY UNDERSTANDING, NOT BY FILTERING. Open by exploring the problem with the user. Work naturally through:\n\nWhat problem are you trying to solve, and who for?\n\nIs there already an agent or solution that addresses it?\n\nCould this reasonably be self-built?\n\nWould you like CoE support with it?\n\nWhat data would it use, and would it need to write into any system?\n\nAsk these conversationally, one or two at a time, and use what you learn. Never run them as a checklist.\n\nSINGLE RESPONSE PRINCIPLE. You are the only agent that speaks to the user. Skills return their findings to you, and you combine those findings into one reply. Never pass a skill's response through unchanged, never announce that you are consulting another component, and never produce two messages for one user turn.\n\nEXPLORE BEFORE YOU RAISE A REQUEST. For a concrete need, use agent-advisor to check the internal Agent Catalogue, the Tenant Agent Inventory, relevant first-party Microsoft agents and existing Microsoft/CoE templates before recommending a new build. Offer the best verified match, not a mandatory menu of altern",
+          "channels": [],
+          "toolCount": 1,
+          "skillCount": 2,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:cre2b_agentcoefrontdoor.skill.agent-advisor_cL_",
+        "name": "agent-advisor",
+        "type": "skill",
+        "position": {
+          "x": 228,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cre2b_agentcoefrontdoor.skill.agent-advisor_cL_",
+          "description": "Checks the tenant-wide Power Platform agent inventory, relevant first-party Microsoft agents, the internal CoE catalogue and existing templates before recommending a build. Returns one focused recommendation and practical Agent Builder or Copilot Studio setup steps, grounded in organisation enablement and governance."
+        }
+      },
+      {
+        "id": "skill:cre2b_agentcoefrontdoor.skill.agent-intake_8EM",
+        "name": "agent-intake",
+        "type": "skill",
+        "position": {
+          "x": -111.99999999999997,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cre2b_agentcoefrontdoor.skill.agent-intake_8EM",
+          "description": "Records either an agreed self-build for visibility or a CoE triage request after relevant reuse options and local governance are checked. Reuses known facts, asks only missing details, records the chosen tool/template and next setup step, and returns the real request reference."
+        }
+      },
+      {
+        "id": "tool:cre2b_agentcoefrontdoor.tool.MicrosoftDataverse-MicrosoftDataverseMCPServer_bQj",
+        "name": "Microsoft Dataverse — Microsoft Dataverse MCP Server",
+        "type": "tool",
+        "position": {
+          "x": -452,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cre2b_agentcoefrontdoor.tool.MicrosoftDataverse-MicrosoftDataverseMCPServer_bQj",
+          "operation": "InvokeMCP"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:cre2b_agentcoefrontdoor-includes-cre2b_agentcoefrontdoor.skill.agent-advisor_cL_",
+        "source": "agent:cre2b_agentcoefrontdoor",
+        "target": "skill:cre2b_agentcoefrontdoor.skill.agent-advisor_cL_",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cre2b_agentcoefrontdoor-includes-cre2b_agentcoefrontdoor.skill.agent-intake_8EM",
+        "source": "agent:cre2b_agentcoefrontdoor",
+        "target": "skill:cre2b_agentcoefrontdoor.skill.agent-intake_8EM",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cre2b_agentcoefrontdoor-uses-cre2b_agentcoefrontdoor.tool.MicrosoftDataverse-MicrosoftDataverseMCPServer_bQj",
+        "source": "agent:cre2b_agentcoefrontdoor",
+        "target": "tool:cre2b_agentcoefrontdoor.tool.MicrosoftDataverse-MicrosoftDataverseMCPServer_bQj",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [
+    {
+      "id": "{7b8dc8a4-4781-462d-9381-84c465153cea}",
+      "name": "CAT - Notify Requester of CoE Decision",
+      "trigger": "When decision changes",
+      "nodeCount": 34,
+      "edgeCount": 35,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-4716c7e4-f1db-5cb4-b9ea-0df0d1d992d8",
+            "name": "When decision changes",
+            "type": "start",
+            "position": {
+              "x": 560,
+              "y": 120
+            },
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When decision changes",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "SubscribeWebhookTrigger",
+              "operationType": "OpenApiConnectionWebhook"
+            }
+          },
+          {
+            "id": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "name": "Process notification",
+            "type": "scope",
+            "position": {
+              "x": 890,
+              "y": 120
+            },
+            "details": {
+              "description": ""
+            },
+            "width": 5660,
+            "height": 426
+          },
+          {
+            "id": "connector-24309bda-1510-5cb1-902c-282e0693015a",
+            "name": "Get request",
+            "type": "connector",
+            "position": {
+              "x": 60,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "GetItem",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_agentintakerequests"
+              }
+            }
+          },
+          {
+            "id": "ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d",
+            "name": "Is new current decision",
+            "type": "ifElse",
+            "position": {
+              "x": 390,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {}
+          },
+          {
+            "id": "ifElse-0bae221e-4642-5067-b28e-e315bcebb043",
+            "name": "Require unambiguous prior attempt",
+            "type": "ifElse",
+            "position": {
+              "x": 720,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {}
+          },
+          {
+            "id": "connector-601e16fb-13da-5eee-af8b-4711f6117d7c",
+            "name": "Record DeliveryNeedsReview",
+            "type": "connector",
+            "position": {
+              "x": 1050,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_agentintakerequests",
+                "item/cat_notificationstatus": "100000004",
+                "item/cat_notificationerror": "@concat('DeliveryNeedsReview: A previous delivery needs operator review. Do not resend blindly. Run ', trigger()?['clientTrackingId'])"
+              }
+            }
+          },
+          {
+            "id": "end-e576c0f6-bec5-5adf-8ad0-6ce5e5302e80",
+            "name": "Stop DeliveryNeedsReview",
+            "type": "end",
+            "position": {
+              "x": 1380,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "runStatus": "Failed"
+            }
+          },
+          {
+            "id": "ifElse-590b5db7-f055-52da-bbf3-755e2a1495e2",
+            "name": "Require requester email",
+            "type": "ifElse",
+            "position": {
+              "x": 1050,
+              "y": 190
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {}
+          },
+          {
+            "id": "connector-85b57b69-9f7c-505b-a0e1-0d9f7b9461dc",
+            "name": "Record InvalidRequesterEmail",
+            "type": "connector",
+            "position": {
+              "x": 1380,
+              "y": 190
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_agentintakerequests",
+                "item/cat_notificationstatus": "100000003",
+                "item/cat_notificationerror": "@concat('InvalidRequesterEmail: Provide exactly one valid requester work email on the request. Run ', trigger()?['clientTrackingId'])"
+              }
+            }
+          },
+          {
+            "id": "end-187488c9-ec1b-5851-b336-89fbd8679555",
+            "name": "Stop InvalidRequesterEmail",
+            "type": "end",
+            "position": {
+              "x": 1710,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "runStatus": "Failed"
+            }
+          },
+          {
+            "id": "connector-2ef5a08e-1181-5c36-b1a2-420d992f2ea8",
+            "name": "Get configuration",
+            "type": "connector",
+            "position": {
+              "x": 1380,
+              "y": 300
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "ListRecords",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "environmentvariabledefinitions",
+                "$select": "defaultvalue,schemaname",
+                "$filter": "schemaname eq 'cat_DecisionNotificationSettings'",
+                "$expand": "environmentvariabledefinition_environmentvariablevalue($select=value)"
+              }
+            }
+          },
+          {
+            "id": "ifElse-dbff35f7-420e-5d73-9f90-72818e0b20dd",
+            "name": "Require one configuration",
+            "type": "ifElse",
+            "position": {
+              "x": 1710,
+              "y": 190
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {}
+          },
+          {
+            "id": "connector-bbeda01d-233a-5443-bd4b-99577e42cc67",
+            "name": "Record MissingNotificationConfiguration",
+            "type": "connector",
+            "position": {
+              "x": 2040,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_agentintakerequests",
+                "item/cat_notificationstatus": "100000003",
+                "item/cat_notificationerror": "@concat('MissingNotificationConfiguration: Exactly one decision-notification settings definition is required. Run ', trigger()?['clientTrackingId'])"
+              }
+            }
+          },
+          {
+            "id": "end-301f704a-e12d-5b10-b3a3-9e6d65439b48",
+            "name": "Stop MissingNotificationConfiguration",
+            "type": "end",
+            "position": {
+              "x": 2370,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "runStatus": "Failed"
+            }
+          },
+          {
+            "id": "ifElse-b815bc99-f258-54b6-9908-8f7e92c418d7",
+            "name": "Require one current value",
+            "type": "ifElse",
+            "position": {
+              "x": 2040,
+              "y": 190
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {}
+          },
+          {
+            "id": "connector-69f15252-4bfe-508e-8ef8-f801a909b4b5",
+            "name": "Record AmbiguousNotificationConfiguration",
+            "type": "connector",
+            "position": {
+              "x": 2370,
+              "y": 190
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_agentintakerequests",
+                "item/cat_notificationstatus": "100000003",
+                "item/cat_notificationerror": "@concat('AmbiguousNotificationConfiguration: Keep at most one current settings value; resolve duplicate values before sending. Run ', trigger()?['clientTrackingId'])"
+              }
+            }
+          },
+          {
+            "id": "end-fa8fd0c4-6ccd-5e82-9b41-757a9c90142f",
+            "name": "Stop AmbiguousNotificationConfiguration",
+            "type": "end",
+            "position": {
+              "x": 2700,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "runStatus": "Failed"
+            }
+          },
+          {
+            "id": "builtinFunction-cdea51c6-d9a0-5ccc-902e-76c7b5a5fbad",
+            "name": "Parse configuration",
+            "type": "builtinFunction",
+            "position": {
+              "x": 2370,
+              "y": 300
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "builtinFunction-5daff0ef-2a25-59b2-a4b3-195ee11d1e7a",
+            "name": "Select template",
+            "type": "builtinFunction",
+            "position": {
+              "x": 2700,
+              "y": 190
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "ifElse-db810c84-aecf-55a1-9550-7c57c5d8a550",
+            "name": "Validate template",
+            "type": "ifElse",
+            "position": {
+              "x": 3030,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {}
+          },
+          {
+            "id": "connector-13d6f9a4-0b67-5f93-b0a5-5bfbd80ed70c",
+            "name": "Record InvalidNotificationTemplate",
+            "type": "connector",
+            "position": {
+              "x": 3360,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_agentintakerequests",
+                "item/cat_notificationstatus": "100000003",
+                "item/cat_notificationerror": "@concat('InvalidNotificationTemplate: The selected body must retain all documented placeholders, next-step guidance, and CoE contact. Run ', trigger()?['clientTrackingId'])"
+              }
+            }
+          },
+          {
+            "id": "end-c156aacf-f702-5701-9926-b0adc954e5a2",
+            "name": "Stop InvalidNotificationTemplate",
+            "type": "end",
+            "position": {
+              "x": 3690,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "runStatus": "Failed"
+            }
+          },
+          {
+            "id": "builtinFunction-05c32439-5c1c-515e-9445-1d3cd2143727",
+            "name": "Email body",
+            "type": "builtinFunction",
+            "position": {
+              "x": 4020,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "builtinFunction-e93b6339-3f31-5926-a47a-be740ea13a9c",
+            "name": "Email subject",
+            "type": "builtinFunction",
+            "position": {
+              "x": 4350,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "connector-ede53fee-61b1-5914-8447-83256c56b1b5",
+            "name": "Mark sending",
+            "type": "connector",
+            "position": {
+              "x": 4680,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_agentintakerequests",
+                "item/cat_notificationstatus": "100000001",
+                "item/cat_notificationerror": ""
+              }
+            }
+          },
+          {
+            "id": "connector-8a6cf751-e269-5bb1-a9fc-e56b42d97d58",
+            "name": "Send decision email",
+            "type": "connector",
+            "position": {
+              "x": 5010,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "displayName": "Office 365 Outlook",
+              "apiName": "shared_office365",
+              "operationName": "SendEmailV2",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "emailMessage/To": "@trim(coalesce(body('Get_request')?['cat_requesteremail'], ''))",
+                "emailMessage/Subject": "@outputs('Email_subject')",
+                "emailMessage/Body": "@outputs('Email_body')",
+                "emailMessage/Importance": "Normal"
+              }
+            }
+          },
+          {
+            "id": "connector-f3b9bd7b-183f-5716-98b7-a890c5f00fa8",
+            "name": "Record sent",
+            "type": "connector",
+            "position": {
+              "x": 5340,
+              "y": 80
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_agentintakerequests",
+                "item/cat_notificationstatus": "100000002",
+                "item/cat_lastnotifieddecision": "@triggerBody()?['cat_status']",
+                "item/cat_notificationsenton": "@utcNow()",
+                "item/cat_notificationerror": ""
+              }
+            }
+          },
+          {
+            "id": "builtinFunction-62cb2ef3-2917-5475-90e9-3afe29876409",
+            "name": "Request summary items",
+            "type": "builtinFunction",
+            "position": {
+              "x": 3360,
+              "y": 190
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "builtinFunction-ae3296ae-9d24-5cb1-9f21-703823599b5a",
+            "name": "Request summary",
+            "type": "builtinFunction",
+            "position": {
+              "x": 3690,
+              "y": 190
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "builtinFunction-d6d9ed1b-7f5f-504c-9a69-ad846777d32a",
+            "name": "Skip duplicate or superseded decision",
+            "type": "builtinFunction",
+            "position": {
+              "x": 720,
+              "y": 190
+            },
+            "parentId": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+            "name": "Handle failure",
+            "type": "scope",
+            "position": {
+              "x": 6620,
+              "y": 120
+            },
+            "details": {
+              "description": ""
+            },
+            "width": 1040,
+            "height": 206
+          },
+          {
+            "id": "connector-6c1d458f-d19f-5678-a7ec-db74781c82cc",
+            "name": "Get failure state",
+            "type": "connector",
+            "position": {
+              "x": 60,
+              "y": 80
+            },
+            "parentId": "scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "GetItem",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_agentintakerequests"
+              }
+            }
+          },
+          {
+            "id": "connector-5fe163f3-8482-5f33-983c-9fabcd0d837b",
+            "name": "Record failure",
+            "type": "connector",
+            "position": {
+              "x": 390,
+              "y": 80
+            },
+            "parentId": "scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_agentintakerequests",
+                "item/cat_notificationstatus": "@if(or(equals(body('Get_failure_state')?['cat_notificationstatus'], 100000001), equals(body('Get_failure_state')?['cat_notificationstatus'], 100000004)), 100000004, 100000003)",
+                "item/cat_notificationerror": "@concat('Decision notification failed. Run ', trigger()?['clientTrackingId'], '. Inspect run history. If delivery needs review, check sender Sent Items and recipient delivery before manually retrying; never resend blindly.')"
+              }
+            }
+          },
+          {
+            "id": "end-dce197d4-d01c-59f6-931f-490e1aacfe25",
+            "name": "Fail run",
+            "type": "end",
+            "position": {
+              "x": 720,
+              "y": 80
+            },
+            "parentId": "scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+            "details": {
+              "runStatus": "Failed"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-4716c7e4-f1db-5cb4-b9ea-0df0d1d992d8-scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "source": "start-4716c7e4-f1db-5cb4-b9ea-0df0d1d992d8",
+            "target": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "targetHandle": "external-input"
+          },
+          {
+            "id": "edge-scope-abc18b48-b281-5b65-af2d-94b23e7f9c00-connector-24309bda-1510-5cb1-902c-282e0693015a",
+            "source": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "target": "connector-24309bda-1510-5cb1-902c-282e0693015a",
+            "sourceHandle": "internal-source"
+          },
+          {
+            "id": "edge-connector-24309bda-1510-5cb1-902c-282e0693015a-ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d",
+            "source": "connector-24309bda-1510-5cb1-902c-282e0693015a",
+            "target": "ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d"
+          },
+          {
+            "id": "edge-ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d-ifElse-0bae221e-4642-5067-b28e-e315bcebb043",
+            "source": "ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d",
+            "target": "ifElse-0bae221e-4642-5067-b28e-e315bcebb043",
+            "sourceHandle": "condition:f7673e1a-aef0-522f-8e20-a44196040724"
+          },
+          {
+            "id": "edge-ifElse-0bae221e-4642-5067-b28e-e315bcebb043-connector-601e16fb-13da-5eee-af8b-4711f6117d7c",
+            "source": "ifElse-0bae221e-4642-5067-b28e-e315bcebb043",
+            "target": "connector-601e16fb-13da-5eee-af8b-4711f6117d7c",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-connector-601e16fb-13da-5eee-af8b-4711f6117d7c-end-e576c0f6-bec5-5adf-8ad0-6ce5e5302e80",
+            "source": "connector-601e16fb-13da-5eee-af8b-4711f6117d7c",
+            "target": "end-e576c0f6-bec5-5adf-8ad0-6ce5e5302e80"
+          },
+          {
+            "id": "edge-ifElse-0bae221e-4642-5067-b28e-e315bcebb043-ifElse-590b5db7-f055-52da-bbf3-755e2a1495e2",
+            "source": "ifElse-0bae221e-4642-5067-b28e-e315bcebb043",
+            "target": "ifElse-590b5db7-f055-52da-bbf3-755e2a1495e2"
+          },
+          {
+            "id": "edge-ifElse-590b5db7-f055-52da-bbf3-755e2a1495e2-connector-85b57b69-9f7c-505b-a0e1-0d9f7b9461dc",
+            "source": "ifElse-590b5db7-f055-52da-bbf3-755e2a1495e2",
+            "target": "connector-85b57b69-9f7c-505b-a0e1-0d9f7b9461dc",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-connector-85b57b69-9f7c-505b-a0e1-0d9f7b9461dc-end-187488c9-ec1b-5851-b336-89fbd8679555",
+            "source": "connector-85b57b69-9f7c-505b-a0e1-0d9f7b9461dc",
+            "target": "end-187488c9-ec1b-5851-b336-89fbd8679555"
+          },
+          {
+            "id": "edge-ifElse-590b5db7-f055-52da-bbf3-755e2a1495e2-connector-2ef5a08e-1181-5c36-b1a2-420d992f2ea8",
+            "source": "ifElse-590b5db7-f055-52da-bbf3-755e2a1495e2",
+            "target": "connector-2ef5a08e-1181-5c36-b1a2-420d992f2ea8"
+          },
+          {
+            "id": "edge-connector-2ef5a08e-1181-5c36-b1a2-420d992f2ea8-ifElse-dbff35f7-420e-5d73-9f90-72818e0b20dd",
+            "source": "connector-2ef5a08e-1181-5c36-b1a2-420d992f2ea8",
+            "target": "ifElse-dbff35f7-420e-5d73-9f90-72818e0b20dd"
+          },
+          {
+            "id": "edge-ifElse-dbff35f7-420e-5d73-9f90-72818e0b20dd-connector-bbeda01d-233a-5443-bd4b-99577e42cc67",
+            "source": "ifElse-dbff35f7-420e-5d73-9f90-72818e0b20dd",
+            "target": "connector-bbeda01d-233a-5443-bd4b-99577e42cc67",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-connector-bbeda01d-233a-5443-bd4b-99577e42cc67-end-301f704a-e12d-5b10-b3a3-9e6d65439b48",
+            "source": "connector-bbeda01d-233a-5443-bd4b-99577e42cc67",
+            "target": "end-301f704a-e12d-5b10-b3a3-9e6d65439b48"
+          },
+          {
+            "id": "edge-ifElse-dbff35f7-420e-5d73-9f90-72818e0b20dd-ifElse-b815bc99-f258-54b6-9908-8f7e92c418d7",
+            "source": "ifElse-dbff35f7-420e-5d73-9f90-72818e0b20dd",
+            "target": "ifElse-b815bc99-f258-54b6-9908-8f7e92c418d7"
+          },
+          {
+            "id": "edge-ifElse-b815bc99-f258-54b6-9908-8f7e92c418d7-connector-69f15252-4bfe-508e-8ef8-f801a909b4b5",
+            "source": "ifElse-b815bc99-f258-54b6-9908-8f7e92c418d7",
+            "target": "connector-69f15252-4bfe-508e-8ef8-f801a909b4b5",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-connector-69f15252-4bfe-508e-8ef8-f801a909b4b5-end-fa8fd0c4-6ccd-5e82-9b41-757a9c90142f",
+            "source": "connector-69f15252-4bfe-508e-8ef8-f801a909b4b5",
+            "target": "end-fa8fd0c4-6ccd-5e82-9b41-757a9c90142f"
+          },
+          {
+            "id": "edge-ifElse-b815bc99-f258-54b6-9908-8f7e92c418d7-builtinFunction-cdea51c6-d9a0-5ccc-902e-76c7b5a5fbad",
+            "source": "ifElse-b815bc99-f258-54b6-9908-8f7e92c418d7",
+            "target": "builtinFunction-cdea51c6-d9a0-5ccc-902e-76c7b5a5fbad"
+          },
+          {
+            "id": "edge-builtinFunction-cdea51c6-d9a0-5ccc-902e-76c7b5a5fbad-builtinFunction-5daff0ef-2a25-59b2-a4b3-195ee11d1e7a",
+            "source": "builtinFunction-cdea51c6-d9a0-5ccc-902e-76c7b5a5fbad",
+            "target": "builtinFunction-5daff0ef-2a25-59b2-a4b3-195ee11d1e7a"
+          },
+          {
+            "id": "edge-builtinFunction-5daff0ef-2a25-59b2-a4b3-195ee11d1e7a-ifElse-db810c84-aecf-55a1-9550-7c57c5d8a550",
+            "source": "builtinFunction-5daff0ef-2a25-59b2-a4b3-195ee11d1e7a",
+            "target": "ifElse-db810c84-aecf-55a1-9550-7c57c5d8a550"
+          },
+          {
+            "id": "edge-ifElse-db810c84-aecf-55a1-9550-7c57c5d8a550-connector-13d6f9a4-0b67-5f93-b0a5-5bfbd80ed70c",
+            "source": "ifElse-db810c84-aecf-55a1-9550-7c57c5d8a550",
+            "target": "connector-13d6f9a4-0b67-5f93-b0a5-5bfbd80ed70c",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-connector-13d6f9a4-0b67-5f93-b0a5-5bfbd80ed70c-end-c156aacf-f702-5701-9926-b0adc954e5a2",
+            "source": "connector-13d6f9a4-0b67-5f93-b0a5-5bfbd80ed70c",
+            "target": "end-c156aacf-f702-5701-9926-b0adc954e5a2"
+          },
+          {
+            "id": "edge-builtinFunction-ae3296ae-9d24-5cb1-9f21-703823599b5a-builtinFunction-05c32439-5c1c-515e-9445-1d3cd2143727",
+            "source": "builtinFunction-ae3296ae-9d24-5cb1-9f21-703823599b5a",
+            "target": "builtinFunction-05c32439-5c1c-515e-9445-1d3cd2143727"
+          },
+          {
+            "id": "edge-builtinFunction-05c32439-5c1c-515e-9445-1d3cd2143727-builtinFunction-e93b6339-3f31-5926-a47a-be740ea13a9c",
+            "source": "builtinFunction-05c32439-5c1c-515e-9445-1d3cd2143727",
+            "target": "builtinFunction-e93b6339-3f31-5926-a47a-be740ea13a9c"
+          },
+          {
+            "id": "edge-builtinFunction-e93b6339-3f31-5926-a47a-be740ea13a9c-connector-ede53fee-61b1-5914-8447-83256c56b1b5",
+            "source": "builtinFunction-e93b6339-3f31-5926-a47a-be740ea13a9c",
+            "target": "connector-ede53fee-61b1-5914-8447-83256c56b1b5"
+          },
+          {
+            "id": "edge-connector-ede53fee-61b1-5914-8447-83256c56b1b5-connector-8a6cf751-e269-5bb1-a9fc-e56b42d97d58",
+            "source": "connector-ede53fee-61b1-5914-8447-83256c56b1b5",
+            "target": "connector-8a6cf751-e269-5bb1-a9fc-e56b42d97d58"
+          },
+          {
+            "id": "edge-connector-8a6cf751-e269-5bb1-a9fc-e56b42d97d58-connector-f3b9bd7b-183f-5716-98b7-a890c5f00fa8",
+            "source": "connector-8a6cf751-e269-5bb1-a9fc-e56b42d97d58",
+            "target": "connector-f3b9bd7b-183f-5716-98b7-a890c5f00fa8"
+          },
+          {
+            "id": "edge-ifElse-db810c84-aecf-55a1-9550-7c57c5d8a550-builtinFunction-62cb2ef3-2917-5475-90e9-3afe29876409",
+            "source": "ifElse-db810c84-aecf-55a1-9550-7c57c5d8a550",
+            "target": "builtinFunction-62cb2ef3-2917-5475-90e9-3afe29876409"
+          },
+          {
+            "id": "edge-builtinFunction-62cb2ef3-2917-5475-90e9-3afe29876409-builtinFunction-ae3296ae-9d24-5cb1-9f21-703823599b5a",
+            "source": "builtinFunction-62cb2ef3-2917-5475-90e9-3afe29876409",
+            "target": "builtinFunction-ae3296ae-9d24-5cb1-9f21-703823599b5a"
+          },
+          {
+            "id": "edge-ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d-builtinFunction-d6d9ed1b-7f5f-504c-9a69-ad846777d32a",
+            "source": "ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d",
+            "target": "builtinFunction-d6d9ed1b-7f5f-504c-9a69-ad846777d32a",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d-scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "source": "ifElse-cec6f193-4eda-53e4-8ac3-0f3d79c7971d",
+            "target": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-scope-abc18b48-b281-5b65-af2d-94b23e7f9c00-scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+            "source": "scope-abc18b48-b281-5b65-af2d-94b23e7f9c00",
+            "target": "scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+            "sourceHandle": "external-output",
+            "targetHandle": "external-input"
+          },
+          {
+            "id": "edge-scope-a058d416-427b-52c1-8f83-0bf5d987d412-connector-6c1d458f-d19f-5678-a7ec-db74781c82cc",
+            "source": "scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+            "target": "connector-6c1d458f-d19f-5678-a7ec-db74781c82cc",
+            "sourceHandle": "internal-source"
+          },
+          {
+            "id": "edge-connector-6c1d458f-d19f-5678-a7ec-db74781c82cc-connector-5fe163f3-8482-5f33-983c-9fabcd0d837b",
+            "source": "connector-6c1d458f-d19f-5678-a7ec-db74781c82cc",
+            "target": "connector-5fe163f3-8482-5f33-983c-9fabcd0d837b"
+          },
+          {
+            "id": "edge-connector-5fe163f3-8482-5f33-983c-9fabcd0d837b-end-dce197d4-d01c-59f6-931f-490e1aacfe25",
+            "source": "connector-5fe163f3-8482-5f33-983c-9fabcd0d837b",
+            "target": "end-dce197d4-d01c-59f6-931f-490e1aacfe25"
+          },
+          {
+            "id": "edge-end-dce197d4-d01c-59f6-931f-490e1aacfe25-scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+            "source": "end-dce197d4-d01c-59f6-931f-490e1aacfe25",
+            "target": "scope-a058d416-427b-52c1-8f83-0bf5d987d412",
+            "targetHandle": "internal-target"
+          }
+        ]
+      }
+    },
+    {
+      "id": "{0bbd7758-85d8-4c30-b3ba-e58cdaf62fa0}",
+      "name": "CAT - Refresh Power Platform Agent Inventory Daily",
+      "trigger": "Recurrence",
+      "nodeCount": 69,
+      "edgeCount": 75,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-9951793f-515c-584b-adb1-23bdcb846099",
+            "name": "Recurrence",
+            "type": "start",
+            "position": {
+              "x": 560,
+              "y": 120
+            },
+            "details": {
+              "triggerType": "recurrence"
+            }
+          },
+          {
+            "id": "variable-0bd6c1b8-0652-5060-8325-3df2be32276d",
+            "name": "Initialize RefreshStarted",
+            "type": "variable",
+            "position": {
+              "x": 890,
+              "y": 120
+            },
+            "details": {}
+          },
+          {
+            "id": "variable-bf145df1-bc86-5346-be36-b07c9c5ee585",
+            "name": "Initialize SkipToken",
+            "type": "variable",
+            "position": {
+              "x": 1220,
+              "y": 120
+            },
+            "details": {}
+          },
+          {
+            "id": "loop-7276d18f-017d-53ed-8309-39f4513b8a76",
+            "name": "Process All Power Platform Pages",
+            "type": "loop",
+            "position": {
+              "x": 4190,
+              "y": 120
+            },
+            "details": {
+              "expression": "@empty(variables('SkipToken'))"
+            },
+            "width": 6680,
+            "height": 1286
+          },
+          {
+            "id": "connector-c8452c9f-7c3f-52d3-ac96-203aa2964408",
+            "name": "Query agent page",
+            "type": "connector",
+            "position": {
+              "x": 60,
+              "y": 80
+            },
+            "parentId": "loop-7276d18f-017d-53ed-8309-39f4513b8a76",
+            "details": {
+              "displayName": "Power Platform Agent Inventory",
+              "apiName": "shared_cat-ppinventory",
+              "operationName": "QueryCopilotStudioAgents",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "api-version": "2024-10-01",
+                "body/TableName": "PowerPlatformResources",
+                "body/Options/Top": "100",
+                "body/Options/SkipToken": "@variables('SkipToken')"
+              }
+            }
+          },
+          {
+            "id": "builtinFunction-23167688-ac09-553e-b753-ebcec4d87b0e",
+            "name": "Validate page",
+            "type": "builtinFunction",
+            "position": {
+              "x": 390,
+              "y": 80
+            },
+            "parentId": "loop-7276d18f-017d-53ed-8309-39f4513b8a76",
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "name": "Upsert agent page",
+            "type": "loop",
+            "position": {
+              "x": 720,
+              "y": 80
+            },
+            "parentId": "loop-7276d18f-017d-53ed-8309-39f4513b8a76",
+            "details": {},
+            "width": 5570,
+            "height": 1146
+          },
+          {
+            "id": "connector-a05c5c9f-cf5f-5dde-a4bf-99422c2c34fe",
+            "name": "Find existing agent",
+            "type": "connector",
+            "position": {
+              "x": 60,
+              "y": 80
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "ListRecords",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories",
+                "$select": "cat_tenantagentinventoryid,cat_instructiondefinition,cat_instructionsummary",
+                "$filter": "@concat('cat_resourceid eq ''', replace(concat('pp:', item()?['properties']?['environmentId'], ':', item()?['name']), '''', ''''''), '''')",
+                "$top": "1"
+              }
+            }
+          },
+          {
+            "id": "ifElse-676bc5cf-1087-531a-94de-7dbec205fc47",
+            "name": "Create or update agent",
+            "type": "ifElse",
+            "position": {
+              "x": 390,
+              "y": 80
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {}
+          },
+          {
+            "id": "connector-13384800-8af5-58ef-ab93-834784ececcb",
+            "name": "Create agent",
+            "type": "connector",
+            "position": {
+              "x": 720,
+              "y": 80
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "CreateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories",
+                "item/cat_agentname": "@substring(coalesce(item()?['properties']?['displayName'], item()?['name']), 0, if(greater(length(coalesce(item()?['properties']?['displayName'], item()?['name'])), 850), 850, length(coalesce(item()?['properties']?['displayName'], item()?['name']))))",
+                "item/cat_agenttype": "Power Platform Inventory API",
+                "item/cat_lastseenon": "@utcNow()",
+                "item/cat_location": "@item()?['location']",
+                "item/cat_platform": "@item()?['properties']?['createdIn']",
+                "item/cat_sourcecreatedon": "@item()?['properties']?['createdAt']",
+                "item/cat_isquarantined": "@not(equals(item()?['properties']?['isQuarantined'], false))",
+                "item/cat_authentication": "@item()?['properties']?['authentication']",
+                "item/cat_channels": "@if(empty(item()?['properties']?['channels']), '', join(item()?['properties']?['channels'], '; '))",
+                "item/cat_publicationstatus": "@if(empty(item()?['properties']?['lastPublishedAt']), 'Draft', 'Published')",
+                "item/cat_searchtext": "@toLower(concat(coalesce(item()?['properties']?['displayName'], ''), ' ', coalesce(item()?['properties']?['schemaName'], ''), ' ', coalesce(item()?['properties']?['createdIn'], '')))",
+                "item/cat_instructioncharcount": "@item()?['properties']?['instructionsCharactersCount']",
+                "item/cat_harness": "@item()?['properties']?['harness']"
+              }
+            }
+          },
+          {
+            "id": "variable-b3807f4c-0876-58e3-9f3d-02636e7c6674",
+            "name": "Set AgentRecordId created",
+            "type": "variable",
+            "position": {
+              "x": 1050,
+              "y": 80
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {}
+          },
+          {
+            "id": "connector-55b56823-6e6c-5efb-be43-bb2a53a2d3b9",
+            "name": "Update agent",
+            "type": "connector",
+            "position": {
+              "x": 720,
+              "y": 190
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories",
+                "item/cat_agentname": "@substring(coalesce(item()?['properties']?['displayName'], item()?['name']), 0, if(greater(length(coalesce(item()?['properties']?['displayName'], item()?['name'])), 850), 850, length(coalesce(item()?['properties']?['displayName'], item()?['name']))))",
+                "item/cat_agenttype": "Power Platform Inventory API",
+                "item/cat_lastseenon": "@utcNow()",
+                "item/cat_location": "@item()?['location']",
+                "item/cat_platform": "@item()?['properties']?['createdIn']",
+                "item/cat_sourcecreatedon": "@item()?['properties']?['createdAt']",
+                "item/cat_isquarantined": "@not(equals(item()?['properties']?['isQuarantined'], false))",
+                "item/cat_authentication": "@item()?['properties']?['authentication']",
+                "item/cat_channels": "@if(empty(item()?['properties']?['channels']), '', join(item()?['properties']?['channels'], '; '))",
+                "item/cat_publicationstatus": "@if(empty(item()?['properties']?['lastPublishedAt']), 'Draft', 'Published')",
+                "item/cat_searchtext": "@toLower(concat(coalesce(item()?['properties']?['displayName'], ''), ' ', coalesce(item()?['properties']?['schemaName'], ''), ' ', coalesce(item()?['properties']?['createdIn'], '')))",
+                "item/cat_instructioncharcount": "@item()?['properties']?['instructionsCharactersCount']",
+                "item/cat_harness": "@item()?['properties']?['harness']"
+              }
+            }
+          },
+          {
+            "id": "variable-c61dbf01-171f-5061-b6a1-e4154008daf2",
+            "name": "Set AgentRecordId existing",
+            "type": "variable",
+            "position": {
+              "x": 1050,
+              "y": 190
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {}
+          },
+          {
+            "id": "connector-358241b9-1bdc-5d97-a4b0-d1fb473f98bc",
+            "name": "Clear previous instruction definition",
+            "type": "connector",
+            "position": {
+              "x": 720,
+              "y": 300
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories",
+                "item/cat_instructiondefinition": "",
+                "item/cat_instructionformat": "",
+                "item/cat_instructionstatus": "Refreshing",
+                "item/cat_instructionsourceversion": "",
+                "item/cat_instructionerror": ""
+              }
+            }
+          },
+          {
+            "id": "builtinFunction-c129194e-3bdb-5565-a642-9dbc95325f70",
+            "name": "Find approved instruction source",
+            "type": "builtinFunction",
+            "position": {
+              "x": 1050,
+              "y": 300
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "ifElse-32526eb1-8580-549b-bc7f-8f4058faf4ee",
+            "name": "Instruction source is approved",
+            "type": "ifElse",
+            "position": {
+              "x": 1380,
+              "y": 80
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {}
+          },
+          {
+            "id": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "name": "Read instruction definition",
+            "type": "scope",
+            "position": {
+              "x": 1710,
+              "y": 80
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {
+              "description": ""
+            },
+            "width": 2690,
+            "height": 536
+          },
+          {
+            "id": "builtinFunction-c1fdb7d2-f763-58ba-b673-5b2579656722",
+            "name": "Validate authoring agent identifier",
+            "type": "builtinFunction",
+            "position": {
+              "x": 60,
+              "y": 80
+            },
+            "parentId": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "connector-ab1fbf66-0d7c-5823-ab14-ca9ee0ca3659",
+            "name": "Read authoring agent",
+            "type": "connector",
+            "position": {
+              "x": 390,
+              "y": 80
+            },
+            "parentId": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "GetItemWithOrganization",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "organization": "@first(body('Find_approved_instruction_source'))?['organizationUrl']",
+                "entityName": "bots",
+                "$select": "botid,configuration,modifiedon,publishedon"
+              }
+            }
+          },
+          {
+            "id": "builtinFunction-25837f98-ab75-532f-b818-e8ed4b000a2f",
+            "name": "Read authoring configuration",
+            "type": "builtinFunction",
+            "position": {
+              "x": 720,
+              "y": 80
+            },
+            "parentId": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "ifElse-c4033cea-a2e2-59af-99fd-de25c46d168c",
+            "name": "Has structured instruction definition",
+            "type": "ifElse",
+            "position": {
+              "x": 1050,
+              "y": 80
+            },
+            "parentId": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "details": {}
+          },
+          {
+            "id": "builtinFunction-0e0331f8-2346-5c13-9f39-7ed5e8069ddd",
+            "name": "Validate structured instruction definition",
+            "type": "builtinFunction",
+            "position": {
+              "x": 1380,
+              "y": 80
+            },
+            "parentId": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "ifElse-d723e6f3-2399-5a63-9bc1-14a0c3d79209",
+            "name": "Structured instructions are configured",
+            "type": "ifElse",
+            "position": {
+              "x": 1710,
+              "y": 80
+            },
+            "parentId": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "details": {}
+          },
+          {
+            "id": "connector-2351dbb9-f491-54b8-a731-cbb4bb5c5e89",
+            "name": "Store structured instruction definition",
+            "type": "connector",
+            "position": {
+              "x": 2040,
+              "y": 80
+            },
+            "parentId": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories",
+                "item/cat_instructiondefinition": "@string(body('Validate_structured_instruction_definition'))",
+                "item/cat_instructionformat": "BotConfiguration instructions JSON",
+                "item/cat_instructionstatus": "Definition available",
+                "item/cat_instructionsourceversion": "@concat('bot:', body('Read_authoring_agent')?['botid'], ':', coalesce(body('Read_authoring_agent')?['@odata.etag'], ''))",
+                "item/cat_instructionretrievedon": "@utcNow()",
+                "item/cat_instructionerror": ""
+              }
+            }
+          },
+          {
+            "id": "connector-1f6f2594-f631-50b5-99e5-a66367ae2ee7",
+            "name": "Record empty structured instructions",
+            "type": "connector",
+            "position": {
+              "x": 2040,
+              "y": 190
+            },
+            "parentId": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories",
+                "item/cat_instructiondefinition": "",
+                "item/cat_instructionformat": "",
+                "item/cat_instructionstatus": "No instructions configured",
+                "item/cat_instructionsourceversion": "",
+                "item/cat_instructionerror": "The readable authoring definition contains no instruction segments."
+              }
+            }
+          },
+          {
+            "id": "connector-2f91b8b1-e2c2-5ad3-847f-c10c0ade65be",
+            "name": "Read instruction component",
+            "type": "connector",
+            "position": {
+              "x": 1380,
+              "y": 190
+            },
+            "parentId": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "ListRecordsWithOrganization",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "organization": "@first(body('Find_approved_instruction_source'))?['organizationUrl']",
+                "entityName": "botcomponents",
+                "$select": "botcomponentid,data,modifiedon",
+                "$filter": "@concat('_parentbotid_value eq ', body('Read_authoring_agent')?['botid'], ' and componenttype eq 15 and statecode eq 0')",
+                "$top": "2"
+              }
+            }
+          },
+          {
+            "id": "ifElse-c5d0de36-2995-57e3-9fc9-00579fc6126c",
+            "name": "Exactly one instruction component",
+            "type": "ifElse",
+            "position": {
+              "x": 1710,
+              "y": 190
+            },
+            "parentId": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "details": {}
+          },
+          {
+            "id": "ifElse-d41ddb1c-89bb-5bc0-a6cb-569e7841bacc",
+            "name": "Recognized native instruction definition",
+            "type": "ifElse",
+            "position": {
+              "x": 2040,
+              "y": 300
+            },
+            "parentId": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "details": {}
+          },
+          {
+            "id": "connector-b5b91593-f709-5dfa-8384-e66368c6a6aa",
+            "name": "Store native instruction definition",
+            "type": "connector",
+            "position": {
+              "x": 2370,
+              "y": 80
+            },
+            "parentId": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories",
+                "item/cat_instructiondefinition": "@first(body('Read_instruction_component')?['value'])?['data']",
+                "item/cat_instructionformat": "GptComponentMetadata OBI/YAML",
+                "item/cat_instructionstatus": "Definition available",
+                "item/cat_instructionsourceversion": "@concat('botcomponent:', first(body('Read_instruction_component')?['value'])?['botcomponentid'], ':', coalesce(first(body('Read_instruction_component')?['value'])?['@odata.etag'], ''))",
+                "item/cat_instructionretrievedon": "@utcNow()",
+                "item/cat_instructionerror": ""
+              }
+            }
+          },
+          {
+            "id": "connector-6fa88430-3c12-54e9-a3a7-5ff1cff71a5a",
+            "name": "Record unavailable native instruction format",
+            "type": "connector",
+            "position": {
+              "x": 2370,
+              "y": 190
+            },
+            "parentId": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories",
+                "item/cat_instructiondefinition": "",
+                "item/cat_instructionformat": "",
+                "item/cat_instructionstatus": "No supported instruction definition",
+                "item/cat_instructionsourceversion": "",
+                "item/cat_instructionerror": "The component does not expose the recognized native instruction-bearing OBI definition. No text was inferred."
+              }
+            }
+          },
+          {
+            "id": "connector-87003268-6bd1-5f79-a24a-8d9d6270bba5",
+            "name": "Record no unique instruction component",
+            "type": "connector",
+            "position": {
+              "x": 2040,
+              "y": 410
+            },
+            "parentId": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories",
+                "item/cat_instructiondefinition": "",
+                "item/cat_instructionformat": "",
+                "item/cat_instructionstatus": "No unique instruction component",
+                "item/cat_instructionsourceversion": "",
+                "item/cat_instructionerror": "There is no single readable active Custom GPT instruction component. No component was selected arbitrarily."
+              }
+            }
+          },
+          {
+            "id": "scope-5c61edd9-bb26-5b64-9d6a-120b71b65f3c",
+            "name": "Handle instruction retrieval error",
+            "type": "scope",
+            "position": {
+              "x": 4470,
+              "y": 80
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {
+              "description": ""
+            },
+            "width": 710,
+            "height": 206
+          },
+          {
+            "id": "connector-1fc9fdaf-e742-5e60-9c7f-3eb399098ddf",
+            "name": "Record instruction retrieval error",
+            "type": "connector",
+            "position": {
+              "x": 60,
+              "y": 80
+            },
+            "parentId": "scope-5c61edd9-bb26-5b64-9d6a-120b71b65f3c",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories",
+                "item/cat_instructiondefinition": "",
+                "item/cat_instructionformat": "",
+                "item/cat_instructionstatus": "@if(or(equals(outputs('Read_authoring_agent')?['statusCode'], 403), equals(outputs('Read_authoring_agent')?['statusCode'], 401), equals(outputs('Read_instruction_component')?['statusCode'], 403), equals(outputs('Read_instruction_component')?['statusCode'], 401)), 'Not authorized', 'Retrieval error')",
+                "item/cat_instructionsourceversion": "",
+                "item/cat_instructionerror": "@concat('Instruction definition retrieval failed. Review source permissions and the secured flow actions. Run ', trigger()?['clientTrackingId'])"
+              }
+            }
+          },
+          {
+            "id": "variable-878e6c5c-3bfc-5b2a-b163-13a2cbba9e91",
+            "name": "Flag instruction retrieval error",
+            "type": "variable",
+            "position": {
+              "x": 390,
+              "y": 80
+            },
+            "parentId": "scope-5c61edd9-bb26-5b64-9d6a-120b71b65f3c",
+            "details": {}
+          },
+          {
+            "id": "builtinFunction-e8177d0f-d112-5a94-8e1b-00f3917e1a51",
+            "name": "Finish instruction attempt",
+            "type": "builtinFunction",
+            "position": {
+              "x": 5250,
+              "y": 80
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "ifElse-6906d974-d056-568c-aef7-3c102bdbb48e",
+            "name": "Instruction source mapping is missing",
+            "type": "ifElse",
+            "position": {
+              "x": 1710,
+              "y": 660
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {}
+          },
+          {
+            "id": "connector-c540a997-53a7-5ecd-934e-5deebf3a4c5e",
+            "name": "Record unapproved instruction source",
+            "type": "connector",
+            "position": {
+              "x": 4470,
+              "y": 330
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories",
+                "item/cat_instructiondefinition": "",
+                "item/cat_instructionformat": "",
+                "item/cat_instructionstatus": "No approved instruction source",
+                "item/cat_instructionsourceversion": "",
+                "item/cat_instructionerror": "No source environment mapping is approved for this resource. Instruction enrichment is disabled for this row."
+              }
+            }
+          },
+          {
+            "id": "connector-f27b6b8d-cd3e-5337-8198-f34c92ad50eb",
+            "name": "Record duplicate instruction source",
+            "type": "connector",
+            "position": {
+              "x": 4470,
+              "y": 440
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories",
+                "item/cat_instructiondefinition": "",
+                "item/cat_instructionformat": "",
+                "item/cat_instructionstatus": "Instruction source configuration error",
+                "item/cat_instructionsourceversion": "",
+                "item/cat_instructionerror": "More than one source mapping matches this environment; resolve the duplicate mappings."
+              }
+            }
+          },
+          {
+            "id": "variable-d43f333c-e755-58fa-84a4-7648b6e0a411",
+            "name": "Flag duplicate instruction source",
+            "type": "variable",
+            "position": {
+              "x": 5250,
+              "y": 190
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {}
+          },
+          {
+            "id": "scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964",
+            "name": "Summarise instruction definition",
+            "type": "scope",
+            "position": {
+              "x": 1710,
+              "y": 770
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {
+              "description": ""
+            },
+            "width": 2030,
+            "height": 316
+          },
+          {
+            "id": "connector-cb9141d2-3852-5ad9-9581-7226eedf9dc7",
+            "name": "Read refreshed instruction definition",
+            "type": "connector",
+            "position": {
+              "x": 60,
+              "y": 80
+            },
+            "parentId": "scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "GetItem",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories",
+                "$select": "cat_instructiondefinition,cat_instructionstatus"
+              }
+            }
+          },
+          {
+            "id": "ifElse-d44c2136-8485-55b8-88ce-639c34d43870",
+            "name": "Instruction definition is available",
+            "type": "ifElse",
+            "position": {
+              "x": 390,
+              "y": 80
+            },
+            "parentId": "scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964",
+            "details": {}
+          },
+          {
+            "id": "ifElse-10313228-6b83-5610-8220-5a05405822a6",
+            "name": "Summary needs refresh",
+            "type": "ifElse",
+            "position": {
+              "x": 720,
+              "y": 80
+            },
+            "parentId": "scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964",
+            "details": {}
+          },
+          {
+            "id": "connector-68400a73-f2f2-547a-a450-5a4e3fa3e2a4",
+            "name": "Run instruction summary prompt",
+            "type": "connector",
+            "position": {
+              "x": 1050,
+              "y": 80
+            },
+            "parentId": "scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "aibuilderpredict_customprompt",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "item/requestv2/InstructionDefinition": "@substring(coalesce(body('Read_refreshed_instruction_definition')?['cat_instructiondefinition'], ''), 0, min(length(coalesce(body('Read_refreshed_instruction_definition')?['cat_instructiondefinition'], '')), 20000))"
+              }
+            }
+          },
+          {
+            "id": "builtinFunction-492c60a9-5856-5541-9a4f-c68daa4b2720",
+            "name": "Clean instruction summary",
+            "type": "builtinFunction",
+            "position": {
+              "x": 1380,
+              "y": 80
+            },
+            "parentId": "scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964",
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "connector-5db478cc-b15a-5969-b639-b2ead30b4bdf",
+            "name": "Store instruction summary",
+            "type": "connector",
+            "position": {
+              "x": 1710,
+              "y": 80
+            },
+            "parentId": "scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories",
+                "item/cat_instructionsummary": "@if(empty(outputs('Clean_instruction_summary')), null, substring(outputs('Clean_instruction_summary'), 0, min(length(outputs('Clean_instruction_summary')), 500)))"
+              }
+            }
+          },
+          {
+            "id": "connector-41a21cf2-158a-5a11-8723-eb482322e332",
+            "name": "Clear summary after prompt failure",
+            "type": "connector",
+            "position": {
+              "x": 1380,
+              "y": 190
+            },
+            "parentId": "scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories"
+              }
+            }
+          },
+          {
+            "id": "ifElse-fdcf950f-f229-53ef-9dde-b567e59ca021",
+            "name": "Previous summary exists",
+            "type": "ifElse",
+            "position": {
+              "x": 720,
+              "y": 190
+            },
+            "parentId": "scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964",
+            "details": {}
+          },
+          {
+            "id": "connector-e46deed8-f48d-573d-8487-9b2cae9097ac",
+            "name": "Clear unavailable instruction summary",
+            "type": "connector",
+            "position": {
+              "x": 1050,
+              "y": 190
+            },
+            "parentId": "scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "UpdateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories"
+              }
+            }
+          },
+          {
+            "id": "builtinFunction-0539e5ce-5cf0-5b9b-b5c4-1121afcb1bf4",
+            "name": "Finish summary attempt",
+            "type": "builtinFunction",
+            "position": {
+              "x": 4470,
+              "y": 550
+            },
+            "parentId": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "variable-88636d40-986c-572d-bd3e-576f04470e90",
+            "name": "Set SkipToken",
+            "type": "variable",
+            "position": {
+              "x": 6360,
+              "y": 80
+            },
+            "parentId": "loop-7276d18f-017d-53ed-8309-39f4513b8a76",
+            "details": {}
+          },
+          {
+            "id": "ifElse-3994cc90-2ff0-52e5-a6e1-e1b665734459",
+            "name": "Check complete",
+            "type": "ifElse",
+            "position": {
+              "x": 10940,
+              "y": 120
+            },
+            "details": {}
+          },
+          {
+            "id": "end-67bb07e3-990a-534e-a9b7-7fc1dd740bba",
+            "name": "Incomplete inventory",
+            "type": "end",
+            "position": {
+              "x": 11270,
+              "y": 120
+            },
+            "details": {
+              "runStatus": "Failed"
+            }
+          },
+          {
+            "id": "connector-5a9f0ba7-6a5a-5d5c-ba00-854e98966678",
+            "name": "Find stale Power Platform agents",
+            "type": "connector",
+            "position": {
+              "x": 11600,
+              "y": 120
+            },
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "ListRecords",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories",
+                "$select": "cat_tenantagentinventoryid",
+                "$filter": "@concat('cat_agenttype eq ''Power Platform Inventory API'' and cat_lastseenon lt ', variables('RefreshStarted'))"
+              }
+            }
+          },
+          {
+            "id": "loop-c29cf5bf-472b-5b9d-a6ed-998227e3055d",
+            "name": "Remove stale Power Platform agents",
+            "type": "loop",
+            "position": {
+              "x": 11930,
+              "y": 120
+            },
+            "details": {},
+            "width": 380,
+            "height": 206
+          },
+          {
+            "id": "connector-2a324b1b-b7a1-5c42-9c95-a4fa6d4fabe6",
+            "name": "Delete stale agent",
+            "type": "connector",
+            "position": {
+              "x": 60,
+              "y": 80
+            },
+            "parentId": "loop-c29cf5bf-472b-5b9d-a6ed-998227e3055d",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "DeleteRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cat_tenantagentinventories"
+              }
+            }
+          },
+          {
+            "id": "variable-081f5433-a616-5d34-8fd2-2e4ff5ce31e7",
+            "name": "Initialize InstructionRetrievalFailed",
+            "type": "variable",
+            "position": {
+              "x": 1550,
+              "y": 120
+            },
+            "details": {}
+          },
+          {
+            "id": "variable-92601c00-cbf3-5761-8e48-ee3ff04a4344",
+            "name": "Initialize AgentRecordId",
+            "type": "variable",
+            "position": {
+              "x": 1880,
+              "y": 120
+            },
+            "details": {}
+          },
+          {
+            "id": "connector-e8298b99-565e-5940-9d8f-dcb4f4fb78a1",
+            "name": "Get instruction source settings",
+            "type": "connector",
+            "position": {
+              "x": 2210,
+              "y": 120
+            },
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "ListRecords",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "environmentvariabledefinitions",
+                "$select": "defaultvalue,schemaname",
+                "$filter": "schemaname eq 'cat_InstructionSources'",
+                "$expand": "environmentvariabledefinition_environmentvariablevalue($select=value)"
+              }
+            }
+          },
+          {
+            "id": "ifElse-8c9f2d3a-87c8-5639-a9ec-bcfed725ec9b",
+            "name": "Require instruction settings definition",
+            "type": "ifElse",
+            "position": {
+              "x": 2540,
+              "y": 120
+            },
+            "details": {}
+          },
+          {
+            "id": "end-4f66c4b8-30af-53b8-98b0-97e9fd772fbf",
+            "name": "Stop MissingInstructionSources",
+            "type": "end",
+            "position": {
+              "x": 2870,
+              "y": 120
+            },
+            "details": {
+              "runStatus": "Failed"
+            }
+          },
+          {
+            "id": "ifElse-18b63679-dc7a-5a02-8018-f3d66ede3887",
+            "name": "Require unambiguous instruction settings",
+            "type": "ifElse",
+            "position": {
+              "x": 2870,
+              "y": 230
+            },
+            "details": {}
+          },
+          {
+            "id": "end-a3405c8f-bc0a-57df-9239-75180c789b90",
+            "name": "Stop AmbiguousInstructionSources",
+            "type": "end",
+            "position": {
+              "x": 3200,
+              "y": 120
+            },
+            "details": {
+              "runStatus": "Failed"
+            }
+          },
+          {
+            "id": "builtinFunction-b51b44a0-c410-5203-a2ae-b4eb38784715",
+            "name": "Parse instruction source settings",
+            "type": "builtinFunction",
+            "position": {
+              "x": 3200,
+              "y": 230
+            },
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "ifElse-5a57739c-b0dd-52eb-9f3d-da00b71490c0",
+            "name": "Require instruction retrieval success",
+            "type": "ifElse",
+            "position": {
+              "x": 11270,
+              "y": 230
+            },
+            "details": {}
+          },
+          {
+            "id": "end-d36710fd-0ebd-5c17-ae86-03397ff57303",
+            "name": "Stop InstructionRetrievalFailed",
+            "type": "end",
+            "position": {
+              "x": 11600,
+              "y": 230
+            },
+            "details": {
+              "runStatus": "Failed"
+            }
+          },
+          {
+            "id": "builtinFunction-3f6a6b66-2b3a-5331-9150-5e4b7d91c624",
+            "name": "Find invalid instruction sources",
+            "type": "builtinFunction",
+            "position": {
+              "x": 3530,
+              "y": 120
+            },
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation"
+            }
+          },
+          {
+            "id": "ifElse-f8665405-3555-5a74-bb43-68d30299c7fe",
+            "name": "Require valid instruction sources",
+            "type": "ifElse",
+            "position": {
+              "x": 3860,
+              "y": 120
+            },
+            "details": {}
+          },
+          {
+            "id": "end-09c7b53d-4b70-5942-a38d-ced5176b1f0e",
+            "name": "Stop InvalidInstructionSources",
+            "type": "end",
+            "position": {
+              "x": 4190,
+              "y": 1450
+            },
+            "details": {
+              "runStatus": "Failed"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-9951793f-515c-584b-adb1-23bdcb846099-variable-0bd6c1b8-0652-5060-8325-3df2be32276d",
+            "source": "start-9951793f-515c-584b-adb1-23bdcb846099",
+            "target": "variable-0bd6c1b8-0652-5060-8325-3df2be32276d"
+          },
+          {
+            "id": "edge-variable-0bd6c1b8-0652-5060-8325-3df2be32276d-variable-bf145df1-bc86-5346-be36-b07c9c5ee585",
+            "source": "variable-0bd6c1b8-0652-5060-8325-3df2be32276d",
+            "target": "variable-bf145df1-bc86-5346-be36-b07c9c5ee585"
+          },
+          {
+            "id": "edge-ifElse-f8665405-3555-5a74-bb43-68d30299c7fe-loop-7276d18f-017d-53ed-8309-39f4513b8a76",
+            "source": "ifElse-f8665405-3555-5a74-bb43-68d30299c7fe",
+            "target": "loop-7276d18f-017d-53ed-8309-39f4513b8a76",
+            "targetHandle": "external-input"
+          },
+          {
+            "id": "edge-loop-7276d18f-017d-53ed-8309-39f4513b8a76-connector-c8452c9f-7c3f-52d3-ac96-203aa2964408",
+            "source": "loop-7276d18f-017d-53ed-8309-39f4513b8a76",
+            "target": "connector-c8452c9f-7c3f-52d3-ac96-203aa2964408",
+            "sourceHandle": "internal-source"
+          },
+          {
+            "id": "edge-connector-c8452c9f-7c3f-52d3-ac96-203aa2964408-builtinFunction-23167688-ac09-553e-b753-ebcec4d87b0e",
+            "source": "connector-c8452c9f-7c3f-52d3-ac96-203aa2964408",
+            "target": "builtinFunction-23167688-ac09-553e-b753-ebcec4d87b0e"
+          },
+          {
+            "id": "edge-builtinFunction-23167688-ac09-553e-b753-ebcec4d87b0e-loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "source": "builtinFunction-23167688-ac09-553e-b753-ebcec4d87b0e",
+            "target": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "targetHandle": "external-input"
+          },
+          {
+            "id": "edge-loop-a258d825-a266-5540-a226-074cc6b1888a-connector-a05c5c9f-cf5f-5dde-a4bf-99422c2c34fe",
+            "source": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "target": "connector-a05c5c9f-cf5f-5dde-a4bf-99422c2c34fe",
+            "sourceHandle": "internal-source"
+          },
+          {
+            "id": "edge-connector-a05c5c9f-cf5f-5dde-a4bf-99422c2c34fe-ifElse-676bc5cf-1087-531a-94de-7dbec205fc47",
+            "source": "connector-a05c5c9f-cf5f-5dde-a4bf-99422c2c34fe",
+            "target": "ifElse-676bc5cf-1087-531a-94de-7dbec205fc47"
+          },
+          {
+            "id": "edge-ifElse-676bc5cf-1087-531a-94de-7dbec205fc47-connector-13384800-8af5-58ef-ab93-834784ececcb",
+            "source": "ifElse-676bc5cf-1087-531a-94de-7dbec205fc47",
+            "target": "connector-13384800-8af5-58ef-ab93-834784ececcb",
+            "sourceHandle": "condition:dcb8dd0d-5a7e-5ba2-836c-cf899fef6900"
+          },
+          {
+            "id": "edge-connector-13384800-8af5-58ef-ab93-834784ececcb-variable-b3807f4c-0876-58e3-9f3d-02636e7c6674",
+            "source": "connector-13384800-8af5-58ef-ab93-834784ececcb",
+            "target": "variable-b3807f4c-0876-58e3-9f3d-02636e7c6674"
+          },
+          {
+            "id": "edge-ifElse-676bc5cf-1087-531a-94de-7dbec205fc47-connector-55b56823-6e6c-5efb-be43-bb2a53a2d3b9",
+            "source": "ifElse-676bc5cf-1087-531a-94de-7dbec205fc47",
+            "target": "connector-55b56823-6e6c-5efb-be43-bb2a53a2d3b9",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-connector-55b56823-6e6c-5efb-be43-bb2a53a2d3b9-variable-c61dbf01-171f-5061-b6a1-e4154008daf2",
+            "source": "connector-55b56823-6e6c-5efb-be43-bb2a53a2d3b9",
+            "target": "variable-c61dbf01-171f-5061-b6a1-e4154008daf2"
+          },
+          {
+            "id": "edge-ifElse-676bc5cf-1087-531a-94de-7dbec205fc47-connector-358241b9-1bdc-5d97-a4b0-d1fb473f98bc",
+            "source": "ifElse-676bc5cf-1087-531a-94de-7dbec205fc47",
+            "target": "connector-358241b9-1bdc-5d97-a4b0-d1fb473f98bc"
+          },
+          {
+            "id": "edge-connector-358241b9-1bdc-5d97-a4b0-d1fb473f98bc-builtinFunction-c129194e-3bdb-5565-a642-9dbc95325f70",
+            "source": "connector-358241b9-1bdc-5d97-a4b0-d1fb473f98bc",
+            "target": "builtinFunction-c129194e-3bdb-5565-a642-9dbc95325f70"
+          },
+          {
+            "id": "edge-builtinFunction-c129194e-3bdb-5565-a642-9dbc95325f70-ifElse-32526eb1-8580-549b-bc7f-8f4058faf4ee",
+            "source": "builtinFunction-c129194e-3bdb-5565-a642-9dbc95325f70",
+            "target": "ifElse-32526eb1-8580-549b-bc7f-8f4058faf4ee"
+          },
+          {
+            "id": "edge-ifElse-32526eb1-8580-549b-bc7f-8f4058faf4ee-scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "source": "ifElse-32526eb1-8580-549b-bc7f-8f4058faf4ee",
+            "target": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "sourceHandle": "condition:9101c30e-9bf7-5a4f-b2f4-25997b851030",
+            "targetHandle": "external-input"
+          },
+          {
+            "id": "edge-scope-39d6e4f1-a609-566f-8448-cc77517c6eaf-builtinFunction-c1fdb7d2-f763-58ba-b673-5b2579656722",
+            "source": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "target": "builtinFunction-c1fdb7d2-f763-58ba-b673-5b2579656722",
+            "sourceHandle": "internal-source"
+          },
+          {
+            "id": "edge-builtinFunction-c1fdb7d2-f763-58ba-b673-5b2579656722-connector-ab1fbf66-0d7c-5823-ab14-ca9ee0ca3659",
+            "source": "builtinFunction-c1fdb7d2-f763-58ba-b673-5b2579656722",
+            "target": "connector-ab1fbf66-0d7c-5823-ab14-ca9ee0ca3659"
+          },
+          {
+            "id": "edge-connector-ab1fbf66-0d7c-5823-ab14-ca9ee0ca3659-builtinFunction-25837f98-ab75-532f-b818-e8ed4b000a2f",
+            "source": "connector-ab1fbf66-0d7c-5823-ab14-ca9ee0ca3659",
+            "target": "builtinFunction-25837f98-ab75-532f-b818-e8ed4b000a2f"
+          },
+          {
+            "id": "edge-builtinFunction-25837f98-ab75-532f-b818-e8ed4b000a2f-ifElse-c4033cea-a2e2-59af-99fd-de25c46d168c",
+            "source": "builtinFunction-25837f98-ab75-532f-b818-e8ed4b000a2f",
+            "target": "ifElse-c4033cea-a2e2-59af-99fd-de25c46d168c"
+          },
+          {
+            "id": "edge-ifElse-c4033cea-a2e2-59af-99fd-de25c46d168c-builtinFunction-0e0331f8-2346-5c13-9f39-7ed5e8069ddd",
+            "source": "ifElse-c4033cea-a2e2-59af-99fd-de25c46d168c",
+            "target": "builtinFunction-0e0331f8-2346-5c13-9f39-7ed5e8069ddd",
+            "sourceHandle": "condition:086bf3f7-6167-5a98-bd01-6556be355245"
+          },
+          {
+            "id": "edge-builtinFunction-0e0331f8-2346-5c13-9f39-7ed5e8069ddd-ifElse-d723e6f3-2399-5a63-9bc1-14a0c3d79209",
+            "source": "builtinFunction-0e0331f8-2346-5c13-9f39-7ed5e8069ddd",
+            "target": "ifElse-d723e6f3-2399-5a63-9bc1-14a0c3d79209"
+          },
+          {
+            "id": "edge-ifElse-d723e6f3-2399-5a63-9bc1-14a0c3d79209-connector-2351dbb9-f491-54b8-a731-cbb4bb5c5e89",
+            "source": "ifElse-d723e6f3-2399-5a63-9bc1-14a0c3d79209",
+            "target": "connector-2351dbb9-f491-54b8-a731-cbb4bb5c5e89",
+            "sourceHandle": "condition:bb408aa7-8723-5402-be83-84892c5317dd"
+          },
+          {
+            "id": "edge-ifElse-d723e6f3-2399-5a63-9bc1-14a0c3d79209-connector-1f6f2594-f631-50b5-99e5-a66367ae2ee7",
+            "source": "ifElse-d723e6f3-2399-5a63-9bc1-14a0c3d79209",
+            "target": "connector-1f6f2594-f631-50b5-99e5-a66367ae2ee7",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-ifElse-c4033cea-a2e2-59af-99fd-de25c46d168c-connector-2f91b8b1-e2c2-5ad3-847f-c10c0ade65be",
+            "source": "ifElse-c4033cea-a2e2-59af-99fd-de25c46d168c",
+            "target": "connector-2f91b8b1-e2c2-5ad3-847f-c10c0ade65be",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-connector-2f91b8b1-e2c2-5ad3-847f-c10c0ade65be-ifElse-c5d0de36-2995-57e3-9fc9-00579fc6126c",
+            "source": "connector-2f91b8b1-e2c2-5ad3-847f-c10c0ade65be",
+            "target": "ifElse-c5d0de36-2995-57e3-9fc9-00579fc6126c"
+          },
+          {
+            "id": "edge-ifElse-c5d0de36-2995-57e3-9fc9-00579fc6126c-ifElse-d41ddb1c-89bb-5bc0-a6cb-569e7841bacc",
+            "source": "ifElse-c5d0de36-2995-57e3-9fc9-00579fc6126c",
+            "target": "ifElse-d41ddb1c-89bb-5bc0-a6cb-569e7841bacc",
+            "sourceHandle": "condition:91c75e5b-6206-51bb-bb97-d6e8a2a3c905"
+          },
+          {
+            "id": "edge-ifElse-d41ddb1c-89bb-5bc0-a6cb-569e7841bacc-connector-b5b91593-f709-5dfa-8384-e66368c6a6aa",
+            "source": "ifElse-d41ddb1c-89bb-5bc0-a6cb-569e7841bacc",
+            "target": "connector-b5b91593-f709-5dfa-8384-e66368c6a6aa",
+            "sourceHandle": "condition:586017de-2aaf-5a70-917f-4883fe3b5930"
+          },
+          {
+            "id": "edge-ifElse-d41ddb1c-89bb-5bc0-a6cb-569e7841bacc-connector-6fa88430-3c12-54e9-a3a7-5ff1cff71a5a",
+            "source": "ifElse-d41ddb1c-89bb-5bc0-a6cb-569e7841bacc",
+            "target": "connector-6fa88430-3c12-54e9-a3a7-5ff1cff71a5a",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-ifElse-c5d0de36-2995-57e3-9fc9-00579fc6126c-connector-87003268-6bd1-5f79-a24a-8d9d6270bba5",
+            "source": "ifElse-c5d0de36-2995-57e3-9fc9-00579fc6126c",
+            "target": "connector-87003268-6bd1-5f79-a24a-8d9d6270bba5",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-ifElse-c4033cea-a2e2-59af-99fd-de25c46d168c-scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "source": "ifElse-c4033cea-a2e2-59af-99fd-de25c46d168c",
+            "target": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-scope-39d6e4f1-a609-566f-8448-cc77517c6eaf-scope-5c61edd9-bb26-5b64-9d6a-120b71b65f3c",
+            "source": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "target": "scope-5c61edd9-bb26-5b64-9d6a-120b71b65f3c",
+            "sourceHandle": "external-output",
+            "targetHandle": "external-input"
+          },
+          {
+            "id": "edge-scope-5c61edd9-bb26-5b64-9d6a-120b71b65f3c-connector-1fc9fdaf-e742-5e60-9c7f-3eb399098ddf",
+            "source": "scope-5c61edd9-bb26-5b64-9d6a-120b71b65f3c",
+            "target": "connector-1fc9fdaf-e742-5e60-9c7f-3eb399098ddf",
+            "sourceHandle": "internal-source"
+          },
+          {
+            "id": "edge-connector-1fc9fdaf-e742-5e60-9c7f-3eb399098ddf-variable-878e6c5c-3bfc-5b2a-b163-13a2cbba9e91",
+            "source": "connector-1fc9fdaf-e742-5e60-9c7f-3eb399098ddf",
+            "target": "variable-878e6c5c-3bfc-5b2a-b163-13a2cbba9e91"
+          },
+          {
+            "id": "edge-variable-878e6c5c-3bfc-5b2a-b163-13a2cbba9e91-scope-5c61edd9-bb26-5b64-9d6a-120b71b65f3c",
+            "source": "variable-878e6c5c-3bfc-5b2a-b163-13a2cbba9e91",
+            "target": "scope-5c61edd9-bb26-5b64-9d6a-120b71b65f3c",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-scope-39d6e4f1-a609-566f-8448-cc77517c6eaf-builtinFunction-e8177d0f-d112-5a94-8e1b-00f3917e1a51",
+            "source": "scope-39d6e4f1-a609-566f-8448-cc77517c6eaf",
+            "target": "builtinFunction-e8177d0f-d112-5a94-8e1b-00f3917e1a51",
+            "sourceHandle": "external-output"
+          },
+          {
+            "id": "edge-scope-5c61edd9-bb26-5b64-9d6a-120b71b65f3c-builtinFunction-e8177d0f-d112-5a94-8e1b-00f3917e1a51",
+            "source": "scope-5c61edd9-bb26-5b64-9d6a-120b71b65f3c",
+            "target": "builtinFunction-e8177d0f-d112-5a94-8e1b-00f3917e1a51",
+            "sourceHandle": "external-output"
+          },
+          {
+            "id": "edge-ifElse-32526eb1-8580-549b-bc7f-8f4058faf4ee-ifElse-6906d974-d056-568c-aef7-3c102bdbb48e",
+            "source": "ifElse-32526eb1-8580-549b-bc7f-8f4058faf4ee",
+            "target": "ifElse-6906d974-d056-568c-aef7-3c102bdbb48e",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-ifElse-6906d974-d056-568c-aef7-3c102bdbb48e-connector-c540a997-53a7-5ecd-934e-5deebf3a4c5e",
+            "source": "ifElse-6906d974-d056-568c-aef7-3c102bdbb48e",
+            "target": "connector-c540a997-53a7-5ecd-934e-5deebf3a4c5e",
+            "sourceHandle": "condition:638b4bdc-d061-53a9-8341-f6b7b21ae64a"
+          },
+          {
+            "id": "edge-ifElse-6906d974-d056-568c-aef7-3c102bdbb48e-connector-f27b6b8d-cd3e-5337-8198-f34c92ad50eb",
+            "source": "ifElse-6906d974-d056-568c-aef7-3c102bdbb48e",
+            "target": "connector-f27b6b8d-cd3e-5337-8198-f34c92ad50eb",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-connector-f27b6b8d-cd3e-5337-8198-f34c92ad50eb-variable-d43f333c-e755-58fa-84a4-7648b6e0a411",
+            "source": "connector-f27b6b8d-cd3e-5337-8198-f34c92ad50eb",
+            "target": "variable-d43f333c-e755-58fa-84a4-7648b6e0a411"
+          },
+          {
+            "id": "edge-ifElse-32526eb1-8580-549b-bc7f-8f4058faf4ee-scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964",
+            "source": "ifElse-32526eb1-8580-549b-bc7f-8f4058faf4ee",
+            "target": "scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964",
+            "targetHandle": "external-input"
+          },
+          {
+            "id": "edge-scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964-connector-cb9141d2-3852-5ad9-9581-7226eedf9dc7",
+            "source": "scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964",
+            "target": "connector-cb9141d2-3852-5ad9-9581-7226eedf9dc7",
+            "sourceHandle": "internal-source"
+          },
+          {
+            "id": "edge-connector-cb9141d2-3852-5ad9-9581-7226eedf9dc7-ifElse-d44c2136-8485-55b8-88ce-639c34d43870",
+            "source": "connector-cb9141d2-3852-5ad9-9581-7226eedf9dc7",
+            "target": "ifElse-d44c2136-8485-55b8-88ce-639c34d43870"
+          },
+          {
+            "id": "edge-ifElse-d44c2136-8485-55b8-88ce-639c34d43870-ifElse-10313228-6b83-5610-8220-5a05405822a6",
+            "source": "ifElse-d44c2136-8485-55b8-88ce-639c34d43870",
+            "target": "ifElse-10313228-6b83-5610-8220-5a05405822a6",
+            "sourceHandle": "condition:64d1c4c1-3c0e-5943-945e-bcf2bbde6385"
+          },
+          {
+            "id": "edge-ifElse-10313228-6b83-5610-8220-5a05405822a6-connector-68400a73-f2f2-547a-a450-5a4e3fa3e2a4",
+            "source": "ifElse-10313228-6b83-5610-8220-5a05405822a6",
+            "target": "connector-68400a73-f2f2-547a-a450-5a4e3fa3e2a4",
+            "sourceHandle": "condition:72c49b0b-3123-5087-bcc2-eec68ae08624"
+          },
+          {
+            "id": "edge-connector-68400a73-f2f2-547a-a450-5a4e3fa3e2a4-builtinFunction-492c60a9-5856-5541-9a4f-c68daa4b2720",
+            "source": "connector-68400a73-f2f2-547a-a450-5a4e3fa3e2a4",
+            "target": "builtinFunction-492c60a9-5856-5541-9a4f-c68daa4b2720"
+          },
+          {
+            "id": "edge-builtinFunction-492c60a9-5856-5541-9a4f-c68daa4b2720-connector-5db478cc-b15a-5969-b639-b2ead30b4bdf",
+            "source": "builtinFunction-492c60a9-5856-5541-9a4f-c68daa4b2720",
+            "target": "connector-5db478cc-b15a-5969-b639-b2ead30b4bdf"
+          },
+          {
+            "id": "edge-connector-68400a73-f2f2-547a-a450-5a4e3fa3e2a4-connector-41a21cf2-158a-5a11-8723-eb482322e332",
+            "source": "connector-68400a73-f2f2-547a-a450-5a4e3fa3e2a4",
+            "target": "connector-41a21cf2-158a-5a11-8723-eb482322e332"
+          },
+          {
+            "id": "edge-ifElse-d44c2136-8485-55b8-88ce-639c34d43870-ifElse-fdcf950f-f229-53ef-9dde-b567e59ca021",
+            "source": "ifElse-d44c2136-8485-55b8-88ce-639c34d43870",
+            "target": "ifElse-fdcf950f-f229-53ef-9dde-b567e59ca021",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-ifElse-fdcf950f-f229-53ef-9dde-b567e59ca021-connector-e46deed8-f48d-573d-8487-9b2cae9097ac",
+            "source": "ifElse-fdcf950f-f229-53ef-9dde-b567e59ca021",
+            "target": "connector-e46deed8-f48d-573d-8487-9b2cae9097ac",
+            "sourceHandle": "condition:1b7707ee-daa8-51c3-9580-aab4371a93b9"
+          },
+          {
+            "id": "edge-ifElse-d44c2136-8485-55b8-88ce-639c34d43870-scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964",
+            "source": "ifElse-d44c2136-8485-55b8-88ce-639c34d43870",
+            "target": "scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964-builtinFunction-0539e5ce-5cf0-5b9b-b5c4-1121afcb1bf4",
+            "source": "scope-d05bce5c-55b6-54fe-8b73-76cab9d9a964",
+            "target": "builtinFunction-0539e5ce-5cf0-5b9b-b5c4-1121afcb1bf4",
+            "sourceHandle": "external-output"
+          },
+          {
+            "id": "edge-builtinFunction-0539e5ce-5cf0-5b9b-b5c4-1121afcb1bf4-loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "source": "builtinFunction-0539e5ce-5cf0-5b9b-b5c4-1121afcb1bf4",
+            "target": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-loop-a258d825-a266-5540-a226-074cc6b1888a-variable-88636d40-986c-572d-bd3e-576f04470e90",
+            "source": "loop-a258d825-a266-5540-a226-074cc6b1888a",
+            "target": "variable-88636d40-986c-572d-bd3e-576f04470e90",
+            "sourceHandle": "external-output"
+          },
+          {
+            "id": "edge-variable-88636d40-986c-572d-bd3e-576f04470e90-loop-7276d18f-017d-53ed-8309-39f4513b8a76",
+            "source": "variable-88636d40-986c-572d-bd3e-576f04470e90",
+            "target": "loop-7276d18f-017d-53ed-8309-39f4513b8a76",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-loop-7276d18f-017d-53ed-8309-39f4513b8a76-ifElse-3994cc90-2ff0-52e5-a6e1-e1b665734459",
+            "source": "loop-7276d18f-017d-53ed-8309-39f4513b8a76",
+            "target": "ifElse-3994cc90-2ff0-52e5-a6e1-e1b665734459",
+            "sourceHandle": "external-output"
+          },
+          {
+            "id": "edge-ifElse-3994cc90-2ff0-52e5-a6e1-e1b665734459-end-67bb07e3-990a-534e-a9b7-7fc1dd740bba",
+            "source": "ifElse-3994cc90-2ff0-52e5-a6e1-e1b665734459",
+            "target": "end-67bb07e3-990a-534e-a9b7-7fc1dd740bba",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-ifElse-5a57739c-b0dd-52eb-9f3d-da00b71490c0-connector-5a9f0ba7-6a5a-5d5c-ba00-854e98966678",
+            "source": "ifElse-5a57739c-b0dd-52eb-9f3d-da00b71490c0",
+            "target": "connector-5a9f0ba7-6a5a-5d5c-ba00-854e98966678"
+          },
+          {
+            "id": "edge-connector-5a9f0ba7-6a5a-5d5c-ba00-854e98966678-loop-c29cf5bf-472b-5b9d-a6ed-998227e3055d",
+            "source": "connector-5a9f0ba7-6a5a-5d5c-ba00-854e98966678",
+            "target": "loop-c29cf5bf-472b-5b9d-a6ed-998227e3055d",
+            "targetHandle": "external-input"
+          },
+          {
+            "id": "edge-loop-c29cf5bf-472b-5b9d-a6ed-998227e3055d-connector-2a324b1b-b7a1-5c42-9c95-a4fa6d4fabe6",
+            "source": "loop-c29cf5bf-472b-5b9d-a6ed-998227e3055d",
+            "target": "connector-2a324b1b-b7a1-5c42-9c95-a4fa6d4fabe6",
+            "sourceHandle": "internal-source"
+          },
+          {
+            "id": "edge-connector-2a324b1b-b7a1-5c42-9c95-a4fa6d4fabe6-loop-c29cf5bf-472b-5b9d-a6ed-998227e3055d",
+            "source": "connector-2a324b1b-b7a1-5c42-9c95-a4fa6d4fabe6",
+            "target": "loop-c29cf5bf-472b-5b9d-a6ed-998227e3055d",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-variable-bf145df1-bc86-5346-be36-b07c9c5ee585-variable-081f5433-a616-5d34-8fd2-2e4ff5ce31e7",
+            "source": "variable-bf145df1-bc86-5346-be36-b07c9c5ee585",
+            "target": "variable-081f5433-a616-5d34-8fd2-2e4ff5ce31e7"
+          },
+          {
+            "id": "edge-variable-081f5433-a616-5d34-8fd2-2e4ff5ce31e7-variable-92601c00-cbf3-5761-8e48-ee3ff04a4344",
+            "source": "variable-081f5433-a616-5d34-8fd2-2e4ff5ce31e7",
+            "target": "variable-92601c00-cbf3-5761-8e48-ee3ff04a4344"
+          },
+          {
+            "id": "edge-variable-92601c00-cbf3-5761-8e48-ee3ff04a4344-connector-e8298b99-565e-5940-9d8f-dcb4f4fb78a1",
+            "source": "variable-92601c00-cbf3-5761-8e48-ee3ff04a4344",
+            "target": "connector-e8298b99-565e-5940-9d8f-dcb4f4fb78a1"
+          },
+          {
+            "id": "edge-connector-e8298b99-565e-5940-9d8f-dcb4f4fb78a1-ifElse-8c9f2d3a-87c8-5639-a9ec-bcfed725ec9b",
+            "source": "connector-e8298b99-565e-5940-9d8f-dcb4f4fb78a1",
+            "target": "ifElse-8c9f2d3a-87c8-5639-a9ec-bcfed725ec9b"
+          },
+          {
+            "id": "edge-ifElse-8c9f2d3a-87c8-5639-a9ec-bcfed725ec9b-end-4f66c4b8-30af-53b8-98b0-97e9fd772fbf",
+            "source": "ifElse-8c9f2d3a-87c8-5639-a9ec-bcfed725ec9b",
+            "target": "end-4f66c4b8-30af-53b8-98b0-97e9fd772fbf",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-ifElse-8c9f2d3a-87c8-5639-a9ec-bcfed725ec9b-ifElse-18b63679-dc7a-5a02-8018-f3d66ede3887",
+            "source": "ifElse-8c9f2d3a-87c8-5639-a9ec-bcfed725ec9b",
+            "target": "ifElse-18b63679-dc7a-5a02-8018-f3d66ede3887"
+          },
+          {
+            "id": "edge-ifElse-18b63679-dc7a-5a02-8018-f3d66ede3887-end-a3405c8f-bc0a-57df-9239-75180c789b90",
+            "source": "ifElse-18b63679-dc7a-5a02-8018-f3d66ede3887",
+            "target": "end-a3405c8f-bc0a-57df-9239-75180c789b90",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-ifElse-18b63679-dc7a-5a02-8018-f3d66ede3887-builtinFunction-b51b44a0-c410-5203-a2ae-b4eb38784715",
+            "source": "ifElse-18b63679-dc7a-5a02-8018-f3d66ede3887",
+            "target": "builtinFunction-b51b44a0-c410-5203-a2ae-b4eb38784715"
+          },
+          {
+            "id": "edge-ifElse-3994cc90-2ff0-52e5-a6e1-e1b665734459-ifElse-5a57739c-b0dd-52eb-9f3d-da00b71490c0",
+            "source": "ifElse-3994cc90-2ff0-52e5-a6e1-e1b665734459",
+            "target": "ifElse-5a57739c-b0dd-52eb-9f3d-da00b71490c0"
+          },
+          {
+            "id": "edge-ifElse-5a57739c-b0dd-52eb-9f3d-da00b71490c0-end-d36710fd-0ebd-5c17-ae86-03397ff57303",
+            "source": "ifElse-5a57739c-b0dd-52eb-9f3d-da00b71490c0",
+            "target": "end-d36710fd-0ebd-5c17-ae86-03397ff57303",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-builtinFunction-b51b44a0-c410-5203-a2ae-b4eb38784715-builtinFunction-3f6a6b66-2b3a-5331-9150-5e4b7d91c624",
+            "source": "builtinFunction-b51b44a0-c410-5203-a2ae-b4eb38784715",
+            "target": "builtinFunction-3f6a6b66-2b3a-5331-9150-5e4b7d91c624"
+          },
+          {
+            "id": "edge-builtinFunction-3f6a6b66-2b3a-5331-9150-5e4b7d91c624-ifElse-f8665405-3555-5a74-bb43-68d30299c7fe",
+            "source": "builtinFunction-3f6a6b66-2b3a-5331-9150-5e4b7d91c624",
+            "target": "ifElse-f8665405-3555-5a74-bb43-68d30299c7fe"
+          },
+          {
+            "id": "edge-ifElse-f8665405-3555-5a74-bb43-68d30299c7fe-end-09c7b53d-4b70-5942-a38d-ced5176b1f0e",
+            "source": "ifElse-f8665405-3555-5a74-bb43-68d30299c7fe",
+            "target": "end-09c7b53d-4b70-5942-a38d-ced5176b1f0e",
+            "sourceHandle": "else"
+          }
+        ]
+      }
+    }
+  ],
+  "connectors": [
+    {
+      "id": "cat_ppinventory",
+      "name": "Power Platform Agent Inventory",
+      "description": "Queries technical Copilot Studio agent inventory with delegated user access.",
+      "mcp": false
+    }
+  ],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 1979
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 453
+    },
+    {
+      "path": "botcomponents/cre2b_agentcoefrontdoor.Microsoft365CopilotandAgentBuilderdocumentation_mgB0e4SWb4SPLlnA07dC5/botcomponent.xml",
+      "category": "component",
+      "size": 691
+    },
+    {
+      "path": "botcomponents/cre2b_agentcoefrontdoor.Microsoft365CopilotandAgentBuilderdocumentation_mgB0e4SWb4SPLlnA07dC5/data",
+      "category": "component",
+      "size": 135
+    },
+    {
+      "path": "botcomponents/cre2b_agentcoefrontdoor.MicrosoftCopilotStudiodocumentation_PSjXGSyn69rosf3mp8vp8/botcomponent.xml",
+      "category": "component",
+      "size": 644
+    },
+    {
+      "path": "botcomponents/cre2b_agentcoefrontdoor.MicrosoftCopilotStudiodocumentation_PSjXGSyn69rosf3mp8vp8/data",
+      "category": "component",
+      "size": 147
+    },
+    {
+      "path": "botcomponents/cre2b_agentcoefrontdoor.skill.agent-advisor_cL_/botcomponent.xml",
+      "category": "component",
+      "size": 692
+    },
+    {
+      "path": "botcomponents/cre2b_agentcoefrontdoor.skill.agent-advisor_cL_/data",
+      "category": "component",
+      "size": 19333
+    },
+    {
+      "path": "botcomponents/cre2b_agentcoefrontdoor.skill.agent-intake_8EM/botcomponent.xml",
+      "category": "component",
+      "size": 650
+    },
+    {
+      "path": "botcomponents/cre2b_agentcoefrontdoor.skill.agent-intake_8EM/data",
+      "category": "component",
+      "size": 16277
+    },
+    {
+      "path": "botcomponents/cre2b_agentcoefrontdoor.tool.MicrosoftDataverse-MicrosoftDataverseMCPServer_bQj/botcomponent.xml",
+      "category": "component",
+      "size": 416
+    },
+    {
+      "path": "botcomponents/cre2b_agentcoefrontdoor.tool.MicrosoftDataverse-MicrosoftDataverseMCPServer_bQj/data",
+      "category": "component",
+      "size": 330
+    },
+    {
+      "path": "botcomponents/Default_FeedbackCollectionBotSettings_ZLPhWB/botcomponent.xml",
+      "category": "component",
+      "size": 311
+    },
+    {
+      "path": "botcomponents/Default_FeedbackCollectionBotSettings_ZLPhWB/data",
+      "category": "component",
+      "size": 31
+    },
+    {
+      "path": "bots/cre2b_agentcoefrontdoor/bot.xml",
+      "category": "bot",
+      "size": 34866
+    },
+    {
+      "path": "bots/cre2b_agentcoefrontdoor/configuration.json",
+      "category": "bot",
+      "size": 27289
+    },
+    {
+      "path": "Connector/cat_ppinventory_connectionparameters.json",
+      "category": "other",
+      "size": 1124
+    },
+    {
+      "path": "Connector/cat_ppinventory_iconblob.Png",
+      "category": "asset",
+      "size": 2895
+    },
+    {
+      "path": "Connector/cat_ppinventory_openapidefinition.json",
+      "category": "other",
+      "size": 2899
+    },
+    {
+      "path": "Connector/cat_ppinventory_policytemplateinstances.json",
+      "category": "other",
+      "size": 4
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 480851
+    },
+    {
+      "path": "environmentvariabledefinitions/cat_DecisionNotificationSettings/environmentvariabledefinition.xml",
+      "category": "other",
+      "size": 1830
+    },
+    {
+      "path": "environmentvariabledefinitions/cat_InstructionSources/environmentvariabledefinition.xml",
+      "category": "other",
+      "size": 802
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 5941
+    },
+    {
+      "path": "uxagentprojects/3200c426-af1c-4da2-b714-4bfc403a5a21/uxagentproject.xml",
+      "category": "other",
+      "size": 233
+    },
+    {
+      "path": "uxagentprojects/3200c426-af1c-4da2-b714-4bfc403a5a21/uxagentprojectfiles/34ed640f-9d48-4931-8e09-cbc463c684b4/filecontent/page.tsx",
+      "category": "other",
+      "size": 56750
+    },
+    {
+      "path": "uxagentprojects/3200c426-af1c-4da2-b714-4bfc403a5a21/uxagentprojectfiles/34ed640f-9d48-4931-8e09-cbc463c684b4/uxagentprojectfile.xml",
+      "category": "other",
+      "size": 351
+    },
+    {
+      "path": "uxagentprojects/3200c426-af1c-4da2-b714-4bfc403a5a21/uxagentprojectfiles/41d461e9-f7cd-4eae-b18a-6cc644be6922/filecontent/firstPrompt.json",
+      "category": "other",
+      "size": 4643
+    },
+    {
+      "path": "uxagentprojects/3200c426-af1c-4da2-b714-4bfc403a5a21/uxagentprojectfiles/41d461e9-f7cd-4eae-b18a-6cc644be6922/uxagentprojectfile.xml",
+      "category": "other",
+      "size": 349
+    },
+    {
+      "path": "uxagentprojects/3200c426-af1c-4da2-b714-4bfc403a5a21/uxagentprojectfiles/e75dad5b-9c88-4fd7-bc3e-b5db0c248190/filecontent/page.compiled",
+      "category": "other",
+      "size": 77424
+    },
+    {
+      "path": "uxagentprojects/3200c426-af1c-4da2-b714-4bfc403a5a21/uxagentprojectfiles/e75dad5b-9c88-4fd7-bc3e-b5db0c248190/uxagentprojectfile.xml",
+      "category": "other",
+      "size": 361
+    },
+    {
+      "path": "uxagentprojects/3200c426-af1c-4da2-b714-4bfc403a5a21/uxagentprojectfiles/f335c75b-9e85-47f7-a429-f6a67fc2d2e4/filecontent/config.json",
+      "category": "other",
+      "size": 182
+    },
+    {
+      "path": "uxagentprojects/3200c426-af1c-4da2-b714-4bfc403a5a21/uxagentprojectfiles/f335c75b-9e85-47f7-a429-f6a67fc2d2e4/uxagentprojectfile.xml",
+      "category": "other",
+      "size": 339
+    },
+    {
+      "path": "WebResources/cat_iconsagentcataloguesvgDC19E7A1-AFB2-F111-AAAC-000D3A367627",
+      "category": "other",
+      "size": 524
+    },
+    {
+      "path": "WebResources/cat_iconsagentintakerequestsvgDF19E7A1-AFB2-F111-AAAC-000D3A367627",
+      "category": "other",
+      "size": 562
+    },
+    {
+      "path": "WebResources/cat_iconstenantagentinventorysvgBF517E5B-F5C7-F111-A05A-70A8A5097354",
+      "category": "other",
+      "size": 453
+    },
+    {
+      "path": "WebResources/cat_rulesintake-statusjsF2143B8F-CAB2-F111-AAAC-000D3A367627",
+      "category": "other",
+      "size": 2406
+    },
+    {
+      "path": "Workflows/CAT-NotifyRequesterofCoEDecision-7B8DC8A4-4781-462D-9381-84C465153CEA.json",
+      "category": "workflow",
+      "size": 168375
+    },
+    {
+      "path": "Workflows/CAT-RefreshPowerPlatformAgentInventoryDaily-0BBD7758-85D8-4C30-B3BA-E58CDAF62FA0.json",
+      "category": "workflow",
+      "size": 266954
+    }
+  ]
+}
