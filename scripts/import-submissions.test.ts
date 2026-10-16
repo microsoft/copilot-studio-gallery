@@ -1,15 +1,18 @@
 import assert from "node:assert/strict";
-import { cp, lstat, mkdir, rm, symlink, writeFile } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
+import { cp, lstat, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import test from "node:test";
 import AdmZip from "adm-zip";
 import { isMcpNode } from "../src/lib/graphVisuals";
+import { solutionSchema } from "../src/lib/schema";
 import {
   SubmissionImportError,
   deriveSolutionFields,
   deterministicZip,
   extractSavedGraph,
   importSubmissions,
+  inspectConnectors,
   layoutAgentGraph,
   normalizeAgentComponents,
   normalizeWorkflowGraph,
@@ -37,6 +40,7 @@ test("imports metadata while retaining derived solution identity", async () => {
   assert.equal(record.version, "2.3.4.5");
   assert.equal(record.publisher, "Contoso");
   assert.equal(record.bundle, "bundles/demo-agent.zip");
+  assert.equal(record.category, "Customer service");
   assert.equal(record.componentCount, 1);
   const support = record.agents.find((agent: { schemaName: string }) => agent.schemaName === "support_agent");
   const other = record.agents.find((agent: { schemaName: string }) => agent.schemaName === "other_agent");
@@ -69,6 +73,7 @@ test("imports metadata while retaining derived solution identity", async () => {
   assert.ok(record.agentGraph.nodes.every((node: { position: { x: number; y: number } }) => Number.isFinite(node.position.x) && Number.isFinite(node.position.y)));
   assert.equal(record.agentGraph.edges.filter((edge: { label: string; source: string }) => edge.source === "agent:support").length, 3);
   assert.equal(record.workflows[0].name, "Branched workflow");
+  assert.equal(record.previewWorkflow, record.workflows[0].id);
   const workflowNodes = record.workflows[0].graph.nodes;
   assert.deepEqual(workflowNodes.find((node: { id: string }) => node.id === "respond").details, {
     displayName: "Reply",
@@ -82,6 +87,83 @@ test("imports metadata while retaining derived solution identity", async () => {
     mode: "delegate",
     tools: ["Search"],
   });
+});
+
+test("selects a non-first hero workflow by ID or name and publishes its canonical ID", async () => {
+  const submission = join(workspace, "submissions/demo-agent");
+  const metadataPath = join(submission, "metadata.json");
+  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  const customizationsPath = join(submission, "solution/customizations.xml");
+  await cp(join(submission, "solution/Workflows/branched.json"), join(submission, "solution/Workflows/alternate.json"));
+  const customizations = await readFile(customizationsPath, "utf8");
+  await writeFile(customizationsPath, customizations.replace("</Workflows>", "<Workflow><Name>Second workflow</Name><JsonFileName>alternate.json</JsonFileName><WorkflowId>workflow-002</WorkflowId></Workflow></Workflows>"));
+
+  for (const previewWorkflow of ["workflow-002", "  Second workflow  "]) {
+    await writeFile(metadataPath, JSON.stringify({ ...metadata, previewWorkflow }));
+    await importSubmissions({ root: workspace });
+    const record = JSON.parse(await readFile(join(workspace, "src/content/solutions/demo-agent.json"), "utf8"));
+    assert.equal(record.workflows[0].id, "workflow-001");
+    assert.equal(record.previewWorkflow, "workflow-002");
+    const zip = new AdmZip(await readFile(join(workspace, "public/bundles/demo-agent.zip")));
+    assert.equal(zip.getEntry("metadata.json"), null);
+  }
+});
+
+test("rejects invalid hero selections rather than falling back to another workflow", async () => {
+  const metadataPath = join(workspace, "submissions/demo-agent/metadata.json");
+  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  for (const previewWorkflow of ["missing-workflow", "", "   ", 7, null]) {
+    await writeFile(metadataPath, JSON.stringify({ ...metadata, previewWorkflow }));
+    await assert.rejects(() => importSubmissions({ root: workspace, check: true }), /previewWorkflow/);
+  }
+});
+
+test("rejects missing hero selections in both CI command paths without writing artifacts", async () => {
+  const metadataPath = join(workspace, "submissions/demo-agent/metadata.json");
+  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  delete metadata.previewWorkflow;
+  await writeFile(metadataPath, JSON.stringify(metadata));
+
+  for (const check of [false, true]) {
+    await assert.rejects(() => importSubmissions({ root: workspace, check }), /previewWorkflow is required in metadata\.json/);
+    const result = spawnSync(process.execPath, [
+      "--import", "tsx", join(process.cwd(), "scripts/import-submissions.ts"), ...(check ? ["--check"] : []),
+    ], { cwd: workspace, encoding: "utf8", timeout: 30_000 });
+    assert.ifError(result.error);
+    assert.equal(result.status, 1, result.stderr);
+    assert.match(result.stderr, /demo-agent/);
+    assert.match(result.stderr, /previewWorkflow is required in metadata\.json/);
+    assert.equal(result.stdout, "");
+  }
+  await assert.rejects(() => lstat(join(workspace, "src/content/solutions/demo-agent.json")));
+  await assert.rejects(() => lstat(join(workspace, "src/content/guides/demo-agent.md")));
+  await assert.rejects(() => lstat(join(workspace, "public/bundles/demo-agent.zip")));
+});
+
+test("generated content requires a valid hero ID only when workflows are present", async () => {
+  await importSubmissions({ root: workspace });
+  const record = JSON.parse(await readFile(join(workspace, "src/content/solutions/demo-agent.json"), "utf8"));
+  solutionSchema.parse(record);
+  assert.throws(() => solutionSchema.parse({ ...record, previewWorkflow: undefined }), /previewWorkflow is required/);
+  assert.throws(() => solutionSchema.parse({ ...record, previewWorkflow: "missing" }), /previewWorkflow must identify/);
+  assert.throws(() => solutionSchema.parse({ ...record, previewWorkflow: "Branched workflow" }), /previewWorkflow must identify/);
+  const agentOnly = { ...record, workflows: [], workflowCount: 0, previewWorkflow: undefined };
+  solutionSchema.parse(agentOnly);
+  assert.throws(() => solutionSchema.parse({ ...agentOnly, previewWorkflow: record.previewWorkflow }), /previewWorkflow must identify/);
+});
+
+test("keeps agent-only submissions valid but rejects a workflow selection on them", async () => {
+  const metadataPath = join(workspace, "submissions/demo-agent/metadata.json");
+  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  delete metadata.previewWorkflow;
+  await writeFile(metadataPath, JSON.stringify(metadata));
+  await rm(join(workspace, "submissions/demo-agent/solution/Workflows/branched.json"));
+  await importSubmissions({ root: workspace, check: true });
+  await importSubmissions({ root: workspace });
+  const record = JSON.parse(await readFile(join(workspace, "src/content/solutions/demo-agent.json"), "utf8"));
+  assert.equal(record.previewWorkflow, undefined);
+  await writeFile(metadataPath, JSON.stringify({ ...metadata, previewWorkflow: "workflow-001" }));
+  await assert.rejects(() => importSubmissions({ root: workspace, check: true }), /previewWorkflow.*does not match/);
 });
 
 test("check mode validates inputs without requiring or writing generated artifacts", async () => {
@@ -101,6 +183,18 @@ test("ignores hidden and template submission directories", async () => {
   await mkdir(join(workspace, "submissions/.draft"), { recursive: true });
   const report = await importSubmissions({ root: workspace, check: true });
   assert.deepEqual(report.imported, ["demo-agent"]);
+});
+
+test("seeded demos satisfy the explicit hero requirement", async () => {
+  const result = spawnSync(process.execPath, [
+    "--import", "tsx", join(process.cwd(), "scripts/seed-demo-submissions.ts"),
+  ], { cwd: workspace, encoding: "utf8", timeout: 30_000 });
+  assert.ifError(result.error);
+  assert.equal(result.status, 0, result.stderr);
+  const report = await importSubmissions({ root: workspace, check: true });
+  assert.ok(report.imported.includes("customer-support-triage"));
+  assert.ok(report.imported.includes("invoice-exception-handler"));
+  assert.ok(report.imported.includes("knowledge-gap-finder"));
 });
 
 test("maps XML components and normalizes tools, skills, and delegation", () => {
@@ -200,6 +294,120 @@ test("extracts one saved graph and retains unknown workflow node types", () => {
 
 test("rejects a workflow without exactly one saved graph", () => {
   assert.throws(() => extractSavedGraph({ name: "no graph", nodes: [] }), /exactly one saved designer graph/);
+});
+
+test("preserves saved loop containers and relative child positions, ordering parents first", () => {
+  const graph = normalizeWorkflowGraph({
+    nodes: [
+      { id: "keep-price", name: "Set SKU: Keep price", type: "variable", parentId: "loop", position: { x: 396, y: 439 }, measured: { width: 240, height: 66 }, data: { config: {} } },
+      { id: "start", name: "Start", type: "start", position: { x: 248, y: 461 } },
+      { id: "loop", name: "Loop over each active SKU", type: "loop", position: { x: 1248, y: 301 }, width: 1907, height: 697, style: { background: "private-style" } },
+      { id: "note", type: "canvasNote", parentId: "loop", position: { x: 900, y: 400 } },
+    ],
+    edges: [
+      { id: "enter", source: "start", target: "loop", targetHandle: "external-input" },
+      { id: "iterate", source: "loop", target: "keep-price", sourceHandle: "internal-source" },
+      { id: "return", source: "keep-price", target: "loop", targetHandle: "internal-target" },
+    ],
+  });
+  assert.deepEqual(graph.nodes.map((node) => node.id), ["loop", "keep-price", "start"]);
+  assert.deepEqual(graph.nodes[0], {
+    id: "loop", name: "Loop over each active SKU", type: "loop", position: { x: 1248, y: 301 },
+    width: 1907, height: 697, details: {},
+  });
+  assert.deepEqual(graph.nodes[1], {
+    id: "keep-price", name: "Set SKU: Keep price", type: "variable", position: { x: 396, y: 439 },
+    parentId: "loop", details: {},
+  });
+  assert.equal(graph.edges[0].targetHandle, "external-input");
+  assert.equal(graph.edges[1].sourceHandle, "internal-source");
+  assert.equal(graph.edges[2].targetHandle, "internal-target");
+  assert.equal(JSON.stringify(graph).includes("private-style"), false);
+});
+
+test("preserves nested containers with saved measured dimensions and legacy parentNode references", () => {
+  const graph = normalizeWorkflowGraph({
+    nodes: [
+      { id: "step", type: "connector", parentId: "inner", position: { x: 40, y: 80 } },
+      { id: "inner", type: "loop", parentNode: "outer", position: { x: 80, y: 120 }, measured: { width: 500, height: 300 } },
+      { id: "outer", type: "loop", position: { x: 1000, y: 500 }, measured: { width: 1000, height: 600 } },
+    ],
+    edges: [],
+  });
+  assert.deepEqual(graph.nodes.map(({ id, parentId, position, width, height }) => ({ id, parentId, position, width, height })), [
+    { id: "outer", parentId: undefined, position: { x: 1000, y: 500 }, width: 1000, height: 600 },
+    { id: "inner", parentId: "outer", position: { x: 80, y: 120 }, width: 500, height: 300 },
+    { id: "step", parentId: "inner", position: { x: 40, y: 80 }, width: undefined, height: undefined },
+  ]);
+});
+
+test("rejects broken workflow hierarchies instead of overlapping children on the main canvas", () => {
+  assert.throws(() => normalizeWorkflowGraph({ nodes: [{ id: "step", parentId: "missing" }], edges: [] }), /missing container missing/);
+  assert.throws(() => normalizeWorkflowGraph({ nodes: [{ id: "step" }, { id: "step" }], edges: [] }), /duplicate node ids/);
+  assert.throws(() => normalizeWorkflowGraph({
+    nodes: [
+      { id: "a", parentId: "b", width: 600, height: 400 },
+      { id: "b", parentId: "a", width: 600, height: 400 },
+    ],
+    edges: [],
+  }), /hierarchy contains a cycle/);
+  for (const width of [undefined, 0, -1, "Infinity", "not a number"]) {
+    assert.throws(() => normalizeWorkflowGraph({
+      nodes: [{ id: "loop", width, height: 400 }, { id: "step", parentId: "loop" }],
+      edges: [],
+    }), /missing valid saved dimensions/);
+  }
+});
+
+test("drops designer notes from workflow graphs", () => {
+  const graph = normalizeWorkflowGraph({
+    nodes: [
+      { id: "start", name: "Start", type: "start", position: { x: 0, y: 0 } },
+      { id: "note", name: "Remember this", type: "canvasNote", position: { x: 50, y: 50 } },
+      { id: "end", name: "End", type: "end", position: { x: 100, y: 0 } },
+    ],
+    edges: [
+      { id: "flow", source: "start", target: "end" },
+      { id: "annotation", source: "note", target: "end" },
+    ],
+  });
+  assert.deepEqual(graph.nodes.map((node) => node.id), ["start", "end"]);
+  assert.deepEqual(graph.edges.map((edge) => edge.id), ["flow"]);
+});
+
+test("reads custom connectors packaged in the solution and flags MCP servers", async () => {
+  const connectorDir = join(workspace, "connector-check/Connector");
+  await mkdir(connectorDir, { recursive: true });
+  const definitions = {
+    "new_warehouse-20mcp": { info: { title: "Warehouse MCP", description: "Stock and fulfilment tools." }, paths: { "/mcp": { post: { "x-ms-agentic-protocol": "mcp-streamable-1.0" } } } },
+    "new_weather": { info: { title: "Weather API" }, paths: { "/forecast": { get: {} } } },
+  };
+  const files = [];
+  for (const [id, definition] of Object.entries(definitions)) {
+    const absolutePath = join(connectorDir, `${id}_openapidefinition.json`);
+    await writeFile(absolutePath, JSON.stringify(definition));
+    files.push({ absolutePath, path: `Connector/${id}_openapidefinition.json`, size: 1 });
+  }
+  files.push({ absolutePath: join(connectorDir, "ignored.csx"), path: "Connector/new_weather_customcodeblobcontent.csx", size: 1 });
+  assert.deepEqual(await inspectConnectors(files), [
+    { id: "new_warehouse-20mcp", name: "Warehouse MCP", description: "Stock and fulfilment tools.", mcp: true },
+    { id: "new_weather", name: "Weather API", mcp: false },
+  ]);
+});
+
+test("accepts a missing category but only one category from the fixed list", async () => {
+  const metadataPath = join(workspace, "submissions/demo-agent/metadata.json");
+  const { readFile } = await import("node:fs/promises");
+  const { category: _omitted, ...withoutCategory } = JSON.parse(await readFile(metadataPath, "utf8"));
+  await writeFile(metadataPath, JSON.stringify(withoutCategory));
+  await importSubmissions({ root: workspace, check: true });
+  const metadata = withoutCategory;
+  for (const category of ["", "Not a category", ["HR"]]) {
+    await writeFile(metadataPath, JSON.stringify({ ...metadata, category }));
+    await assert.rejects(() => importSubmissions({ root: workspace, check: true }), /invalid metadata\.json/);
+  }
+  await writeFile(metadataPath, JSON.stringify({ ...metadata, category: "Finance" }));
+  await importSubmissions({ root: workspace, check: true });
 });
 
 test("rejects invalid metadata, unsafe slugs, and symlinks", async () => {

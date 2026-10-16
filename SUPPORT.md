@@ -2,9 +2,9 @@
 
 ## Gallery and submitted solutions
 
-The gallery and the solutions published through it are community-provided
-example implementations. They are not Microsoft products and are not covered
-by Microsoft Support.
+The gallery includes open-source samples provided by Microsoft and example
+implementations contributed by the community. The gallery and these samples
+are not Microsoft products and are not covered by Microsoft Support.
 
 For site bugs, importer failures, or problems with a specific submission,
 search the [existing issues](https://github.com/microsoft/copilot-studio-gallery/issues)
