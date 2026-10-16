@@ -2,14 +2,14 @@ kind: InlineAgentSkill
 content: |
   ---
   name: email-thread-recap-followup
-  description: Synthesizes an email thread into decisions, action items, open questions, and risks by owner, then offers to post a Teams recap and schedule a follow-up meeting. Use when the maker asks to recap, summarize, or catch up on an email thread or conversation, wants decisions or action items pulled out of an email discussion, or asks to turn an email thread into a Teams update or a follow-up meeting. Do NOT use for general inbox triage, drafting a reply, or requests that are not anchored to a specific thread's outcome.
+  description: Synthesizes a team or project email thread into decisions, action items, open questions, and risks by owner, then offers a confirmed Teams channel recap or follow-up meeting. Use when the maker asks to recap a project discussion, pull decisions or actions from a thread, or share a reviewed thread recap with a team. Do NOT use for general inbox triage, drafting a reply, or requests that are not anchored to a specific thread's outcome.
   ---
   <!-- bic:source=upload -->
-  # Email thread recap and follow-up
+  # Project thread recap and follow-up
 
-  Turn one or more email threads into a structured recap — decisions, action items by owner, open
-  questions, and risks — then let the maker decide whether to post it to Teams, schedule a follow-up
-  meeting, both, or neither.
+  Turn one or more team or project email threads into a structured recap — decisions, action items,
+  open questions, and risks — then let the maker decide whether to post it to a Teams channel,
+  schedule a follow-up meeting, do both, or neither.
 
   ## Required tools
 
@@ -17,15 +17,15 @@ content: |
 
   - An email tool (Outlook / Office 365 Outlook) to search and read messages in a thread.
   - A calendar tool (Outlook Calendar) to check for and create the follow-up meeting.
-  - A Teams tool that can post a message to the maker's own chat, plus a directory lookup to tell
-    internal participants from external ones when suggesting attendees.
+  - A Teams tool that can post a message to a standard channel selected by the maker, plus a
+    directory lookup to tell internal participants from external ones when suggesting attendees.
 
   If any of these are missing from the agent's Tools list, tell the maker which capability is
   missing before attempting the step that needs it — do not guess at a result you cannot produce.
 
   ## Step 1 — Resolve the target thread
 
-  Figure out which thread (or threads) the maker means from whatever they gave you:
+  Figure out which team or project thread (or threads) the maker means from whatever they gave you:
 
   - **Subject** — match on the words they used, e.g. "the thread about the Contoso renewal".
   - **Sender** — this is the default anchor when the maker names a person and nothing else, e.g.
@@ -81,15 +81,21 @@ content: |
   health information, or similarly sensitive topics.
 
   If anything is flagged, don't quote the sensitive detail back to the maker — just note in plain
-  terms that the thread touches a sensitive topic. Carry the flag into Step 5b: any calendar invite
-  for this thread must be marked **Private** and use a **generic title** ("Follow-up discussion")
-  instead of the thread's real subject.
+  terms that the thread touches a sensitive topic. Do not offer or post a channel recap for flagged
+  content. Carry the flag into Step 5b: any calendar invite for this thread must be marked **Private**
+  and use a **generic title** ("Follow-up discussion") instead of the thread's real subject.
 
   ## Step 4 — Offer the delivery choice
 
-  Show the maker the synthesis, then ask them to choose one: **Teams recap**, **Calendar follow-up
-  (30 min)**, **Both**, or **Neither**. Do not default to sending or scheduling anything on their
-  behalf.
+  Show the maker the synthesis, then ask them to choose one: **Teams channel recap**, **Calendar
+  follow-up (30 min)**, **Both**, or **Neither**. Do not default to posting or scheduling anything
+  on their behalf.
+
+  If they choose a Teams channel recap, ask them to select or confirm the team and channel. Resolve
+  an ambiguous destination before proceeding. Only post to a standard channel; the Teams connector
+  does not support posting to private channels. Show the destination and final recap, then obtain
+  explicit confirmation to post. Never infer a destination from the thread participants or project
+  name alone.
 
   Along with the question, suggest an attendee list for the possible follow-up: only participants
   who own at least one open action item, implied action item, or open question, **and** only
@@ -97,11 +103,14 @@ content: |
   directory lookup marks them as external/guest. Let the maker add or remove names before you
   schedule anything.
 
-  ## Step 5a — Teams delivery
+  ## Step 5a — Teams channel delivery
 
-  If the maker picks Teams (or Both), post an HTML-formatted message to the maker's own Teams chat
-  containing the full synthesis (all six sections, in order), followed by a count line, e.g.
-  "2 decisions · 3 explicit action items · 1 implied action item · 1 open question · 0 risks".
+  If the maker picks Teams channel (or Both), use the Teams connector's chat-or-channel posting
+  operation with **Post as: User** and **Post in: Channel**, targeting the confirmed standard team
+  and channel. Post only after the maker confirms the destination and final recap. Include the full
+  synthesis (all six sections, in order), followed by a count line, e.g. "2 decisions · 3 explicit
+  action items · 1 implied action item · 1 open question · 0 risks". Do not post flagged sensitive
+  content to a channel.
 
   ## Step 5b — Calendar delivery
 
@@ -131,15 +140,16 @@ content: |
 
   ## Example
 
-  Maker: "Catch me up on my latest thread with Priya Shah about the Contoso renewal and set up a
-  follow-up."
+  Maker: "Catch me up on the latest Contoso launch thread and share the recap with the project team."
 
-  - Resolution: singular qualifier ("latest") + sender ("Priya Shah") + topic ("Contoso renewal") →
-    single-thread mode, no candidate list needed.
+  - Resolution: singular qualifier ("latest") + project ("Contoso launch") → single-thread mode, no
+    candidate list needed.
   - Synthesis: six sections, e.g. Decisions has "Renew Contoso for 12 months — decided by Priya
     Shah"; Explicit Action Items has "Send updated pricing sheet — Priya Shah — by Friday"; Implied
     Action Items has "Draft the amendment — Sushank (self, from \"I'll draft the amendment\")".
   - No sensitive topics flagged → normal title, normal sensitivity.
-  - Ask: Teams recap, Calendar follow-up, Both, or Neither — suggest Priya Shah as the only
-    attendee (she owns the one open action item and is internal).
+  - No sensitive topics flagged → ask which standard team channel to use, show the final recap, and
+    wait for confirmation before posting.
+  - Ask: Teams channel recap, Calendar follow-up, Both, or Neither. Suggest only internal attendees
+    who own an open item, and let the maker confirm the list.
 authoringSource: Upload

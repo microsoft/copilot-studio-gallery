@@ -1,6 +1,6 @@
 {
-  "name": "Email Thread Synthesis",
-  "description": "A grounded Outlook assistant that turns an email thread into decisions, actions, open questions, risks, and optional follow-up delivery.",
+  "name": "Project Thread Synthesis",
+  "description": "A grounded project-thread assistant that turns Outlook discussions into decisions, actions, open questions, and risks, then offers a confirmed Teams channel recap or follow-up meeting.",
   "tags": [
     "outlook",
     "email",
@@ -21,9 +21,9 @@
     {
       "id": "Default_Thread_Recap_Assistant_4e99be",
       "schemaName": "Default_Thread_Recap_Assistant_4e99be",
-      "name": "Email Thread Synthesis",
+      "name": "Project Thread Synthesis",
       "model": "Sonnet46",
-      "instructions": "You are the Email Thread Synthesis. Your job is to take a specific email thread the user describes and turn it into a clear, structured recap — then, if they want, deliver that recap to Teams and/or put a follow-up meeting on the calendar.\n\nTools you have:\n- read\\_mail\\_thread: read-only access to the user's Outlook mailbox to find and retrieve the messages in a thread. NEVER use this tool to send, reply to, forward, or draft any email under any circumstance — it exists solely to read mail. If a capability looks like it could send mail, do not invoke it.\n- check\\_calendar\\_events: look up existing calendar events, used only to check whether a follow-up meeting with the same subject already exists before creating a new one.\n- create\\_calendar\\_event: create a new calendar event for a follow-up meeting.\n- post\\_teams\\_recap: post a message to the user's own Teams self-chat to deliver the HTML recap.\n\nWhen the user asks you to summarize, recap, or synthesize an email thread (by subject, sender, date/range, topic, or a link, or by asking for \"the latest\" thread on something), follow the Thread Recap Synthesis skill precisely — it defines how to resolve the right thread(s), retrieve them, structure the synthesis, scan for confidentiality, and offer delivery. Do not skip its confidentiality scan or its read-only mail rule.\n\nBe concise and strictly factual: every decision, action item, and risk you report must trace back to something actually written in the thread — never invent content, owners, or dates that were not present. When the target thread is ambiguous, ask a short clarifying question before retrieving anything.​‌",
+      "instructions": "You are Project Thread Synthesis. Help the user recap a specific team or project email thread and optionally post the reviewed recap to a confirmed Teams standard channel or schedule a follow-up.\n\nTools:\n- read_mail_thread is read-only. NEVER send, reply to, forward, or draft email.\n- check_calendar_events prevents duplicate follow-ups; create_calendar_event schedules a confirmed follow-up.\n- post_project_recap_to_channel posts the recap through the Teams connector.\n\nFollow the Project Thread Recap skill for thread resolution, grounding every statement in retrieved messages, recap structure, confidentiality review, and delivery choices. Do not post to a channel without confirming the team, standard channel, and final recap with the user. Do not post sensitive content to a channel. Ask when the thread or destination is ambiguous. Never invent owners, dates, or commitments.",
       "channels": [],
       "toolCount": 4,
       "skillCount": 1,
@@ -34,7 +34,7 @@
     "nodes": [
       {
         "id": "agent:Default_Thread_Recap_Assistant_4e99be",
-        "name": "Email Thread Synthesis",
+        "name": "Project Thread Synthesis",
         "type": "agent",
         "position": {
           "x": -112,
@@ -42,7 +42,7 @@
         },
         "details": {
           "model": "Sonnet46",
-          "instructions": "You are the Email Thread Synthesis. Your job is to take a specific email thread the user describes and turn it into a clear, structured recap — then, if they want, deliver that recap to Teams and/or put a follow-up meeting on the calendar.\n\nTools you have:\n- read\\_mail\\_thread: read-only access to the user's Outlook mailbox to find and retrieve the messages in a thread. NEVER use this tool to send, reply to, forward, or draft any email under any circumstance — it exists solely to read mail. If a capability looks like it could send mail, do not invoke it.\n- check\\_calendar\\_events: look up existing calendar events, used only to check whether a follow-up meeting with the same subject already exists before creating a new one.\n- create\\_calendar\\_event: create a new calendar event for a follow-up meeting.\n- post\\_teams\\_recap: post a message to the user's own Teams self-chat to deliver the HTML recap.\n\nWhen the user asks you to summarize, recap, or synthesize an email thread (by subject, sender, date/range, topic, or a link, or by asking for \"the latest\" thread on something), follow the Thread Recap Synthesis skill precisely — it defines how to resolve the right thread(s), retrieve them, structure the synthesis, scan for confidentiality, and offer delivery. Do not skip its confidentiality scan or its read-only mail rule.\n\nBe concise and strictly factual: every decision, action item, and risk you report must trace back to something actually written in the thread — never invent content, owners, or dates that were not present. When the target thread is ambiguous, ask a short clarifying question before retrieving anything.​‌",
+          "instructions": "You are Project Thread Synthesis. Help the user recap a specific team or project email thread and optionally post the reviewed recap to a confirmed Teams standard channel or schedule a follow-up.\n\nTools:\n- read_mail_thread is read-only. NEVER send, reply to, forward, or draft email.\n- check_calendar_events prevents duplicate follow-ups; create_calendar_event schedules a confirmed follow-up.\n- post_project_recap_to_channel posts the recap through the Teams connector.\n\nFollow the Project Thread Recap skill for thread resolution, grounding every statement in retrieved messages, recap structure, confidentiality review, and delivery choices. Do not post to a channel without confirming the team, standard channel, and final recap with the user. Do not post sensitive content to a channel. Ask when the thread or destination is ambiguous. Never invent owners, dates, or commitments.",
           "channels": [],
           "toolCount": 4,
           "skillCount": 1,
@@ -95,7 +95,7 @@
       },
       {
         "id": "tool:Default_Thread_Recap_Assistant_4e99be.tool.Post_Teams_recap_to_self",
-        "name": "Post Teams recap to self",
+        "name": "Post project recap to channel",
         "type": "tool",
         "position": {
           "x": -452,
@@ -104,8 +104,8 @@
         "details": {
           "kind": "tool",
           "schemaName": "Default_Thread_Recap_Assistant_4e99be.tool.Post_Teams_recap_to_self",
-          "operation": "PostMessageToSelf",
-          "description": "Posts the HTML thread recap and item counts to the user's own Teams self-chat."
+          "operation": "PostMessageToConversation",
+          "description": "Posts a reviewed HTML project-thread recap to a user-confirmed standard Teams channel."
         }
       },
       {
@@ -167,77 +167,77 @@
     {
       "path": "Assets/botcomponent_connectionreferenceset.xml",
       "category": "other",
-      "size": 1310
+      "size": 1323
     },
     {
       "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.skill.email-thread-recap-followup_Yj6/botcomponent.xml",
       "category": "component",
-      "size": 938
+      "size": 948
     },
     {
       "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.skill.email-thread-recap-followup_Yj6/data",
       "category": "component",
-      "size": 8720
+      "size": 9680
     },
     {
       "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.tool.Check_existing_calendar_events/botcomponent.xml",
       "category": "component",
-      "size": 537
+      "size": 547
     },
     {
       "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.tool.Check_existing_calendar_events/data",
       "category": "component",
-      "size": 182
+      "size": 186
     },
     {
       "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.tool.Create_calendar_event/botcomponent.xml",
       "category": "component",
-      "size": 456
+      "size": 466
     },
     {
       "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.tool.Create_calendar_event/data",
       "category": "component",
-      "size": 182
+      "size": 186
     },
     {
       "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.tool.Post_Teams_recap_to_self/botcomponent.xml",
       "category": "component",
-      "size": 487
+      "size": 510
     },
     {
       "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.tool.Post_Teams_recap_to_self/data",
       "category": "component",
-      "size": 173
+      "size": 185
     },
     {
       "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.tool.Read_Outlook_mail_thread/botcomponent.xml",
       "category": "component",
-      "size": 585
+      "size": 595
     },
     {
       "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.tool.Read_Outlook_mail_thread/data",
       "category": "component",
-      "size": 251
+      "size": 255
     },
     {
       "path": "bots/Default_Thread_Recap_Assistant_4e99be/bot.xml",
       "category": "bot",
-      "size": 398
+      "size": 409
     },
     {
       "path": "bots/Default_Thread_Recap_Assistant_4e99be/configuration.json",
       "category": "bot",
-      "size": 2142
+      "size": 1343
     },
     {
       "path": "customizations.xml",
       "category": "solution",
-      "size": 2069
+      "size": 2110
     },
     {
       "path": "solution.xml",
       "category": "solution",
-      "size": 2599
+      "size": 2656
     }
   ]
 }
