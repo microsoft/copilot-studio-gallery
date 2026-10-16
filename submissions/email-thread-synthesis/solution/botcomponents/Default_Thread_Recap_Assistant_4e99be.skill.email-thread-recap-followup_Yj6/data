@@ -1,0 +1,155 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: email-thread-recap-followup
+  description: Synthesizes a team or project email thread into decisions, action items, open questions, and risks by owner, then offers a confirmed Teams channel recap or follow-up meeting. Use when the maker asks to recap a project discussion, pull decisions or actions from a thread, or share a reviewed thread recap with a team. Do NOT use for general inbox triage, drafting a reply, or requests that are not anchored to a specific thread's outcome.
+  ---
+  <!-- bic:source=upload -->
+  # Project thread recap and follow-up
+
+  Turn one or more team or project email threads into a structured recap — decisions, action items,
+  open questions, and risks — then let the maker decide whether to post it to a Teams channel,
+  schedule a follow-up meeting, do both, or neither.
+
+  ## Required tools
+
+  This skill needs three connected capabilities on the agent to run end to end:
+
+  - An email tool (Outlook / Office 365 Outlook) to search and read messages in a thread.
+  - A calendar tool (Outlook Calendar) to check for and create the follow-up meeting.
+  - A Teams tool that can post a message to a standard channel selected by the maker, plus a
+    directory lookup to tell internal participants from external ones when suggesting attendees.
+
+  If any of these are missing from the agent's Tools list, tell the maker which capability is
+  missing before attempting the step that needs it — do not guess at a result you cannot produce.
+
+  ## Step 1 — Resolve the target thread
+
+  Figure out which team or project thread (or threads) the maker means from whatever they gave you:
+
+  - **Subject** — match on the words they used, e.g. "the thread about the Contoso renewal".
+  - **Sender** — this is the default anchor when the maker names a person and nothing else, e.g.
+    "catch me up on my thread with Priya Shah" resolves by sender first.
+  - **Date / range** — "from last Tuesday", "this week".
+  - **Topic** — keywords when there's no exact subject match.
+  - **A link or message reference** the maker pasted in — resolve directly from it rather than
+    re-searching.
+
+  Search a **30-day window** by default when no date is given. If more than one thread matches, cap
+  the candidate list at **5**, newest first.
+
+  Decide single-thread vs. multi-thread mode from the maker's phrasing:
+
+  - A singular qualifier — "the **latest**", "the **most recent**", "that thread" — means exactly
+    one thread. Resolve to the single newest match and proceed without asking, unless nothing
+    matches (then say so).
+  - A plural or unqualified request with several matches — "my threads with the vendor this week",
+    or a bare sender/topic that returns more than one thread — means multi-thread mode: list the
+    (up to 5) candidates by subject, sender, and date, and either synthesize all of them (one recap
+    each) when the maker clearly wants the whole set, or ask which one(s) when it's genuinely
+    unclear.
+
+  ## Step 2 — Produce the structured synthesis
+
+  Pull every message in the resolved thread (not just the latest one) so decisions and commitments
+  made earlier in the conversation aren't lost. For each resolved thread, write the recap in exactly
+  this structure, in this order:
+
+  1. **Summary** — two to four sentences on what the thread covered and where it landed.
+  2. **Decisions** — one line per decision, phrased "what was decided — who decided it". Skip a
+     decision if the thread never actually settled it; don't infer one from a proposal that got no
+     reply.
+  3. **Explicit Action Items** — one line per item, formatted exactly as "Task — Owner — Due". Use
+     the due date or phrase as stated ("by Friday", "next sprint"); when none was given, write
+     "No date given" rather than inventing one.
+  4. **Implied Action Items** — only **first-person commitments** ("I'll send the updated deck",
+     "I can take the follow-up with legal"). The owner is whoever wrote that sentence. Do not
+     promote a third-person ask ("can you send the deck") into this section — that belongs in
+     Explicit Action Items only if someone then confirmed they'd do it.
+  5. **Open Questions** — anything raised and never answered in the thread.
+  6. **Risks / Blockers** — anything flagged as blocking, at risk, delayed, or a concern.
+
+  Keep every section header even when there's nothing to report — write "None noted." instead of
+  omitting the section, since the maker and the later Teams counts both expect all six sections to
+  be present.
+
+  ## Step 3 — Confidentiality scan
+
+  Before offering delivery, scan both the source thread and your synthesis for sensitive subject
+  matter: compensation or pay, HR matters (performance, discipline, leave), legal (litigation, legal
+  hold, contracts under dispute), security (incidents, vulnerabilities, credentials), medical or
+  health information, or similarly sensitive topics.
+
+  If anything is flagged, don't quote the sensitive detail back to the maker — just note in plain
+  terms that the thread touches a sensitive topic. Do not offer or post a channel recap for flagged
+  content. Carry the flag into Step 5b: any calendar invite for this thread must be marked **Private**
+  and use a **generic title** ("Follow-up discussion") instead of the thread's real subject.
+
+  ## Step 4 — Offer the delivery choice
+
+  Show the maker the synthesis, then ask them to choose one: **Teams channel recap**, **Calendar
+  follow-up (30 min)**, **Both**, or **Neither**. Do not default to posting or scheduling anything
+  on their behalf.
+
+  If they choose a Teams channel recap, ask them to select or confirm the team and channel. Resolve
+  an ambiguous destination before proceeding. Only post to a standard channel; the Teams connector
+  does not support posting to private channels. Show the destination and final recap, then obtain
+  explicit confirmation to post. Never infer a destination from the thread participants or project
+  name alone.
+
+  Along with the question, suggest an attendee list for the possible follow-up: only participants
+  who own at least one open action item, implied action item, or open question, **and** only
+  internal participants — drop anyone whose email domain isn't the organization's own or whose
+  directory lookup marks them as external/guest. Let the maker add or remove names before you
+  schedule anything.
+
+  ## Step 5a — Teams channel delivery
+
+  If the maker picks Teams channel (or Both), use the Teams connector's chat-or-channel posting
+  operation with **Post as: User** and **Post in: Channel**, targeting the confirmed standard team
+  and channel. Post only after the maker confirms the destination and final recap. Include the full
+  synthesis (all six sections, in order), followed by a count line, e.g. "2 decisions · 3 explicit
+  action items · 1 implied action item · 1 open question · 0 risks". Do not post flagged sensitive
+  content to a channel.
+
+  ## Step 5b — Calendar delivery
+
+  If the maker picks Calendar (or Both), schedule a **30-minute** follow-up:
+
+  - **Attendees** — the confirmed internal list from Step 4.
+  - **Time zones** — resolve every attendee's IANA time zone (e.g. "America/New_York",
+    "Asia/Calcutta") individually; never assume UTC and never assume everyone shares the
+    organizer's zone. If an attendee's zone genuinely can't be determined, ask the maker rather than
+    guessing one.
+  - **Working hours** — pick a start time that falls within roughly 9 AM–5 PM local time for
+    **every** attendee, within the next 5 business days unless the maker asked for a different
+    window. If no slot satisfies every zone, say so and offer the least-bad option (e.g. edge of
+    working hours for the attendee furthest away) rather than silently picking a time that's the
+    middle of the night for someone.
+  - **Title and sensitivity** — use the thread's subject as the invite title, unless Step 3 flagged
+    it, in which case use "Follow-up discussion" and mark the invite **Private**.
+  - **Idempotency** — before creating the event, check the calendar for an existing event with the
+    same title (the generic title when flagged, the thread subject otherwise). If one already
+    exists, do not create a duplicate — tell the maker the follow-up is already on the calendar
+    instead of double-booking it.
+
+  ## Step 6 — Neither
+
+  If the maker declines both, leave the synthesis as the final chat message and stop — no Teams
+  post, no calendar event.
+
+  ## Example
+
+  Maker: "Catch me up on the latest Contoso launch thread and share the recap with the project team."
+
+  - Resolution: singular qualifier ("latest") + project ("Contoso launch") → single-thread mode, no
+    candidate list needed.
+  - Synthesis: six sections, e.g. Decisions has "Renew Contoso for 12 months — decided by Priya
+    Shah"; Explicit Action Items has "Send updated pricing sheet — Priya Shah — by Friday"; Implied
+    Action Items has "Draft the amendment — Sushank (self, from \"I'll draft the amendment\")".
+  - No sensitive topics flagged → normal title, normal sensitivity.
+  - No sensitive topics flagged → ask which standard team channel to use, show the final recap, and
+    wait for confirmation before posting.
+  - Ask: Teams channel recap, Calendar follow-up, Both, or Neither. Suggest only internal attendees
+    who own an open item, and let the maker confirm the list.
+authoringSource: Upload
