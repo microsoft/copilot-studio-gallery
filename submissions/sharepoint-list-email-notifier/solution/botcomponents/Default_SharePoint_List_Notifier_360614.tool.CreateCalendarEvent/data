@@ -1,0 +1,46 @@
+kind: TaskDialog
+modelDisplayName: Create calendar event
+modelDescription: Creates an Outlook calendar event for the resolved current user when the SharePoint item contains a meaningful date or deadline. Never invent event dates or times.
+inputs:
+  - kind: ManualTaskInput
+    propertyName: table
+    value: Calendar
+  - kind: AutomaticTaskInput
+    propertyName: subject
+    description: A concise event title based on the SharePoint item.
+    entity: StringPrebuiltEntity
+    shouldPromptUser: false
+  - kind: AutomaticTaskInput
+    propertyName: start
+    description: The start time derived from a real date or deadline on the item, in ISO 8601 format.
+    entity: StringPrebuiltEntity
+    shouldPromptUser: false
+  - kind: AutomaticTaskInput
+    propertyName: end
+    description: The end time derived from the item date; use an appropriate short duration when no duration is specified.
+    entity: StringPrebuiltEntity
+    shouldPromptUser: false
+  - kind: AutomaticTaskInput
+    propertyName: timeZone
+    description: The user's local time zone when known from the item or context.
+    entity: StringPrebuiltEntity
+    shouldPromptUser: false
+  - kind: AutomaticTaskInput
+    propertyName: body
+    description: Event details including item title, status, summary, and the direct SharePoint link.
+    entity: StringPrebuiltEntity
+    shouldPromptUser: false
+  - kind: AutomaticTaskInput
+    propertyName: requiredAttendees
+    description: The resolved current user's email address.
+    entity: StringPrebuiltEntity
+    shouldPromptUser: false
+outputs:
+  - propertyName: Response
+action:
+  kind: InvokeConnectorTaskAction
+  connectionReference: a3p_sharedoffice365_360614
+  connectionProperties:
+    mode: Invoker
+  operationId: V4CalendarPostItem
+outputMode: All
