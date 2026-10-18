@@ -1,16 +1,18 @@
-# Outlook Triggered Workflow Agent
+# Team Knowledge Inbox Assistant
 
-Outlook Triggered Workflow Agent monitors an inbox for new messages, passes the
-message body to a research agent, and prepares a professional HTML response
-grounded only in the agent's configured knowledge sources.
+Team Knowledge Inbox Assistant monitors a shared team inbox, researches questions
+against the agent's configured knowledge sources, and replies to the original
+sender in the same email thread with a professional HTML response.
 
 ## Automation
 
-- The workflow starts when a new message arrives in the Inbox folder.
-- It captures the incoming message and invokes the email research agent with the
-  message body.
-- The inline skill extracts each question, researches supported answers, cites
-  its sources, identifies unanswered questions, and suggests useful follow-ups.
+- The workflow starts when a new message arrives in the shared mailbox's Inbox.
+- It passes the message body to the research agent, which answers questions
+  strictly from configured knowledge sources, cites sources, lists unanswered
+  questions, and suggests useful follow-ups.
+- The workflow replies to the triggering message using its message ID. The agent
+  cannot choose another message or recipient.
+- Messages without questions produce no reply.
 
 ## Import notes
 
@@ -18,14 +20,12 @@ After importing the unmanaged solution:
 
 1. Authorize the Office 365 Outlook and Microsoft Copilot Studio connection
    references.
-2. Add and review the knowledge sources the agent is allowed to use.
-3. Configure the email action required to send the generated HTML response.
-4. Confirm whether responses should go to the importing user or the original
-   sender; the exported agent instructions and inline skill describe different
-   recipient behavior.
-5. Review the monitored Outlook folder and test with a non-production mailbox
-   before enabling the workflow.
-6. Verify duplicate or previously processed messages cannot produce another
-   response.
+2. Replace `team-inbox@example.com` with the team's shared mailbox address in
+   both the trigger and the reply action. The connected account needs access to
+   the mailbox and permission to send from it.
+3. Add and review the knowledge sources the agent is allowed to use.
+4. Test with a non-production shared mailbox before enabling the workflow.
+5. The trigger handles new arrivals; it does not maintain a persistent
+   idempotency ledger for manual replays or duplicate deliveries.
 
 The agent does not use web search or unsupported outside knowledge.

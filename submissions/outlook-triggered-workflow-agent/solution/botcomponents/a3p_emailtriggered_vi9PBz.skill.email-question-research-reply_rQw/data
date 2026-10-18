@@ -2,18 +2,18 @@ kind: InlineAgentSkill
 content: |
   ---
   name: email-question-research-reply
-  description: "Use when a new, previously unprocessed email lands in the monitored inbox and asks one or more questions. Researches each question strictly against the agent's configured knowledge sources, then sends the original sender a professional HTML reply with a bolded question summary, a detailed sourced answer, and a link to the source used per question, plus a list of any questions that could not be answered and suggested follow-up questions. Do NOT use for emails containing no question, for an email that has already been replied to, or to answer from general or outside knowledge when the configured knowledge sources do not cover the topic."
+  description: "Use when a new email arrives in the team's shared inbox and asks one or more questions. Researches each question strictly against the agent's configured knowledge sources and returns an HTML reply body to the workflow, which replies to the triggering message. Return an empty response for emails with no question. Do NOT answer from general or outside knowledge when the configured knowledge sources do not cover the topic."
   ---
 
   <!-- bic:source=generated -->
   # Email question research and reply
 
-  Run this procedure once per new, unique incoming email in the monitored inbox. Treat every claim in the reply as something the maker's recipient could click through and verify — never state an answer that isn't backed by a passage you actually retrieved from a configured knowledge source.
+  Run this procedure for each new email received in the team's shared inbox. Treat every claim in the reply as something the recipient could click through and verify — never state an answer that isn't backed by a passage you actually retrieved from a configured knowledge source.
 
-  ## 1. Confirm the email is new and in scope
+  ## 1. Confirm the email is in scope
 
-  - Skip the email entirely if it is not a new arrival (for example, a message already replied to, a sent item, or a duplicate of one already processed). Sending a second reply to the same email confuses the recipient, so treat idempotency as a hard requirement, not a nicety.
-  - Skip silently (no reply) if the email body contains no question at all — a pure FYI, a calendar invite, an automated notification, or a thank-you note. Only proceed when there is at least one question to answer.
+  - The workflow supplies the body of a newly arrived message. Do not claim to check message history or deduplicate replayed messages.
+  - If the email body contains no question at all — for example, a pure FYI, a calendar invite, an automated notification, or a thank-you note — return an empty response. The workflow will not send a reply for an empty response.
 
   ## 2. Extract every question
 
@@ -33,10 +33,10 @@ content: |
 
   ## 5. Compose the HTML reply
 
-  Build a single professional HTML email reply addressed to the original sender. Use this structure, repeating the per-question block for every question that was answered:
+  Return a single professional HTML body for a reply to the original sender. The workflow binds the reply to the triggering message, preserves the thread, and selects the recipient. Use this structure, repeating the per-question block for every question that was answered:
 
   ```html
-  <p>Hi &lt;sender first name&gt;,</p>
+  <p>Hello,</p>
   <p>Thanks for reaching out — here's what I found for each of your questions:</p>
 
   <p><b>1. &lt;short question summary&gt;</b><br>
@@ -65,7 +65,7 @@ content: |
   - Keep the tone professional and concise; do not editorialize or apologize excessively for unanswered items — state plainly that the knowledge sources didn't cover them.
   - Every answered question must carry a source link. A question with no retrievable source belongs in the unanswered list, never in the answered list with a placeholder or missing citation.
 
-  ## 6. Send the reply
+  ## 6. Return the HTML body
 
-  Send the composed HTML as a reply to the original sender (the owner of the question), keeping the original subject line prefixed with the usual reply marker so the thread stays linked. Do this once per new email processed in step 1 — never send more than one reply to the same incoming message.
+  Return only the composed HTML body. Do not call an email action or choose a message ID or recipient; the workflow replies to the original sender using the shared mailbox and the ID of the message that triggered it.
 authoringSource: Generated

@@ -36,15 +36,16 @@
         }
       },
       "triggers": {
-        "When_a_new_email_arrives__V3_": {
+        "When_a_new_email_arrives_in_shared_mailbox__V2_": {
           "type": "OpenApiConnectionNotification",
           "inputs": {
             "parameters": {
-              "folderPath": "Inbox"
+              "folderPath": "Inbox",
+              "mailboxAddress": "team-inbox@example.com"
             },
             "host": {
               "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
-              "operationId": "OnNewEmailV3",
+              "operationId": "OnSharedMailboxNewEmail",
               "connectionName": "shared_office365"
             }
           },
@@ -52,11 +53,11 @@
           "metadata": {
             "associatedData": {
               "graph": {
-                "name": "Inbox Research Assistant",
+                "name": "Team Knowledge Inbox Assistant",
                 "nodes": [
                   {
                     "id": "start",
-                    "name": "When a new email arrives (V3)",
+                    "name": "When a new email arrives in a shared mailbox (V2)",
                     "type": "start",
                     "version": 1,
                     "position": {
@@ -68,12 +69,13 @@
                         "triggerType": "connector",
                         "connector": {
                           "apiName": "shared_office365",
-                          "operationName": "OnNewEmailV3",
+                          "operationName": "OnSharedMailboxNewEmail",
                           "operationType": "OpenApiConnectionNotification",
                           "inputs": {
-                            "folderPath": "Inbox"
+                            "folderPath": "Inbox",
+                            "mailboxAddress": "team-inbox@example.com"
                           },
-                          "displayName": "When a new email arrives (V3)",
+                          "displayName": "When a new email arrives in a shared mailbox (V2)",
                           "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1819/1.0.1819.4795/office365/icon.png",
                           "brandColor": "#0078D4",
                           "connectionName": "shared_office365",
@@ -228,9 +230,17 @@
                                 "default": false,
                                 "x-ms-visibility": "advanced",
                                 "x-ms-property-name-alias": "fetchOnlyWithAttachment"
+                              },
+                              "mailboxAddress": {
+                                "type": "string",
+                                "title": "Shared Mailbox Address",
+                                "description": "Address of the shared team mailbox to monitor.",
+                                "x-ms-property-name-alias": "mailboxAddress"
                               }
                             },
-                            "required": []
+                            "required": [
+                              "mailboxAddress"
+                            ]
                           },
                           "triggerBatchMode": "Batch",
                           "outputSchema": {
@@ -797,46 +807,12 @@
                     }
                   },
                   {
-                    "id": "node-1",
-                    "name": "Initialize incoming_email",
-                    "type": "variable",
-                    "version": 1,
-                    "position": {
-                      "x": 500,
-                      "y": 200
-                    },
-                    "data": {
-                      "config": {
-                        "assignments": [
-                          {
-                            "id": "var-1",
-                            "variableName": "incoming_email",
-                            "mode": "initialize",
-                            "type": "object",
-                            "value": "@triggerBody()"
-                          }
-                        ]
-                      },
-                      "outcomes": [
-                        {
-                          "id": "default",
-                          "label": "Default"
-                        }
-                      ]
-                    },
-                    "measured": {
-                      "width": 240,
-                      "height": 66
-                    },
-                    "selected": false
-                  },
-                  {
                     "id": "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860",
                     "name": "Agent",
                     "type": "agent",
                     "version": 1,
                     "position": {
-                      "x": 816,
+                      "x": 500,
                       "y": 200
                     },
                     "data": {
@@ -901,18 +877,222 @@
                       "height": 66
                     },
                     "selected": false
+                  },
+                  {
+                    "id": "9da258d1-7be5-4529-a492-c2617b599a0b",
+                    "name": "Check whether a reply is needed",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 816,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "4ed6099a-256f-4416-ae01-40208a67ce6f",
+                            "name": "Reply when the agent returns HTML",
+                            "expression": "{\n  \"and\": [\n    {\n      \"greater\": [\n        \"@length(coalesce(outputs('Agent')?['body/result'], ''))\",\n        0\n      ]\n    }\n  ]\n}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:4ed6099a-256f-4416-ae01-40208a67ce6f",
+                          "label": "Reply when the agent returns HTML"
+                        },
+                        {
+                          "id": "else",
+                          "label": "No reply"
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 260,
+                      "height": 120
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "connector-5bf67072-0dee-4c89-85b6-d88a53af385b",
+                    "name": "Reply to original email",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 1180,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_office365",
+                        "displayName": "Office 365 Outlook",
+                        "iconUri": "https://res-1.cdn.office.net/files/fabric-cdn-prod_20251008.001/assets/brand-icons/product/svg/outlook_48x1.svg",
+                        "brandColor": "#0078D4",
+                        "operationName": "ReplyToV3",
+                        "parametersSchema": {
+                          "type": "object",
+                          "properties": {
+                            "messageId": {
+                              "type": "string",
+                              "title": "Message Id",
+                              "description": "Id of the email to reply to.",
+                              "minLength": 1,
+                              "x-ms-property-name-alias": "messageId"
+                            },
+                            "replyParameters": {
+                              "type": "object",
+                              "title": "Details of the email reply.",
+                              "properties": {
+                                "To": {
+                                  "type": "string",
+                                  "title": "To",
+                                  "format": "email",
+                                  "description": "Example: recipient1@domain.com; recipient2@domain.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "replyParameters/To"
+                                },
+                                "Cc": {
+                                  "type": "string",
+                                  "title": "CC",
+                                  "format": "email",
+                                  "description": "Example: recipient1@domain.com; recipient2@domain.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "replyParameters/Cc"
+                                },
+                                "Bcc": {
+                                  "type": "string",
+                                  "title": "BCC",
+                                  "format": "email",
+                                  "description": "Example: recipient1@domain.com; recipient2@domain.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "replyParameters/Bcc"
+                                },
+                                "Subject": {
+                                  "type": "string",
+                                  "title": "Subject",
+                                  "description": "Email subject (if empty, the original subject used).",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "replyParameters/Subject"
+                                },
+                                "Body": {
+                                  "type": "string",
+                                  "title": "Body",
+                                  "format": "html",
+                                  "description": "Content of the email.",
+                                  "x-ms-property-name-alias": "replyParameters/Body"
+                                },
+                                "ReplyAll": {
+                                  "type": "boolean",
+                                  "title": "Reply All",
+                                  "description": "True to reply to all recipients. (default: False)",
+                                  "x-ms-property-name-alias": "replyParameters/ReplyAll"
+                                },
+                                "Importance": {
+                                  "type": "string",
+                                  "title": "Importance",
+                                  "description": "Pick an importance. (default: Low)",
+                                  "enum": [
+                                    "Low",
+                                    "Normal",
+                                    "High"
+                                  ],
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "replyParameters/Importance"
+                                },
+                                "Attachments": {
+                                  "type": "array",
+                                  "title": "Attachments",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "Name": {
+                                        "type": "string",
+                                        "title": "Name",
+                                        "description": "Attachment name",
+                                        "x-ms-property-name-alias": "Name"
+                                      },
+                                      "ContentBytes": {
+                                        "type": "string",
+                                        "title": "Content",
+                                        "format": "byte",
+                                        "description": "Attachment content",
+                                        "x-ms-property-name-alias": "ContentBytes"
+                                      }
+                                    },
+                                    "required": [
+                                      "ContentBytes",
+                                      "Name"
+                                    ],
+                                    "description": "Attachment"
+                                  },
+                                  "description": "Details of attachments to be sent along with the reply.",
+                                  "x-ms-property-name-alias": "replyParameters/Attachments"
+                                }
+                              },
+                              "required": [],
+                              "description": "Details of the email reply.",
+                              "x-ms-property-name-alias": "replyParameters"
+                            },
+                            "mailboxAddress": {
+                              "type": "string",
+                              "title": "Original Mailbox Address",
+                              "x-ms-dynamic-list": {
+                                "builtInOperation": "AadGraph.GetUsers",
+                                "parameters": {},
+                                "itemValuePath": "mail"
+                              },
+                              "description": "Address of the shared mailbox to reply from.",
+                              "x-ms-property-name-alias": "mailboxAddress"
+                            }
+                          },
+                          "required": [
+                            "messageId",
+                            "replyParameters"
+                          ]
+                        },
+                        "parameters": {
+                          "replyParameters/Body": "@{outputs('Agent')?['body/result']}",
+                          "replyParameters/To": "@{triggerOutputs()?['body/from']}",
+                          "messageId": "@{triggerOutputs()?['body/id']}",
+                          "mailboxAddress": "team-inbox@example.com"
+                        },
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_office365"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {}
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
                   }
                 ],
                 "edges": [
                   {
-                    "id": "edge-start-node-1",
+                    "id": "edge-start-agent",
                     "source": "start",
-                    "target": "node-1"
+                    "target": "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860"
                   },
                   {
-                    "id": "edge-node-1-agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860",
-                    "source": "node-1",
-                    "target": "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860"
+                    "id": "edge-agent-9da258d1-7be5-4529-a492-c2617b599a0b",
+                    "source": "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860",
+                    "target": "9da258d1-7be5-4529-a492-c2617b599a0b"
+                  },
+                  {
+                    "id": "edge-condition-4ed6099a-256f-4416-ae01-40208a67ce6f-connector-5bf67072-0dee-4c89-85b6-d88a53af385b",
+                    "source": "9da258d1-7be5-4529-a492-c2617b599a0b",
+                    "target": "connector-5bf67072-0dee-4c89-85b6-d88a53af385b",
+                    "sourceHandle": "condition:4ed6099a-256f-4416-ae01-40208a67ce6f"
                   }
                 ],
                 "connectionReferences": {
@@ -939,11 +1119,14 @@
                 }
               },
               "nodeActionMapping": {
-                "node-1": [
-                  "Initialize_incoming_email"
-                ],
                 "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860": [
                   "Agent"
+                ],
+                "9da258d1-7be5-4529-a492-c2617b599a0b": [
+                  "Should_reply"
+                ],
+                "connector-5bf67072-0dee-4c89-85b6-d88a53af385b": [
+                  "Should_reply/Reply_to_original_email"
                 ]
               }
             }
@@ -951,22 +1134,6 @@
         }
       },
       "actions": {
-        "Initialize_incoming_email": {
-          "type": "InitializeVariable",
-          "inputs": {
-            "variables": [
-              {
-                "name": "incoming_email",
-                "type": "Object",
-                "value": "@triggerBody()"
-              }
-            ]
-          },
-          "metadata": {
-            "description": "Initialize incoming_email",
-            "nodeId": "node-1"
-          }
-        },
         "Agent": {
           "type": "OpenApiConnection",
           "inputs": {
@@ -980,14 +1147,56 @@
               "operationId": "InvokeAgent"
             }
           },
+          "metadata": {
+            "description": "Agent",
+            "nodeId": "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860"
+          }
+        },
+        "Should_reply": {
+          "type": "If",
+          "expression": {
+            "and": [
+              {
+                "greater": [
+                  "@length(coalesce(outputs('Agent')?['body/result'], ''))",
+                  0
+                ]
+              }
+            ]
+          },
+          "actions": {
+            "Reply_to_original_email": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "replyParameters/Body": "@{outputs('Agent')?['body/result']}",
+                  "replyParameters/To": "@{triggerOutputs()?['body/from']}",
+                  "messageId": "@{triggerOutputs()?['body/id']}",
+                  "mailboxAddress": "team-inbox@example.com"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                  "connectionName": "shared_office365",
+                  "operationId": "ReplyToV3"
+                }
+              },
+              "metadata": {
+                "description": "Reply to original email",
+                "nodeId": "connector-5bf67072-0dee-4c89-85b6-d88a53af385b"
+              }
+            }
+          },
+          "else": {
+            "actions": {}
+          },
           "runAfter": {
-            "Initialize_incoming_email": [
+            "Agent": [
               "Succeeded"
             ]
           },
           "metadata": {
-            "description": "Agent",
-            "nodeId": "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860"
+            "description": "Only reply when the agent produced a response",
+            "nodeId": "9da258d1-7be5-4529-a492-c2617b599a0b"
           }
         }
       },

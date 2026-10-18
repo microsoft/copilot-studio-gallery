@@ -1,8 +1,10 @@
 {
-  "name": "Outlook Triggered Workflow Agent",
-  "description": "An email-triggered research agent that answers incoming questions from configured knowledge sources and prepares a sourced HTML response.",
+  "name": "Team Knowledge Inbox Assistant",
+  "description": "A shared-mailbox research workflow that answers team inbox questions using configured knowledge sources and replies to the original sender with a sourced HTML response.",
   "tags": [
     "outlook",
+    "shared-mailbox",
+    "team-inbox",
     "email",
     "research",
     "knowledge",
@@ -21,9 +23,9 @@
     {
       "id": "a3p_emailtriggered_vi9PBz",
       "schemaName": "a3p_emailtriggered_vi9PBz",
-      "name": "Outlook Triggered Agent",
+      "name": "Team Knowledge Inbox Agent",
       "model": "claude-opus-5",
-      "instructions": "When a unique new email comes into my inbox, use the knowledge sources to research the questions that are in the email. Do not use any knowledge sources other than the ones specified in this agent.\nUse the Send an email action to reply only to me with detailed responses based on your research. Format the email in HTML and respond in a professional manner. Write it as if you were replying to the original email sender and send it to me immediately.\nFor each question, start a new paragraph and write a detailed response. Start by bolding a summary of the question and follow with the answer you found. Then include a link to the source that you used to answer the question. The more verbose, detailed, factual and illustrative, the better.\nIf you don't find the answer to questions asked in the email in the knowledge sources - do not answer them but let me know which questions are left unanswered.\nAt the bottom of the email let me know what some good questions are to ask the original email sender in order to discover more about their interests.​‌",
+      "instructions": "When a new email arrives in the team shared inbox, research every question using only the knowledge sources configured in this agent. Do not use web search, general knowledge, or any other sources.\nReturn only the complete HTML body for a reply to the original sender. Do not send email yourself; the workflow replies to the triggering message in the same thread and sends only a non-empty response. If the message contains no question, return an empty response so the workflow does not reply.\nFor each question, use a bold short summary followed by a detailed answer supported by a retrieved source and a link to that source. If a question is only partially answered, include only supported information. List questions the sources cannot answer and suggest two to four concrete follow-up questions. Omit the unanswered list when all questions are answered. Keep the tone professional and concise and do not invent sources.",
       "channels": [],
       "toolCount": 0,
       "skillCount": 1,
@@ -34,7 +36,7 @@
     "nodes": [
       {
         "id": "agent:a3p_emailtriggered_vi9PBz",
-        "name": "Outlook Triggered Agent",
+        "name": "Team Knowledge Inbox Agent",
         "type": "agent",
         "position": {
           "x": -112,
@@ -42,7 +44,7 @@
         },
         "details": {
           "model": "claude-opus-5",
-          "instructions": "When a unique new email comes into my inbox, use the knowledge sources to research the questions that are in the email. Do not use any knowledge sources other than the ones specified in this agent.\nUse the Send an email action to reply only to me with detailed responses based on your research. Format the email in HTML and respond in a professional manner. Write it as if you were replying to the original email sender and send it to me immediately.\nFor each question, start a new paragraph and write a detailed response. Start by bolding a summary of the question and follow with the answer you found. Then include a link to the source that you used to answer the question. The more verbose, detailed, factual and illustrative, the better.\nIf you don't find the answer to questions asked in the email in the knowledge sources - do not answer them but let me know which questions are left unanswered.\nAt the bottom of the email let me know what some good questions are to ask the original email sender in order to discover more about their interests.​‌",
+          "instructions": "When a new email arrives in the team shared inbox, research every question using only the knowledge sources configured in this agent. Do not use web search, general knowledge, or any other sources.\nReturn only the complete HTML body for a reply to the original sender. Do not send email yourself; the workflow replies to the triggering message in the same thread and sends only a non-empty response. If the message contains no question, return an empty response so the workflow does not reply.\nFor each question, use a bold short summary followed by a detailed answer supported by a retrieved source and a link to that source. If a question is only partially answered, include only supported information. List questions the sources cannot answer and suggest two to four concrete follow-up questions. Omit the unanswered list when all questions are answered. Keep the tone professional and concise and do not invent sources.",
           "channels": [],
           "toolCount": 0,
           "skillCount": 1,
@@ -60,7 +62,7 @@
         "details": {
           "kind": "skill",
           "schemaName": "a3p_emailtriggered_vi9PBz.skill.email-question-research-reply_rQw",
-          "description": "Use when a new, previously unprocessed email lands in the monitored inbox and asks one or more questions. Researches each question strictly against the agent's configured knowledge sources, then sends the original sender a professional HTML reply with a bolded question summary, a detailed sourced answer, and a link to the source used per question, plus a list of any questions that could not be answered and suggested follow-up questions. Do NOT use for emails containing no question, for an email that has already been replied to, or to answer from general or outside knowledge when the configured knowledge sources do not cover the topic."
+          "description": "Use when a new email arrives in the team's shared inbox and asks one or more questions. Research each question strictly against the agent's configured knowledge sources and return a professional HTML reply body to the workflow. The workflow sends that body as a reply to the triggering message. Return an empty response for emails containing no question. Do not answer from general or outside knowledge when the configured knowledge sources do not cover the topic."
         }
       }
     ],
@@ -76,28 +78,18 @@
   "workflows": [
     {
       "id": "{5c564b15-d8a5-f111-aaac-000d3a5a5416}",
-      "name": "Inbox Research Assistant",
-      "trigger": "When a new email arrives (V3)",
-      "nodeCount": 3,
-      "edgeCount": 2,
+      "name": "Team Knowledge Inbox Assistant",
+      "trigger": "When a new email arrives in a shared mailbox (V2)",
+      "nodeCount": 4,
+      "edgeCount": 3,
       "graph": {
         "nodes": [
           {
             "id": "start",
-            "name": "When a new email arrives (V3)",
+            "name": "When a new email arrives in a shared mailbox (V2)",
             "type": "start",
             "position": {
               "x": 100,
-              "y": 200
-            },
-            "details": {}
-          },
-          {
-            "id": "node-1",
-            "name": "Initialize incoming_email",
-            "type": "variable",
-            "position": {
-              "x": 500,
               "y": 200
             },
             "details": {}
@@ -107,7 +99,7 @@
             "name": "Agent",
             "type": "agent",
             "position": {
-              "x": 816,
+              "x": 500,
               "y": 200
             },
             "details": {
@@ -116,18 +108,54 @@
               "instructions": "@{triggerOutputs()?['body/body']}",
               "inlineInstructions": ""
             }
+          },
+          {
+            "id": "9da258d1-7be5-4529-a492-c2617b599a0b",
+            "name": "Check whether a reply is needed",
+            "type": "ifElse",
+            "position": {
+              "x": 816,
+              "y": 200
+            },
+            "details": {}
+          },
+          {
+            "id": "connector-5bf67072-0dee-4c89-85b6-d88a53af385b",
+            "name": "Reply to original email",
+            "type": "connector",
+            "position": {
+              "x": 1180,
+              "y": 200
+            },
+            "details": {
+              "displayName": "Office 365 Outlook",
+              "apiName": "shared_office365",
+              "operationName": "ReplyToV3",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "replyParameters/Body": "@{outputs('Agent')?['body/result']}",
+                "replyParameters/To": "@{triggerOutputs()?['body/from']}",
+                "mailboxAddress": "team-inbox@example.com"
+              }
+            }
           }
         ],
         "edges": [
           {
-            "id": "edge-start-node-1",
+            "id": "edge-start-agent",
             "source": "start",
-            "target": "node-1"
+            "target": "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860"
           },
           {
-            "id": "edge-node-1-agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860",
-            "source": "node-1",
-            "target": "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860"
+            "id": "edge-agent-9da258d1-7be5-4529-a492-c2617b599a0b",
+            "source": "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860",
+            "target": "9da258d1-7be5-4529-a492-c2617b599a0b"
+          },
+          {
+            "id": "edge-condition-4ed6099a-256f-4416-ae01-40208a67ce6f-connector-5bf67072-0dee-4c89-85b6-d88a53af385b",
+            "source": "9da258d1-7be5-4529-a492-c2617b599a0b",
+            "target": "connector-5bf67072-0dee-4c89-85b6-d88a53af385b",
+            "sourceHandle": "condition:4ed6099a-256f-4416-ae01-40208a67ce6f"
           }
         ]
       }
@@ -142,17 +170,17 @@
     {
       "path": "botcomponents/a3p_emailtriggered_vi9PBz.skill.email-question-research-reply_rQw/botcomponent.xml",
       "category": "component",
-      "size": 1042
+      "size": 874
     },
     {
       "path": "botcomponents/a3p_emailtriggered_vi9PBz.skill.email-question-research-reply_rQw/data",
       "category": "component",
-      "size": 5363
+      "size": 5069
     },
     {
       "path": "botcomponents/Default_FeedbackCollectionBotSettings_tmfBcm/botcomponent.xml",
       "category": "component",
-      "size": 305
+      "size": 313
     },
     {
       "path": "botcomponents/Default_FeedbackCollectionBotSettings_tmfBcm/data",
@@ -162,27 +190,27 @@
     {
       "path": "bots/a3p_emailtriggered_vi9PBz/bot.xml",
       "category": "bot",
-      "size": 37679
+      "size": 37692
     },
     {
       "path": "bots/a3p_emailtriggered_vi9PBz/configuration.json",
       "category": "bot",
-      "size": 1550
+      "size": 1404
     },
     {
       "path": "customizations.xml",
       "category": "solution",
-      "size": 2638
+      "size": 2710
     },
     {
       "path": "solution.xml",
       "category": "solution",
-      "size": 2729
+      "size": 2784
     },
     {
       "path": "Workflows/InboxResearchAssistant-5C564B15-D8A5-F111-AAAC-000D3A5A5416.json",
       "category": "workflow",
-      "size": 54588
+      "size": 65836
     }
   ]
 }
