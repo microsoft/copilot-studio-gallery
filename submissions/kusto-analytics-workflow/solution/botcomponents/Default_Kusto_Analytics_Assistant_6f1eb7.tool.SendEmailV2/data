@@ -1,0 +1,32 @@
+kind: TaskDialog
+inputs:
+  - kind: ManualTaskInput
+    propertyName: emailMessage/To
+    value: =System.User.Email
+
+  - kind: AutomaticTaskInput
+    propertyName: emailMessage/Subject
+    description: Subject line for the summary email.
+    entity: StringPrebuiltEntity
+    shouldPromptUser: false
+
+  - kind: AutomaticTaskInput
+    propertyName: emailMessage/Body
+    description: Email body containing the summary of the query results and the exact KQL query used.
+    entity: StringPrebuiltEntity
+    shouldPromptUser: false
+
+modelDisplayName: Send summary email
+modelDescription: Sends a summary email of the Kusto query results to the invoking user only. Use only when the user asks to email or mail the results.
+outputs:
+  - propertyName: Response
+
+action:
+  kind: InvokeConnectorTaskAction
+  connectionReference: Default_Kusto_Analytics_Assistant_6f1eb7.cr.shared_office365
+  connectionProperties:
+    mode: Invoker
+
+  operationId: SendEmailV2
+
+outputMode: All

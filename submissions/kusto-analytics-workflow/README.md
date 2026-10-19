@@ -13,7 +13,9 @@ query and email a summary of the top rows to the invoking user.
   rejects mutating or administrative requests, and reports tool failures without
   inventing results.
 - The Kusto MCP tool executes queries with the invoking user's connection.
-- The Outlook Mail MCP tool sends the scheduled summary.
+- The Office 365 Outlook "Send an email (V2)" action sends the scheduled summary
+  to the invoking user. It is send-only, so the agent cannot read, move, or
+  delete mail.
 
 ## Automation
 
@@ -25,8 +27,8 @@ for those values so contributors do not publish environment-specific data.
 
 After importing the unmanaged solution:
 
-1. Authorize the Azure Data Explorer, Outlook Mail, and Microsoft Copilot Studio
-   connection references.
+1. Authorize the Azure Data Explorer, Office 365 Outlook, and Microsoft Copilot
+   Studio connection references.
 2. Replace the `<cluster>`, `<region>`, `<database>`, and `<table>` placeholders
    in the recurrence trigger prompt.
 3. Configure the recurrence frequency, interval, start time, and time zone.
