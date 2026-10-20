@@ -1,0 +1,57 @@
+(function installRule(root) {
+    "use strict";
+    const rejected = 100000004;
+    const notificationId = "cat_rejected_build_locked";
+    const registrations = new WeakMap();
+    root.CAT = root.CAT || {};
+    root.CAT.IntakeStatus = {
+      onLoad: function (executionContext) {
+        const form = executionContext.getFormContext();
+        const approval = form.getAttribute("cat_status");
+        const build = form.getAttribute("cat_buildstatus");
+        if (!approval || !build) {
+          form.ui.setFormNotification("The build-status rule could not load: required status fields are missing.", "ERROR", notificationId);
+          return;
+        }
+        if (registrations.has(build)) {
+          registrations.get(build).refresh();
+          return;
+        }
+        let savedBuild = build.getValue();
+        const previousDisabled = new Map();
+        const apply = function () {
+          const locked = approval.getValue() === rejected;
+          build.controls.forEach(function (control) {
+            if (locked) {
+              if (!previousDisabled.has(control)) previousDisabled.set(control, control.getDisabled());
+              control.setDisabled(true);
+            } else if (previousDisabled.has(control)) {
+              control.setDisabled(previousDisabled.get(control));
+              previousDisabled.delete(control);
+            }
+          });
+          if (locked) {
+            // Rejecting discards pending build-stage edits, not the last saved stage.
+            if (build.getValue() !== savedBuild) build.setValue(savedBuild);
+            form.ui.setFormNotification("Build blocked - request rejected. The last recorded build stage is preserved.", "INFO", notificationId);
+          } else {
+            form.ui.clearFormNotification(notificationId);
+          }
+        };
+        const refresh = function () {
+          savedBuild = build.getValue();
+          apply();
+        };
+        const afterSave = function (context) {
+          if (context.getEventArgs().getIsSaveSuccess()) refresh();
+        };
+        approval.addOnChange(apply);
+        build.addOnChange(apply);
+        form.data.entity.addOnSave(apply);
+        form.data.entity.addOnPostSave(afterSave);
+        form.data.addOnLoad(refresh);
+        registrations.set(build, {refresh:refresh});
+        apply();
+      }
+    };
+  })(window);

@@ -1,0 +1,132 @@
+---
+import type { WorkflowPreview } from "../lib/schema";
+import { countLabel, workflowAgentCalls, type AgentProfile } from "../lib/inventory";
+import { isWorkflowConnector, workflowConnectorNames, workflowMetadataNotice, workflowTriggerType } from "../lib/workflowMetadata";
+import BlockIcon from "./BlockIcon.astro";
+
+interface Props {
+  workflows: WorkflowPreview[];
+  agents?: AgentProfile[];
+}
+
+const { workflows, agents = [] } = Astro.props;
+---
+
+{workflows.length > 0 && (
+  <div class="agent-matrix workflow-matrix" style="--matrix-columns:3" role="table" aria-label="Workflows and their components">
+    <div class="agent-matrix__head" role="row">
+      <span role="columnheader">Workflow</span>
+      <span role="columnheader">
+        <svg class="agent-matrix__head-icon text-[var(--graph-trigger)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">
+          <path d="m13 2-9 12h7l-1 8 10-12h-7l1-8Z"></path>
+        </svg>
+        Trigger
+      </span>
+      <span role="columnheader">
+        <BlockIcon kind="tool" class="agent-matrix__head-icon text-[var(--graph-connector)]" />
+        Connectors
+      </span>
+      <span role="columnheader">
+        <BlockIcon kind="agent" class="agent-matrix__head-icon text-[var(--graph-ai)]" />
+        Agents
+      </span>
+    </div>
+    {workflows.map((workflow) => {
+      const connectors = workflowConnectorNames(workflow);
+      const triggerType = workflowTriggerType(workflow);
+      const notice = workflowMetadataNotice(workflow);
+      const calls = workflowAgentCalls(workflow, agents);
+      return (
+        <div class="agent-matrix__row" role="row">
+          <div class="agent-matrix__agent" role="rowheader">
+            <span class="agent-matrix__avatar workflow-matrix__avatar" aria-hidden="true">
+              <BlockIcon kind="workflow" />
+            </span>
+            <div class="min-w-0">
+              <h3 class="agent-matrix__name">{workflow.name}</h3>
+              <p class="agent-matrix__role tabular-nums">{countLabel(workflow.nodeCount, "step")}</p>
+              {notice && <p class="mt-2 text-xs leading-relaxed text-muted">{notice}</p>}
+            </div>
+          </div>
+          <div class="agent-matrix__cell" data-label="Trigger" role="cell">
+            <div>
+              <p class="workflow-matrix__value">{workflow.trigger ?? "Not included in this export"}</p>
+              {triggerType && <p class="agent-matrix__role">{triggerType}</p>}
+            </div>
+          </div>
+          <div class="agent-matrix__cell" data-label="Connectors" role="cell">
+            {connectors.length > 0 ? (
+              <ul class="workflow-matrix__list">
+                {connectors.map((name) => (
+                  <li class="workflow-matrix__item">
+                    <BlockIcon kind="tool" class="workflow-matrix__item-icon text-[var(--graph-connector)]" />
+                    <span class="workflow-matrix__value">{name}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              workflow.graph.nodes.some(isWorkflowConnector)
+                ? <span class="agent-matrix__none">Not included in this export</span>
+                : <span class="agent-matrix__none"><span aria-hidden="true">—</span><span class="sr-only">No connector steps</span></span>
+            )}
+          </div>
+          <div class="agent-matrix__cell" data-label="Agents" role="cell">
+            {calls.length > 0 ? (
+              <ul class="workflow-matrix__list">
+                {calls.map((call) => (
+                  <li class="workflow-matrix__item">
+                    <BlockIcon kind="agent" class="workflow-matrix__item-icon text-[var(--graph-ai)]" />
+                    <div class="min-w-0">
+                      <p class="workflow-matrix__value">{call.name}</p>
+                      <p class="agent-matrix__role">{call.kind}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <span class="agent-matrix__none"><span aria-hidden="true">—</span><span class="sr-only">No agent calls</span></span>
+            )}
+          </div>
+        </div>
+      );
+    })}
+  </div>
+)}
+
+<style>
+  .workflow-matrix__avatar {
+    background: color-mix(in srgb, var(--graph-action) 13%, var(--cp-surface));
+    color: var(--graph-action);
+  }
+
+  .workflow-matrix__value {
+    overflow-wrap: anywhere;
+    color: var(--cp-text);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .workflow-matrix__list {
+    display: grid;
+    gap: 0.75rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .workflow-matrix__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  .workflow-matrix :global(.workflow-matrix__item-icon) {
+    width: 0.9rem;
+    height: 0.9rem;
+    flex: none;
+    margin-top: 0.1rem;
+  }
+</style>
