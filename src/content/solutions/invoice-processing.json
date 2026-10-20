@@ -1,0 +1,358 @@
+{
+  "name": "Invoice Processing",
+  "description": "Two invoice-processing workflows: log extracted email attachments to a self-provisioning Excel ledger, or use a Dataverse ledger with extraction status and duplicate tracking. Choose based on your use case and licensing.",
+  "tags": [
+    "finance",
+    "accounts-payable",
+    "document-extraction",
+    "multi-agent",
+    "excel",
+    "dataverse",
+    "automation"
+  ],
+  "category": "Finance",
+  "createdAt": "2026-09-03",
+  "updatedAt": "2026-10-09",
+  "featured": true,
+  "previewWorkflow": "{763c37ff-489d-4729-b6f5-5931d3d7f8b7}",
+  "author": "Isha Gautam, Jasmita Lamba, and Pulkit Bhagat",
+  "authors": [
+    {
+      "name": "Isha Gautam",
+      "github": "ishagautamMSFT"
+    },
+    {
+      "name": "Jasmita Lamba"
+    },
+    {
+      "name": "Pulkit Bhagat",
+      "github": "pulkit-bhagat"
+    }
+  ],
+  "uniqueName": "IshaInvoiceProcessingVersions",
+  "version": "1.0.0.0",
+  "publisher": "Isha Workflow Isolation",
+  "bundle": "bundles/invoice-processing.zip",
+  "agentCount": 0,
+  "workflowCount": 2,
+  "componentCount": 3,
+  "agents": [],
+  "agentGraph": {
+    "nodes": [],
+    "edges": []
+  },
+  "workflows": [
+    {
+      "id": "{763c37ff-489d-4729-b6f5-5931d3d7f8b7}",
+      "name": "Invoice Processing - Original",
+      "trigger": "When a new email arrives",
+      "nodeCount": 5,
+      "edgeCount": 5,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-642b9116-7e35-459b-b5e9-84e59bc395f9",
+            "name": "When a new email arrives",
+            "type": "start",
+            "position": {
+              "x": 250,
+              "y": 334
+            },
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When a new email arrives",
+              "apiName": "shared_office365",
+              "operationName": "OnNewEmailV3",
+              "operationType": "OpenApiConnectionNotification"
+            }
+          },
+          {
+            "id": "variable-37eb8bec-5e66-41a0-bb90-5b9630dbad2f",
+            "name": "Configuration",
+            "type": "variable",
+            "position": {
+              "x": 566,
+              "y": 334
+            },
+            "details": {}
+          },
+          {
+            "id": "loop-9c08dea8-2d48-41cd-9e1c-9088d8125812",
+            "name": "Loop",
+            "type": "loop",
+            "position": {
+              "x": 882,
+              "y": 337.8131085027847
+            },
+            "details": {},
+            "width": 736,
+            "height": 300
+          },
+          {
+            "id": "agent-bb21f458-2be9-4c34-9c23-68997b8216cc",
+            "name": "Extraction Agent",
+            "type": "agent",
+            "position": {
+              "x": 60,
+              "y": 80
+            },
+            "parentId": "loop-9c08dea8-2d48-41cd-9e1c-9088d8125812",
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are an invoice data extraction agent. You will process one email attachment at a time.\n\nAttachment name: {items('Loop')?['name']}\n\nAttachment content:  {items('Loop')}\n\nEmail subject (context only): {triggerOutputs()?['body/subject']}\n\nEmail body (context only): {triggerOutputs()?['body/body']}\n\nThe attachment is a document (commonly a PDF or image) that may or may not be an invoice. Read and "
+            }
+          },
+          {
+            "id": "agent-87fe766b-4158-476b-9890-cbc85a17f21b",
+            "name": "Logging Agent",
+            "type": "agent",
+            "position": {
+              "x": 376,
+              "y": 80
+            },
+            "parentId": "loop-9c08dea8-2d48-41cd-9e1c-9088d8125812",
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are the Logging Agent for Invoice Processing. You run immediately after the Extraction Agent and own all Excel and OneDrive actions. There is no separate If or Else step in this workflow: all existence checking and auto-creation must be handled entirely by your own reasoning and tool calls, following the steps below exactly.\n\nEXTRACTED INVOICE DATA FROM THE PREVIOUS STEP\nInvoice number: {body("
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-642b9116-7e35-459b-b5e9-84e59bc395f9-variable-37eb8bec-5e66-41a0-bb90-5b9630dbad2f",
+            "source": "start-642b9116-7e35-459b-b5e9-84e59bc395f9",
+            "target": "variable-37eb8bec-5e66-41a0-bb90-5b9630dbad2f"
+          },
+          {
+            "id": "edge-variable-37eb8bec-5e66-41a0-bb90-5b9630dbad2f-loop-9c08dea8-2d48-41cd-9e1c-9088d8125812-external-input",
+            "source": "variable-37eb8bec-5e66-41a0-bb90-5b9630dbad2f",
+            "target": "loop-9c08dea8-2d48-41cd-9e1c-9088d8125812",
+            "targetHandle": "external-input"
+          },
+          {
+            "id": "edge-loop-9c08dea8-2d48-41cd-9e1c-9088d8125812-internal-source-agent-bb21f458-2be9-4c34-9c23-68997b8216cc",
+            "source": "loop-9c08dea8-2d48-41cd-9e1c-9088d8125812",
+            "target": "agent-bb21f458-2be9-4c34-9c23-68997b8216cc",
+            "sourceHandle": "internal-source"
+          },
+          {
+            "id": "edge-agent-bb21f458-2be9-4c34-9c23-68997b8216cc-agent-87fe766b-4158-476b-9890-cbc85a17f21b",
+            "source": "agent-bb21f458-2be9-4c34-9c23-68997b8216cc",
+            "target": "agent-87fe766b-4158-476b-9890-cbc85a17f21b"
+          },
+          {
+            "id": "edge-agent-87fe766b-4158-476b-9890-cbc85a17f21b-loop-9c08dea8-2d48-41cd-9e1c-9088d8125812-internal-target",
+            "source": "agent-87fe766b-4158-476b-9890-cbc85a17f21b",
+            "target": "loop-9c08dea8-2d48-41cd-9e1c-9088d8125812",
+            "targetHandle": "internal-target"
+          }
+        ]
+      }
+    },
+    {
+      "id": "{ba925418-4dde-41ef-84ba-b7468a670026}",
+      "name": "Invoice Processing - Revised",
+      "trigger": "When a new email arrives in a shared mailbox",
+      "nodeCount": 8,
+      "edgeCount": 8,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-f65eb484-d81a-4b9d-82e0-4774246f7b05",
+            "name": "When a new email arrives in a shared mailbox",
+            "type": "start",
+            "position": {
+              "x": 250,
+              "y": 369.9467127576464
+            },
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When a new email arrives in a shared mailbox",
+              "apiName": "shared_office365",
+              "operationName": "SharedMailboxOnNewEmailV2",
+              "operationType": "OpenApiConnection"
+            }
+          },
+          {
+            "id": "variable-07549586-fc56-4bbc-b42a-7ebaf1330c5f",
+            "name": "Configuration",
+            "type": "variable",
+            "position": {
+              "x": 714,
+              "y": 334
+            },
+            "details": {}
+          },
+          {
+            "id": "loop-4dd8413f-2f7f-43e8-a0c5-e5f5d40c85c5",
+            "name": "Loop",
+            "type": "loop",
+            "position": {
+              "x": 1030,
+              "y": 225.16033960961525
+            },
+            "details": {},
+            "width": 1705,
+            "height": 380
+          },
+          {
+            "id": "agent-c7f2dba1-0400-4de0-a64d-31a05aec1e3f",
+            "name": "Ledger Agent",
+            "type": "agent",
+            "position": {
+              "x": 731.2081993023885,
+              "y": 129.87683339967737
+            },
+            "parentId": "loop-4dd8413f-2f7f-43e8-a0c5-e5f5d40c85c5",
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are the Ledger Agent for Invoice Processing. You run immediately after a duplicate-check lookup on the configured Dataverse table. You have no tools — you only reason and produce structured output. Whether a row actually gets created depends entirely on your ShouldLog decision below; the row-creation step reads your output directly and does nothing unless you set ShouldLog to true.\n\nEXTRACTED "
+            }
+          },
+          {
+            "id": "agentExtract-d16d5de6-9b73-489a-9f3e-ba6e8a7cabbc",
+            "name": "Extract",
+            "type": "agentExtract",
+            "position": {
+              "x": 32.29557533938373,
+              "y": 133.06744040154007
+            },
+            "parentId": "loop-4dd8413f-2f7f-43e8-a0c5-e5f5d40c85c5",
+            "details": {}
+          },
+          {
+            "id": "connector-62e686b7-b5f3-40a0-9323-29c448334f08",
+            "name": "List rows",
+            "type": "connector",
+            "position": {
+              "x": 348.29557533938373,
+              "y": 133.06744040154007
+            },
+            "parentId": "loop-4dd8413f-2f7f-43e8-a0c5-e5f5d40c85c5",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "ListRecords",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "@variables('InvoiceTableName')",
+                "$filter": "iwf_iv2_invoicenumber eq '@{body('Extract')?['structuredOutput/InvoiceNumber']}'"
+              }
+            }
+          },
+          {
+            "id": "ifElse-21d27ac3-7a78-4200-8ba5-490ceda35e34",
+            "name": "If/Else",
+            "type": "ifElse",
+            "position": {
+              "x": 1074.5218851954064,
+              "y": 117.73741744722491
+            },
+            "parentId": "loop-4dd8413f-2f7f-43e8-a0c5-e5f5d40c85c5",
+            "details": {}
+          },
+          {
+            "id": "connector-60182fb3-d7fe-45fb-b374-fc0f2688435b",
+            "name": "Add a new row",
+            "type": "connector",
+            "position": {
+              "x": 1390.5218851954064,
+              "y": 117.73741744722491
+            },
+            "parentId": "loop-4dd8413f-2f7f-43e8-a0c5-e5f5d40c85c5",
+            "details": {
+              "displayName": "Microsoft Dataverse",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "CreateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "@variables('InvoiceTableName')",
+                "item": "@json(concat('{\"iwf_iv2_amountdue\":', string(body('agent-c7f2dba1-0400-4de0-a64d-31a05aec1e3f')?['structuredOutput/AmountDue']), ',\"iwf_iv2_attachmentname\":\"', body('agent-c7f2dba1-0400-4de0-a64d-31a05aec1e3f')?['structuredOutput/AttachmentName'], '\",\"iwf_iv2_currency\":\"', body('agent-c7f2dba1-0400-4de0-a64d-31a05aec1e3f')?['structuredOutput/Currency'], '\",\"iwf_iv2_duplicateof\":\"', if(equals(body("
+              }
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-variable-07549586-fc56-4bbc-b42a-7ebaf1330c5f-loop-4dd8413f-2f7f-43e8-a0c5-e5f5d40c85c5-external-input",
+            "source": "variable-07549586-fc56-4bbc-b42a-7ebaf1330c5f",
+            "target": "loop-4dd8413f-2f7f-43e8-a0c5-e5f5d40c85c5",
+            "targetHandle": "external-input"
+          },
+          {
+            "id": "edge-start-f65eb484-d81a-4b9d-82e0-4774246f7b05-variable-07549586-fc56-4bbc-b42a-7ebaf1330c5f",
+            "source": "start-f65eb484-d81a-4b9d-82e0-4774246f7b05",
+            "target": "variable-07549586-fc56-4bbc-b42a-7ebaf1330c5f"
+          },
+          {
+            "id": "edge-loop-4dd8413f-2f7f-43e8-a0c5-e5f5d40c85c5-internal-source-agentExtract-d16d5de6-9b73-489a-9f3e-ba6e8a7cabbc",
+            "source": "loop-4dd8413f-2f7f-43e8-a0c5-e5f5d40c85c5",
+            "target": "agentExtract-d16d5de6-9b73-489a-9f3e-ba6e8a7cabbc",
+            "sourceHandle": "internal-source"
+          },
+          {
+            "id": "edge-agentExtract-d16d5de6-9b73-489a-9f3e-ba6e8a7cabbc-connector-62e686b7-b5f3-40a0-9323-29c448334f08",
+            "source": "agentExtract-d16d5de6-9b73-489a-9f3e-ba6e8a7cabbc",
+            "target": "connector-62e686b7-b5f3-40a0-9323-29c448334f08"
+          },
+          {
+            "id": "edge-connector-62e686b7-b5f3-40a0-9323-29c448334f08-agent-c7f2dba1-0400-4de0-a64d-31a05aec1e3f",
+            "source": "connector-62e686b7-b5f3-40a0-9323-29c448334f08",
+            "target": "agent-c7f2dba1-0400-4de0-a64d-31a05aec1e3f"
+          },
+          {
+            "id": "edge-agent-c7f2dba1-0400-4de0-a64d-31a05aec1e3f-ifElse-21d27ac3-7a78-4200-8ba5-490ceda35e34",
+            "source": "agent-c7f2dba1-0400-4de0-a64d-31a05aec1e3f",
+            "target": "ifElse-21d27ac3-7a78-4200-8ba5-490ceda35e34"
+          },
+          {
+            "id": "edge-connector-60182fb3-d7fe-45fb-b374-fc0f2688435b-loop-4dd8413f-2f7f-43e8-a0c5-e5f5d40c85c5-internal-target",
+            "source": "connector-60182fb3-d7fe-45fb-b374-fc0f2688435b",
+            "target": "loop-4dd8413f-2f7f-43e8-a0c5-e5f5d40c85c5",
+            "targetHandle": "internal-target"
+          },
+          {
+            "id": "edge-ifElse-21d27ac3-7a78-4200-8ba5-490ceda35e34-condition:1c661f63-e47d-4fe2-b6fc-fa8c1fc6e84c-connector-60182fb3-d7fe-45fb-b374-fc0f2688435b",
+            "source": "ifElse-21d27ac3-7a78-4200-8ba5-490ceda35e34",
+            "target": "connector-60182fb3-d7fe-45fb-b374-fc0f2688435b",
+            "sourceHandle": "condition:1c661f63-e47d-4fe2-b6fc-fa8c1fc6e84c"
+          }
+        ]
+      }
+    }
+  ],
+  "connectors": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 258
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 79644
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4351
+    },
+    {
+      "path": "Workflows/InvoiceProcessing-Original-763C37FF-489D-4729-B6F5-5931D3D7F8B7.json",
+      "category": "workflow",
+      "size": 91581
+    },
+    {
+      "path": "Workflows/InvoiceProcessing-Revised-BA925418-4DDE-41EF-84BA-B7468A670026.json",
+      "category": "workflow",
+      "size": 167156
+    }
+  ]
+}

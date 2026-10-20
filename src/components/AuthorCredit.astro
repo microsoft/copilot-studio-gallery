@@ -1,0 +1,52 @@
+---
+import { authorInitials, authorSeparator, contributorKey, type Author } from "../lib/schema";
+import { withBase } from "../lib/url";
+
+interface Props {
+  authors: Author[];
+  size?: "sm" | "md";
+  prefix?: string;
+  class?: string;
+}
+
+const { authors, size = "sm", prefix, class: className = "" } = Astro.props;
+const MAX_AVATARS = 4;
+const shown = authors.slice(0, MAX_AVATARS);
+const hidden = authors.length - shown.length;
+const avatar = size === "md" ? "h-7 w-7 text-[10px]" : "h-6 w-6 text-[9px]";
+const pixels = size === "md" ? 56 : 48;
+---
+
+<span class:list={["inline-flex min-w-0 items-center gap-2", className]}>
+  <span class="flex shrink-0 -space-x-1.5">
+    {shown.map((author) => (
+      <a
+        href={withBase(`/contributors/${contributorKey(author)}`)}
+        class:list={["author-avatar relative grid shrink-0 place-items-center overflow-hidden rounded-full bg-accent-soft font-bold text-accent", avatar]}
+        title={author.name}
+        aria-label={`View ${author.name}'s contributor profile`}
+      >
+        {authorInitials(author.name)}
+        {author.github && <img src={`https://github.com/${author.github}.png?size=${pixels}`} alt="" class="absolute inset-0 h-full w-full object-cover" loading="lazy" />}
+      </a>
+    ))}
+    {hidden > 0 && (
+      <span class:list={["author-avatar relative grid shrink-0 place-items-center rounded-full bg-surface-soft font-semibold text-muted", avatar]}>+{hidden}</span>
+    )}
+  </span>
+  <span class="min-w-0">
+    {prefix && `${prefix} `}
+    {authors.map((author, index) => (
+      <Fragment>
+        {authorSeparator(index, authors.length)}
+        <a href={withBase(`/contributors/${contributorKey(author)}`)} class="hover:text-accent">{author.name}</a>
+      </Fragment>
+    ))}
+  </span>
+</span>
+
+<style>
+  .author-avatar {
+    box-shadow: 0 0 0 2px var(--color-surface, #fff);
+  }
+</style>

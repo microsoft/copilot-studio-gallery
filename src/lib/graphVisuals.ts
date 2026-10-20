@@ -44,6 +44,7 @@ export function graphVisualKind(node: GraphNode): GraphVisualKind {
   if (isMcpNode(node)) return "mcp";
   switch (node.type) {
     case "start":
+    case "trigger":
       return "trigger";
     case "end":
       return "end";

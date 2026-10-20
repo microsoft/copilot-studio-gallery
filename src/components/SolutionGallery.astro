@@ -1,0 +1,657 @@
+---
+import { getCollection } from "astro:content";
+import SolutionCard from "./SolutionCard.astro";
+import { collectCategories, collectContributors, collectTags, compareSolutions } from "../lib/catalog";
+import { CONTAINS_KINDS, containedComponents } from "../lib/discovery";
+import { COMPONENT_LABELS, solutionInventory } from "../lib/inventory";
+import { contributorKey } from "../lib/schema";
+import { withBase } from "../lib/url";
+
+interface Props {
+  scope?: "all" | "microsoft";
+}
+
+const { scope = "all" } = Astro.props;
+const microsoftOnly = scope === "microsoft";
+const MICROSOFT_ROW_SIZE = 3;
+const solutions = (await getCollection("solutions")).sort(compareSolutions);
+const tags = collectTags(solutions);
+const categories = collectCategories(solutions);
+const contributors = collectContributors(solutions);
+const microsoftSolutions = solutions.filter((solution) => solution.data.featured);
+const listedSolutions = microsoftOnly ? microsoftSolutions : solutions.filter((solution) => !solution.data.featured);
+const catalogName = microsoftOnly ? "Microsoft" : "community";
+const inventories = new Map(solutions.map((solution) => [solution.id, solutionInventory(solution.data)]));
+const typeChoices = [
+  { value: "", label: "All" },
+  { value: "agents", label: "Agents" },
+  { value: "workflows", label: "Workflows" },
+];
+
+function solutionTypes(solution: (typeof solutions)[number]): string[] {
+  const inventory = inventories.get(solution.id)!;
+  return [inventory.agents > 0 && "agents", inventory.workflows > 0 && "workflows"].filter((value): value is string => Boolean(value));
+}
+
+function filterAttributes(solution: (typeof solutions)[number]) {
+  const data = solution.data;
+  return {
+    "data-name": data.name.toLowerCase(),
+    "data-description": data.description.toLowerCase(),
+    "data-tags": data.tags.join(",").toLowerCase(),
+    "data-categories": data.category,
+    "data-types": solutionTypes(solution).join(","),
+    "data-contains": containedComponents(inventories.get(solution.id)!).join(","),
+    "data-author": data.authors.map(contributorKey).join(","),
+    "data-author-name": data.authors.map((author) => [author.name, author.github ?? ""].join(" ")).join(" ").toLowerCase(),
+    "data-agents": data.agents.map((agent) => agent.name).join(" ").toLowerCase(),
+    "data-workflows": data.workflows.map((workflow) => workflow.name).join(" ").toLowerCase(),
+    "data-featured": data.featured ? "1" : "0",
+    "data-updated": data.updatedAt ?? data.createdAt ?? "",
+  };
+}
+---
+
+<div data-solution-gallery data-gallery-scope={scope}>
+  <section class="border-b border-border bg-surface" aria-label="Find solutions">
+    <div class="mx-auto w-full max-w-gallery px-4 py-4 sm:px-6">
+      <div class="grid">
+        <label class="relative">
+          <span class="sr-only">Search solutions</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-soft" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path>
+          </svg>
+          <input id="solution-search" type="search" autocomplete="off" placeholder="Search agents, workflows, use cases, or contributors…" class="h-11 w-full rounded-lg border border-border bg-elevated pl-10 pr-3 text-sm text-ink placeholder:text-soft" />
+        </label>
+      </div>
+
+      <div class="filter-bar mt-3" role="group" aria-label="Filter solutions">
+        <button id="filters-trigger" type="button" aria-haspopup="dialog" aria-controls="filters-dialog" aria-expanded="false" class="filters-trigger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-4 w-4" aria-hidden="true">
+            <path d="M4 6h7m4 0h5M4 12h2m4 0h10M4 18h10m4 0h2" stroke-linecap="round"></path>
+            <circle cx="13" cy="6" r="2"></circle><circle cx="8" cy="12" r="2"></circle><circle cx="16" cy="18" r="2"></circle>
+          </svg>
+          Filters
+          <span id="filters-count" hidden class="filter-count"></span>
+        </button>
+        <div id="filter-options" class="filter-options" role="group" aria-label="Solution type and applied filters">
+          <div id="applied-filters" hidden class="applied-filters" role="group" aria-label="Applied filters"></div>
+          <div class="fixed-options" role="radiogroup" aria-label="Solution type">
+            {typeChoices.map((choice, index) => (
+              <button type="button" role="radio" data-type-choice={choice.value} aria-checked={index === 0 ? "true" : "false"} tabindex={index === 0 ? "0" : "-1"} class="fixed-choice">
+                {choice.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <dialog id="filters-dialog" aria-labelledby="filters-heading" aria-describedby="filters-scope filters-context" class="filters-dialog">
+    <div class="dialog-shell">
+      <header class="flex shrink-0 items-center justify-between border-b border-border px-5 py-4 sm:px-6">
+        <h2 id="filters-heading" class="text-lg font-semibold text-ink">Filters</h2>
+        <button type="button" data-close-filters class="dialog-close" aria-label="Close filters without applying" autofocus>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"></path></svg>
+        </button>
+      </header>
+      <div class="dialog-body px-5 sm:px-6">
+        <p id="filters-scope" class="pt-5 text-sm text-muted">Match any selected category or contributor, and require every selected tag and component type.</p>
+        <p id="filters-context" class="mt-1 text-sm text-muted"></p>
+        <div id="draft-selections" hidden class="mt-3 flex flex-wrap gap-2" aria-label="Selected filters"></div>
+
+        <fieldset class="filter-section">
+          <legend>Solution type</legend>
+          <div class="flex flex-wrap gap-2 p-1">
+            {typeChoices.map((choice) => (
+              <label class="option-label">
+                <input type="radio" name="draft-type" value={choice.value} />
+                <span class="check-option">{choice.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset class="filter-section">
+          <legend>Contains <span data-selection-count="contains" class="text-sm font-normal text-muted"></span></legend>
+          <p class="mb-3 text-sm text-muted">Require every selected component type.</p>
+          <div class="flex flex-wrap gap-2 p-1">
+            {CONTAINS_KINDS.map((kind) => (
+              <label class="option-label" data-facet-option="contains" data-value={kind} data-name={COMPONENT_LABELS[kind].plural}>
+                <input type="checkbox" name="filter-contains" value={kind} />
+                <span class="check-option">{COMPONENT_LABELS[kind].plural}<span data-facet-count="contains" data-value={kind} class="facet-count"></span></span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset class="filter-section">
+          <legend>Categories <span data-selection-count="categories" class="text-sm font-normal text-muted"></span></legend>
+          <div class="flex flex-wrap gap-2 p-1">
+            {categories.map(([category]) => (
+              <label class="option-label" data-facet-option="categories" data-value={category}>
+                <input type="checkbox" name="filter-categories" value={category} />
+                <span class="check-option">{category}<span data-facet-count="categories" data-value={category} class="facet-count"></span></span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset class="filter-section">
+          <legend>Tags <span data-selection-count="tags" class="text-sm font-normal text-muted"></span></legend>
+          <label for="filter-tag-search" class="sr-only">Search tags</label>
+          <input id="filter-tag-search" type="search" placeholder="Search tags" autocomplete="off" class="picker-search" data-picker-search="tags" />
+          <div class="mt-3 flex max-h-48 flex-wrap gap-2 overflow-y-auto p-1">
+            {tags.map(([tag]) => (
+              <label class="option-label" data-facet-option="tags" data-value={tag} data-search={tag}>
+                <input type="checkbox" name="filter-tags" value={tag} />
+                <span class="check-option">{tag}<span data-facet-count="tags" data-value={tag} class="facet-count"></span></span>
+              </label>
+            ))}
+          </div>
+          <p data-picker-empty="tags" hidden class="mt-3 text-sm text-muted">No tags match this search.</p>
+        </fieldset>
+
+        <fieldset class="filter-section">
+          <legend>Contributors <span data-selection-count="authors" class="text-sm font-normal text-muted"></span></legend>
+          <label for="filter-author-search" class="sr-only">Search contributors</label>
+          <input id="filter-author-search" type="search" placeholder="Search contributors" autocomplete="off" class="picker-search" data-picker-search="authors" />
+          <div class="mt-3 flex max-h-56 flex-col gap-1 overflow-y-auto p-1">
+            {contributors.map((contributor) => (
+              <label
+                class="author-option"
+                data-facet-option="authors"
+                data-value={contributor.key}
+                data-name={contributor.name}
+                data-github={contributor.github ?? ""}
+                data-search={`${contributor.name} ${contributor.github ?? ""}`.toLowerCase()}
+              >
+                <input type="checkbox" name="filter-authors" value={contributor.key} class="h-4 w-4 shrink-0 accent-accent" />
+                <span class="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full bg-accent-soft text-[10px] font-bold text-accent">
+                  {contributor.github ? <img src={`https://github.com/${contributor.github}.png?size=64`} alt="" class="h-full w-full object-cover" loading="lazy" /> : contributor.name.slice(0, 2).toUpperCase()}
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block truncate text-sm font-medium text-ink">{contributor.name}</span>
+                  {contributor.github && <span class="block truncate text-xs text-muted">@{contributor.github}</span>}
+                </span>
+                <span data-facet-count="authors" data-value={contributor.key} class="text-xs text-muted"></span>
+              </label>
+            ))}
+          </div>
+          <p data-picker-empty="authors" hidden class="mt-3 text-sm text-muted">No contributors match this search.</p>
+          <a href={withBase("/contributors")} class="mt-3 inline-flex text-sm font-medium text-link underline-offset-4 hover:underline">Browse the contributor directory</a>
+        </fieldset>
+      </div>
+      <footer class="flex shrink-0 items-center justify-between gap-4 border-t border-border bg-surface px-5 py-4 sm:px-6">
+        <button type="button" id="clear-extra-filters" class="text-sm font-medium text-ink underline underline-offset-4">Clear filters</button>
+        <button type="button" id="apply-filters" class="apply-filters">Show {microsoftOnly ? listedSolutions.length : solutions.length} solutions</button>
+        <span id="draft-filter-status" class="sr-only" role="status" aria-live="polite"></span>
+      </footer>
+    </div>
+  </dialog>
+
+  {
+    !microsoftOnly && microsoftSolutions.length > 0 && (
+      <section id="built-by-microsoft" data-microsoft-row class="border-b border-border bg-elevated" aria-labelledby="built-by-microsoft-title">
+        <div class="mx-auto w-full max-w-gallery px-4 py-10 sm:px-6">
+          <h2 id="built-by-microsoft-title" class="text-2xl font-semibold tracking-[-0.02em] text-ink">Built by Microsoft</h2>
+          <div class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+            <p id="microsoft-result-count" class="font-medium text-muted" aria-live="polite">{microsoftSolutions.length} {microsoftSolutions.length === 1 ? "solution" : "solutions"}</p>
+            <a
+              data-microsoft-more
+              data-gallery-link
+              href={withBase("/built-by-microsoft")}
+              aria-label="View more from Microsoft"
+              class:list={[
+                "items-center gap-1.5 font-semibold text-link underline-offset-4 hover:underline",
+                microsoftSolutions.length > MICROSOFT_ROW_SIZE ? "inline-flex" : "hidden",
+                microsoftSolutions.length === MICROSOFT_ROW_SIZE && "sm:inline-flex xl:hidden",
+              ]}
+            >
+              View more <span aria-hidden="true">→</span>
+            </a>
+          </div>
+          <div id="microsoft-gallery" class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {microsoftSolutions.map((solution, index) => (
+              <div class:list={["solution-item", index >= MICROSOFT_ROW_SIZE && "hidden", index === 2 && "sm:hidden xl:block"]} {...filterAttributes(solution)}>
+                <SolutionCard solution={solution} />
+              </div>
+            ))}
+          </div>
+          <p id="microsoft-empty" class="mt-6 hidden text-sm text-muted">No Microsoft solutions match these filters.</p>
+        </div>
+      </section>
+    )
+  }
+
+  <section id="solution-catalog" class="scroll-mt-20 bg-page" aria-labelledby={microsoftOnly ? "microsoft-heading" : "catalog-heading"}>
+    <div class="mx-auto w-full max-w-gallery px-4 py-10 sm:px-6">
+      <div class="mb-6 flex items-start justify-between gap-4 sm:items-center">
+        <div class="min-w-0">
+          {!microsoftOnly && <h2 id="catalog-heading" class="text-2xl font-semibold tracking-[-0.02em] text-ink">Built by the community</h2>}
+          <p id="result-count" class="mt-1 text-sm font-medium text-muted" aria-live="polite">{listedSolutions.length} {listedSolutions.length === 1 ? "solution" : "solutions"}</p>
+        </div>
+        <label class="flex shrink-0 items-center gap-2">
+          <span class="hidden text-sm text-muted sm:inline">{microsoftOnly ? "Sort by" : "Sort community"}</span>
+          <select id="sort-select" aria-label={`Sort ${catalogName} solutions`} class="h-11 w-28 rounded-lg border border-border bg-elevated px-3 text-sm text-ink sm:w-40">
+            <option value="newest">Newest</option>
+            <option value="name">Name</option>
+          </select>
+        </label>
+      </div>
+      <div id="gallery" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {
+          listedSolutions.map((solution) => (
+            <div class="solution-item" {...filterAttributes(solution)}>
+              <SolutionCard solution={solution} />
+            </div>
+          ))
+        }
+      </div>
+      <div id="empty-state" class:list={["text-sm text-muted", listedSolutions.length > 0 && "hidden"]}>
+        <p id="empty-heading" class="font-medium text-ink">{solutions.length ? `No ${catalogName} solutions yet` : "The first solution is on its way"}</p>
+        <p id="empty-description" class="mt-1 leading-relaxed">
+          Contribute an exploded Copilot Studio solution to make its agents and workflows visible before import.
+        </p>
+        <button type="button" data-clear-filters hidden class="mt-3 font-semibold text-link underline underline-offset-4">
+          Clear all filters
+        </button>
+      </div>
+      <div id="scroll-sentinel" class="flex h-16 items-end justify-center text-sm text-soft" aria-live="polite">
+        <span id="load-status">Scroll to load more</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { compareSolutionOrder, isDemo, parseSortMode, type SortMode } from "../lib/discovery";
+  import {
+    FACETS, MATCH_ANY, TYPES, cloneState, emptyState, filterParams, isFiltered,
+    matches, sameState, stateFromUrl, type Facet, type FilterState, type SolutionRecord,
+  } from "../lib/galleryFilters";
+
+  const FACET_NOUN: Record<Facet, string> = { categories: "category", tags: "tag", authors: "contributor", contains: "component" };
+  const BATCH = 9;
+  const MICROSOFT_ROW_SIZE = 3;
+
+  function required<T extends Element>(selector: string, root: ParentNode = document): T {
+    const element = root.querySelector<T>(selector);
+    if (!element) throw new Error(`Missing gallery element: ${selector}`);
+    return element;
+  }
+
+  const microsoftOnly = required<HTMLElement>("[data-solution-gallery]").dataset.galleryScope === "microsoft";
+  const navigationLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-gallery-link]"));
+  const gallery = required<HTMLElement>("#gallery");
+  const items = Array.from(gallery.querySelectorAll<HTMLElement>(".solution-item"));
+  const microsoftGallery = document.querySelector<HTMLElement>("#microsoft-gallery");
+  const microsoftItems = Array.from(microsoftGallery?.querySelectorAll<HTMLElement>(".solution-item") ?? []);
+  const search = required<HTMLInputElement>("#solution-search");
+  const sort = required<HTMLSelectElement>("#sort-select");
+  const count = required<HTMLElement>("#result-count");
+  const empty = required<HTMLElement>("#empty-state");
+  const emptyHeading = required<HTMLElement>("#empty-heading");
+  const emptyDescription = required<HTMLElement>("#empty-description");
+  const browseEmptyHeading = emptyHeading.textContent;
+  const browseEmptyDescription = emptyDescription.textContent;
+  const clearFilters = required<HTMLButtonElement>("[data-clear-filters]");
+  const sentinel = required<HTMLElement>("#scroll-sentinel");
+  const loadStatus = required<HTMLElement>("#load-status");
+  const trigger = required<HTMLButtonElement>("#filters-trigger");
+  const triggerCount = required<HTMLElement>("#filters-count");
+  const filterOptions = required<HTMLElement>("#filter-options");
+  const appliedFilters = required<HTMLElement>("#applied-filters");
+  const typeButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-type-choice]"));
+  const dialog = required<HTMLDialogElement>("#filters-dialog");
+  const dialogBody = required<HTMLElement>(".dialog-body", dialog);
+  const closeButton = required<HTMLButtonElement>("[data-close-filters]", dialog);
+  const applyButton = required<HTMLButtonElement>("#apply-filters", dialog);
+  const draftSelections = required<HTMLElement>("#draft-selections", dialog);
+  const draftStatus = required<HTMLElement>("#draft-filter-status", dialog);
+  const filtersContext = required<HTMLElement>("#filters-context", dialog);
+  const facetOptions = Array.from(dialog.querySelectorAll<HTMLElement>("[data-facet-option]"));
+  const pickerSearches = Array.from(dialog.querySelectorAll<HTMLInputElement>("[data-picker-search]"));
+  const draftTypeInputs = Array.from(dialog.querySelectorAll<HTMLInputElement>('input[name="draft-type"]'));
+
+  const records = new Map<HTMLElement, SolutionRecord>([...microsoftItems, ...items].map((item) => {
+    const data = item.dataset;
+    const list = (value: string | undefined, separator = ",") => (value ?? "").split(separator).filter(Boolean);
+    return [item, {
+      name: data.name ?? "",
+      updatedAt: data.updated,
+      demo: isDemo(list(data.tags)),
+      text: [data.name, data.description, data.tags, data.categories, data.agents, data.workflows, data.authorName].join(" ").toLowerCase(),
+      types: list(data.types),
+      categories: list(data.categories, "|"),
+      tags: list(data.tags),
+      authors: list(data.author),
+      contains: list(data.contains),
+    }];
+  }));
+
+  const labels: Record<Facet, Map<string, string>> = { categories: new Map(), tags: new Map(), authors: new Map(), contains: new Map() };
+  const avatars = new Map<string, string>();
+  facetOptions.forEach((option) => {
+    const facet = option.dataset.facetOption as Facet;
+    const value = option.dataset.value ?? "";
+    labels[facet].set(value, option.dataset.name ?? value);
+    if (facet === "authors" && option.dataset.github) avatars.set(value, `https://github.com/${option.dataset.github}.png?size=40`);
+  });
+
+  function facetCounts(state: FilterState, facet: Facet): Map<string, number> {
+    const counts = new Map<string, number>();
+    const ignore = MATCH_ANY.has(facet) ? facet : undefined;
+    for (const record of records.values()) {
+      if (!matches(record, state, ignore)) continue;
+      const values = record[facet];
+      new Set(values).forEach((value) => counts.set(value, (counts.get(value) ?? 0) + 1));
+    }
+    return counts;
+  }
+
+  let applied = stateFromUrl(new URLSearchParams(location.search), labels);
+  let draft = cloneState(applied);
+  let matched: HTMLElement[] = items;
+  let microsoftMatched: HTMLElement[] = microsoftItems;
+  let shown = BATCH;
+  let searchTimer: number | undefined;
+  let previousOverflow = "";
+
+  function sortMode(): SortMode {
+    return parseSortMode(sort.value);
+  }
+
+  function syncUrl() {
+    const params = filterParams(applied, sortMode());
+    history.replaceState(history.state, "", `${location.pathname}${params.size ? `?${params}` : ""}${location.hash}`);
+    navigationLinks.forEach((link) => {
+      const target = new URL(link.href);
+      target.search = params.toString();
+      link.href = `${target.pathname}${target.search}${target.hash}`;
+    });
+  }
+
+  function compare(a: HTMLElement, b: HTMLElement): number {
+    const left = records.get(a)!;
+    const right = records.get(b)!;
+    return compareSolutionOrder(left, right, sortMode());
+  }
+
+  function computeMatched() {
+    matched = items.filter((item) => matches(records.get(item)!, applied)).sort(compare);
+    microsoftMatched = microsoftItems.filter((item) => matches(records.get(item)!, applied));
+  }
+
+  function render() {
+    const filtered = isFiltered(applied);
+    const visible = new Set(matched);
+    gallery.append(...matched, ...items.filter((item) => !visible.has(item)));
+    items.forEach((item) => item.classList.add("hidden"));
+    matched.slice(0, shown).forEach((item) => item.classList.remove("hidden"));
+    count.textContent = `${matched.length} ${matched.length === 1 ? "solution" : "solutions"}`;
+    loadStatus.textContent = matched.length === 0
+      ? ""
+      : shown < matched.length
+        ? `Showing ${Math.min(shown, matched.length)} of ${matched.length} · scroll to load more`
+        : `All ${matched.length} loaded`;
+    empty.classList.toggle("hidden", matched.length > 0);
+    emptyHeading.textContent = filtered ? `No ${microsoftOnly ? "Microsoft" : "community"} solutions match these filters.` : browseEmptyHeading;
+    emptyDescription.textContent = filtered ? "Clear one or more filters to widen the gallery." : browseEmptyDescription;
+    clearFilters.hidden = !filtered;
+    if (microsoftGallery) {
+      microsoftItems.forEach((item) => {
+        item.classList.add("hidden");
+        item.classList.remove("sm:hidden", "xl:block");
+      });
+      const preview = filtered ? microsoftMatched : microsoftMatched.slice(0, MICROSOFT_ROW_SIZE);
+      preview.forEach((item, index) => {
+        item.classList.remove("hidden");
+        if (!filtered && index === 2) item.classList.add("sm:hidden", "xl:block");
+      });
+      required<HTMLElement>("#microsoft-result-count").textContent = `${microsoftMatched.length} ${microsoftMatched.length === 1 ? "solution" : "solutions"}`;
+      required<HTMLElement>("#microsoft-empty").classList.toggle("hidden", microsoftMatched.length > 0);
+      microsoftGallery.classList.toggle("hidden", microsoftMatched.length === 0);
+      const more = required<HTMLAnchorElement>("[data-microsoft-more]");
+      const moreAtEverySize = !filtered && microsoftMatched.length > MICROSOFT_ROW_SIZE;
+      const moreAtTwoColumns = !filtered && microsoftMatched.length === MICROSOFT_ROW_SIZE;
+      more.classList.toggle("inline-flex", moreAtEverySize);
+      more.classList.toggle("hidden", !moreAtEverySize);
+      more.classList.toggle("sm:inline-flex", moreAtTwoColumns);
+      more.classList.toggle("xl:hidden", moreAtTwoColumns);
+    }
+    sentinel.classList.toggle("hidden", matched.length === 0);
+    loadObserver.unobserve(sentinel);
+    if (shown < matched.length) loadObserver.observe(sentinel);
+  }
+
+  function selectionChips(container: HTMLElement, state: FilterState, remove: (facet: Facet, value: string) => void): number {
+    container.replaceChildren();
+    let total = 0;
+    FACETS.forEach((facet) => state[facet].forEach((value) => {
+      const label = labels[facet].get(value) ?? value;
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.dataset.filterKey = `${facet}:${value}`;
+      chip.className = "filter-chip";
+      chip.title = label;
+      chip.setAttribute("aria-label", `Remove ${FACET_NOUN[facet]} filter: ${label}`);
+      const avatar = facet === "authors" ? avatars.get(value) : undefined;
+      if (avatar) {
+        const image = document.createElement("img");
+        image.src = avatar;
+        image.alt = "";
+        image.className = "h-5 w-5 shrink-0 rounded-full object-cover";
+        chip.append(image);
+      }
+      const text = document.createElement("span");
+      text.className = "truncate";
+      text.textContent = label;
+      const close = document.createElement("span");
+      close.setAttribute("aria-hidden", "true");
+      close.textContent = "×";
+      chip.append(text, close);
+      chip.addEventListener("click", () => remove(facet, value));
+      container.append(chip);
+      total += 1;
+    }));
+    return total;
+  }
+
+  function scrollIntoFilterView(element: HTMLElement) {
+    const bounds = filterOptions.getBoundingClientRect();
+    const target = element.getBoundingClientRect();
+    const delta = target.left < bounds.left + 4 ? target.left - bounds.left - 4 : Math.max(0, target.right - bounds.right + 4);
+    if (delta) filterOptions.scrollBy({ left: delta, behavior: "instant" });
+  }
+
+  function paintFilterBar() {
+    typeButtons.forEach((button) => {
+      const selected = (button.dataset.typeChoice ?? "") === applied.type;
+      button.setAttribute("aria-checked", String(selected));
+      button.tabIndex = selected ? 0 : -1;
+    });
+    const total = selectionChips(appliedFilters, applied, (facet, value) => {
+      const chips = Array.from(appliedFilters.querySelectorAll<HTMLButtonElement>("button"));
+      const index = chips.findIndex((chip) => chip.dataset.filterKey === `${facet}:${value}`);
+      applied[facet].delete(value);
+      refresh();
+      const remaining = appliedFilters.querySelectorAll<HTMLButtonElement>("button");
+      const next = remaining[Math.min(index, remaining.length - 1)] ?? trigger;
+      next.focus({ preventScroll: true });
+    });
+    appliedFilters.hidden = total === 0;
+    triggerCount.hidden = total === 0;
+    triggerCount.textContent = String(total);
+    trigger.setAttribute("aria-label", total ? `Filters, ${total} active ${total === 1 ? "filter" : "filters"}` : "Filters");
+  }
+
+  function refresh() {
+    computeMatched();
+    shown = BATCH;
+    render();
+    paintFilterBar();
+    syncUrl();
+  }
+
+  function paintDraft() {
+    draftTypeInputs.forEach((input) => {
+      input.checked = input.value === draft.type;
+    });
+    facetOptions.forEach((option) => {
+      const facet = option.dataset.facetOption as Facet;
+      const input = option.querySelector<HTMLInputElement>("input");
+      if (input) input.checked = draft[facet].has(option.dataset.value ?? "");
+    });
+    FACETS.forEach((facet) => {
+      const counts = facetCounts(draft, facet);
+      dialog.querySelectorAll<HTMLElement>(`[data-facet-count="${facet}"]`).forEach((element) => {
+        const value = element.dataset.value ?? "";
+        const total = counts.get(value) ?? 0;
+        element.textContent = String(total);
+        element.closest("[data-facet-option]")?.classList.toggle("is-empty", total === 0 && !draft[facet].has(value));
+      });
+      const selection = dialog.querySelector<HTMLElement>(`[data-selection-count="${facet}"]`);
+      if (selection) selection.textContent = draft[facet].size ? `(${draft[facet].size} selected)` : "";
+    });
+    const total = [...records.values()].filter((record) => matches(record, draft)).length;
+    applyButton.textContent = `Show ${total} ${total === 1 ? "solution" : "solutions"}`;
+    draftStatus.textContent = `${total} ${total === 1 ? "solution matches" : "solutions match"} these filters.`;
+    draftSelections.hidden = selectionChips(draftSelections, draft, (facet, value) => {
+      draft[facet].delete(value);
+      paintDraft();
+      closeButton.focus({ preventScroll: true });
+    }) === 0;
+  }
+
+  function filterPicker(input: HTMLInputElement) {
+    const facet = input.dataset.pickerSearch as Facet;
+    const term = input.value.trim().toLowerCase();
+    const options = facetOptions.filter((option) => option.dataset.facetOption === facet);
+    options.forEach((option) => {
+      option.hidden = !(option.dataset.search ?? "").toLowerCase().includes(term);
+    });
+    const emptyMessage = dialog.querySelector<HTMLElement>(`[data-picker-empty="${facet}"]`);
+    if (emptyMessage) emptyMessage.hidden = options.some((option) => !option.hidden);
+  }
+
+  function commitSearch() {
+    clearTimeout(searchTimer);
+    applied.query = search.value.trim();
+  }
+
+  function openFilters() {
+    const previousQuery = applied.query;
+    commitSearch();
+    if (applied.query !== previousQuery) refresh();
+    draft = cloneState(applied);
+    pickerSearches.forEach((input) => {
+      input.value = "";
+      filterPicker(input);
+    });
+    filtersContext.textContent = applied.query ? `Search: “${search.value.trim()}”` : "";
+    paintDraft();
+    previousOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    dialog.showModal();
+    dialogBody.scrollTop = 0;
+    trigger.setAttribute("aria-expanded", "true");
+  }
+
+  trigger.addEventListener("click", openFilters);
+  closeButton.addEventListener("click", () => dialog.close());
+  dialog.addEventListener("close", () => {
+    draft = cloneState(applied);
+    document.documentElement.style.overflow = previousOverflow;
+    trigger.setAttribute("aria-expanded", "false");
+    trigger.focus({ preventScroll: true });
+  });
+  dialog.addEventListener("click", (event) => {
+    if (event.target !== dialog) return;
+    const bounds = dialog.getBoundingClientRect();
+    const outside = event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom;
+    if (outside) dialog.close();
+  });
+  dialog.addEventListener("change", (event) => {
+    const input = event.target;
+    if (input instanceof HTMLInputElement && input.name === "draft-type") {
+      draft.type = TYPES.find((type) => type === input.value) ?? "";
+      paintDraft();
+      return;
+    }
+    if (!(input instanceof HTMLInputElement) || !input.name.startsWith("filter-")) return;
+    const facet = input.name.slice("filter-".length) as Facet;
+    if (!FACETS.includes(facet)) return;
+    if (input.checked) draft[facet].add(input.value);
+    else draft[facet].delete(input.value);
+    paintDraft();
+  });
+  pickerSearches.forEach((input) => input.addEventListener("input", () => filterPicker(input)));
+  required<HTMLButtonElement>("#clear-extra-filters", dialog).addEventListener("click", () => {
+    draft.type = "";
+    FACETS.forEach((facet) => draft[facet].clear());
+    paintDraft();
+  });
+  applyButton.addEventListener("click", () => {
+    const before = new Set(Array.from(appliedFilters.querySelectorAll<HTMLElement>("button"), (chip) => chip.dataset.filterKey));
+    if (!sameState(applied, draft)) {
+      applied = cloneState(draft);
+      refresh();
+    }
+    dialog.close();
+    const added = Array.from(appliedFilters.querySelectorAll<HTMLElement>("button")).find((chip) => !before.has(chip.dataset.filterKey));
+    if (added) scrollIntoFilterView(added);
+  });
+
+  typeButtons.forEach((button, index) => {
+    button.addEventListener("click", () => {
+      const value = TYPES.find((type) => type === button.dataset.typeChoice) ?? "";
+      if (value === applied.type) return;
+      commitSearch();
+      applied.type = value;
+      refresh();
+      scrollIntoFilterView(button);
+    });
+    button.addEventListener("keydown", (event) => {
+      const step = ["ArrowRight", "ArrowDown"].includes(event.key) ? 1 : ["ArrowLeft", "ArrowUp"].includes(event.key) ? -1 : 0;
+      if (!step) return;
+      event.preventDefault();
+      const next = typeButtons[(index + step + typeButtons.length) % typeButtons.length]!;
+      next.focus({ preventScroll: true });
+      next.click();
+    });
+  });
+  filterOptions.addEventListener("focusin", (event) => {
+    if (event.target instanceof HTMLButtonElement) scrollIntoFilterView(event.target);
+  });
+
+  document.querySelectorAll<HTMLButtonElement>("[data-clear-filters]").forEach((button) => button.addEventListener("click", () => {
+    commitSearch();
+    applied = emptyState();
+    search.value = "";
+    refresh();
+    search.focus({ preventScroll: true });
+  }));
+
+  search.addEventListener("input", () => {
+    commitSearch();
+    syncUrl();
+    searchTimer = window.setTimeout(refresh, 120);
+  });
+  sort.addEventListener("change", refresh);
+
+  const loadObserver = new IntersectionObserver((entries) => {
+    if (!entries[0]?.isIntersecting || shown >= matched.length) return;
+    shown = Math.min(shown + BATCH, matched.length);
+    render();
+  }, { rootMargin: "400px" });
+
+  const initialParams = new URLSearchParams(location.search);
+  search.value = initialParams.get("q") ?? "";
+  sort.value = parseSortMode(initialParams.get("sort"));
+  computeMatched();
+  render();
+  paintFilterBar();
+  syncUrl();
+</script>
