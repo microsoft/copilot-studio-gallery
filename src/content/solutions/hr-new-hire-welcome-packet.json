@@ -1,0 +1,219 @@
+{
+  "name": "HR New Hire Welcome Packet",
+  "description": "Watches a SharePoint new-hire list and sends two emails per hire: a role-specific welcome packet assembled from a SharePoint links list, and a \"Meet your new team\" email with AI-generated, confidence-scored bios for the hire's manager and teammates.",
+  "tags": [
+    "hr",
+    "onboarding",
+    "sharepoint",
+    "email",
+    "org-directory"
+  ],
+  "category": "HR",
+  "createdAt": "2026-09-22",
+  "updatedAt": "2026-10-15",
+  "featured": false,
+  "previewWorkflow": "{8c80c828-256e-5d89-7723-ba234f4c40a2}",
+  "author": "Pulkit Bhagat",
+  "authors": [
+    {
+      "name": "Pulkit Bhagat"
+    }
+  ],
+  "uniqueName": "HROnboarding",
+  "version": "1.0.0.14",
+  "publisher": "A3P",
+  "bundle": "bundles/hr-new-hire-welcome-packet.zip",
+  "agentCount": 0,
+  "workflowCount": 1,
+  "componentCount": 1,
+  "agents": [],
+  "agentGraph": {
+    "nodes": [],
+    "edges": []
+  },
+  "workflows": [
+    {
+      "id": "{8c80c828-256e-5d89-7723-ba234f4c40a2}",
+      "name": "HR New Hire Welcome Packet",
+      "trigger": "When an item is created",
+      "nodeCount": 7,
+      "edgeCount": 6,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-51fd44b0-e2a1-4c03-bff1-72567e6c14fd",
+            "name": "When an item is created",
+            "type": "start",
+            "position": {
+              "x": 271.5798767913098,
+              "y": 222.576721011951
+            },
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When an item is created",
+              "apiName": "shared_sharepointonline",
+              "operationName": "GetOnNewItems",
+              "operationType": "OpenApiConnection"
+            }
+          },
+          {
+            "id": "agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514",
+            "name": "Onboarding Agent",
+            "type": "agent",
+            "position": {
+              "x": 1084.30237529207,
+              "y": 116.73100006440066
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "You are the Onboarding Agent for HR New Hire Welcome Packet. You run once per new-hire row, immediately after the trigger. You have three tools: Get items, Send email, and Update item. Send every email at Normal importance. Do not mark anything Low or High priority.\n\nHIRE ROW FOR THIS RUN\nid: {triggerOutputs()?['body/ID']}\nPreferred name: {triggerOutputs()?['body/Title']}\nWork email: {triggerOutpu"
+            }
+          },
+          {
+            "id": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b",
+            "name": "Configuration",
+            "type": "variable",
+            "position": {
+              "x": 608.1626385018347,
+              "y": 224.73718742671687
+            },
+            "details": {}
+          },
+          {
+            "id": "agent-fb7e675d-b47e-43f9-a603-1289da05d738",
+            "name": "Team Intro Agent",
+            "type": "agent",
+            "position": {
+              "x": 1616.970448875372,
+              "y": 218.41631167370176
+            },
+            "details": {
+              "botSchemaName": "",
+              "mode": "inline",
+              "instructions": "",
+              "inlineInstructions": "```\nYou are the Team Intro Agent for HR New Hire Welcome Packet. You run once per new-hire row, in parallel with the Onboarding Agent. You have two tools: Get manager and Get direct reports, both read-only, plus web search. You never send email, never update any row, and never take any action beyond producing the result described below.\n\nHIRE ROW FOR THIS RUN\nPreferred name: {triggerOutputs()?['bo"
+            }
+          },
+          {
+            "id": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
+            "name": "AutoSendTeamIntroFlag",
+            "type": "ifElse",
+            "position": {
+              "x": 1945.7392773308648,
+              "y": 203.82618488724304
+            },
+            "details": {}
+          },
+          {
+            "id": "connector-01dcf0f5-4b06-4d60-b58a-8b398d27ea82",
+            "name": "Send an email",
+            "type": "connector",
+            "position": {
+              "x": 2307.1906585181187,
+              "y": 210.5
+            },
+            "details": {
+              "displayName": "Office 365 Outlook",
+              "apiName": "shared_office365",
+              "operationName": "SendEmailV2",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "emailMessage/Importance": "Normal",
+                "emailMessage/To": "@triggerOutputs()?['body/field_1']",
+                "emailMessage/Subject": "@body('agent-fb7e675d-b47e-43f9-a603-1289da05d738')?['structuredOutput/EmailSubject']",
+                "emailMessage/Body": "<div>@{body('agent-fb7e675d-b47e-43f9-a603-1289da05d738')?['structuredOutput/EmailBody']}​</div>",
+                "emailMessage/Sensitivity": "f42aa342-8706-4288-bd11-ebb85995028c",
+                "emailMessage/Cc": "",
+                "emailMessage/From": "@variables('HRNotifyEmail')"
+              }
+            }
+          },
+          {
+            "id": "connector-5afa3316-61b8-4673-95ba-0c8edcd1276e",
+            "name": "Draft an email message",
+            "type": "connector",
+            "position": {
+              "x": 2312.1947118102125,
+              "y": 345.05091844460566
+            },
+            "details": {
+              "displayName": "Office 365 Outlook",
+              "apiName": "shared_office365",
+              "operationName": "DraftEmail",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "draftMessage/Importance": "Normal",
+                "draftMessage/To": "@triggerOutputs()?['body/field_1']",
+                "draftMessage/Subject": "@body('agent-fb7e675d-b47e-43f9-a603-1289da05d738')?['structuredOutput/EmailSubject']",
+                "draftMessage/Body": "<div>@{body('agent-fb7e675d-b47e-43f9-a603-1289da05d738')?['structuredOutput/EmailBody']}​</div>",
+                "draftMessage/Cc": "",
+                "draftMessage/From": "@variables('HRNotifyEmail')"
+              }
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-51fd44b0-e2a1-4c03-bff1-72567e6c14fd-variable-faf9b4df-2036-499f-959a-6fb24d953d1b",
+            "source": "start-51fd44b0-e2a1-4c03-bff1-72567e6c14fd",
+            "target": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b"
+          },
+          {
+            "id": "edge-variable-faf9b4df-2036-499f-959a-6fb24d953d1b-agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514",
+            "source": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b",
+            "target": "agent-231ee12f-d8ec-4b4c-a55a-e39e023f8514"
+          },
+          {
+            "id": "edge-variable-faf9b4df-2036-499f-959a-6fb24d953d1b-output-agent-fb7e675d-b47e-43f9-a603-1289da05d738-input",
+            "source": "variable-faf9b4df-2036-499f-959a-6fb24d953d1b",
+            "target": "agent-fb7e675d-b47e-43f9-a603-1289da05d738",
+            "sourceHandle": "output",
+            "targetHandle": "input"
+          },
+          {
+            "id": "edge-ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0-condition:a1df2617-5651-4873-9a20-2ca13152851d-connector-01dcf0f5-4b06-4d60-b58a-8b398d27ea82",
+            "source": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
+            "target": "connector-01dcf0f5-4b06-4d60-b58a-8b398d27ea82",
+            "sourceHandle": "condition:a1df2617-5651-4873-9a20-2ca13152851d"
+          },
+          {
+            "id": "edge-ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0-else-connector-5afa3316-61b8-4673-95ba-0c8edcd1276e",
+            "source": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
+            "target": "connector-5afa3316-61b8-4673-95ba-0c8edcd1276e",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-agent-fb7e675d-b47e-43f9-a603-1289da05d738-ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0",
+            "source": "agent-fb7e675d-b47e-43f9-a603-1289da05d738",
+            "target": "ifElse-fb3907b9-d993-4ee6-b606-e77786a5f2f0"
+          }
+        ]
+      }
+    }
+  ],
+  "connectors": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 258
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 4435
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4075
+    },
+    {
+      "path": "Workflows/HRNewHireWelcomePacket-8C80C828-256E-5D89-7723-BA234F4C40A2.json",
+      "category": "workflow",
+      "size": 147388
+    }
+  ]
+}

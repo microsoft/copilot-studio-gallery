@@ -47,7 +47,13 @@ Consult these guides before working on related tasks:
 - Agent architecture is derived from `bots/**` and `botcomponents/**`; component
   ownership must be resolved per agent rather than applying every solution
   component to every bot.
-- Detail pages render the imported workflow and agent topology. Gallery cards
+- Detail pages use one workflow hero canvas and an informational inventory table
+  showing triggers, steps, connectors, and agent calls. The table does not switch
+  the hero. Submission `previewWorkflow` metadata is mandatory whenever workflows
+  are present, even with only one workflow. It selects the hero by ID or unique
+  name; the importer validates it and publishes its canonical ID. Missing or
+  invalid selections fail CI rather than falling back to the first workflow.
+  Agent-only submissions omit this field and retain their agent overview. Gallery cards
   instead show a fixed asset inventory for workflows, agents, tools, MCP
   servers, and skills so dense graphs are not compressed into unreadable
   thumbnails. Detail pages also use that inventory on phones; their interactive

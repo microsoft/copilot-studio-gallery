@@ -36,8 +36,10 @@ The slug must use lowercase letters, numbers, and single hyphens.
 ```json
 {
   "name": "Customer Service Operations",
+  "previewWorkflow": "Triage incoming requests",
   "description": "Agents and workflows for triage, policy review, and assisted resolution.",
   "tags": ["customer-service", "triage", "human-in-the-loop"],
+  "category": "Customer service",
   "author": "Your Name",
   "authorUrl": "https://github.com/your-login",
   "createdAt": "2026-08-12",
@@ -46,11 +48,70 @@ The slug must use lowercase letters, numbers, and single hyphens.
 }
 ```
 
-Required fields: `name`, `description`, `tags`, and `author`. Optional fields:
-`authorUrl`, `authorGithub`, `createdAt`, `updatedAt`, and `featured`.
+Required fields: `name`, `description`, `tags`, and `author` (or `authors`).
+`previewWorkflow` is **mandatory for solutions containing one or more workflows**;
+omit it for agent-only solutions.
+Recommended: `category`. Optional fields: `authorUrl`, `authorGithub`,
+`createdAt`, `updatedAt`, and `featured`.
 
-Solution identity, version, publisher, component counts, agents, and workflows
+To credit more than one person, replace `author`, `authorUrl`, and
+`authorGithub` with an `authors` list. Each entry needs a `name` and can add a
+`github` handle (used for the avatar and to group contributions on one
+contributor page) and a `url`:
+
+```json
+"authors": [
+  { "name": "Your Name", "github": "your-login" },
+  { "name": "Teammate Name", "github": "teammate-login" },
+  { "name": "Colleague Without GitHub" }
+]
+```
+
+Every listed person gets their own avatar on the solution and their own
+contributor page.
+
+`category` is the one fixed category that best matches who uses the solution
+and the business activity it supports: `Customer service`, `Sales & marketing`,
+`IT & security`, `Operations`, `Project & communications management`, `HR`, `Finance`,
+`Legal & compliance`, `Productivity & knowledge`, or `Other`. See
+[Choose a category](submissions/README.md#choose-a-category) for who each one
+is for. Contributors can't add new values yet: use `Other` and suggest one in
+your pull request.
+Use `tags` for anything more specific. Solutions
+without a category still appear in the gallery, but not under category filters.
+
+`featured: true` marks a solution as **Built by Microsoft**. Leave it `false`
+unless the solution was built by a Microsoft team.
+
+Solution identity, version, publisher, agents, workflows, and their components
 are derived from the exploded payload and cannot be overridden in metadata.
+Whether a solution appears under Agents or Workflows comes from what it
+contains. Designer notes in workflow canvases are not shown in the gallery.
+
+#### Choose the hero workflow
+
+Every solution containing workflows **must set `previewWorkflow`** in
+`metadata.json`, even if it has only one workflow. Choose the workflow visitors
+will see in the solution's top preview:
+
+```json
+"previewWorkflow": "Invoice Processing - Revised"
+```
+
+Use the exact workflow display name from `solution/customizations.xml`, or its
+`WorkflowId` for a stable reference that survives display-name changes. IDs are
+matched before names. Names must identify exactly one workflow; unknown or
+ambiguous selections fail validation, as does selecting a workflow for an
+agent-only solution.
+
+**CI fails if a solution containing workflows omits `previewWorkflow` or leaves
+it empty.** There is no automatic first-workflow fallback.
+
+Omit the field for agent-only solutions, which show their agent overview.
+The choice is gallery metadata only; it does not change the exported solution
+or the download. This is the only workflow canvas on the page. The Workflows
+tab lists every workflow's trigger, steps, connector services, and agent calls
+without changing the hero.
 
 ### `README.md`
 

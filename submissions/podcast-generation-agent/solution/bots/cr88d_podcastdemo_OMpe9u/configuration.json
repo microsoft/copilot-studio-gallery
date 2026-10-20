@@ -1,0 +1,43 @@
+{
+  "$kind": "BotConfiguration",
+  "channels": [
+    {
+      "$kind": "ChannelDefinition",
+      "id": "MsTeams",
+      "channelId": "MsTeams"
+    },
+    {
+      "$kind": "ChannelDefinition",
+      "id": "Microsoft365Copilot",
+      "channelId": "Microsoft365Copilot"
+    }
+  ],
+  "publishOnCreate": false,
+  "publishOnImport": true,
+  "isLightweightBot": false,
+  "recognizer": {
+    "$kind": "CLICopilotRecognizer"
+  },
+  "agentSettings": {
+    "$kind": "AgentSettings",
+    "model": {
+      "$kind": "ModelConfig",
+      "series": "Sonnet46"
+    },
+    "instructions": {
+      "$kind": "Instructions",
+      "segments": [
+        {
+          "$kind": "StaticSegment",
+          "value": "When a user asks for podcast generation:\n- call the generating podcast script tool \n- once the script is ready call the convert text to speech with SSML\u200B\u200C\n- Retrieve output and generate a wav file for download by the user (post it to the chat)\u200B\u200C\u200B\u200C\n\nAlways include reasoning steps and progress to the end user by sending regular messages about what you are doing between each major steps.\u200B\u200B\u200C\n"
+        }
+      ]
+    },
+    "greetingText": "\uD83C\uDF99\uFE0F\uD83D\uDD34 Mics are live.\n\nGive me anything \uD83D\uDCC4 an article, a report, a doc, a pile of messy notes \uD83D\uDDD2\uFE0F and I\u0027ll turn it into a two-host podcast conversation you can actually listen to \uD83C\uDFA7\n\nPaste it below and we\u0027ll roll \uD83C\uDFAC",
+    "web": {
+      "$kind": "WebSettings",
+      "enableWebSearch": true
+    }
+  },
+  "deferredProvisioning": false
+}

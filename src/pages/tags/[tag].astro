@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import SolutionCard from "../../components/SolutionCard.astro";
-import { collectTags } from "../../lib/catalog";
+import { collectTags, compareSolutions } from "../../lib/catalog";
 import { withBase } from "../../lib/url";
 
 export async function getStaticPaths() {
@@ -13,7 +13,7 @@ export async function getStaticPaths() {
       tag,
       solutions: solutions
         .filter((solution) => solution.data.tags.includes(tag))
-        .sort((a, b) => Number(b.data.featured) - Number(a.data.featured) || a.data.name.localeCompare(b.data.name)),
+        .sort(compareSolutions),
     },
   }));
 }
