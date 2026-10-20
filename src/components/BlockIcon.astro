@@ -1,0 +1,45 @@
+---
+import { MCP_ICON_PATHS } from "../lib/graphVisuals";
+import type { BlockKind } from "../lib/inventory";
+
+interface Props {
+  kind: BlockKind;
+  class?: string;
+}
+
+const { kind, class: className } = Astro.props;
+---
+
+<svg viewBox={kind === "mcp" ? "0 0 195 195" : "0 0 24 24"} class={className} aria-hidden="true">
+  {kind === "workflow" && (
+    <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2.5" y="2.5" width="7.5" height="7.5" rx="2.2"></rect>
+      <rect x="14" y="14" width="7.5" height="7.5" rx="2.2"></rect>
+      <path d="M6.25 10v3.25a2.5 2.5 0 0 0 2.5 2.5H14"></path>
+    </g>
+  )}
+  {kind === "agent" && (
+    <g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+      <rect x="4" y="7" width="16" height="12.5" rx="4.5"></rect>
+      <path d="M12 7V4.2M2 12v3.5M22 12v3.5"></path>
+      <circle cx="9.3" cy="13.2" r="1.1" fill="currentColor" stroke="none"></circle>
+      <circle cx="14.7" cy="13.2" r="1.1" fill="currentColor" stroke="none"></circle>
+    </g>
+  )}
+  {kind === "tool" && (
+    <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <path d="M9 3v5M15 3v5"></path>
+      <path d="M6.5 8h11v2.5a5.5 5.5 0 0 1-11 0V8Z"></path>
+      <path d="M12 16v5"></path>
+    </g>
+  )}
+  {kind === "mcp" && MCP_ICON_PATHS.map((path) => (
+    <path d={path} fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round"></path>
+  ))}
+  {kind === "skill" && (
+    <g>
+      <path d="m12 2.5 8 4.6v9.8l-8 4.6-8-4.6V7.1l8-4.6Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"></path>
+      <path d="m12 7.5.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9.9-2.6Z" fill="currentColor"></path>
+    </g>
+  )}
+</svg>

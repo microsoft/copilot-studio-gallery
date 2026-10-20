@@ -11,16 +11,6 @@
         "runtimeSource": "embedded",
         "connectionName": "shared-office365-b79141e6-d6f8-42c6-b914-3eb3d2491190"
       },
-      "shared_agentnode": {
-        "api": {
-          "name": "shared_agentnode"
-        },
-        "connection": {
-          "connectionReferenceLogicalName": "new_sharedagentnode_36bfd7b0"
-        },
-        "runtimeSource": "embedded",
-        "connectionName": "shared-agentnode-0e6dddd0-d4fc-43e9-a95e-2406784e675f"
-      },
       "shared_advancedapprovals": {
         "api": {
           "name": "shared_advancedapprovals"
@@ -30,6 +20,36 @@
         },
         "runtimeSource": "embedded",
         "connectionName": "be923ac0d38a430a90ba2395510118d3"
+      },
+      "shared_office365": {
+        "api": {
+          "name": "shared_office365"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedoffice365_d3c797ce"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "b50f648118a44456949c0348eb03bc33"
+      },
+      "shared_agentnode-2": {
+        "api": {
+          "name": "shared_agentnode"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedagentnode_a4edece2"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "49c44ba139d44a72b5bcf4ef9c809fe6"
+      },
+      "shared_advancedapprovals-1": {
+        "api": {
+          "name": "shared_advancedapprovals"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedadvancedapprovals_693c4742"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "8a6c46550ec24046aec0a37279897ca4"
       }
     },
     "definition": {
@@ -57,7 +77,7 @@
             "host": {
               "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
               "operationId": "OnNewEmailV3",
-              "connectionName": "shared_office365-1"
+              "connectionName": "shared_office365"
             }
           },
           "splitOn": "@triggerOutputs()?['body/value']",
@@ -72,8 +92,8 @@
                     "type": "start",
                     "version": 1,
                     "position": {
-                      "x": -173.36318146106169,
-                      "y": 560.35515758051918
+                      "x": 100,
+                      "y": 545.5
                     },
                     "data": {
                       "config": {
@@ -81,7 +101,7 @@
                         "connector": {
                           "apiName": "shared_office365",
                           "operationName": "OnNewEmailV3",
-                          "connectionName": "shared_office365-1",
+                          "connectionName": "shared_office365",
                           "inputs": {
                             "folderPath": "Id::AAMkAGJhNzZhMjFhLWIwMmQtNDllOC1hNjYwLTQ4NzI4Mjg4NDcyOQAuAAAAAADUlIVU6wZISLwUfI-WrtyAAQAEl1rPER--S6jrwcM0kjSGAAAAAAEMAAA=",
                             "importance": "Any",
@@ -815,8 +835,8 @@
                     "type": "classifyOnInlineAgent",
                     "version": 1,
                     "position": {
-                      "x": 239.63619816708766,
-                      "y": 478.71031516103835
+                      "x": 666,
+                      "y": 470
                     },
                     "data": {
                       "config": {
@@ -825,12 +845,12 @@
                           {
                             "id": "f1efd1a5-76cc-4a05-a432-8d5b2fcc0839",
                             "name": "Order Shipment Issue",
-                            "description": "The email refers to an issue with the process of delivery or shipment of an order"
+                            "description": "The customer reports a problem with the delivery or shipment of an order they placed: it is late, hasn't arrived, is stuck in transit, or they're asking where it is or when it will come. The product itself is not reported as faulty - the issue is getting it to them."
                           },
                           {
                             "id": "1e11370e-7602-466a-904f-0242d972063c",
                             "name": "Order Defect Issue",
-                            "description": "The email refers to an issue with a received product that contains a defect or does not meet expectations"
+                            "description": "The customer reports that an item they have already received is faulty, damaged, dead on arrival, or does not work as expected, and wants it replaced, exchanged, or refunded. The issue is the condition of the product, not its delivery."
                           }
                         ],
                         "examples": [
@@ -841,12 +861,22 @@
                           },
                           {
                             "id": "d852f490-49b3-441c-b8e1-31e2312e1260",
+                            "input": "Tracking hasn't updated in days and my console still isn't here, where is it?",
+                            "label": "Order Shipment Issue"
+                          },
+                          {
+                            "id": "df406401-8377-4aa7-9903-cb8db13e984b",
                             "input": "My BlastBox OMEGA is not turning on. It is brand new, I just received it yesterday",
+                            "label": "Order Defect Issue"
+                          },
+                          {
+                            "id": "0868bbb2-bbee-4f39-9fe0-92ada42eaf02",
+                            "input": "The controller that came with my order is faulty, the buttons don't respond",
                             "label": "Order Defect Issue"
                           }
                         ],
                         "model": "GPT55Chat",
-                        "connectionName": "shared_agentnode",
+                        "connectionName": "shared_agentnode-2",
                         "inputRich": {
                           "segments": [
                             {
@@ -886,7 +916,7 @@
                     },
                     "measured": {
                       "width": 240,
-                      "height": 213
+                      "height": 217
                     }
                   },
                   {
@@ -895,8 +925,8 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": -184.00976257403167,
-                      "y": 269.83199601990958
+                      "x": 98.549469803334972,
+                      "y": 261.79066867419533
                     },
                     "width": 250,
                     "height": 150,
@@ -922,8 +952,8 @@
                     "type": "agent",
                     "version": 1,
                     "position": {
-                      "x": 667.68656913042832,
-                      "y": 229.55219617704242
+                      "x": 943.92304030058176,
+                      "y": 176.11393192308859
                     },
                     "data": {
                       "config": {
@@ -932,41 +962,11 @@
                         "botSchemaName": "",
                         "isHitlEscalationEnabled": false,
                         "webSearchEnabled": false,
-                        "inlineInstructions": "Explore the possible issues with the shipment of the order, such as lack of stock, as per the customer enquiry:\n\nEnquiry: {triggerOutputs()?['body/body']}\n\nEstimate a new ETA considering the weather conditions of the place of the destination address, and indicate if a substitute product exists that the customer can order instead. If no substitute exists, propose a refund of 100% of the original amount.\n\nReturn a summary of the findings and options ready for customer review with the information available. No greeting or commentary, only the findings and options.",
+                        "inlineInstructions": "You handle a customer shipment enquiry about an order that is late or has not arrived. Work only from the tools; never invent orders, stock, dates or prices. You do never request the return yourself, this is a step to be taken later \n\nCustomer enquiry: {triggerOutputs()?['body/body']}\n\nSteps:\n1. Look up the order from the name, email or order number in the enquiry. If you cannot find a single matching order, request human assistance rather than guessing.\n2. Check the stock and fulfilment status of the ordered item. If it is out of stock or delayed, get its restock/ETA date.\n3. Estimate a realistic new ETA, factoring in the current weather at the order's destination address.\n4. Determine whether an in‑stock substitute product exists that the customer could exchange instead (e.g. a higher console model). \n5. Determine the options available according to the applicable return policy for the case. Options should be only two or three linked to the possible outcomes: Wait, Return (with the cash refund options available, ignore refund as points and indicate we are only not offering this option at the moment), Refund.\n\nReturn these outputs:\n- Summary: Customer-facing summary to state the current status, the new estimated ETA and why, and lay out the options plainly. No greeting, no sign‑off, no citations, only the findings and options.\n- SubstituteExists: 'Yes' is an an in‑stock substitute product was found\n- ReturnInstruction: One line indicating which order and item to return/refund and with what conditions.\n- ExchangeInstruction: One line indicating which order/item to exchange, for which substitute SKU and with what conditions. Empty if no substitute exists.\n\nSummary format: Write `Summary` as short, clean HTML using only `<p>`, `<b>`, `<br>`, `<ul>` and `<li>` tags. Two short paragraphs:\n1. Open with \"Dear customer,\" to start, then line break,\n2. Start first paragraph with \"We've detected that…\" - state the issue and, for a shipment case, the new estimated ETA.\n3. Continue second paragraph with \"We can offer you…\" - briefly list the options that apply.\n4. Close with \"Thank you -*&#32;The BlastBox Team*\" in a separate line.",
                         "outputMode": "structured-simple",
-                        "inlineModel": "Sonnet5",
-                        "connectionName": "shared_agentnode",
+                        "inlineModel": "claude-opus-5",
+                        "connectionName": "shared_agentnode-2",
                         "inlineTools": [
-                          {
-                            "id": "8cdff204-61cf-46a2-847c-99f8eb3515b6",
-                            "connectorId": "shared_new-5forder-20management-20mcp-5f4fe69411b7a87261",
-                            "operationId": "InvokeMCP",
-                            "displayName": "Order Management MCP — Order Management MCP Server",
-                            "description": "MCP server for e-commerce order management. Tools: search_orders, get_order, get_shipment, request_return, get_return_status.",
-                            "connectionReferenceName": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
-                            "connectionId": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
-                            "authMode": "invoker",
-                            "isMcp": true,
-                            "iconUri": "https://defaulticons.powerapps.com/defaulticons/api-dedicated.png",
-                            "brandColor": "#007ee5",
-                            "mcpToolMode": "all",
-                            "mcpEnabledTools": []
-                          },
-                          {
-                            "id": "7a9bcac8-c35f-40b1-923f-7013f6a3e059",
-                            "connectorId": "shared_new-5fwarehouse-20mcp-5f4fe69411b7a87261",
-                            "operationId": "InvokeMCP",
-                            "displayName": "Warehouse MCP — Warehouse MCP Server",
-                            "description": "MCP server for warehouse and fulfillment. Tools: check_stock, get_fulfillment_status, find_alternatives, get_restock_date.",
-                            "connectionReferenceName": "05a0340ff51b4b32b71abf433dd1e354",
-                            "connectionId": "05a0340ff51b4b32b71abf433dd1e354",
-                            "authMode": "invoker",
-                            "isMcp": true,
-                            "iconUri": "https://pafeblobprodby.blob.core.windows.net/20260805t000000z2117f79ad6a84d449d3e463b5e8dfcaf/new_warehouse-20mcp_iconblob.Png?skoid=1b4c3c9e-b403-4e0f-9933-e50756645683&sktid=975f013f-7f24-47e8-a7d3-abc4752bf346&skt=2026-08-05T20%3A00%3A00Z&ske=2026-08-12T20%3A00%3A00Z&sks=b&skv=2025-07-05&sv=2025-07-05&spr=https&st=2026-08-05T20%3A38%3A11Z&se=2026-08-10T12%3A00%3A00Z&sr=c&sp=rl&scid=61bec03c-bd92-4b66-8adf-84cf37369ffd&sig=BpVxeZetxR6YWQ1ZuKA8TiVyTSt4uQHRlcPOAxhU6LA%3D",
-                            "brandColor": "#007ee5",
-                            "mcpToolMode": "all",
-                            "mcpEnabledTools": []
-                          },
                           {
                             "id": "ca023e2a-2af4-4f7b-8229-67f6b1113336",
                             "connectorId": "shared_msnweather",
@@ -987,6 +987,24 @@
                             "name": "Summary",
                             "type": "string",
                             "description": ""
+                          },
+                          {
+                            "id": "717ef18e-1907-40c4-b628-a61d2e5c4c0f",
+                            "name": "SubstituteExists",
+                            "type": "boolean",
+                            "description": ""
+                          },
+                          {
+                            "id": "a64fc2f8-7694-495a-b9aa-314eebd25240",
+                            "name": "ReturnInstruction",
+                            "type": "string",
+                            "description": ""
+                          },
+                          {
+                            "id": "278dc930-4d6d-4cea-9a58-ff2602a226f1",
+                            "name": "ExchangeInstruction",
+                            "type": "string",
+                            "description": ""
                           }
                         ],
                         "jsonSchema": {
@@ -994,10 +1012,22 @@
                           "properties": {
                             "Summary": {
                               "type": "string"
+                            },
+                            "SubstituteExists": {
+                              "type": "boolean"
+                            },
+                            "ReturnInstruction": {
+                              "type": "string"
+                            },
+                            "ExchangeInstruction": {
+                              "type": "string"
                             }
                           },
                           "required": [
-                            "Summary"
+                            "Summary",
+                            "SubstituteExists",
+                            "ReturnInstruction",
+                            "ExchangeInstruction"
                           ]
                         }
                       },
@@ -1022,10 +1052,22 @@
                                 "properties": {
                                   "Summary": {
                                     "type": "string"
+                                  },
+                                  "SubstituteExists": {
+                                    "type": "boolean"
+                                  },
+                                  "ReturnInstruction": {
+                                    "type": "string"
+                                  },
+                                  "ExchangeInstruction": {
+                                    "type": "string"
                                   }
                                 },
                                 "required": [
-                                  "Summary"
+                                  "Summary",
+                                  "SubstituteExists",
+                                  "ReturnInstruction",
+                                  "ExchangeInstruction"
                                 ],
                                 "title": ""
                               }
@@ -1041,7 +1083,8 @@
                     "measured": {
                       "width": 275,
                       "height": 66
-                    }
+                    },
+                    "selected": true
                   },
                   {
                     "id": "agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b",
@@ -1049,8 +1092,8 @@
                     "type": "agent",
                     "version": 1,
                     "position": {
-                      "x": 671.7037587803834,
-                      "y": 561.14075175607672
+                      "x": 949,
+                      "y": 545.5
                     },
                     "data": {
                       "config": {
@@ -1059,10 +1102,10 @@
                         "botSchemaName": "",
                         "isHitlEscalationEnabled": true,
                         "webSearchEnabled": false,
-                        "inlineInstructions": "Explore the complain of the customer and the options to help them according to our policy:\n\nComplain: {triggerOutputs()?['body/body']}\n\nOutput the following:\nReturn: 'applicable' if policy makes a return, refund or exchange applicable straightaway, 'exception' if the conditions are not fully covered by policy but the case is extreme, shows enough ambiguity or has grey areas not covered explicitly in the policy, 'other' otherwise (e.g. clearly not covered by policy or not justified an exception)\nSummary: A summary of the findings that explain the rationale behind return. No introduction, greeting, or commentary, only findings. ",
+                        "inlineInstructions": "You assess a customer enquiry about a received item that may be defective, and decide what our policy allows. Ground every ruling in your tools; never invent policy numbers, fees, orders or dates. You do never request the return yourself, this is a step to be taken later \n\nCustomer Enquiry: {triggerOutputs()?['body/body']}\n\nSteps:\n1. Find the order from the name, email or order number provided. If the details the customer gives do not reconcile with the order on file - the name or email doesn't match the order, the order can't be found, or the item isn't on that order - do not proceed on assumption: request human assistance and explain exactly what doesn't match. Only ask the human to clear ambiguity in the field that does not match the customer indications, do not ask for more information than the strictly necessary.\n2. If the order reconciles, establish whether the fault is a manufacturing defect versus accidental/physical damage, and check it against our return/warranty policy (window, restocking fee, warranty swap). Never make a conclusion on the outcome of the applicability of the return without searching first the organization's policy. \n3. Classify the outcome and explain your reasoning.\n\nThen return these outputs:\n- Return: Where applicable = policy clearly allows return/refund/exchange; other = not fully covered but extreme / ambiguous / grey‑area (may be an exception); or clearly not covered or not justified\n- Summary: Two lines with the rationale behind the policy applicability or rejection. No greeting, citations or commentary. A concise assessment of policy coverage, visible to both the customer and tstore manager. Maximum 2 bullet points, no more than 600 characters. Exclude other type of details. \n- ReturnInstruction: One line for the fulfilment agent: which order and item to return/refund/exchange and why",
                         "outputMode": "structured-simple",
-                        "inlineModel": "Sonnet5",
-                        "connectionName": "shared_agentnode",
+                        "inlineModel": "claude-opus-5",
+                        "connectionName": "shared_agentnode-2",
                         "simpleProperties": [
                           {
                             "id": "d290ecea-95d1-4343-b5fc-886b5237df61",
@@ -1071,13 +1114,18 @@
                             "description": "",
                             "enumValues": [
                               "applicable",
-                              "exception",
                               "other"
                             ]
                           },
                           {
                             "id": "72af3677-c728-4ec5-94ad-cdc68bdaaf09",
                             "name": "Summary",
+                            "type": "string",
+                            "description": ""
+                          },
+                          {
+                            "id": "d0e3e7cf-131b-47b1-af8d-ce64c56a9dcd",
+                            "name": "ReturnInstruction",
                             "type": "string",
                             "description": ""
                           }
@@ -1091,36 +1139,6 @@
                           ]
                         },
                         "inlineTools": [
-                          {
-                            "id": "8f97e212-39b0-4217-9482-fb79fb752c61",
-                            "connectorId": "shared_new-5forder-20management-20mcp-5f4fe69411b7a87261",
-                            "operationId": "InvokeMCP",
-                            "displayName": "Order Management MCP — Order Management MCP Server",
-                            "description": "MCP server for e-commerce order management. Tools: search_orders, get_order, get_shipment, request_return, get_return_status.",
-                            "connectionReferenceName": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
-                            "connectionId": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
-                            "authMode": "invoker",
-                            "isMcp": true,
-                            "iconUri": "https://defaulticons.powerapps.com/defaulticons/api-dedicated.png",
-                            "brandColor": "#007ee5",
-                            "mcpToolMode": "all",
-                            "mcpEnabledTools": []
-                          },
-                          {
-                            "id": "79e1b978-ca64-4b83-ba17-02319d98b9e2",
-                            "connectorId": "shared_new-5fwarehouse-20mcp-5f4fe69411b7a87261",
-                            "operationId": "InvokeMCP",
-                            "displayName": "Warehouse MCP — Warehouse MCP Server",
-                            "description": "MCP server for warehouse and fulfillment. Tools: check_stock, get_fulfillment_status, find_alternatives, get_restock_date.",
-                            "connectionReferenceName": "05a0340ff51b4b32b71abf433dd1e354",
-                            "connectionId": "05a0340ff51b4b32b71abf433dd1e354",
-                            "authMode": "invoker",
-                            "isMcp": true,
-                            "iconUri": "https://pafeblobprodby.blob.core.windows.net/20260805t000000z2117f79ad6a84d449d3e463b5e8dfcaf/new_warehouse-20mcp_iconblob.Png?skoid=1b4c3c9e-b403-4e0f-9933-e50756645683&sktid=975f013f-7f24-47e8-a7d3-abc4752bf346&skt=2026-08-05T20%3A00%3A00Z&ske=2026-08-12T20%3A00%3A00Z&sks=b&skv=2025-07-05&sv=2025-07-05&spr=https&st=2026-08-05T20%3A38%3A11Z&se=2026-08-10T12%3A00%3A00Z&sr=c&sp=rl&scid=61bec03c-bd92-4b66-8adf-84cf37369ffd&sig=BpVxeZetxR6YWQ1ZuKA8TiVyTSt4uQHRlcPOAxhU6LA%3D",
-                            "brandColor": "#007ee5",
-                            "mcpToolMode": "all",
-                            "mcpEnabledTools": []
-                          },
                           {
                             "id": "f5f5a22e-bea5-4ecd-a5c1-7c653e4e948e",
                             "connectorId": "shared_advancedapprovals",
@@ -1142,17 +1160,20 @@
                               "type": "string",
                               "enum": [
                                 "applicable",
-                                "exception",
                                 "other"
                               ]
                             },
                             "Summary": {
                               "type": "string"
+                            },
+                            "ReturnInstruction": {
+                              "type": "string"
                             }
                           },
                           "required": [
                             "Return",
-                            "Summary"
+                            "Summary",
+                            "ReturnInstruction"
                           ]
                         }
                       },
@@ -1179,17 +1200,20 @@
                                     "type": "string",
                                     "enum": [
                                       "applicable",
-                                      "exception",
                                       "other"
                                     ]
                                   },
                                   "Summary": {
                                     "type": "string"
+                                  },
+                                  "ReturnInstruction": {
+                                    "type": "string"
                                   }
                                 },
                                 "required": [
                                   "Return",
-                                  "Summary"
+                                  "Summary",
+                                  "ReturnInstruction"
                                 ],
                                 "title": ""
                               }
@@ -1205,50 +1229,6 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    }
-                  },
-                  {
-                    "id": "ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4",
-                    "name": "Policy Condition",
-                    "type": "ifElse",
-                    "version": 1,
-                    "position": {
-                      "x": 1041.2437396594803,
-                      "y": 490
-                    },
-                    "data": {
-                      "config": {
-                        "conditions": [
-                          {
-                            "id": "6f435d40-5285-416a-8ed1-0ad82cc517f4",
-                            "name": "If return applicable",
-                            "expression": "{\n  \"and\": [\n    {\n      \"equals\": [\n        \"@body('agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b')?['structuredOutput/Return']\",\n        \"applicable\"\n      ]\n    }\n  ]\n}"
-                          },
-                          {
-                            "id": "dcc6151b-4a09-43d6-b94a-d904a273f861",
-                            "name": "If exception applicable",
-                            "expression": "{\n  \"and\": [\n    {\n      \"equals\": [\n        \"@body('agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b')?['structuredOutput/Return']\",\n        \"exception\"\n      ]\n    }\n  ]\n}"
-                          }
-                        ]
-                      },
-                      "outcomes": [
-                        {
-                          "id": "condition:6f435d40-5285-416a-8ed1-0ad82cc517f4",
-                          "label": "If return applicable"
-                        },
-                        {
-                          "id": "condition:dcc6151b-4a09-43d6-b94a-d904a273f861",
-                          "label": "If exception applicable"
-                        },
-                        {
-                          "id": "else",
-                          "label": "Else"
-                        }
-                      ]
-                    },
-                    "measured": {
-                      "width": 240,
-                      "height": 213
                     },
                     "selected": false
                   },
@@ -1258,8 +1238,8 @@
                     "type": "agent",
                     "version": 1,
                     "position": {
-                      "x": 1966.9371349815933,
-                      "y": 459.85290511248394
+                      "x": 2437.5384005009705,
+                      "y": 352.78760701358158
                     },
                     "data": {
                       "config": {
@@ -1268,26 +1248,11 @@
                         "botSchemaName": "",
                         "isHitlEscalationEnabled": false,
                         "webSearchEnabled": false,
-                        "inlineInstructions": "Initiate a return request for the item(s) in the customer order below that have issues with shipment or that present defects:\n\n{body('connector-2b4cf3f7-936b-4139-bb61-ac0a14daae6e')}\n\nSend an email to the customer address indicated below (never other email) indicating that the return request has been initiated:\n\nCustomer email: {triggerOutputs()?['body/from']}\nSubject: 'BlastBox Service - Your enquiry'",
+                        "inlineInstructions": "Action the return or exchange described below for the customer's order, using the Order Management tools. \nDo exactly what the instruction says, do not re‑decide eligibility, that has already been determined upstream.\n\nReturn or exchange action to perform:\n {variables('ReturnNote')}\n\nOriginal customer email:\n{triggerOutputs()?['body/body']}\n\nOnce the return or exchange is registered, send a single confirmation email - only to the customer address provided, never any other address - telling them it's done, what to expect next in one liner (label, refund or replacement timing). Do not include any citations, links, or URLs in the sent email. \n\nCustomer email: {triggerOutputs()?['body/from']}\nSubject: \"BlastBox Service – Your return/exchange is confirmed\"\nBody:\n\"Dear Customer,\n\nWe are pleased to inform you that [notes on the action performed]. You will receive [note on the applicable product, and or refund to be received by the customer]. \n\nThank you,\n*The BlastBox Team*\"\n",
                         "outputMode": "text",
-                        "inlineModel": "Sonnet5",
-                        "connectionName": "shared_agentnode",
+                        "inlineModel": "claude-opus-5",
+                        "connectionName": "shared_agentnode-2",
                         "inlineTools": [
-                          {
-                            "id": "811e4135-4dea-4e07-8bf0-a5067da10f5a",
-                            "connectorId": "shared_new-5forder-20management-20mcp-5f4fe69411b7a87261",
-                            "operationId": "InvokeMCP",
-                            "displayName": "Order Management MCP — Order Management MCP Server",
-                            "description": "MCP server for e-commerce order management. Tools: search_orders, get_order, get_shipment, request_return, get_return_status.",
-                            "connectionReferenceName": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
-                            "connectionId": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
-                            "authMode": "invoker",
-                            "isMcp": true,
-                            "iconUri": "https://defaulticons.powerapps.com/defaulticons/api-dedicated.png",
-                            "brandColor": "#007ee5",
-                            "mcpToolMode": "all",
-                            "mcpEnabledTools": []
-                          },
                           {
                             "id": "bd68b02a-817d-4c70-b0a3-4c30a986b6ab",
                             "connectorId": "shared_office365",
@@ -1330,7 +1295,8 @@
                     "measured": {
                       "width": 276,
                       "height": 66
-                    }
+                    },
+                    "selected": false
                   },
                   {
                     "id": "connector-7492932a-4693-4b1e-91dc-313e11fd221b",
@@ -1338,8 +1304,8 @@
                     "type": "connector",
                     "version": 1,
                     "position": {
-                      "x": 1342.2819165478081,
-                      "y": 592.58129114894189
+                      "x": 1561.3846397996119,
+                      "y": 650.26991438913478
                     },
                     "data": {
                       "config": {
@@ -1347,13 +1313,13 @@
                         "operationName": "RequestForInformation",
                         "displayName": "Human review",
                         "paletteIconHint": "humanReview",
-                        "connectionName": "shared_advancedapprovals",
+                        "connectionName": "shared_advancedapprovals-1",
                         "operationType": "OpenApiConnectionWebhook",
                         "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1819/1.0.1819.4798/advancedapprovals/icon.png",
                         "parameters": {
                           "RequestForInformationInput/channel": "Outlook",
                           "RequestForInformationInput/title": "Action needed: Review Return Policy Exception",
-                          "RequestForInformationInput/message": "Dear manager,\n\nPlease review the following case where return policy has been flagged as applicable.\n\nAssessment Summary:\n@{body('agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b')?['structuredOutput/Summary']}\n\nCustomer Email:\n@{triggerOutputs()?['body/body']}",
+                          "RequestForInformationInput/message": "Dear manager,\n\nA customer return/refund request has been flagged as not covered under policy and needs your attention. \n\nApprove to apply an exception and initiate a return/exchange, or reject to decline. Thank you.\n\nCase assessment (AI-generated):\n\n@{body('agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b')?['structuredOutput/Summary']} ",
                           "RequestForInformationInput/assignedTo": "@{triggerOutputs()?['body/from']}",
                           "RequestForInformationInput/input": {
                             "type": "object",
@@ -1478,8 +1444,7 @@
                     "measured": {
                       "width": 242,
                       "height": 66
-                    },
-                    "selected": false
+                    }
                   },
                   {
                     "id": "ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339",
@@ -1487,8 +1452,8 @@
                     "type": "ifElse",
                     "version": 1,
                     "position": {
-                      "x": 1689.5534197048107,
-                      "y": 562.72203527805493
+                      "x": 1845.6923198998059,
+                      "y": 612.30847358758263
                     },
                     "data": {
                       "config": {
@@ -1513,7 +1478,7 @@
                     },
                     "measured": {
                       "width": 240,
-                      "height": 167
+                      "height": 169
                     }
                   },
                   {
@@ -1522,8 +1487,8 @@
                     "type": "connector",
                     "version": 1,
                     "position": {
-                      "x": 1974.0114277344587,
-                      "y": 777.97966288727457
+                      "x": 2163,
+                      "y": 775
                     },
                     "data": {
                       "config": {
@@ -1656,12 +1621,12 @@
                         "parameters": {
                           "replyParameters/Importance": "Low",
                           "messageId": "@{triggerOutputs()?['body/id']}",
-                          "replyParameters/Body": "<div>Dear customer,</div><div><br></div><div>We have assessed your enquiry and have concluded that your case does not apply for a refund or exchange under our current policy.</div><div><br></div><div>Findings summary:@{body('agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b')?['structuredOutput/Summary']}​</div><div><br></div><div>We apologize for any inconvenience this may cause to you. If you need further information about our policies, please visit our site.</div><div><br></div><div>Thank you</div>",
+                          "replyParameters/Body": "<div>Dear customer,</div><div><br></div><div>We have assessed your enquiry and have concluded that your case does not apply for a refund or exchange under our current policy.</div><div><br></div><div>Findings summary:</div><div>@{body('agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b')?['structuredOutput/Summary']}</div><div><br></div><div>We apologise for any inconvenience this may cause to you. If you need further information about our policies, please visit our site.</div><div><br></div><div>Thank you,</div><div><i>The BlastBox Team</i></div>",
                           "replyParameters/Subject": "BlastBox Service - Your enquiry",
                           "replyParameters/To": "@{triggerOutputs()?['body/from']}"
                         },
                         "operationType": "OpenApiConnection",
-                        "connectionName": "shared_office365-1"
+                        "connectionName": "shared_office365"
                       },
                       "outcomes": [
                         {
@@ -1685,8 +1650,8 @@
                     "type": "connector",
                     "version": 1,
                     "position": {
-                      "x": 1036.526545065823,
-                      "y": 896.99961682905746
+                      "x": 1270.6153602003881,
+                      "y": 925.616471082732
                     },
                     "data": {
                       "config": {
@@ -1698,7 +1663,7 @@
                         "operationType": "OpenApiConnection",
                         "parameters": {
                           "replyParameters/Importance": "Low",
-                          "replyParameters/Body": "<div>Dear customer,</div><div><br></div><div>Thank you for reaching out. We have assessed your enquiry. Here is some useful information for you:</div><div><br></div><div>@{body('agent-b6af16be-b502-4322-83cb-bf6f1c2ddf13')?['result']}</div><div><br></div><div>Further questions? Please reach out to us or visit our site.&nbsp;</div><div><br></div><div>Thank you​</div>",
+                          "replyParameters/Body": "<div>Dear customer,</div><div><br></div><div>Thanks for getting in touch. We have assessed your enquiry. Here is some useful information for you:</div><div><br></div><div>@{body('agent-b6af16be-b502-4322-83cb-bf6f1c2ddf13')?['result']}</div><div><br></div><div>Further questions? Please reach out to us or visit our site.&nbsp;</div><div><br></div><div>Thank you,</div><div><i>The BlastBox Team</i></div>",
                           "messageId": "@{triggerOutputs()?['body/id']}",
                           "replyParameters/To": "@{triggerOutputs()?['body/from']}",
                           "replyParameters/Subject": "BlastBox Service - Your enquiry"
@@ -1824,7 +1789,7 @@
                             "replyParameters"
                           ]
                         },
-                        "connectionName": "shared_office365-1"
+                        "connectionName": "shared_office365"
                       },
                       "outcomes": [
                         {
@@ -1848,8 +1813,8 @@
                     "type": "connector",
                     "version": 1,
                     "position": {
-                      "x": 1043.9965195642978,
-                      "y": 228.67374640118007
+                      "x": 1268.9230403005818,
+                      "y": 176.11393192308859
                     },
                     "data": {
                       "config": {
@@ -1858,14 +1823,19 @@
                         "iconUri": "https://res-1.cdn.office.net/files/fabric-cdn-prod_20251008.001/assets/brand-icons/product/svg/outlook_48x1.svg",
                         "brandColor": "#0078D4",
                         "operationName": "SendMailWithOptions",
-                        "connectionName": "shared_office365-1",
+                        "connectionName": "shared_office365",
                         "operationType": "OpenApiConnectionWebhook",
                         "parameters": {
                           "optionsEmailSubscription/Message/Importance": "Normal",
                           "optionsEmailSubscription/Message/Subject": "Action Needed: Your Delivery Enquiry",
-                          "optionsEmailSubscription/Message/Options": "Wait, Return",
+                          "optionsEmailSubscription/Message/Options": "@{if(body('agent-c795e6ad-eef4-47c5-b492-88ca35dbef9c')?['structuredOutput/SubstituteExists'], 'Wait, Return, Exchange', 'Wait, Return')}",
                           "optionsEmailSubscription/Message/To": "@{triggerOutputs()?['body/from']}",
-                          "optionsEmailSubscription/Message/Body": "Dear customer,\n\nPlease find below the findings about your recent enquiry:\n@{body('agent-c795e6ad-eef4-47c5-b492-88ca35dbef9c')?['structuredOutput/Summary']} \n\nIndicate to us if you would be happy to wait for your order under its new ETA, or if you would prefer a refund (or exchange, if applicable).\n\nThank you\n"
+                          "optionsEmailSubscription/Message/Body": "@{body('agent-c795e6ad-eef4-47c5-b492-88ca35dbef9c')?['structuredOutput/Summary']}",
+                          "optionsEmailSubscription/Message/HideHTMLMessage": false,
+                          "optionsEmailSubscription/Message/HideMicrosoftFooter": true,
+                          "optionsEmailSubscription/Message/ShowHTMLConfirmationDialog": false,
+                          "optionsEmailSubscription/Message/UseOnlyHTMLMessage": true,
+                          "optionsEmailSubscription/Message/HeaderText": "Action Needed: Your Delivery Enquiry"
                         },
                         "parametersSchema": {
                           "type": "object",
@@ -2069,8 +2039,8 @@
                     "type": "ifElse",
                     "version": 1,
                     "position": {
-                      "x": 1342.5961834690788,
-                      "y": 224.47134893916609
+                      "x": 1552.9230403005818,
+                      "y": 124.61393192308859
                     },
                     "data": {
                       "config": {
@@ -2095,7 +2065,7 @@
                     },
                     "measured": {
                       "width": 240,
-                      "height": 167
+                      "height": 169
                     }
                   },
                   {
@@ -2104,25 +2074,25 @@
                     "type": "agent",
                     "version": 1,
                     "position": {
-                      "x": 665.6063840283349,
-                      "y": 898.31899062875834
+                      "x": 945.61536020038807,
+                      "y": 925.616471082732
                     },
                     "data": {
                       "config": {
                         "mode": "invoke",
-                        "instructions": "Review the customer query and craft a paragraph that summarizes the answer to the question, no greeting or comments, only the answer to the enquiry:\n\nEnquiry: @{triggerOutputs()?['body/body']} \n",
+                        "instructions": "Review the customer enquiry and craft an answer that summarizes the answer to the question, no greeting, citations, or comments.\nThe answer should be no more than two paragraphs or a paragraph and a couple of bullet points. Do not include text formatting such as bold (*text*).  \nUse store and BlastPass policy only. If no answer can be found in the policies, indicate it clearly.\n\nCustomer enquiry: @{triggerOutputs()?['body/body']} ",
                         "botSchemaName": "Default_StorePolicyAgent_s9s-u8",
                         "isHitlEscalationEnabled": false,
                         "webSearchEnabled": false,
                         "inlineInstructions": "",
                         "outputMode": "text",
                         "inlineModel": "claude-opus-5",
-                        "connectionName": "shared_agentnode",
+                        "connectionName": "shared_agentnode-2",
                         "instructionsRich": {
                           "segments": [
                             {
                               "type": "static",
-                              "value": "Review the customer query and craft a paragraph that summarizes the answer to the question, no greeting or comments, only the answer to the enquiry:\n\nEnquiry: "
+                              "value": "Review the customer enquiry and craft an answer that summarizes the answer to the question, no greeting, citations, or comments.\nThe answer should be no more than two paragraphs or a paragraph and a couple of bullet points. Do not include text formatting such as bold (*text*).  \nUse store and BlastPass policy only. If no answer can be found in the policies, indicate it clearly.\n\nCustomer enquiry: "
                             },
                             {
                               "type": "token",
@@ -2139,7 +2109,7 @@
                             },
                             {
                               "type": "static",
-                              "value": " \n"
+                              "value": " "
                             }
                           ]
                         }
@@ -2183,8 +2153,8 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 232.61791522643375,
-                      "y": 263.65601320945666
+                      "x": 648.577425753283,
+                      "y": 263.76341058926431
                     },
                     "width": 250,
                     "height": 150,
@@ -2210,8 +2180,8 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 2312.1449513388206,
-                      "y": 227
+                      "x": 3085.1732300126923,
+                      "y": 260.34256960025556
                     },
                     "width": 254,
                     "height": 200,
@@ -2221,7 +2191,7 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "Agent builds a contextualized answer, specifying if problem comes from delivery disruptions or stock unavailability and gets new ETA. Next steps options always include \"wait\" and \"cancel/return\", and may include \"exchange\" if substitute exists.",
+                        "markdown": "Agent builds a contextualized answer, specifying if problem comes from delivery disruptions or stock unavailability and gets new ETA. Next steps options always include \"wait\" and \"return\", and may include \"exchange\" if substitute exists.",
                         "color": "blue"
                       },
                       "outcomes": []
@@ -2238,8 +2208,8 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 1714.3555743703328,
-                      "y": 884.16960964728685
+                      "x": 1840.6153602003881,
+                      "y": 883.616471082732
                     },
                     "width": 250,
                     "height": 150,
@@ -2265,8 +2235,8 @@
                     "type": "connector",
                     "version": 1,
                     "position": {
-                      "x": 1965.0142830129066,
-                      "y": 134.99388135688142
+                      "x": 1838.9230403005818,
+                      "y": 98.613931923088586
                     },
                     "data": {
                       "config": {
@@ -2278,7 +2248,7 @@
                         "operationType": "OpenApiConnection",
                         "parameters": {
                           "replyParameters/Importance": "Low",
-                          "replyParameters/Body": "<div>Dear customer,</div><div><br></div><div>Thanks for your patience.&nbsp;</div><div><br></div><div>You can keep track of your order in the separate email sent to you. If experiencing issues with your new ETA, please reach out to us.</div><div><br></div><div>Thank you</div>",
+                          "replyParameters/Body": "<div>Dear customer,</div><div><br></div><div>Thanks for your patience. We apologise for any inconveniences.</div><div><br></div><div>You have chosen to wait for your order.  You can keep track of your order from the separate email sent to you. If you experience any other issues, please reach out to us.</div><div><br></div><div>Thank you,</div><div><i>The BlastBox Team</i></div>",
                           "messageId": "@{triggerOutputs()?['body/id']}",
                           "replyParameters/To": "@{triggerOutputs()?['body/from']}",
                           "replyParameters/Subject": "BlastBox Service - Your enquiry"
@@ -2404,7 +2374,7 @@
                             "replyParameters"
                           ]
                         },
-                        "connectionName": "shared_office365-1"
+                        "connectionName": "shared_office365"
                       },
                       "outcomes": [
                         {
@@ -2428,8 +2398,8 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 2310.9852399919387,
-                      "y": 534
+                      "x": 3089.3063813213244,
+                      "y": 505.81560548624395
                     },
                     "width": 254,
                     "height": 224,
@@ -2448,8 +2418,7 @@
                       "width": 254,
                       "height": 224
                     },
-                    "resizing": false,
-                    "selected": false
+                    "resizing": false
                   },
                   {
                     "id": "end-2120af3d-79db-4382-8e87-bc95af0281b7",
@@ -2457,8 +2426,8 @@
                     "type": "end",
                     "version": 1,
                     "position": {
-                      "x": 2319,
-                      "y": 448
+                      "x": 2766.9230403005827,
+                      "y": 351.99952390756692
                     },
                     "data": {
                       "config": {
@@ -2469,8 +2438,7 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    },
-                    "selected": true
+                    }
                   },
                   {
                     "id": "end-59c4f94f-70bb-4161-ada6-11e1284ea27d",
@@ -2478,8 +2446,8 @@
                     "type": "end",
                     "version": 1,
                     "position": {
-                      "x": 2311,
-                      "y": 135
+                      "x": 2157.9230403005818,
+                      "y": 98.613931923088586
                     },
                     "data": {
                       "config": {
@@ -2490,8 +2458,7 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    },
-                    "selected": false
+                    }
                   },
                   {
                     "id": "end-120d8b37-4a78-416c-a48b-63bd0c976443",
@@ -2499,8 +2466,8 @@
                     "type": "end",
                     "version": 1,
                     "position": {
-                      "x": 2290,
-                      "y": 778
+                      "x": 2446,
+                      "y": 775
                     },
                     "data": {
                       "config": {
@@ -2519,8 +2486,8 @@
                     "type": "end",
                     "version": 1,
                     "position": {
-                      "x": 1353,
-                      "y": 897
+                      "x": 1554.6153602003881,
+                      "y": 925.616471082732
                     },
                     "data": {
                       "config": {
@@ -2532,19 +2499,192 @@
                       "width": 240,
                       "height": 66
                     }
+                  },
+                  {
+                    "id": "variable-8afe2cac-2766-486e-9d65-cc5f48bae8b6",
+                    "name": "Initialize Variables",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 383,
+                      "y": 545.5
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "ff3390a0-767b-49f2-9fb1-fe680c5603d6",
+                            "variableName": "ReturnNote",
+                            "mode": "initialize",
+                            "type": "string",
+                            "value": ""
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "description": "Variables set by this node"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "variable-128b81ff-67d7-4f81-bfcc-9b4b70b9e5b9",
+                    "name": "Set Return or Exchange Note",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 1838.9230403005818,
+                      "y": 190.61393192308859
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "1e764c92-6e31-4781-bbd5-a60d7fef3a40",
+                            "variableName": "ReturnNote",
+                            "mode": "set",
+                            "value": "@{if(equals(outputs('connector-2b4cf3f7-936b-4139-bb61-ac0a14daae6e')?['body/SelectedOption'], 'Exchange'), body('agent-c795e6ad-eef4-47c5-b492-88ca35dbef9c')?['structuredOutput/ExchangeInstruction'], body('agent-c795e6ad-eef4-47c5-b492-88ca35dbef9c')?['structuredOutput/ReturnInstruction'])}",
+                            "type": "string",
+                            "valueRich": {
+                              "segments": [
+                                {
+                                  "type": "token",
+                                  "value": "@if(equals(outputs('connector-2b4cf3f7-936b-4139-bb61-ac0a14daae6e')?['body/SelectedOption'], 'Exchange'), body('agent-c795e6ad-eef4-47c5-b492-88ca35dbef9c')?['structuredOutput/ExchangeInstruction'], body('agent-c795e6ad-eef4-47c5-b492-88ca35dbef9c')?['structuredOutput/ReturnInstruction'])",
+                                  "tokenRef": {
+                                    "type": "function",
+                                    "stepId": "function",
+                                    "stepName": "Logical",
+                                    "outputName": "if",
+                                    "outputType": "any",
+                                    "functionName": "if",
+                                    "functionCategory": "logical",
+                                    "rawExpression": "if(equals(outputs('connector-2b4cf3f7-936b-4139-bb61-ac0a14daae6e')?['body/SelectedOption'], 'Exchange'), body('agent-c795e6ad-eef4-47c5-b492-88ca35dbef9c')?['structuredOutput/ExchangeInstruction'], body('agent-c795e6ad-eef4-47c5-b492-88ca35dbef9c')?['structuredOutput/ReturnInstruction'])"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "description": "Variables set by this node"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 261,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "variable-89f2d4e3-1c35-4c8b-be7d-d4822cfc2f4b",
+                    "name": "Set Return Note",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 2163,
+                      "y": 550.5
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "759e3335-a8d8-47de-a7c4-4272f8cd0092",
+                            "variableName": "ReturnNote",
+                            "mode": "set",
+                            "value": "@{body('agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b')?['structuredOutput/ReturnInstruction']}",
+                            "type": "string",
+                            "valueRich": {
+                              "segments": [
+                                {
+                                  "type": "token",
+                                  "value": "Return Instruction",
+                                  "tokenRef": {
+                                    "type": "step",
+                                    "stepId": "agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b",
+                                    "stepName": "Review Order & Policy",
+                                    "outputName": "structuredOutput/ReturnInstruction",
+                                    "outputDisplayName": "Return Instruction",
+                                    "outputType": "string"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "description": "Variables set by this node"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "ifElse-cd0fb527-6d90-4f39-bf36-82cb41ac68a5",
+                    "name": "Policy Condition",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 1274,
+                      "y": 494
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "bd1e27ce-6244-41cc-90db-d84001928b4b",
+                            "name": "If return applicable",
+                            "expression": "{\n  \"and\": [\n    {\n      \"equals\": [\n        \"@body('agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b')?['structuredOutput/Return']\",\n        \"applicable\"\n      ]\n    }\n  ]\n}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:bd1e27ce-6244-41cc-90db-d84001928b4b",
+                          "label": "If return applicable"
+                        },
+                        {
+                          "id": "else",
+                          "label": "Else"
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 169
+                    }
                   }
                 ],
                 "edges": [
-                  {
-                    "id": "edge-start-ee6d2ba4-6711-46df-873b-8ff4e5362436-classifyOnInlineAgent-cf2f15e8-2660-4732-b934-7431240f433b",
-                    "source": "start-ee6d2ba4-6711-46df-873b-8ff4e5362436",
-                    "target": "classifyOnInlineAgent-cf2f15e8-2660-4732-b934-7431240f433b"
-                  },
-                  {
-                    "id": "edge-agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b-ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4",
-                    "source": "agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b",
-                    "target": "ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4"
-                  },
                   {
                     "id": "edge-classifyOnInlineAgent-cf2f15e8-2660-4732-b934-7431240f433b-category:1e11370e-7602-466a-904f-0242d972063c-agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b",
                     "source": "classifyOnInlineAgent-cf2f15e8-2660-4732-b934-7431240f433b",
@@ -2552,34 +2692,9 @@
                     "sourceHandle": "category:1e11370e-7602-466a-904f-0242d972063c"
                   },
                   {
-                    "id": "edge-ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4-condition:6f435d40-5285-416a-8ed1-0ad82cc517f4-agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa",
-                    "source": "ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4",
-                    "target": "agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa",
-                    "sourceHandle": "condition:6f435d40-5285-416a-8ed1-0ad82cc517f4"
-                  },
-                  {
-                    "id": "edge-ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4-condition:dcc6151b-4a09-43d6-b94a-d904a273f861-connector-7492932a-4693-4b1e-91dc-313e11fd221b",
-                    "source": "ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4",
-                    "target": "connector-7492932a-4693-4b1e-91dc-313e11fd221b",
-                    "sourceHandle": "condition:dcc6151b-4a09-43d6-b94a-d904a273f861"
-                  },
-                  {
                     "id": "edge-connector-7492932a-4693-4b1e-91dc-313e11fd221b-ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339",
                     "source": "connector-7492932a-4693-4b1e-91dc-313e11fd221b",
                     "target": "ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339"
-                  },
-                  {
-                    "id": "edge-ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339-condition:a1be36bb-5825-4ddd-88cd-142f82444df3-agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa-input",
-                    "source": "ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339",
-                    "target": "agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa",
-                    "sourceHandle": "condition:a1be36bb-5825-4ddd-88cd-142f82444df3",
-                    "targetHandle": "input"
-                  },
-                  {
-                    "id": "edge-ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4-else-connector-9ccb141c-3277-4402-b045-e4569768d047",
-                    "source": "ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4",
-                    "target": "connector-9ccb141c-3277-4402-b045-e4569768d047",
-                    "sourceHandle": "else"
                   },
                   {
                     "id": "edge-ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339-else-connector-9ccb141c-3277-4402-b045-e4569768d047-input",
@@ -2628,13 +2743,6 @@
                     "sourceHandle": "condition:6c4633ad-a5c4-4c49-91ac-5a7d4fa0ee07"
                   },
                   {
-                    "id": "edge-ifElse-5d5fffd8-206d-45e5-bc24-6fc4f32b636c-else-agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa-input",
-                    "source": "ifElse-5d5fffd8-206d-45e5-bc24-6fc4f32b636c",
-                    "target": "agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa",
-                    "sourceHandle": "else",
-                    "targetHandle": "input"
-                  },
-                  {
                     "id": "edge-agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa-end-2120af3d-79db-4382-8e87-bc95af0281b7",
                     "source": "agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa",
                     "target": "end-2120af3d-79db-4382-8e87-bc95af0281b7"
@@ -2658,6 +2766,60 @@
                     "id": "edge-end-5c7e1ace-643f-4e2d-bed7-8a71c340bc9b-canvasNote-c1d662dc-14df-43dc-a503-84fa55f357a4",
                     "source": "end-5c7e1ace-643f-4e2d-bed7-8a71c340bc9b",
                     "target": "canvasNote-c1d662dc-14df-43dc-a503-84fa55f357a4"
+                  },
+                  {
+                    "id": "edge-start-ee6d2ba4-6711-46df-873b-8ff4e5362436-variable-8afe2cac-2766-486e-9d65-cc5f48bae8b6",
+                    "source": "start-ee6d2ba4-6711-46df-873b-8ff4e5362436",
+                    "target": "variable-8afe2cac-2766-486e-9d65-cc5f48bae8b6"
+                  },
+                  {
+                    "id": "edge-variable-8afe2cac-2766-486e-9d65-cc5f48bae8b6-classifyOnInlineAgent-cf2f15e8-2660-4732-b934-7431240f433b",
+                    "source": "variable-8afe2cac-2766-486e-9d65-cc5f48bae8b6",
+                    "target": "classifyOnInlineAgent-cf2f15e8-2660-4732-b934-7431240f433b"
+                  },
+                  {
+                    "id": "edge-ifElse-5d5fffd8-206d-45e5-bc24-6fc4f32b636c-else-variable-128b81ff-67d7-4f81-bfcc-9b4b70b9e5b9",
+                    "source": "ifElse-5d5fffd8-206d-45e5-bc24-6fc4f32b636c",
+                    "target": "variable-128b81ff-67d7-4f81-bfcc-9b4b70b9e5b9",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-variable-128b81ff-67d7-4f81-bfcc-9b4b70b9e5b9-agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa",
+                    "source": "variable-128b81ff-67d7-4f81-bfcc-9b4b70b9e5b9",
+                    "target": "agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa"
+                  },
+                  {
+                    "id": "edge-variable-89f2d4e3-1c35-4c8b-be7d-d4822cfc2f4b-agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa",
+                    "source": "variable-89f2d4e3-1c35-4c8b-be7d-d4822cfc2f4b",
+                    "target": "agent-2444168a-b2f6-48b5-bb75-75d94e0cf8aa"
+                  },
+                  {
+                    "id": "edge-ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339-condition:a1be36bb-5825-4ddd-88cd-142f82444df3-variable-89f2d4e3-1c35-4c8b-be7d-d4822cfc2f4b-input",
+                    "source": "ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339",
+                    "target": "variable-89f2d4e3-1c35-4c8b-be7d-d4822cfc2f4b",
+                    "sourceHandle": "condition:a1be36bb-5825-4ddd-88cd-142f82444df3",
+                    "targetHandle": "input"
+                  },
+                  {
+                    "id": "edge-ifElse-cd0fb527-6d90-4f39-bf36-82cb41ac68a5-condition:bd1e27ce-6244-41cc-90db-d84001928b4b-variable-89f2d4e3-1c35-4c8b-be7d-d4822cfc2f4b-input",
+                    "source": "ifElse-cd0fb527-6d90-4f39-bf36-82cb41ac68a5",
+                    "target": "variable-89f2d4e3-1c35-4c8b-be7d-d4822cfc2f4b",
+                    "sourceHandle": "condition:bd1e27ce-6244-41cc-90db-d84001928b4b",
+                    "targetHandle": "input"
+                  },
+                  {
+                    "id": "edge-ifElse-cd0fb527-6d90-4f39-bf36-82cb41ac68a5-else-connector-7492932a-4693-4b1e-91dc-313e11fd221b-input",
+                    "source": "ifElse-cd0fb527-6d90-4f39-bf36-82cb41ac68a5",
+                    "target": "connector-7492932a-4693-4b1e-91dc-313e11fd221b",
+                    "sourceHandle": "else",
+                    "targetHandle": "input"
+                  },
+                  {
+                    "id": "edge-agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b-output-ifElse-cd0fb527-6d90-4f39-bf36-82cb41ac68a5-input",
+                    "source": "agent-0a2ca1d4-b735-4d6c-bbed-55834b22195b",
+                    "target": "ifElse-cd0fb527-6d90-4f39-bf36-82cb41ac68a5",
+                    "sourceHandle": "output",
+                    "targetHandle": "input"
                   }
                 ],
                 "connectionReferences": {
@@ -2671,16 +2833,6 @@
                     "runtimeSource": "embedded",
                     "connectionName": "shared-office365-b79141e6-d6f8-42c6-b914-3eb3d2491190"
                   },
-                  "shared_agentnode": {
-                    "api": {
-                      "name": "shared_agentnode"
-                    },
-                    "connection": {
-                      "connectionReferenceLogicalName": "new_sharedagentnode_36bfd7b0"
-                    },
-                    "runtimeSource": "embedded",
-                    "connectionName": "shared-agentnode-0e6dddd0-d4fc-43e9-a95e-2406784e675f"
-                  },
                   "shared_advancedapprovals": {
                     "api": {
                       "name": "shared_advancedapprovals"
@@ -2690,10 +2842,43 @@
                     },
                     "runtimeSource": "embedded",
                     "connectionName": "be923ac0d38a430a90ba2395510118d3"
+                  },
+                  "shared_office365": {
+                    "api": {
+                      "name": "shared_office365"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedoffice365_d3c797ce"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "b50f648118a44456949c0348eb03bc33"
+                  },
+                  "shared_agentnode-2": {
+                    "api": {
+                      "name": "shared_agentnode"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedagentnode_a4edece2"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "49c44ba139d44a72b5bcf4ef9c809fe6"
+                  },
+                  "shared_advancedapprovals-1": {
+                    "api": {
+                      "name": "shared_advancedapprovals"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedadvancedapprovals_693c4742"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "8a6c46550ec24046aec0a37279897ca4"
                   }
                 }
               },
               "nodeActionMapping": {
+                "variable-8afe2cac-2766-486e-9d65-cc5f48bae8b6": [
+                  "Initialize_Variables"
+                ],
                 "agent-c795e6ad-eef4-47c5-b492-88ca35dbef9c": [
                   "Review_Order__Stock___Weather"
                 ],
@@ -2706,6 +2891,9 @@
                 "end-59c4f94f-70bb-4161-ada6-11e1284ea27d": [
                   "end-59c4f94f-70bb-4161-ada6-11e1284ea27d"
                 ],
+                "variable-128b81ff-67d7-4f81-bfcc-9b4b70b9e5b9": [
+                  "Set_Return_or_Exchange_Note"
+                ],
                 "ifElse-5d5fffd8-206d-45e5-bc24-6fc4f32b636c": [
                   "Choice_Condition"
                 ],
@@ -2715,17 +2903,20 @@
                 "connector-7492932a-4693-4b1e-91dc-313e11fd221b": [
                   "Human_Review__Exception"
                 ],
-                "ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339": [
-                  "Approval_Condition"
-                ],
-                "ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4": [
-                  "Policy_Condition"
-                ],
                 "connector-9ccb141c-3277-4402-b045-e4569768d047": [
                   "Send_reply__No_refund"
                 ],
                 "end-120d8b37-4a78-416c-a48b-63bd0c976443": [
                   "end-120d8b37-4a78-416c-a48b-63bd0c976443"
+                ],
+                "ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339": [
+                  "Approval_Condition"
+                ],
+                "ifElse-cd0fb527-6d90-4f39-bf36-82cb41ac68a5": [
+                  "Policy_Condition"
+                ],
+                "variable-89f2d4e3-1c35-4c8b-be7d-d4822cfc2f4b": [
+                  "Set_Return_Note"
                 ],
                 "agent-b6af16be-b502-4322-83cb-bf6f1c2ddf13": [
                   "Call_Store_Policy_Agent"
@@ -2752,12 +2943,28 @@
         }
       },
       "actions": {
+        "Initialize_Variables": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "ReturnNote",
+                "type": "String",
+                "value": ""
+              }
+            ]
+          },
+          "metadata": {
+            "description": "Initialize Variables",
+            "nodeId": "variable-8afe2cac-2766-486e-9d65-cc5f48bae8b6"
+          }
+        },
         "Classify": {
           "type": "OpenApiConnection",
           "inputs": {
             "host": {
               "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
-              "connectionName": "shared_agentnode",
+              "connectionName": "shared_agentnode-2",
               "operationId": "InvokeDefinition"
             },
             "parameters": {
@@ -2833,8 +3040,13 @@
                 },
                 "$kind": "BotDefinition"
               },
-              "body/message": "Classify the following input into one of these categories: Order Shipment Issue, Order Defect Issue, Other\n\nCategory definitions:\n- Order Shipment Issue: The email refers to an issue with the process of delivery or shipment of an order\n- Order Defect Issue: The email refers to an issue with a received product that contains a defect or does not meet expectations\n\nExamples:\nInput: \"My order delivery is late, it was supposed to arrive a week ago\" -> Category: \"Order Shipment Issue\"\nInput: \"My BlastBox OMEGA is not turning on. It is brand new, I just received it yesterday\" -> Category: \"Order Defect Issue\"\n\nInput to classify: Mail input:\n@{triggerOutputs()?['body/body']}\n\nRespond with only the category name. If the input does not clearly match any of the categories, respond with \"Other\"."
+              "body/message": "Classify the following input into one of these categories: Order Shipment Issue, Order Defect Issue, Other\n\nCategory definitions:\n- Order Shipment Issue: The customer reports a problem with the delivery or shipment of an order they placed: it is late, hasn't arrived, is stuck in transit, or they're asking where it is or when it will come. The product itself is not reported as faulty - the issue is getting it to them.\n- Order Defect Issue: The customer reports that an item they have already received is faulty, damaged, dead on arrival, or does not work as expected, and wants it replaced, exchanged, or refunded. The issue is the condition of the product, not its delivery.\n\nExamples:\nInput: \"My order delivery is late, it was supposed to arrive a week ago\" -> Category: \"Order Shipment Issue\"\nInput: \"Tracking hasn't updated in days and my console still isn't here, where is it?\" -> Category: \"Order Shipment Issue\"\nInput: \"My BlastBox OMEGA is not turning on. It is brand new, I just received it yesterday\" -> Category: \"Order Defect Issue\"\nInput: \"The controller that came with my order is faulty, the buttons don't respond\" -> Category: \"Order Defect Issue\"\n\nInput to classify: Mail input:\n@{triggerOutputs()?['body/body']}\n\nRespond with only the category name. If the input does not clearly match any of the categories, respond with \"Other\"."
             }
+          },
+          "runAfter": {
+            "Initialize_Variables": [
+              "Succeeded"
+            ]
           },
           "metadata": {
             "description": "Classify",
@@ -2854,42 +3066,6 @@
                     "parameters": {
                       "body/definition": {
                         "components": [
-                          {
-                            "diagnostics": [],
-                            "schemaName": "shared_new-5forder-20management-20mcp-5f4fe69411b7a87261_InvokeMCP",
-                            "displayName": "Order Management MCP — Order Management MCP Server",
-                            "description": "MCP server for e-commerce order management. Tools: search_orders, get_order, get_shipment, request_return, get_return_status.",
-                            "dialog": {
-                              "toolInputs": [],
-                              "allowedTools": [],
-                              "subToolSettings": [],
-                              "diagnostics": [],
-                              "connectorId": "/providers/Microsoft.PowerApps/apis/shared_new-5forder-20management-20mcp-5f4fe69411b7a87261",
-                              "authMode": "Maker",
-                              "connectionReference": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
-                              "operationId": "InvokeMCP",
-                              "$kind": "McpTool"
-                            },
-                            "$kind": "DialogComponent"
-                          },
-                          {
-                            "diagnostics": [],
-                            "schemaName": "shared_new-5fwarehouse-20mcp-5f4fe69411b7a87261_InvokeMCP",
-                            "displayName": "Warehouse MCP — Warehouse MCP Server",
-                            "description": "MCP server for warehouse and fulfillment. Tools: check_stock, get_fulfillment_status, find_alternatives, get_restock_date.",
-                            "dialog": {
-                              "toolInputs": [],
-                              "allowedTools": [],
-                              "subToolSettings": [],
-                              "diagnostics": [],
-                              "connectorId": "/providers/Microsoft.PowerApps/apis/shared_new-5fwarehouse-20mcp-5f4fe69411b7a87261",
-                              "authMode": "Maker",
-                              "connectionReference": "05a0340ff51b4b32b71abf433dd1e354",
-                              "operationId": "InvokeMCP",
-                              "$kind": "McpTool"
-                            },
-                            "$kind": "DialogComponent"
-                          },
                           {
                             "diagnostics": [],
                             "schemaName": "shared_msnweather_CurrentWeather",
@@ -2915,20 +3091,6 @@
                         "dataverseTableSearchEntityConfigurations": [],
                         "dataverseTableSearchEntityColumnSynonyms": [],
                         "connectionReferences": [
-                          {
-                            "diagnostics": [],
-                            "connectionReferenceLogicalName": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
-                            "connectionId": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
-                            "connectorId": "/providers/Microsoft.PowerApps/apis/shared_new-5forder-20management-20mcp-5f4fe69411b7a87261",
-                            "$kind": "ConnectionReference"
-                          },
-                          {
-                            "diagnostics": [],
-                            "connectionReferenceLogicalName": "05a0340ff51b4b32b71abf433dd1e354",
-                            "connectionId": "05a0340ff51b4b32b71abf433dd1e354",
-                            "connectorId": "/providers/Microsoft.PowerApps/apis/shared_new-5fwarehouse-20mcp-5f4fe69411b7a87261",
-                            "$kind": "ConnectionReference"
-                          },
                           {
                             "diagnostics": [],
                             "connectionReferenceLogicalName": "b1072dd0220d4fbd8a2db07ef073e482",
@@ -2979,7 +3141,7 @@
                               "diagnostics": [],
                               "model": {
                                 "diagnostics": [],
-                                "series": "Sonnet5",
+                                "series": "claude-opus-5",
                                 "$kind": "ModelConfig"
                               },
                               "instructions": {
@@ -2989,7 +3151,7 @@
                               },
                               "output": {
                                 "diagnostics": [],
-                                "schema": "{\"type\":\"object\",\"properties\":{\"Summary\":{\"type\":\"string\"}},\"required\":[\"Summary\"]}",
+                                "schema": "{\"type\":\"object\",\"properties\":{\"Summary\":{\"type\":\"string\"},\"SubstituteExists\":{\"type\":\"boolean\"},\"ReturnInstruction\":{\"type\":\"string\"},\"ExchangeInstruction\":{\"type\":\"string\"}},\"required\":[\"Summary\",\"SubstituteExists\",\"ReturnInstruction\",\"ExchangeInstruction\"]}",
                                 "$kind": "StructuredAgentOutput"
                               },
                               "$kind": "AgentSettings"
@@ -3000,11 +3162,11 @@
                         },
                         "$kind": "BotDefinition"
                       },
-                      "body/message": "Explore the possible issues with the shipment of the order, such as lack of stock, as per the customer enquiry:\n\nEnquiry: @{triggerOutputs()?['body/body']}\n\nEstimate a new ETA considering the weather conditions of the place of the destination address, and indicate if a substitute product exists that the customer can order instead. If no substitute exists, propose a refund of 100% of the original amount.\n\nReturn a summary of the findings and options ready for customer review with the information available. No greeting or commentary, only the findings and options."
+                      "body/message": "You handle a customer shipment enquiry about an order that is late or has not arrived. Work only from the tools; never invent orders, stock, dates or prices. You do never request the return yourself, this is a step to be taken later \n\nCustomer enquiry: @{triggerOutputs()?['body/body']}\n\nSteps:\n1. Look up the order from the name, email or order number in the enquiry. If you cannot find a single matching order, request human assistance rather than guessing.\n2. Check the stock and fulfilment status of the ordered item. If it is out of stock or delayed, get its restock/ETA date.\n3. Estimate a realistic new ETA, factoring in the current weather at the order's destination address.\n4. Determine whether an in‑stock substitute product exists that the customer could exchange instead (e.g. a higher console model). \n5. Determine the options available according to the applicable return policy for the case. Options should be only two or three linked to the possible outcomes: Wait, Return (with the cash refund options available, ignore refund as points and indicate we are only not offering this option at the moment), Refund.\n\nReturn these outputs:\n- Summary: Customer-facing summary to state the current status, the new estimated ETA and why, and lay out the options plainly. No greeting, no sign‑off, no citations, only the findings and options.\n- SubstituteExists: 'Yes' is an an in‑stock substitute product was found\n- ReturnInstruction: One line indicating which order and item to return/refund and with what conditions.\n- ExchangeInstruction: One line indicating which order/item to exchange, for which substitute SKU and with what conditions. Empty if no substitute exists.\n\nSummary format: Write `Summary` as short, clean HTML using only `<p>`, `<b>`, `<br>`, `<ul>` and `<li>` tags. Two short paragraphs:\n1. Open with \"Dear customer,\" to start, then line break,\n2. Start first paragraph with \"We've detected that…\" - state the issue and, for a shipment case, the new estimated ETA.\n3. Continue second paragraph with \"We can offer you…\" - briefly list the options that apply.\n4. Close with \"Thank you -*&#32;The BlastBox Team*\" in a separate line."
                     },
                     "host": {
                       "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
-                      "connectionName": "shared_agentnode",
+                      "connectionName": "shared_agentnode-2",
                       "operationId": "InvokeDefinition"
                     }
                   },
@@ -3019,13 +3181,18 @@
                     "parameters": {
                       "optionsEmailSubscription/Message/Importance": "Normal",
                       "optionsEmailSubscription/Message/Subject": "Action Needed: Your Delivery Enquiry",
-                      "optionsEmailSubscription/Message/Options": "Wait, Return",
+                      "optionsEmailSubscription/Message/Options": "@{if(body('Review_Order__Stock___Weather')?['structuredOutput/SubstituteExists'], 'Wait, Return, Exchange', 'Wait, Return')}",
                       "optionsEmailSubscription/Message/To": "@{triggerOutputs()?['body/from']}",
-                      "optionsEmailSubscription/Message/Body": "Dear customer,\n\nPlease find below the findings about your recent enquiry:\n@{body('Review_Order__Stock___Weather')?['structuredOutput/Summary']} \n\nIndicate to us if you would be happy to wait for your order under its new ETA, or if you would prefer a refund (or exchange, if applicable).\n\nThank you\n"
+                      "optionsEmailSubscription/Message/Body": "@{body('Review_Order__Stock___Weather')?['structuredOutput/Summary']}",
+                      "optionsEmailSubscription/Message/HideHTMLMessage": false,
+                      "optionsEmailSubscription/Message/HideMicrosoftFooter": true,
+                      "optionsEmailSubscription/Message/ShowHTMLConfirmationDialog": false,
+                      "optionsEmailSubscription/Message/UseOnlyHTMLMessage": true,
+                      "optionsEmailSubscription/Message/HeaderText": "Action Needed: Your Delivery Enquiry"
                     },
                     "host": {
                       "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
-                      "connectionName": "shared_office365-1",
+                      "connectionName": "shared_office365",
                       "operationId": "SendMailWithOptions"
                     }
                   },
@@ -3057,14 +3224,14 @@
                       "inputs": {
                         "parameters": {
                           "replyParameters/Importance": "Low",
-                          "replyParameters/Body": "<div>Dear customer,</div><div><br></div><div>Thanks for your patience.&nbsp;</div><div><br></div><div>You can keep track of your order in the separate email sent to you. If experiencing issues with your new ETA, please reach out to us.</div><div><br></div><div>Thank you</div>",
+                          "replyParameters/Body": "<div>Dear customer,</div><div><br></div><div>Thanks for your patience. We apologise for any inconveniences.</div><div><br></div><div>You have chosen to wait for your order.  You can keep track of your order from the separate email sent to you. If you experience any other issues, please reach out to us.</div><div><br></div><div>Thank you,</div><div><i>The BlastBox Team</i></div>",
                           "messageId": "@{triggerOutputs()?['body/id']}",
                           "replyParameters/To": "@{triggerOutputs()?['body/from']}",
                           "replyParameters/Subject": "BlastBox Service - Your enquiry"
                         },
                         "host": {
                           "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
-                          "connectionName": "shared_office365-1",
+                          "connectionName": "shared_office365",
                           "operationId": "ReplyToV3"
                         }
                       },
@@ -3109,7 +3276,19 @@
                     }
                   },
                   "else": {
-                    "actions": {}
+                    "actions": {
+                      "Set_Return_or_Exchange_Note": {
+                        "type": "SetVariable",
+                        "inputs": {
+                          "name": "ReturnNote",
+                          "value": "@{if(equals(outputs('Send_context_and_options')?['body/SelectedOption'], 'Exchange'), body('Review_Order__Stock___Weather')?['structuredOutput/ExchangeInstruction'], body('Review_Order__Stock___Weather')?['structuredOutput/ReturnInstruction'])}"
+                        },
+                        "metadata": {
+                          "description": "Set Return or Exchange Note",
+                          "nodeId": "variable-128b81ff-67d7-4f81-bfcc-9b4b70b9e5b9"
+                        }
+                      }
+                    }
                   },
                   "runAfter": {
                     "Send_context_and_options": [
@@ -3158,42 +3337,6 @@
                           },
                           {
                             "diagnostics": [],
-                            "schemaName": "shared_new-5forder-20management-20mcp-5f4fe69411b7a87261_InvokeMCP",
-                            "displayName": "Order Management MCP — Order Management MCP Server",
-                            "description": "MCP server for e-commerce order management. Tools: search_orders, get_order, get_shipment, request_return, get_return_status.",
-                            "dialog": {
-                              "toolInputs": [],
-                              "allowedTools": [],
-                              "subToolSettings": [],
-                              "diagnostics": [],
-                              "connectorId": "/providers/Microsoft.PowerApps/apis/shared_new-5forder-20management-20mcp-5f4fe69411b7a87261",
-                              "authMode": "Maker",
-                              "connectionReference": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
-                              "operationId": "InvokeMCP",
-                              "$kind": "McpTool"
-                            },
-                            "$kind": "DialogComponent"
-                          },
-                          {
-                            "diagnostics": [],
-                            "schemaName": "shared_new-5fwarehouse-20mcp-5f4fe69411b7a87261_InvokeMCP",
-                            "displayName": "Warehouse MCP — Warehouse MCP Server",
-                            "description": "MCP server for warehouse and fulfillment. Tools: check_stock, get_fulfillment_status, find_alternatives, get_restock_date.",
-                            "dialog": {
-                              "toolInputs": [],
-                              "allowedTools": [],
-                              "subToolSettings": [],
-                              "diagnostics": [],
-                              "connectorId": "/providers/Microsoft.PowerApps/apis/shared_new-5fwarehouse-20mcp-5f4fe69411b7a87261",
-                              "authMode": "Maker",
-                              "connectionReference": "05a0340ff51b4b32b71abf433dd1e354",
-                              "operationId": "InvokeMCP",
-                              "$kind": "McpTool"
-                            },
-                            "$kind": "DialogComponent"
-                          },
-                          {
-                            "diagnostics": [],
                             "schemaName": "shared_advancedapprovals_RequestForInformation",
                             "displayName": "Advanced Approvals — Request for information",
                             "description": "Ask a human for additional information.",
@@ -3238,20 +3381,6 @@
                         "dataverseTableSearchEntityConfigurations": [],
                         "dataverseTableSearchEntityColumnSynonyms": [],
                         "connectionReferences": [
-                          {
-                            "diagnostics": [],
-                            "connectionReferenceLogicalName": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
-                            "connectionId": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
-                            "connectorId": "/providers/Microsoft.PowerApps/apis/shared_new-5forder-20management-20mcp-5f4fe69411b7a87261",
-                            "$kind": "ConnectionReference"
-                          },
-                          {
-                            "diagnostics": [],
-                            "connectionReferenceLogicalName": "05a0340ff51b4b32b71abf433dd1e354",
-                            "connectionId": "05a0340ff51b4b32b71abf433dd1e354",
-                            "connectorId": "/providers/Microsoft.PowerApps/apis/shared_new-5fwarehouse-20mcp-5f4fe69411b7a87261",
-                            "$kind": "ConnectionReference"
-                          },
                           {
                             "diagnostics": [],
                             "connectionReferenceLogicalName": "new_sharedadvancedapprovals_00cb31fc",
@@ -3302,7 +3431,7 @@
                               "diagnostics": [],
                               "model": {
                                 "diagnostics": [],
-                                "series": "Sonnet5",
+                                "series": "claude-opus-5",
                                 "$kind": "ModelConfig"
                               },
                               "instructions": {
@@ -3312,7 +3441,7 @@
                               },
                               "output": {
                                 "diagnostics": [],
-                                "schema": "{\"type\":\"object\",\"properties\":{\"Return\":{\"type\":\"string\",\"enum\":[\"applicable\",\"exception\",\"other\"]},\"Summary\":{\"type\":\"string\"}},\"required\":[\"Return\",\"Summary\"]}",
+                                "schema": "{\"type\":\"object\",\"properties\":{\"Return\":{\"type\":\"string\",\"enum\":[\"applicable\",\"other\"]},\"Summary\":{\"type\":\"string\"},\"ReturnInstruction\":{\"type\":\"string\"}},\"required\":[\"Return\",\"Summary\",\"ReturnInstruction\"]}",
                                 "$kind": "StructuredAgentOutput"
                               },
                               "$kind": "AgentSettings"
@@ -3323,11 +3452,11 @@
                         },
                         "$kind": "BotDefinition"
                       },
-                      "body/message": "Explore the complain of the customer and the options to help them according to our policy:\n\nComplain: @{triggerOutputs()?['body/body']}\n\nOutput the following:\nReturn: 'applicable' if policy makes a return, refund or exchange applicable straightaway, 'exception' if the conditions are not fully covered by policy but the case is extreme, shows enough ambiguity or has grey areas not covered explicitly in the policy, 'other' otherwise (e.g. clearly not covered by policy or not justified an exception)\nSummary: A summary of the findings that explain the rationale behind return. No introduction, greeting, or commentary, only findings. "
+                      "body/message": "You assess a customer enquiry about a received item that may be defective, and decide what our policy allows. Ground every ruling in your tools; never invent policy numbers, fees, orders or dates. You do never request the return yourself, this is a step to be taken later \n\nCustomer Enquiry: @{triggerOutputs()?['body/body']}\n\nSteps:\n1. Find the order from the name, email or order number provided. If the details the customer gives do not reconcile with the order on file - the name or email doesn't match the order, the order can't be found, or the item isn't on that order - do not proceed on assumption: request human assistance and explain exactly what doesn't match. Only ask the human to clear ambiguity in the field that does not match the customer indications, do not ask for more information than the strictly necessary.\n2. If the order reconciles, establish whether the fault is a manufacturing defect versus accidental/physical damage, and check it against our return/warranty policy (window, restocking fee, warranty swap). Never make a conclusion on the outcome of the applicability of the return without searching first the organization's policy. \n3. Classify the outcome and explain your reasoning.\n\nThen return these outputs:\n- Return: Where applicable = policy clearly allows return/refund/exchange; other = not fully covered but extreme / ambiguous / grey‑area (may be an exception); or clearly not covered or not justified\n- Summary: Two lines with the rationale behind the policy applicability or rejection. No greeting, citations or commentary. A concise assessment of policy coverage, visible to both the customer and tstore manager. Maximum 2 bullet points, no more than 600 characters. Exclude other type of details. \n- ReturnInstruction: One line for the fulfilment agent: which order and item to return/refund/exchange and why"
                     },
                     "host": {
                       "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
-                      "connectionName": "shared_agentnode",
+                      "connectionName": "shared_agentnode-2",
                       "operationId": "InvokeDefinition"
                     }
                   },
@@ -3351,83 +3480,121 @@
                   "actions": {},
                   "else": {
                     "actions": {
-                      "Policy_Condition_NestedIf_1": {
+                      "Human_Review__Exception": {
+                        "type": "OpenApiConnectionWebhook",
+                        "inputs": {
+                          "parameters": {
+                            "RequestForInformationInput/channel": "Outlook",
+                            "RequestForInformationInput/title": "Action needed: Review Return Policy Exception",
+                            "RequestForInformationInput/message": "Dear manager,\n\nA customer return/refund request has been flagged as not covered under policy and needs your attention. \n\nApprove to apply an exception and initiate a return/exchange, or reject to decline. Thank you.\n\nCase assessment (AI-generated):\n\n@{body('Review_Order___Policy')?['structuredOutput/Summary']} ",
+                            "RequestForInformationInput/assignedTo": "@{triggerOutputs()?['body/from']}",
+                            "RequestForInformationInput/input": {
+                              "type": "object",
+                              "properties": {
+                                "boolean": {
+                                  "title": "Approve",
+                                  "type": "boolean",
+                                  "x-ms-content-hint": "BOOLEAN",
+                                  "x-ms-dynamically-added": true,
+                                  "description": "Please select yes or no"
+                                }
+                              },
+                              "required": [
+                                "boolean"
+                              ]
+                            }
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_advancedapprovals",
+                            "connectionName": "shared_advancedapprovals-1",
+                            "operationId": "RequestForInformation"
+                          }
+                        },
+                        "metadata": {
+                          "description": "Human Review: Exception",
+                          "nodeId": "connector-7492932a-4693-4b1e-91dc-313e11fd221b"
+                        }
+                      },
+                      "Approval_Condition": {
                         "type": "If",
                         "expression": {
                           "and": [
                             {
                               "equals": [
-                                "@body('Review_Order___Policy')?['structuredOutput/Return']",
-                                "exception"
+                                "@body('Human_Review__Exception')?['boolean']",
+                                "Yes"
                               ]
                             }
                           ]
                         },
-                        "actions": {
-                          "Human_Review__Exception": {
-                            "type": "OpenApiConnectionWebhook",
-                            "inputs": {
-                              "parameters": {
-                                "RequestForInformationInput/channel": "Outlook",
-                                "RequestForInformationInput/title": "Action needed: Review Return Policy Exception",
-                                "RequestForInformationInput/message": "Dear manager,\n\nPlease review the following case where return policy has been flagged as applicable.\n\nAssessment Summary:\n@{body('Review_Order___Policy')?['structuredOutput/Summary']}\n\nCustomer Email:\n@{triggerOutputs()?['body/body']}",
-                                "RequestForInformationInput/assignedTo": "@{triggerOutputs()?['body/from']}",
-                                "RequestForInformationInput/input": {
-                                  "type": "object",
-                                  "properties": {
-                                    "boolean": {
-                                      "title": "Approve",
-                                      "type": "boolean",
-                                      "x-ms-content-hint": "BOOLEAN",
-                                      "x-ms-dynamically-added": true,
-                                      "description": "Please select yes or no"
-                                    }
-                                  },
-                                  "required": [
-                                    "boolean"
-                                  ]
+                        "actions": {},
+                        "else": {
+                          "actions": {
+                            "Send_reply__No_refund": {
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "replyParameters/Importance": "Low",
+                                  "messageId": "@{triggerOutputs()?['body/id']}",
+                                  "replyParameters/Body": "<div>Dear customer,</div><div><br></div><div>We have assessed your enquiry and have concluded that your case does not apply for a refund or exchange under our current policy.</div><div><br></div><div>Findings summary:</div><div>@{body('Review_Order___Policy')?['structuredOutput/Summary']}</div><div><br></div><div>We apologise for any inconvenience this may cause to you. If you need further information about our policies, please visit our site.</div><div><br></div><div>Thank you,</div><div><i>The BlastBox Team</i></div>",
+                                  "replyParameters/Subject": "BlastBox Service - Your enquiry",
+                                  "replyParameters/To": "@{triggerOutputs()?['body/from']}"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                                  "connectionName": "shared_office365",
+                                  "operationId": "ReplyToV3"
                                 }
                               },
-                              "host": {
-                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_advancedapprovals",
-                                "connectionName": "shared_advancedapprovals",
-                                "operationId": "RequestForInformation"
+                              "metadata": {
+                                "description": "Send reply: No refund",
+                                "nodeId": "connector-9ccb141c-3277-4402-b045-e4569768d047"
                               }
                             },
-                            "metadata": {
-                              "description": "Human Review: Exception",
-                              "nodeId": "connector-7492932a-4693-4b1e-91dc-313e11fd221b"
-                            }
-                          },
-                          "Approval_Condition": {
-                            "type": "If",
-                            "expression": {
-                              "and": [
-                                {
-                                  "equals": [
-                                    "@body('Human_Review__Exception')?['boolean']",
-                                    "Yes"
-                                  ]
+                            "end-120d8b37-4a78-416c-a48b-63bd0c976443": {
+                              "type": "Terminate",
+                              "inputs": {
+                                "runStatus": "Succeeded"
+                              },
+                              "runAfter": {
+                                "Send_reply__No_refund": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "description": "End 3",
+                                "nodeId": "end-120d8b37-4a78-416c-a48b-63bd0c976443"
+                              }
+                            },
+                            "Approval_Condition_Terminate_else": {
+                              "type": "Terminate",
+                              "inputs": {
+                                "runStatus": "Failed",
+                                "runError": {
+                                  "code": "PartialJoinNotReached",
+                                  "message": "Flow execution ended without reaching a downstream merge node. A branch was taken that has no path to a node that other branches merge into. Reopen this flow in the designer and review the Health Center warning that says this node doesn't run when a dead-end branch is taken (code: CROSS_SCOPE_MERGE). Then update the flow so every branch eventually connects to the merge node, or remove the merge."
                                 }
-                              ]
-                            },
-                            "actions": {},
-                            "else": {
-                              "actions": {}
-                            },
-                            "runAfter": {
-                              "Human_Review__Exception": [
-                                "Succeeded"
-                              ]
-                            },
-                            "metadata": {
-                              "description": "Approval Condition",
-                              "nodeId": "ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339"
+                              },
+                              "metadata": {
+                                "synthetic": true,
+                                "reason": "implicit-terminate-for-partial-join"
+                              },
+                              "runAfter": {
+                                "end-120d8b37-4a78-416c-a48b-63bd0c976443": [
+                                  "Succeeded"
+                                ]
+                              }
                             }
                           }
                         },
-                        "else": {
-                          "actions": {}
+                        "runAfter": {
+                          "Human_Review__Exception": [
+                            "Succeeded"
+                          ]
+                        },
+                        "metadata": {
+                          "description": "Approval Condition",
+                          "nodeId": "ifElse-16a2c329-a4a3-4d03-822d-4148fac6c339"
                         }
                       }
                     }
@@ -3439,24 +3606,14 @@
                   },
                   "metadata": {
                     "description": "Policy Condition",
-                    "nodeId": "ifElse-bb7a2927-56d2-4e21-ab2d-77ac17526db4"
+                    "nodeId": "ifElse-cd0fb527-6d90-4f39-bf36-82cb41ac68a5"
                   }
                 },
-                "Send_reply__No_refund": {
-                  "type": "OpenApiConnection",
+                "Set_Return_Note": {
+                  "type": "SetVariable",
                   "inputs": {
-                    "parameters": {
-                      "replyParameters/Importance": "Low",
-                      "messageId": "@{triggerOutputs()?['body/id']}",
-                      "replyParameters/Body": "<div>Dear customer,</div><div><br></div><div>We have assessed your enquiry and have concluded that your case does not apply for a refund or exchange under our current policy.</div><div><br></div><div>Findings summary:@{body('Review_Order___Policy')?['structuredOutput/Summary']}​</div><div><br></div><div>We apologize for any inconvenience this may cause to you. If you need further information about our policies, please visit our site.</div><div><br></div><div>Thank you</div>",
-                      "replyParameters/Subject": "BlastBox Service - Your enquiry",
-                      "replyParameters/To": "@{triggerOutputs()?['body/from']}"
-                    },
-                    "host": {
-                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
-                      "connectionName": "shared_office365-1",
-                      "operationId": "ReplyToV3"
-                    }
+                    "name": "ReturnNote",
+                    "value": "@{body('Review_Order___Policy')?['structuredOutput/ReturnInstruction']}"
                   },
                   "runAfter": {
                     "Policy_Condition": [
@@ -3464,23 +3621,8 @@
                     ]
                   },
                   "metadata": {
-                    "description": "Send reply: No refund",
-                    "nodeId": "connector-9ccb141c-3277-4402-b045-e4569768d047"
-                  }
-                },
-                "end-120d8b37-4a78-416c-a48b-63bd0c976443": {
-                  "type": "Terminate",
-                  "inputs": {
-                    "runStatus": "Succeeded"
-                  },
-                  "runAfter": {
-                    "Send_reply__No_refund": [
-                      "Succeeded"
-                    ]
-                  },
-                  "metadata": {
-                    "description": "End 3",
-                    "nodeId": "end-120d8b37-4a78-416c-a48b-63bd0c976443"
+                    "description": "Set Return Note",
+                    "nodeId": "variable-89f2d4e3-1c35-4c8b-be7d-d4822cfc2f4b"
                   }
                 }
               }
@@ -3492,12 +3634,12 @@
                 "type": "OpenApiConnection",
                 "inputs": {
                   "parameters": {
-                    "body/prompt": "Review the customer query and craft a paragraph that summarizes the answer to the question, no greeting or comments, only the answer to the enquiry:\n\nEnquiry: @{triggerOutputs()?['body/body']} \n",
+                    "body/prompt": "Review the customer enquiry and craft an answer that summarizes the answer to the question, no greeting, citations, or comments.\nThe answer should be no more than two paragraphs or a paragraph and a couple of bullet points. Do not include text formatting such as bold (*text*).  \nUse store and BlastPass policy only. If no answer can be found in the policies, indicate it clearly.\n\nCustomer enquiry: @{triggerOutputs()?['body/body']} ",
                     "body/agentId": "Default_StorePolicyAgent_s9s-u8"
                   },
                   "host": {
                     "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
-                    "connectionName": "shared_agentnode",
+                    "connectionName": "shared_agentnode-2",
                     "operationId": "InvokeAgent"
                   }
                 },
@@ -3511,14 +3653,14 @@
                 "inputs": {
                   "parameters": {
                     "replyParameters/Importance": "Low",
-                    "replyParameters/Body": "<div>Dear customer,</div><div><br></div><div>Thank you for reaching out. We have assessed your enquiry. Here is some useful information for you:</div><div><br></div><div>@{body('Call_Store_Policy_Agent')?['result']}</div><div><br></div><div>Further questions? Please reach out to us or visit our site.&nbsp;</div><div><br></div><div>Thank you​</div>",
+                    "replyParameters/Body": "<div>Dear customer,</div><div><br></div><div>Thanks for getting in touch. We have assessed your enquiry. Here is some useful information for you:</div><div><br></div><div>@{body('Call_Store_Policy_Agent')?['result']}</div><div><br></div><div>Further questions? Please reach out to us or visit our site.&nbsp;</div><div><br></div><div>Thank you,</div><div><i>The BlastBox Team</i></div>",
                     "messageId": "@{triggerOutputs()?['body/id']}",
                     "replyParameters/To": "@{triggerOutputs()?['body/from']}",
                     "replyParameters/Subject": "BlastBox Service - Your enquiry"
                   },
                   "host": {
                     "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
-                    "connectionName": "shared_office365-1",
+                    "connectionName": "shared_office365",
                     "operationId": "ReplyToV3"
                   }
                 },
@@ -3582,24 +3724,6 @@
                 "components": [
                   {
                     "diagnostics": [],
-                    "schemaName": "shared_new-5forder-20management-20mcp-5f4fe69411b7a87261_InvokeMCP",
-                    "displayName": "Order Management MCP — Order Management MCP Server",
-                    "description": "MCP server for e-commerce order management. Tools: search_orders, get_order, get_shipment, request_return, get_return_status.",
-                    "dialog": {
-                      "toolInputs": [],
-                      "allowedTools": [],
-                      "subToolSettings": [],
-                      "diagnostics": [],
-                      "connectorId": "/providers/Microsoft.PowerApps/apis/shared_new-5forder-20management-20mcp-5f4fe69411b7a87261",
-                      "authMode": "Maker",
-                      "connectionReference": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
-                      "operationId": "InvokeMCP",
-                      "$kind": "McpTool"
-                    },
-                    "$kind": "DialogComponent"
-                  },
-                  {
-                    "diagnostics": [],
                     "schemaName": "shared_office365_SendEmailV2",
                     "displayName": "Send an email",
                     "description": "This operation sends an email message.",
@@ -3623,13 +3747,6 @@
                 "dataverseTableSearchEntityConfigurations": [],
                 "dataverseTableSearchEntityColumnSynonyms": [],
                 "connectionReferences": [
-                  {
-                    "diagnostics": [],
-                    "connectionReferenceLogicalName": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
-                    "connectionId": "96e5b9bcc9934bd3b4aa3dc7115e4da0",
-                    "connectorId": "/providers/Microsoft.PowerApps/apis/shared_new-5forder-20management-20mcp-5f4fe69411b7a87261",
-                    "$kind": "ConnectionReference"
-                  },
                   {
                     "diagnostics": [],
                     "connectionReferenceLogicalName": "shared-office365-b79141e6-d6f8-42c6-b914-3eb3d2491190",
@@ -3680,7 +3797,7 @@
                       "diagnostics": [],
                       "model": {
                         "diagnostics": [],
-                        "series": "Sonnet5",
+                        "series": "claude-opus-5",
                         "$kind": "ModelConfig"
                       },
                       "instructions": {
@@ -3696,11 +3813,11 @@
                 },
                 "$kind": "BotDefinition"
               },
-              "body/message": "Initiate a return request for the item(s) in the customer order below that have issues with shipment or that present defects:\n\n@{body('Send_context_and_options')}\n\nSend an email to the customer address indicated below (never other email) indicating that the return request has been initiated:\n\nCustomer email: @{triggerOutputs()?['body/from']}\nSubject: 'BlastBox Service - Your enquiry'"
+              "body/message": "Action the return or exchange described below for the customer's order, using the Order Management tools. \nDo exactly what the instruction says, do not re‑decide eligibility, that has already been determined upstream.\n\nReturn or exchange action to perform:\n @{variables('ReturnNote')}\n\nOriginal customer email:\n@{triggerOutputs()?['body/body']}\n\nOnce the return or exchange is registered, send a single confirmation email - only to the customer address provided, never any other address - telling them it's done, what to expect next in one liner (label, refund or replacement timing). Do not include any citations, links, or URLs in the sent email. \n\nCustomer email: @{triggerOutputs()?['body/from']}\nSubject: \"BlastBox Service – Your return/exchange is confirmed\"\nBody:\n\"Dear Customer,\n\nWe are pleased to inform you that [notes on the action performed]. You will receive [note on the applicable product, and or refund to be received by the customer]. \n\nThank you,\n*The BlastBox Team*\"\n"
             },
             "host": {
               "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
-              "connectionName": "shared_agentnode",
+              "connectionName": "shared_agentnode-2",
               "operationId": "InvokeDefinition"
             }
           },
