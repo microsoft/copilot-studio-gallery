@@ -1,12 +1,12 @@
 ---
-import { getCollection } from "astro:content";
 import SolutionCard from "../../components/SolutionCard.astro";
 import Layout from "../../layouts/Layout.astro";
 import { collectContributors, collectTags } from "../../lib/catalog";
+import { getPublishedSolutions } from "../../lib/published";
 import { withBase } from "../../lib/url";
 
 export async function getStaticPaths() {
-  const contributors = collectContributors(await getCollection("solutions"));
+  const contributors = collectContributors(await getPublishedSolutions());
   return contributors.map((contributor) => ({
     params: { contributor: contributor.key },
     props: { contributor },

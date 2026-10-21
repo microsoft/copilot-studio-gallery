@@ -1,11 +1,11 @@
 import type { APIRoute } from "astro";
-import { getCollection } from "astro:content";
 import { compareSolutions } from "../lib/catalog";
+import { getPublishedSolutions } from "../lib/published";
 import { solutionInventory } from "../lib/inventory";
 import { solutionMakeup } from "../lib/schema";
 
 export const GET: APIRoute = async () => {
-  const solutions = (await getCollection("solutions")).sort(compareSolutions);
+  const solutions = (await getPublishedSolutions()).sort(compareSolutions);
   const payload = solutions.map((solution) => {
     const inventory = solutionInventory(solution.data);
     return {

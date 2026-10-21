@@ -1,10 +1,10 @@
 ---
-import { getCollection } from "astro:content";
 import Layout from "../layouts/Layout.astro";
 import { collectContributors } from "../lib/catalog";
+import { getPublishedSolutions } from "../lib/published";
 import { withBase } from "../lib/url";
 
-const contributors = collectContributors(await getCollection("solutions"));
+const contributors = collectContributors(await getPublishedSolutions());
 const solutionTotal = contributors.reduce((total, contributor) => total + contributor.count, 0);
 const MAX_SOLUTIONS = 8;
 ---

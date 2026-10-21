@@ -1,5 +1,6 @@
 ---
 import { getCollection, render } from "astro:content";
+import { getPublishedSolutions } from "../../lib/published";
 import Layout from "../../layouts/Layout.astro";
 import AgentMatrix from "../../components/AgentMatrix.astro";
 import BuildingBlocks from "../../components/BuildingBlocks.astro";
@@ -14,7 +15,7 @@ import { withBase } from "../../lib/url";
 import { resolvePreviewWorkflow } from "../../lib/workflowMetadata";
 
 export async function getStaticPaths() {
-  const solutions = await getCollection("solutions");
+  const solutions = await getPublishedSolutions();
   return solutions.map((solution) => ({
     params: { slug: solution.id },
     props: { solution },

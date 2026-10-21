@@ -1,7 +1,7 @@
 ---
-import { getCollection } from "astro:content";
 import SolutionCard from "./SolutionCard.astro";
 import { collectCategories, collectContributors, collectTags, compareSolutions } from "../lib/catalog";
+import { getPublishedSolutions } from "../lib/published";
 import { CONTAINS_KINDS, containedComponents } from "../lib/discovery";
 import { COMPONENT_LABELS, solutionInventory } from "../lib/inventory";
 import { contributorKey } from "../lib/schema";
@@ -14,7 +14,7 @@ interface Props {
 const { scope = "all" } = Astro.props;
 const microsoftOnly = scope === "microsoft";
 const MICROSOFT_ROW_SIZE = 3;
-const solutions = (await getCollection("solutions")).sort(compareSolutions);
+const solutions = (await getPublishedSolutions()).sort(compareSolutions);
 const tags = collectTags(solutions);
 const categories = collectCategories(solutions);
 const contributors = collectContributors(solutions);

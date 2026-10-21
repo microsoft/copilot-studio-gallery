@@ -1,12 +1,12 @@
 ---
-import { getCollection } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import SolutionCard from "../../components/SolutionCard.astro";
 import { collectTags, compareSolutions } from "../../lib/catalog";
+import { getPublishedSolutions } from "../../lib/published";
 import { withBase } from "../../lib/url";
 
 export async function getStaticPaths() {
-  const solutions = await getCollection("solutions");
+  const solutions = await getPublishedSolutions();
   return collectTags(solutions).map(([tag]) => ({
     params: { tag },
     props: {
