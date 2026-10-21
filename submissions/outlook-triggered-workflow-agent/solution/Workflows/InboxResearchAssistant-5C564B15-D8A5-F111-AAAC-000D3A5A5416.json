@@ -823,9 +823,40 @@
                         "isHitlEscalationEnabled": false,
                         "webSearchEnabled": false,
                         "inlineInstructions": "",
-                        "outputMode": "text",
+                        "outputMode": "structured-simple",
                         "inlineModel": "claude-opus-5",
                         "connectionName": "shared_agentnode",
+                        "simpleProperties": [
+                          {
+                            "id": "6f0f4b3e-2b0d-4a0e-9d52-3a7c1e5b8a01",
+                            "name": "EmailReply",
+                            "type": "string",
+                            "description": "Complete HTML body of the reply email, ready to send. Empty when no reply is needed."
+                          },
+                          {
+                            "id": "b2c8d7e4-91a3-4f56-8c1d-5e0a7f3d9b02",
+                            "name": "ReplyNeeded",
+                            "type": "boolean",
+                            "description": "True only when the email contains at least one question that warrants a reply."
+                          }
+                        ],
+                        "jsonSchema": {
+                          "type": "object",
+                          "properties": {
+                            "EmailReply": {
+                              "type": "string",
+                              "description": "Complete HTML body of the reply email, ready to send. Empty when no reply is needed."
+                            },
+                            "ReplyNeeded": {
+                              "type": "boolean",
+                              "description": "True only when the email contains at least one question that warrants a reply."
+                            }
+                          },
+                          "required": [
+                            "EmailReply",
+                            "ReplyNeeded"
+                          ]
+                        },
                         "instructionsRich": {
                           "segments": [
                             {
@@ -862,11 +893,30 @@
                               "conversationId": {
                                 "type": "string",
                                 "description": "Unique identifier for the conversation"
+                              },
+                              "structuredOutput": {
+                                "type": "object",
+                                "properties": {
+                                  "EmailReply": {
+                                    "type": "string",
+                                    "description": "Complete HTML body of the reply email, ready to send. Empty when no reply is needed."
+                                  },
+                                  "ReplyNeeded": {
+                                    "type": "boolean",
+                                    "description": "True only when the email contains at least one question that warrants a reply."
+                                  }
+                                },
+                                "required": [
+                                  "EmailReply",
+                                  "ReplyNeeded"
+                                ],
+                                "title": ""
                               }
                             },
                             "required": [
                               "result",
-                              "conversationId"
+                              "conversationId",
+                              "structuredOutput"
                             ]
                           }
                         }
@@ -892,15 +942,15 @@
                         "conditions": [
                           {
                             "id": "4ed6099a-256f-4416-ae01-40208a67ce6f",
-                            "name": "Reply when the agent returns HTML",
-                            "expression": "{\n  \"and\": [\n    {\n      \"greater\": [\n        \"@length(coalesce(outputs('Agent')?['body/result'], ''))\",\n        0\n      ]\n    }\n  ]\n}"
+                            "name": "Reply needed",
+                            "expression": "{\n  \"and\": [\n    {\n      \"equals\": [\n        \"@body('agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860')?['structuredOutput/ReplyNeeded']\",\n        true\n      ]\n    }\n  ]\n}"
                           }
                         ]
                       },
                       "outcomes": [
                         {
                           "id": "condition:4ed6099a-256f-4416-ae01-40208a67ce6f",
-                          "label": "Reply when the agent returns HTML"
+                          "label": "Reply needed"
                         },
                         {
                           "id": "else",
@@ -1052,7 +1102,7 @@
                           ]
                         },
                         "parameters": {
-                          "replyParameters/Body": "@{outputs('Agent')?['body/result']}",
+                          "replyParameters/Body": "@{body('agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860')?['structuredOutput/EmailReply']}",
                           "replyParameters/To": "@{triggerOutputs()?['body/from']}",
                           "messageId": "@{triggerOutputs()?['body/id']}",
                           "mailboxAddress": "team-inbox@example.com"
@@ -1139,7 +1189,24 @@
           "inputs": {
             "parameters": {
               "body/prompt": "@{triggerOutputs()?['body/body']}",
-              "body/agentId": "a3p_emailtriggered_vi9PBz"
+              "body/agentId": "a3p_emailtriggered_vi9PBz",
+              "body/outputSchema": {
+                "type": "object",
+                "properties": {
+                  "EmailReply": {
+                    "type": "string",
+                    "description": "Complete HTML body of the reply email, ready to send. Empty when no reply is needed."
+                  },
+                  "ReplyNeeded": {
+                    "type": "boolean",
+                    "description": "True only when the email contains at least one question that warrants a reply."
+                  }
+                },
+                "required": [
+                  "EmailReply",
+                  "ReplyNeeded"
+                ]
+              }
             },
             "host": {
               "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
@@ -1157,9 +1224,9 @@
           "expression": {
             "and": [
               {
-                "greater": [
-                  "@length(coalesce(outputs('Agent')?['body/result'], ''))",
-                  0
+                "equals": [
+                  "@body('Agent')?['structuredOutput/ReplyNeeded']",
+                  true
                 ]
               }
             ]
@@ -1169,7 +1236,7 @@
               "type": "OpenApiConnection",
               "inputs": {
                 "parameters": {
-                  "replyParameters/Body": "@{outputs('Agent')?['body/result']}",
+                  "replyParameters/Body": "@{body('Agent')?['structuredOutput/EmailReply']}",
                   "replyParameters/To": "@{triggerOutputs()?['body/from']}",
                   "messageId": "@{triggerOutputs()?['body/id']}",
                   "mailboxAddress": "team-inbox@example.com"
@@ -1195,7 +1262,7 @@
             ]
           },
           "metadata": {
-            "description": "Only reply when the agent produced a response",
+            "description": "Only reply when the agent sets ReplyNeeded to true",
             "nodeId": "9da258d1-7be5-4529-a492-c2617b599a0b"
           }
         }

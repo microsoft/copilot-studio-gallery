@@ -2,7 +2,7 @@ kind: InlineAgentSkill
 content: |
   ---
   name: email-question-research-reply
-  description: "Use when a new email arrives in the team's shared inbox and asks one or more questions. Researches each question strictly against the agent's configured knowledge sources and returns an HTML reply body to the workflow, which replies to the triggering message. Return an empty response for emails with no question. Do NOT answer from general or outside knowledge when the configured knowledge sources do not cover the topic."
+  description: "Use when a new email arrives in the team's shared inbox and asks one or more questions. Researches each question strictly against the agent's configured knowledge sources and returns structured output to the workflow: EmailReply (the HTML reply body) and ReplyNeeded (whether to reply). The workflow replies to the triggering message only when ReplyNeeded is true. Set ReplyNeeded to false for emails with no question. Do NOT answer from general or outside knowledge when the configured knowledge sources do not cover the topic."
   ---
 
   <!-- bic:source=generated -->
@@ -13,7 +13,7 @@ content: |
   ## 1. Confirm the email is in scope
 
   - The workflow supplies the body of a newly arrived message. Do not claim to check message history or deduplicate replayed messages.
-  - If the email body contains no question at all — for example, a pure FYI, a calendar invite, an automated notification, or a thank-you note — return an empty response. The workflow will not send a reply for an empty response.
+  - If the email body contains no question at all — for example, a pure FYI, a calendar invite, an automated notification, or a thank-you note — set `ReplyNeeded` to false and `EmailReply` to an empty string. The workflow will not send a reply when `ReplyNeeded` is false.
 
   ## 2. Extract every question
 
@@ -33,7 +33,7 @@ content: |
 
   ## 5. Compose the HTML reply
 
-  Return a single professional HTML body for a reply to the original sender. The workflow binds the reply to the triggering message, preserves the thread, and selects the recipient. Use this structure, repeating the per-question block for every question that was answered:
+  Compose a single professional HTML body for a reply to the original sender. It becomes the `EmailReply` value, so write it exactly as it should appear in the email: plain HTML with no Markdown and no code fences. The workflow binds the reply to the triggering message, preserves the thread, and selects the recipient. Use this structure, repeating the per-question block for every question that was answered:
 
   ```html
   <p>Hello,</p>
@@ -65,7 +65,7 @@ content: |
   - Keep the tone professional and concise; do not editorialize or apologize excessively for unanswered items — state plainly that the knowledge sources didn't cover them.
   - Every answered question must carry a source link. A question with no retrievable source belongs in the unanswered list, never in the answered list with a placeholder or missing citation.
 
-  ## 6. Return the HTML body
+  ## 6. Return the structured output
 
-  Return only the composed HTML body. Do not call an email action or choose a message ID or recipient; the workflow replies to the original sender using the shared mailbox and the ID of the message that triggered it.
+  Return `EmailReply` with the composed HTML body and `ReplyNeeded` set to true. When the email contains questions that the knowledge sources cannot answer, still set `ReplyNeeded` to true and say so plainly in the reply. Do not call an email action or choose a message ID or recipient; the workflow replies to the original sender using the shared mailbox and the ID of the message that triggered it.
 authoringSource: Generated

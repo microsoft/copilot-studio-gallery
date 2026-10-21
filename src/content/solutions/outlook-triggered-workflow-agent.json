@@ -32,7 +32,7 @@
       "schemaName": "a3p_emailtriggered_vi9PBz",
       "name": "Team Knowledge Inbox Agent",
       "model": "claude-opus-5",
-      "instructions": "When a new email arrives in the team shared inbox, research every question using only the knowledge sources configured in this agent. Do not use web search, general knowledge, or any other sources.\nReturn only the complete HTML body for a reply to the original sender. Do not send email yourself; the workflow replies to the triggering message in the same thread and sends only a non-empty response. If the message contains no question, return an empty response so the workflow does not reply.\nFor each question, use a bold short summary followed by a detailed answer supported by a retrieved source and a link to that source. If a question is only partially answered, include only supported information. List questions the sources cannot answer and suggest two to four concrete follow-up questions. Omit the unanswered list when all questions are answered. Keep the tone professional and concise and do not invent sources.",
+      "instructions": "When a new email arrives in the team shared inbox, research every question using only the knowledge sources configured in this agent. Do not use web search, general knowledge, or any other sources.\nReturn structured output with two fields. EmailReply is the complete HTML body for a reply to the original sender, formatted exactly as it should appear in the email (plain HTML, no Markdown or code fences). ReplyNeeded is true only when the message contains at least one question that warrants a reply. Do not send email yourself; when ReplyNeeded is true the workflow replies to the triggering message in the same thread using EmailReply. If the message contains no question (for example an FYI, automated notification, or thank-you note), set ReplyNeeded to false and EmailReply to an empty string.\nFor each question, use a bold short summary followed by a detailed answer supported by a retrieved source and a link to that source. If a question is only partially answered, include only supported information. List questions the sources cannot answer and suggest two to four concrete follow-up questions. Omit the unanswered list when all questions are answered. Keep the tone professional and concise and do not invent sources.",
       "channels": [],
       "toolCount": 0,
       "skillCount": 1,
@@ -51,7 +51,7 @@
         },
         "details": {
           "model": "claude-opus-5",
-          "instructions": "When a new email arrives in the team shared inbox, research every question using only the knowledge sources configured in this agent. Do not use web search, general knowledge, or any other sources.\nReturn only the complete HTML body for a reply to the original sender. Do not send email yourself; the workflow replies to the triggering message in the same thread and sends only a non-empty response. If the message contains no question, return an empty response so the workflow does not reply.\nFor each question, use a bold short summary followed by a detailed answer supported by a retrieved source and a link to that source. If a question is only partially answered, include only supported information. List questions the sources cannot answer and suggest two to four concrete follow-up questions. Omit the unanswered list when all questions are answered. Keep the tone professional and concise and do not invent sources.",
+          "instructions": "When a new email arrives in the team shared inbox, research every question using only the knowledge sources configured in this agent. Do not use web search, general knowledge, or any other sources.\nReturn structured output with two fields. EmailReply is the complete HTML body for a reply to the original sender, formatted exactly as it should appear in the email (plain HTML, no Markdown or code fences). ReplyNeeded is true only when the message contains at least one question that warrants a reply. Do not send email yourself; when ReplyNeeded is true the workflow replies to the triggering message in the same thread using EmailReply. If the message contains no question (for example an FYI, automated notification, or thank-you note), set ReplyNeeded to false and EmailReply to an empty string.\nFor each question, use a bold short summary followed by a detailed answer supported by a retrieved source and a link to that source. If a question is only partially answered, include only supported information. List questions the sources cannot answer and suggest two to four concrete follow-up questions. Omit the unanswered list when all questions are answered. Keep the tone professional and concise and do not invent sources.",
           "channels": [],
           "toolCount": 0,
           "skillCount": 1,
@@ -69,7 +69,7 @@
         "details": {
           "kind": "skill",
           "schemaName": "a3p_emailtriggered_vi9PBz.skill.email-question-research-reply_rQw",
-          "description": "Use when a new email arrives in the team's shared inbox and asks one or more questions. Research each question strictly against the agent's configured knowledge sources and return a professional HTML reply body to the workflow. The workflow sends that body as a reply to the triggering message. Return an empty response for emails containing no question. Do not answer from general or outside knowledge when the configured knowledge sources do not cover the topic."
+          "description": "Use when a new email arrives in the team's shared inbox and asks one or more questions. Research each question strictly against the agent's configured knowledge sources and return structured output to the workflow: EmailReply (a professional HTML reply body) and ReplyNeeded (whether a reply is warranted). The workflow replies to the triggering message with EmailReply only when ReplyNeeded is true. Set ReplyNeeded to false for emails containing no question. Do not answer from general or outside knowledge when the configured knowledge sources do not cover the topic."
         }
       }
     ],
@@ -146,7 +146,7 @@
               "operationName": "ReplyToV3",
               "operationType": "OpenApiConnection",
               "parameters": {
-                "replyParameters/Body": "@{outputs('Agent')?['body/result']}",
+                "replyParameters/Body": "@{body('agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860')?['structuredOutput/EmailReply']}",
                 "replyParameters/To": "@{triggerOutputs()?['body/from']}",
                 "mailboxAddress": "team-inbox@example.com"
               }
@@ -184,12 +184,12 @@
     {
       "path": "botcomponents/a3p_emailtriggered_vi9PBz.skill.email-question-research-reply_rQw/botcomponent.xml",
       "category": "component",
-      "size": 864
+      "size": 970
     },
     {
       "path": "botcomponents/a3p_emailtriggered_vi9PBz.skill.email-question-research-reply_rQw/data",
       "category": "component",
-      "size": 4999
+      "size": 5478
     },
     {
       "path": "botcomponents/Default_FeedbackCollectionBotSettings_tmfBcm/botcomponent.xml",
@@ -209,7 +209,7 @@
     {
       "path": "bots/a3p_emailtriggered_vi9PBz/configuration.json",
       "category": "bot",
-      "size": 1404
+      "size": 1710
     },
     {
       "path": "customizations.xml",
@@ -224,7 +224,7 @@
     {
       "path": "Workflows/InboxResearchAssistant-5C564B15-D8A5-F111-AAAC-000D3A5A5416.json",
       "category": "workflow",
-      "size": 65836
+      "size": 69239
     }
   ]
 }
