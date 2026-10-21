@@ -4,14 +4,7 @@ externalTriggerSource:
   callbackMessage:
     segments:
       - kind: StaticSegment
-        value: |-
-          Mail me summary of top 10 rows for:
-          Cluster: https://<cluster>.<region>.kusto.windows.net
-          Database: <database>
-          Table: <table>
-
-      - kind: StaticSegment
-        value: " @{triggerBody()}"
+        value: "@{triggerBody()}"
 
   inputs:
     - name: frequency
@@ -40,7 +33,9 @@ externalTriggerSource:
       value:
         kind: ValueReference
         type: "{\"type\":\"string\"}"
-        defaultValue: "\"2026-09-07T18:37:00Z\""
+        defaultValue: "\"2026-10-21T16:52:00Z\""
+
+      isValueOverridable: true
 
     - name: timeZone
       displayName: Time zone
@@ -48,6 +43,8 @@ externalTriggerSource:
       value:
         kind: ValueReference
         type: "{\"type\":\"string\"}"
-        defaultValue: "\"Asia/Kolkata\""
+        defaultValue: "\"India Standard Time\""
+
+      isValueOverridable: true
 
   authMode: Invoker

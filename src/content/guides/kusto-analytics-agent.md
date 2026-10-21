@@ -1,6 +1,6 @@
 ---
 title: Kusto Analytics Assistant
-slug: kusto-analytics-workflow
+slug: kusto-analytics-agent
 solution: KustoAnalyticsAssistant
 ---
 Kusto Analytics Assistant turns natural-language analytics questions into
