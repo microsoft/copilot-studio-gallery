@@ -1,0 +1,250 @@
+{
+  "name": "Project Thread Synthesis",
+  "description": "A grounded project-thread assistant that turns Outlook discussions into decisions, actions, open questions, and risks, then offers a confirmed Teams channel recap or follow-up meeting.",
+  "tags": [
+    "outlook",
+    "email",
+    "teams",
+    "calendar",
+    "summarization"
+  ],
+  "category": "Productivity & knowledge",
+  "featured": false,
+  "author": "Sushank Kumar",
+  "authors": [
+    {
+      "name": "Sushank Kumar"
+    }
+  ],
+  "uniqueName": "EmailThreadSynthesis",
+  "version": "1.0.0.0",
+  "publisher": "A3P",
+  "bundle": "bundles/email-thread-synthesis.zip",
+  "agentCount": 1,
+  "workflowCount": 0,
+  "componentCount": 12,
+  "agents": [
+    {
+      "id": "Default_Thread_Recap_Assistant_4e99be",
+      "schemaName": "Default_Thread_Recap_Assistant_4e99be",
+      "name": "Project Thread Synthesis",
+      "model": "Sonnet46",
+      "instructions": "You are Project Thread Synthesis. Help the user recap a specific team or project email thread and optionally post the reviewed recap to a confirmed Teams standard channel or schedule a follow-up.\n\nTools:\n- read_mail_thread is read-only. NEVER send, reply to, forward, or draft email.\n- check_calendar_events prevents duplicate follow-ups; create_calendar_event schedules a confirmed follow-up.\n- post_project_recap_to_channel posts the recap through the Teams connector.\n\nFollow the Project Thread Recap skill for thread resolution, grounding every statement in retrieved messages, recap structure, confidentiality review, and delivery choices. Do not post to a channel without confirming the team, standard channel, and final recap with the user. Do not post sensitive content to a channel. Ask when the thread or destination is ambiguous. Never invent owners, dates, or commitments.",
+      "channels": [],
+      "toolCount": 4,
+      "skillCount": 1,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:Default_Thread_Recap_Assistant_4e99be",
+        "name": "Project Thread Synthesis",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "Sonnet46",
+          "instructions": "You are Project Thread Synthesis. Help the user recap a specific team or project email thread and optionally post the reviewed recap to a confirmed Teams standard channel or schedule a follow-up.\n\nTools:\n- read_mail_thread is read-only. NEVER send, reply to, forward, or draft email.\n- check_calendar_events prevents duplicate follow-ups; create_calendar_event schedules a confirmed follow-up.\n- post_project_recap_to_channel posts the recap through the Teams connector.\n\nFollow the Project Thread Recap skill for thread resolution, grounding every statement in retrieved messages, recap structure, confidentiality review, and delivery choices. Do not post to a channel without confirming the team, standard channel, and final recap with the user. Do not post sensitive content to a channel. Ask when the thread or destination is ambiguous. Never invent owners, dates, or commitments.",
+          "channels": [],
+          "toolCount": 4,
+          "skillCount": 1,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:Default_Thread_Recap_Assistant_4e99be.skill.email-thread-recap-followup_Yj6",
+        "name": "email-thread-recap-followup",
+        "type": "skill",
+        "position": {
+          "x": 568,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "Default_Thread_Recap_Assistant_4e99be.skill.email-thread-recap-followup_Yj6",
+          "description": "Synthesizes an email thread into decisions, action items, open questions, and risks by owner, then offers to post a Teams recap and schedule a follow-up meeting. Use when the maker asks to recap, summarize, or catch up on an email thread or conversation, wants decisions or action items pulled out of an email discussion, or asks to turn an email thread into a Teams update or a follow-up meeting. Do NOT use for general inbox triage, drafting a reply, or requests that are not anchored to a specific thread's outcome."
+        }
+      },
+      {
+        "id": "tool:Default_Thread_Recap_Assistant_4e99be.tool.Check_existing_calendar_events",
+        "name": "Check existing calendar events",
+        "type": "tool",
+        "position": {
+          "x": 228,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_Thread_Recap_Assistant_4e99be.tool.Check_existing_calendar_events",
+          "operation": "V4CalendarGetItems",
+          "description": "Looks up the user's existing calendar events so a follow-up meeting is never scheduled twice under the same subject."
+        }
+      },
+      {
+        "id": "tool:Default_Thread_Recap_Assistant_4e99be.tool.Create_calendar_event",
+        "name": "Create calendar event",
+        "type": "tool",
+        "position": {
+          "x": -111.99999999999997,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_Thread_Recap_Assistant_4e99be.tool.Create_calendar_event",
+          "operation": "V4CalendarPostItem",
+          "description": "Schedules a follow-up meeting on the user's calendar."
+        }
+      },
+      {
+        "id": "tool:Default_Thread_Recap_Assistant_4e99be.tool.Post_Teams_recap_to_self",
+        "name": "Post project recap to channel",
+        "type": "tool",
+        "position": {
+          "x": -452,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_Thread_Recap_Assistant_4e99be.tool.Post_Teams_recap_to_self",
+          "operation": "PostMessageToConversation",
+          "description": "Posts a reviewed HTML project-thread recap to a user-confirmed standard Teams channel."
+        }
+      },
+      {
+        "id": "tool:Default_Thread_Recap_Assistant_4e99be.tool.Read_Outlook_mail_thread",
+        "name": "Read Outlook mail thread",
+        "type": "tool",
+        "position": {
+          "x": -792,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_Thread_Recap_Assistant_4e99be.tool.Read_Outlook_mail_thread",
+          "operation": "mcp_MailTools",
+          "description": "Finds and retrieves email messages and threads from the user's mailbox by subject, sender, date range, topic, or link. Read-only — never used to send, reply, or forward mail."
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:Default_Thread_Recap_Assistant_4e99be-includes-Default_Thread_Recap_Assistant_4e99be.skill.email-thread-recap-followup_Yj6",
+        "source": "agent:Default_Thread_Recap_Assistant_4e99be",
+        "target": "skill:Default_Thread_Recap_Assistant_4e99be.skill.email-thread-recap-followup_Yj6",
+        "label": "includes"
+      },
+      {
+        "id": "agent:Default_Thread_Recap_Assistant_4e99be-uses-Default_Thread_Recap_Assistant_4e99be.tool.Check_existing_calendar_events",
+        "source": "agent:Default_Thread_Recap_Assistant_4e99be",
+        "target": "tool:Default_Thread_Recap_Assistant_4e99be.tool.Check_existing_calendar_events",
+        "label": "uses"
+      },
+      {
+        "id": "agent:Default_Thread_Recap_Assistant_4e99be-uses-Default_Thread_Recap_Assistant_4e99be.tool.Create_calendar_event",
+        "source": "agent:Default_Thread_Recap_Assistant_4e99be",
+        "target": "tool:Default_Thread_Recap_Assistant_4e99be.tool.Create_calendar_event",
+        "label": "uses"
+      },
+      {
+        "id": "agent:Default_Thread_Recap_Assistant_4e99be-uses-Default_Thread_Recap_Assistant_4e99be.tool.Post_Teams_recap_to_self",
+        "source": "agent:Default_Thread_Recap_Assistant_4e99be",
+        "target": "tool:Default_Thread_Recap_Assistant_4e99be.tool.Post_Teams_recap_to_self",
+        "label": "uses"
+      },
+      {
+        "id": "agent:Default_Thread_Recap_Assistant_4e99be-uses-Default_Thread_Recap_Assistant_4e99be.tool.Read_Outlook_mail_thread",
+        "source": "agent:Default_Thread_Recap_Assistant_4e99be",
+        "target": "tool:Default_Thread_Recap_Assistant_4e99be.tool.Read_Outlook_mail_thread",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [],
+  "connectors": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 1019
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 1310
+    },
+    {
+      "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.skill.email-thread-recap-followup_Yj6/botcomponent.xml",
+      "category": "component",
+      "size": 938
+    },
+    {
+      "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.skill.email-thread-recap-followup_Yj6/data",
+      "category": "component",
+      "size": 9526
+    },
+    {
+      "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.tool.Check_existing_calendar_events/botcomponent.xml",
+      "category": "component",
+      "size": 537
+    },
+    {
+      "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.tool.Check_existing_calendar_events/data",
+      "category": "component",
+      "size": 182
+    },
+    {
+      "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.tool.Create_calendar_event/botcomponent.xml",
+      "category": "component",
+      "size": 456
+    },
+    {
+      "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.tool.Create_calendar_event/data",
+      "category": "component",
+      "size": 182
+    },
+    {
+      "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.tool.Post_Teams_recap_to_self/botcomponent.xml",
+      "category": "component",
+      "size": 500
+    },
+    {
+      "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.tool.Post_Teams_recap_to_self/data",
+      "category": "component",
+      "size": 181
+    },
+    {
+      "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.tool.Read_Outlook_mail_thread/botcomponent.xml",
+      "category": "component",
+      "size": 585
+    },
+    {
+      "path": "botcomponents/Default_Thread_Recap_Assistant_4e99be.tool.Read_Outlook_mail_thread/data",
+      "category": "component",
+      "size": 251
+    },
+    {
+      "path": "bots/Default_Thread_Recap_Assistant_4e99be/bot.xml",
+      "category": "bot",
+      "size": 400
+    },
+    {
+      "path": "bots/Default_Thread_Recap_Assistant_4e99be/configuration.json",
+      "category": "bot",
+      "size": 1321
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 2069
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 2601
+    }
+  ]
+}

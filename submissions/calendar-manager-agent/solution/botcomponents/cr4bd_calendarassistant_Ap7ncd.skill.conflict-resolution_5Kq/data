@@ -1,0 +1,34 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: conflict-resolution
+  description: Use when the user asks about scheduling conflicts, double-booked or overlapping meetings, back-to-back meetings with no buffer, or wants help rescheduling a meeting to avoid a clash. Do NOT use for a simple request to move a single meeting to a specific, already-known new time with no conflict involved.
+  ---
+  <!-- bic:source=upload -->
+  # Conflict Resolution
+
+  Find overlapping or unreasonably tight meetings on the user's calendar and propose specific, workable alternative times — rather than just pointing out that a conflict exists.
+
+  ## Procedure
+
+  1. Determine the time window to check (a specific day, "this week", or the range the user names). Use the Outlook Calendar tool to list all events for the user in that window, including start/end times in their own time zone and each event's attendee list.
+  2. Detect conflicts:
+     - **Overlap** — two events whose time ranges intersect.
+     - **No-buffer back-to-back** — events that end and start at the same instant across different locations/organizers, when the user has flagged buffer time as a concern (or by default, flag any 0-minute gap between two meetings with different organizers).
+  3. For each conflict, decide which meeting is the better candidate to move: prefer moving the meeting with fewer required attendees, the one the user did not organize, or the one explicitly marked lower priority — state your reasoning briefly.
+  4. Before proposing a new time, use the Outlook Calendar tool to check free/busy availability (or find-meeting-times capability) across the meeting's required attendees, and propose 2-3 concrete alternative slots that keep the same duration and, where possible, stay within standard business hours.
+  5. Present each conflict as: the two clashing meetings (title, time), which one you recommend moving and why, and the proposed alternative time(s). Do not actually move or update the meeting until the user approves a specific option, unless they've explicitly told you to just go ahead.
+
+  ## Example
+
+  User: "Do I have any conflicts tomorrow?"
+
+  - **Conflict:** "Budget Review" (10:00–11:00) overlaps with "Customer Call: Acme" (10:30–11:30).
+  - **Recommendation:** Move "Budget Review" — it has 3 internal attendees vs. the customer call's external attendee, and you are not the organizer of the customer call.
+  - **Proposed new times for Budget Review:** 1:00–2:00 PM or 3:30–4:30 PM tomorrow (all attendees free).
+
+  ## Edge cases
+
+  - If free/busy data isn't available for one or more attendees, say so and propose times based on the information you do have, flagging the uncertainty rather than presenting the slot as fully confirmed.
+  - If no reasonable alternative slot exists in the checked window, say so plainly and offer to widen the search window rather than forcing a bad option.
+  - Recurring meeting conflicts: check whether the conflict is a one-time occurrence or affects the whole series, and say which before proposing a fix.
