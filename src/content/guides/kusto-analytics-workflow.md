@@ -18,7 +18,8 @@ query and email a summary of the top rows to the invoking user.
 - The Kusto MCP tool executes queries with the invoking user's connection.
 - The Office 365 Outlook "Send an email (V2)" action sends the scheduled summary
   to the invoking user. It is send-only, so the agent cannot read, move, or
-  delete mail.
+  delete mail. Because connector tools do not fix input values, the agent
+  instructions limit the recipient to the invoking user's own address.
 
 ## Automation
 
