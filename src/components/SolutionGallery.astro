@@ -2,6 +2,7 @@
 import SolutionCard from "./SolutionCard.astro";
 import { collectCategories, collectContributors, collectTags, compareSolutions } from "../lib/catalog";
 import { getPublishedSolutions } from "../lib/published";
+import { COMING_SOON } from "../lib/comingSoon";
 import { CONTAINS_KINDS, containedComponents } from "../lib/discovery";
 import { COMPONENT_LABELS, solutionInventory } from "../lib/inventory";
 import { contributorKey } from "../lib/schema";
@@ -248,6 +249,17 @@ function filterAttributes(solution: (typeof solutions)[number]) {
             </div>
           ))
         }
+        {
+          !microsoftOnly && COMING_SOON.map(({ name }) => (
+            <div class="coming-soon-item">
+              <article class="flex h-full flex-col rounded-2xl border border-dashed border-border bg-surface/60 p-5">
+                <p class="text-[13px] font-medium text-soft">Coming soon</p>
+                <h3 class="mt-2 text-[1.0625rem] font-semibold leading-snug tracking-[-0.01em] text-ink">{name}</h3>
+                <p class="mt-3 flex-1 text-sm leading-relaxed text-muted">Coming soon</p>
+              </article>
+            </div>
+          ))
+        }
       </div>
       <div id="empty-state" class:list={["text-sm text-muted", listedSolutions.length > 0 && "hidden"]}>
         <p id="empty-heading" class="font-medium text-ink">{solutions.length ? `No ${catalogName} solutions yet` : "The first solution is on its way"}</p>
@@ -286,6 +298,7 @@ function filterAttributes(solution: (typeof solutions)[number]) {
   const navigationLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-gallery-link]"));
   const gallery = required<HTMLElement>("#gallery");
   const items = Array.from(gallery.querySelectorAll<HTMLElement>(".solution-item"));
+  const comingSoonItems = Array.from(gallery.querySelectorAll<HTMLElement>(".coming-soon-item"));
   const microsoftGallery = document.querySelector<HTMLElement>("#microsoft-gallery");
   const microsoftItems = Array.from(microsoftGallery?.querySelectorAll<HTMLElement>(".solution-item") ?? []);
   const search = required<HTMLInputElement>("#solution-search");
@@ -387,9 +400,10 @@ function filterAttributes(solution: (typeof solutions)[number]) {
   function render() {
     const filtered = isFiltered(applied);
     const visible = new Set(matched);
-    gallery.append(...matched, ...items.filter((item) => !visible.has(item)));
+    gallery.append(...matched, ...items.filter((item) => !visible.has(item)), ...comingSoonItems);
     items.forEach((item) => item.classList.add("hidden"));
     matched.slice(0, shown).forEach((item) => item.classList.remove("hidden"));
+    comingSoonItems.forEach((item) => item.classList.toggle("hidden", filtered || shown < matched.length));
     count.textContent = `${matched.length} ${matched.length === 1 ? "solution" : "solutions"}`;
     loadStatus.textContent = matched.length === 0
       ? ""
