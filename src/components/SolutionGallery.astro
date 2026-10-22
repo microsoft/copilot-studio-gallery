@@ -250,12 +250,18 @@ function filterAttributes(solution: (typeof solutions)[number]) {
           ))
         }
         {
-          !microsoftOnly && COMING_SOON.map(({ name }) => (
+          !microsoftOnly && COMING_SOON.map(({ name, makeup, category, description }) => (
             <div class="coming-soon-item">
-              <article class="flex h-full flex-col rounded-2xl border border-dashed border-border bg-surface/60 p-5">
-                <p class="text-[13px] font-medium text-soft">Coming soon</p>
+              <article class="product-card flex h-full flex-col rounded-2xl border border-border bg-surface p-5">
+                <div class="flex min-h-7 items-center justify-between gap-3">
+                  <p class="text-[13px] font-medium text-muted">{makeup}</p>
+                </div>
                 <h3 class="mt-2 text-[1.0625rem] font-semibold leading-snug tracking-[-0.01em] text-ink">{name}</h3>
-                <p class="mt-3 flex-1 text-sm leading-relaxed text-muted">Coming soon</p>
+                <p class="mt-1 text-xs font-medium text-accent">{category}</p>
+                <p class="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-muted">{description}</p>
+                <div class="mt-5 flex items-center border-t border-border pt-4">
+                  <span class="rounded-full border border-dashed border-border px-2.5 py-0.5 text-xs font-medium text-soft">Coming soon</span>
+                </div>
               </article>
             </div>
           ))
