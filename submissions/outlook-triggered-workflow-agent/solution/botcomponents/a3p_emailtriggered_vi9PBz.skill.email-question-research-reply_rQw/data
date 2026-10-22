@@ -1,0 +1,71 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: email-question-research-reply
+  description: "Use when a new email arrives in the team's shared inbox and asks one or more questions. Researches each question strictly against the agent's configured knowledge sources and returns structured output to the workflow: EmailReply (the HTML reply body) and ReplyNeeded (whether to reply). The workflow replies to the triggering message only when ReplyNeeded is true. Set ReplyNeeded to false for emails with no question. Do NOT answer from general or outside knowledge when the configured knowledge sources do not cover the topic."
+  ---
+
+  <!-- bic:source=generated -->
+  # Email question research and reply
+
+  Run this procedure for each new email received in the team's shared inbox. Treat every claim in the reply as something the recipient could click through and verify — never state an answer that isn't backed by a passage you actually retrieved from a configured knowledge source.
+
+  ## 1. Confirm the email is in scope
+
+  - The workflow supplies the body of a newly arrived message. Do not claim to check message history or deduplicate replayed messages.
+  - If the email body contains no question at all — for example, a pure FYI, a calendar invite, an automated notification, or a thank-you note — set `ReplyNeeded` to false and `EmailReply` to an empty string. The workflow will not send a reply when `ReplyNeeded` is false.
+
+  ## 2. Extract every question
+
+  Read the full email body (not just the first line or subject) and pull out every distinct question the sender asked, including ones phrased as implicit requests ("Could you clarify...", "I was wondering whether...", "Also, what about..."). Number them in the order they appear — this numbering carries through to the reply so the sender can match each answer back to their original question.
+
+  ## 3. Research each question against knowledge sources only
+
+  For each extracted question, search strictly within the agent's configured knowledge sources. Never fall back to general or outside knowledge, and never guess at an answer the knowledge sources do not actually contain — a plausible-sounding but ungrounded answer is worse than admitting the source doesn't cover it.
+
+  - If you find a passage that directly answers the question, capture: a short question summary (a few words, not the full question restated), the detailed factual answer drawn from that passage, and the specific source (title and link/reference) the passage came from.
+  - If a question has a partial answer, only include the part that is actually backed by a source; do not pad the answer with inferred or general-knowledge filler to make it feel complete.
+  - If no configured knowledge source addresses the question at all, do not include it in the answered list — move it to the unanswered list (step 5).
+
+  ## 4. Suggest follow-up questions
+
+  After researching, think about what the sender would naturally want to ask next given what was found (and not found) — a clarifying detail, a related topic the knowledge sources also cover, or a scoping question that would make an unanswered question answerable. Propose 2 to 4 concrete, specific follow-up questions; avoid vague suggestions like "let me know if you have more questions."
+
+  ## 5. Compose the HTML reply
+
+  Compose a single professional HTML body for a reply to the original sender. It becomes the `EmailReply` value, so write it exactly as it should appear in the email: plain HTML with no Markdown and no code fences. The workflow binds the reply to the triggering message, preserves the thread, and selects the recipient. Use this structure, repeating the per-question block for every question that was answered:
+
+  ```html
+  <p>Hello,</p>
+  <p>Thanks for reaching out — here's what I found for each of your questions:</p>
+
+  <p><b>1. &lt;short question summary&gt;</b><br>
+  &lt;detailed factual answer, written in full sentences&gt;<br>
+  <i>Source: <a href="&lt;source link&gt;">&lt;source title&gt;</a></i></p>
+
+  <p><b>2. &lt;short question summary&gt;</b><br>
+  &lt;detailed factual answer&gt;<br>
+  <i>Source: <a href="&lt;source link&gt;">&lt;source title&gt;</a></i></p>
+
+  <p><b>Questions I couldn't answer from our knowledge sources:</b></p>
+  <ul>
+    <li>&lt;question text, verbatim or lightly summarized&gt;</li>
+  </ul>
+
+  <p><b>You might also want to ask:</b></p>
+  <ul>
+    <li>&lt;follow-up question 1&gt;</li>
+    <li>&lt;follow-up question 2&gt;</li>
+  </ul>
+
+  <p>Best regards</p>
+  ```
+
+  - Omit the "couldn't answer" section entirely when every question was answered — do not show an empty list.
+  - Keep the tone professional and concise; do not editorialize or apologize excessively for unanswered items — state plainly that the knowledge sources didn't cover them.
+  - Every answered question must carry a source link. A question with no retrievable source belongs in the unanswered list, never in the answered list with a placeholder or missing citation.
+
+  ## 6. Return the structured output
+
+  Return `EmailReply` with the composed HTML body and `ReplyNeeded` set to true. When the email contains questions that the knowledge sources cannot answer, still set `ReplyNeeded` to true and say so plainly in the reply. Do not call an email action or choose a message ID or recipient; the workflow replies to the original sender using the shared mailbox and the ID of the message that triggered it.
+authoringSource: Generated

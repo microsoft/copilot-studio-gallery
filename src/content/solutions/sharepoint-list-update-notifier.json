@@ -1,0 +1,275 @@
+{
+  "name": "SharePoint List Change Notifier",
+  "description": "A SharePoint-triggered agent with connector tools to retrieve changed list items and notify the connected user through Teams and email.",
+  "tags": [
+    "sharepoint",
+    "notifications",
+    "teams",
+    "email"
+  ],
+  "category": "Productivity & knowledge",
+  "featured": false,
+  "previewWorkflow": "{e99dd228-acaa-f111-aaab-70a8a5b2ec6c}",
+  "author": "Sushank Kumar",
+  "authors": [
+    {
+      "name": "Sushank Kumar"
+    }
+  ],
+  "uniqueName": "SharePointListEmailNotifier",
+  "version": "1.0.0.0",
+  "publisher": "A3P",
+  "bundle": "bundles/sharepoint-list-update-notifier.zip",
+  "agentCount": 1,
+  "workflowCount": 1,
+  "componentCount": 1,
+  "agents": [
+    {
+      "id": "Default_SharePoint_List_Notifier_360614",
+      "schemaName": "Default_SharePoint_List_Notifier_360614",
+      "name": "SharePoint List Notifier",
+      "model": "claude-sonnet-5-5",
+      "instructions": "You are an autonomous SharePoint list-change notification agent. Work only with the item supplied by the SharePoint workflow. The workflow message includes the configured site URL, list ID, optional display name, item ID, sample fields, and item link. The site URL and list ID are configuration values, not fields returned by the SharePoint item trigger. The display name is available only if the maker supplied it.\n\nFor each invocation:\n1. Use Get SharePoint list item with the configured site URL, list ID, and triggering item ID. Treat its response as the source of truth. Do not invent missing item fields, display names, or links.\n2. Use Resolve current user to get the connected user's profile. Send notifications only to the returned email address, or user principal name if no email is returned. Never use an item-provided recipient.\n3. Attempt Send Teams notification with an HTML summary and direct item link. Post as Flow bot in a chat with Flow bot, addressed to the resolved user.\n4. Attempt Send email notification with an HTML item summary and direct item link.\n5. Report the item title, resolved recipient, and a separate sent/failed/not-applicable result for Teams and email. A failed channel must not stop attempts to the other channels.\n\nUse the configured list display name only when supplied. The trigger's field\\_2 and field\\_3 are sample internal column names; rely on the actual values returned by SharePoint and do not assume those generic names are meaningful. Refuse requests unrelated to SharePoint list items.",
+      "channels": [],
+      "toolCount": 4,
+      "skillCount": 0,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:Default_SharePoint_List_Notifier_360614",
+        "name": "SharePoint List Notifier",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "claude-sonnet-5-5",
+          "instructions": "You are an autonomous SharePoint list-change notification agent. Work only with the item supplied by the SharePoint workflow. The workflow message includes the configured site URL, list ID, optional display name, item ID, sample fields, and item link. The site URL and list ID are configuration values, not fields returned by the SharePoint item trigger. The display name is available only if the maker supplied it.\n\nFor each invocation:\n1. Use Get SharePoint list item with the configured site URL, list ID, and triggering item ID. Treat its response as the source of truth. Do not invent missing item fields, display names, or links.\n2. Use Resolve current user to get the connected user's profile. Send notifications only to the returned email address, or user principal name if no email is returned. Never use an item-provided recipient.\n3. Attempt Send Teams notification with an HTML summary and direct item link. Post as Flow bot in a chat with Flow bot, addressed to the resolved user.\n4. Attempt Send email notification with an HTML item summary and direct item link.\n5. Report the item title, resolved recipient, and a separate sent/failed/not-applicable result for Teams and email. A failed channel must not stop attempts to the other channels.\n\nUse the configured list display name only when supplied. The trigger's field\\_2 and field\\_3 are sample internal column names; rely on the actual values returned by SharePoint and do not assume those generic names are meaningful. Refuse requests unrelated to SharePoint list items.",
+          "channels": [],
+          "toolCount": 4,
+          "skillCount": 0,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "tool:Default_SharePoint_List_Notifier_360614.tool.GetSharePointListItem",
+        "name": "Get SharePoint list item",
+        "type": "tool",
+        "position": {
+          "x": 398,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_SharePoint_List_Notifier_360614.tool.GetSharePointListItem",
+          "operation": "GetItem",
+          "description": "Retrieves a SharePoint list item by site, list, and item ID."
+        }
+      },
+      {
+        "id": "tool:Default_SharePoint_List_Notifier_360614.tool.ResolveCurrentUser",
+        "name": "Resolve current user",
+        "type": "tool",
+        "position": {
+          "x": 58.00000000000003,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_SharePoint_List_Notifier_360614.tool.ResolveCurrentUser",
+          "operation": "MyProfile_V2",
+          "description": "Resolves the identity of the connected user for notification recipients."
+        }
+      },
+      {
+        "id": "tool:Default_SharePoint_List_Notifier_360614.tool.SendEmailNotification",
+        "name": "Send email notification",
+        "type": "tool",
+        "position": {
+          "x": -282,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_SharePoint_List_Notifier_360614.tool.SendEmailNotification",
+          "operation": "SendEmailV2",
+          "description": "Sends an HTML email about the SharePoint item to the resolved current user."
+        }
+      },
+      {
+        "id": "tool:Default_SharePoint_List_Notifier_360614.tool.SendTeamsNotification",
+        "name": "Send Teams notification",
+        "type": "tool",
+        "position": {
+          "x": -622,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_SharePoint_List_Notifier_360614.tool.SendTeamsNotification",
+          "operation": "PostMessageToConversation",
+          "description": "Sends an item update to the resolved current user's Teams chat."
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:Default_SharePoint_List_Notifier_360614-uses-Default_SharePoint_List_Notifier_360614.tool.GetSharePointListItem",
+        "source": "agent:Default_SharePoint_List_Notifier_360614",
+        "target": "tool:Default_SharePoint_List_Notifier_360614.tool.GetSharePointListItem",
+        "label": "uses"
+      },
+      {
+        "id": "agent:Default_SharePoint_List_Notifier_360614-uses-Default_SharePoint_List_Notifier_360614.tool.ResolveCurrentUser",
+        "source": "agent:Default_SharePoint_List_Notifier_360614",
+        "target": "tool:Default_SharePoint_List_Notifier_360614.tool.ResolveCurrentUser",
+        "label": "uses"
+      },
+      {
+        "id": "agent:Default_SharePoint_List_Notifier_360614-uses-Default_SharePoint_List_Notifier_360614.tool.SendEmailNotification",
+        "source": "agent:Default_SharePoint_List_Notifier_360614",
+        "target": "tool:Default_SharePoint_List_Notifier_360614.tool.SendEmailNotification",
+        "label": "uses"
+      },
+      {
+        "id": "agent:Default_SharePoint_List_Notifier_360614-uses-Default_SharePoint_List_Notifier_360614.tool.SendTeamsNotification",
+        "source": "agent:Default_SharePoint_List_Notifier_360614",
+        "target": "tool:Default_SharePoint_List_Notifier_360614.tool.SendTeamsNotification",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [
+    {
+      "id": "{e99dd228-acaa-f111-aaab-70a8a5b2ec6c}",
+      "name": "SharePoint List Notifier Trigger",
+      "trigger": "When an item is created or modified",
+      "nodeCount": 2,
+      "edgeCount": 1,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start",
+            "name": "When an item is created or modified",
+            "type": "start",
+            "position": {
+              "x": 100,
+              "y": 200
+            },
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When an item is created or modified",
+              "apiName": "shared_sharepointonline",
+              "operationName": "GetOnUpdatedItems",
+              "operationType": "OpenApiConnection"
+            }
+          },
+          {
+            "id": "agent-66c255da-907f-471e-8098-0c0af4c19051",
+            "name": "Call SharePoint List Notifier Agent",
+            "type": "agent",
+            "position": {
+              "x": 500,
+              "y": 200
+            },
+            "details": {
+              "botSchemaName": "Default_SharePoint_List_Notifier_360614",
+              "mode": "invoke",
+              "instructions": "A SharePoint list item was created or modified.\nConfigured site URL: <site-url>\nConfigured list ID: <list-id>\nConfigured list display name: <list-name>\nItem ID: @{triggerBody()?['ID']}\nTitle: @{triggerBody()?['Title']}\nStatus (sample column field_2): @{triggerBody()?['field_2']}\nPriority (sample column field_3): @{triggerBody()?['field_3']}\nDirect item link: @{triggerBody()?['{Link}']}\nUse the Sha",
+              "inlineInstructions": ""
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-agent-66c255da-907f-471e-8098-0c0af4c19051",
+            "source": "start",
+            "target": "agent-66c255da-907f-471e-8098-0c0af4c19051"
+          }
+        ]
+      }
+    }
+  ],
+  "connectors": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 851
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 1244
+    },
+    {
+      "path": "botcomponents/Default_SharePoint_List_Notifier_360614.tool.GetSharePointListItem/botcomponent.xml",
+      "category": "component",
+      "size": 470
+    },
+    {
+      "path": "botcomponents/Default_SharePoint_List_Notifier_360614.tool.GetSharePointListItem/data",
+      "category": "component",
+      "size": 186
+    },
+    {
+      "path": "botcomponents/Default_SharePoint_List_Notifier_360614.tool.ResolveCurrentUser/botcomponent.xml",
+      "category": "component",
+      "size": 475
+    },
+    {
+      "path": "botcomponents/Default_SharePoint_List_Notifier_360614.tool.ResolveCurrentUser/data",
+      "category": "component",
+      "size": 188
+    },
+    {
+      "path": "botcomponents/Default_SharePoint_List_Notifier_360614.tool.SendEmailNotification/botcomponent.xml",
+      "category": "component",
+      "size": 484
+    },
+    {
+      "path": "botcomponents/Default_SharePoint_List_Notifier_360614.tool.SendEmailNotification/data",
+      "category": "component",
+      "size": 177
+    },
+    {
+      "path": "botcomponents/Default_SharePoint_List_Notifier_360614.tool.SendTeamsNotification/botcomponent.xml",
+      "category": "component",
+      "size": 472
+    },
+    {
+      "path": "botcomponents/Default_SharePoint_List_Notifier_360614.tool.SendTeamsNotification/data",
+      "category": "component",
+      "size": 183
+    },
+    {
+      "path": "bots/Default_SharePoint_List_Notifier_360614/bot.xml",
+      "category": "bot",
+      "size": 439
+    },
+    {
+      "path": "bots/Default_SharePoint_List_Notifier_360614/configuration.json",
+      "category": "bot",
+      "size": 1998
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 3928
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 2726
+    },
+    {
+      "path": "Workflows/SharePointListNotifierTrigger-E99DD228-ACAA-F111-AAAB-70A8A5B2EC6C.json",
+      "category": "workflow",
+      "size": 42760
+    }
+  ]
+}

@@ -1,0 +1,1281 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_office365": {
+        "api": {
+          "name": "shared_office365"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "a3p_sharedoffice365_46dda"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-office365-bf22f78d-a930-416c-a41e-77a0b42f7945"
+      },
+      "shared_agentnode": {
+        "api": {
+          "name": "shared_agentnode"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedagentnode_65c3e92a"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "fc6b40b87a0e4e56b95021b540accd39"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "When_a_new_email_arrives_in_shared_mailbox__V2_": {
+          "type": "OpenApiConnectionNotification",
+          "inputs": {
+            "parameters": {
+              "folderPath": "Inbox",
+              "mailboxAddress": "team-inbox@example.com"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+              "operationId": "OnSharedMailboxNewEmail",
+              "connectionName": "shared_office365"
+            }
+          },
+          "splitOn": "@triggerOutputs()?['body/value']",
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "Team Knowledge Inbox Assistant",
+                "nodes": [
+                  {
+                    "id": "start",
+                    "name": "When a new email arrives in a shared mailbox (V2)",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 100,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "connector",
+                        "connector": {
+                          "apiName": "shared_office365",
+                          "operationName": "OnSharedMailboxNewEmail",
+                          "operationType": "OpenApiConnectionNotification",
+                          "inputs": {
+                            "folderPath": "Inbox",
+                            "mailboxAddress": "team-inbox@example.com"
+                          },
+                          "displayName": "When a new email arrives in a shared mailbox (V2)",
+                          "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1819/1.0.1819.4795/office365/icon.png",
+                          "brandColor": "#0078D4",
+                          "connectionName": "shared_office365",
+                          "parametersSchema": {
+                            "type": "object",
+                            "properties": {
+                              "to": {
+                                "type": "string",
+                                "title": "To",
+                                "x-ms-dynamic-list": {
+                                  "builtInOperation": "AadGraph.GetUsers",
+                                  "parameters": {},
+                                  "itemValuePath": "mail"
+                                },
+                                "format": "email",
+                                "description": "Recipient email addresses separated by semicolons (If any match, the trigger will run).",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "to"
+                              },
+                              "cc": {
+                                "type": "string",
+                                "title": "CC",
+                                "x-ms-dynamic-list": {
+                                  "builtInOperation": "AadGraph.GetUsers",
+                                  "parameters": {},
+                                  "itemValuePath": "mail"
+                                },
+                                "format": "email",
+                                "description": "CC recipient email addresses separated by semicolons (If any match, the trigger will run).",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "cc"
+                              },
+                              "toOrCc": {
+                                "type": "string",
+                                "title": "To or CC",
+                                "x-ms-dynamic-list": {
+                                  "builtInOperation": "AadGraph.GetUsers",
+                                  "parameters": {},
+                                  "itemValuePath": "mail"
+                                },
+                                "format": "email",
+                                "description": "To or CC recipient email addresses separated by semicolons (If any match, the trigger will run).",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "toOrCc"
+                              },
+                              "from": {
+                                "type": "string",
+                                "title": "From",
+                                "x-ms-dynamic-list": {
+                                  "builtInOperation": "AadGraph.GetUsers",
+                                  "parameters": {},
+                                  "itemValuePath": "mail"
+                                },
+                                "format": "email",
+                                "description": "Sender email addresses separated by semicolons (If any match, the trigger will run).",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "from"
+                              },
+                              "includeAttachments": {
+                                "type": "boolean",
+                                "title": "Include Attachments",
+                                "description": "Should the response of the trigger include the attachments content.",
+                                "default": false,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "includeAttachments"
+                              },
+                              "subjectFilter": {
+                                "type": "string",
+                                "title": "Subject Filter",
+                                "description": "String to look for in the subject line.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "subjectFilter"
+                              },
+                              "folderPath": {
+                                "type": "string",
+                                "title": "Folder",
+                                "x-ms-dynamic-tree": {
+                                  "settings": {
+                                    "canSelectParentNodes": true,
+                                    "canSelectLeafNodes": false
+                                  },
+                                  "open": {
+                                    "operationId": "OnFilePickerOpen",
+                                    "parameters": {
+                                      "operation": {
+                                        "value": "MailFolders"
+                                      }
+                                    },
+                                    "itemsPath": "value",
+                                    "itemValuePath": "Id",
+                                    "itemTitlePath": "DisplayName",
+                                    "itemFullTitlePath": "Path",
+                                    "itemIsParent": "(IsFolder eq true)"
+                                  },
+                                  "browse": {
+                                    "operationId": "OnFilePickerBrowse",
+                                    "parameters": {
+                                      "id": {
+                                        "selectedItemValuePath": "Id"
+                                      },
+                                      "operation": {
+                                        "value": "MailFolders"
+                                      }
+                                    },
+                                    "itemsPath": "value",
+                                    "itemValuePath": "Id",
+                                    "itemTitlePath": "DisplayName",
+                                    "itemFullTitlePath": "Path",
+                                    "itemIsParent": "(IsFolder eq true)"
+                                  }
+                                },
+                                "description": "Mail folder to check for new emails.",
+                                "default": "Inbox",
+                                "x-ms-property-name-alias": "folderPath"
+                              },
+                              "importance": {
+                                "type": "string",
+                                "title": "Importance",
+                                "description": "Importance of the email (Any, High, Normal, Low).",
+                                "default": "Any",
+                                "enum": [
+                                  "Any",
+                                  "Low",
+                                  "Normal",
+                                  "High"
+                                ],
+                                "x-ms-visibility": "advanced",
+                                "x-ms-enum-values": [
+                                  {
+                                    "displayName": "Any",
+                                    "value": "Any"
+                                  },
+                                  {
+                                    "displayName": "Low",
+                                    "value": "Low"
+                                  },
+                                  {
+                                    "displayName": "Normal",
+                                    "value": "Normal"
+                                  },
+                                  {
+                                    "displayName": "High",
+                                    "value": "High"
+                                  }
+                                ],
+                                "x-ms-property-name-alias": "importance"
+                              },
+                              "fetchOnlyWithAttachment": {
+                                "type": "boolean",
+                                "title": "Only with Attachments",
+                                "description": "If set to true, only emails with an attachment will be retrieved. Emails without any attachments will be skipped. If set to false, all emails will be retrieved.",
+                                "default": false,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "fetchOnlyWithAttachment"
+                              },
+                              "mailboxAddress": {
+                                "type": "string",
+                                "title": "Shared Mailbox Address",
+                                "description": "Address of the shared team mailbox to monitor.",
+                                "x-ms-property-name-alias": "mailboxAddress"
+                              }
+                            },
+                            "required": [
+                              "mailboxAddress"
+                            ]
+                          },
+                          "triggerBatchMode": "Batch",
+                          "outputSchema": {
+                            "200": {
+                              "type": "object",
+                              "properties": {
+                                "body": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "from": {
+                                            "type": "string",
+                                            "title": "From",
+                                            "format": "email",
+                                            "description": "The mailbox owner and sender of the message",
+                                            "x-ms-visibility": "important",
+                                            "x-ms-property-name-alias": "from"
+                                          },
+                                          "toRecipients": {
+                                            "type": "string",
+                                            "title": "To",
+                                            "format": "email",
+                                            "description": "The recipients for the message",
+                                            "x-ms-visibility": "important",
+                                            "x-ms-property-name-alias": "toRecipients"
+                                          },
+                                          "ccRecipients": {
+                                            "type": "string",
+                                            "title": "CC",
+                                            "format": "email",
+                                            "description": "The Cc recipients for the message",
+                                            "x-ms-visibility": "advanced",
+                                            "x-ms-property-name-alias": "ccRecipients"
+                                          },
+                                          "bccRecipients": {
+                                            "type": "string",
+                                            "title": "BCC",
+                                            "format": "email",
+                                            "description": "The Bcc recipients for the message",
+                                            "x-ms-visibility": "advanced",
+                                            "x-ms-property-name-alias": "bccRecipients"
+                                          },
+                                          "replyTo": {
+                                            "type": "string",
+                                            "title": "Reply To",
+                                            "format": "email",
+                                            "description": "The email addresses to use when replying",
+                                            "x-ms-visibility": "advanced",
+                                            "x-ms-property-name-alias": "replyTo"
+                                          },
+                                          "subject": {
+                                            "type": "string",
+                                            "title": "Subject",
+                                            "description": "The subject of the message",
+                                            "x-ms-visibility": "important",
+                                            "x-ms-property-name-alias": "subject"
+                                          },
+                                          "body": {
+                                            "type": "string",
+                                            "title": "Body",
+                                            "description": "The body of the message",
+                                            "x-ms-visibility": "important",
+                                            "x-ms-property-name-alias": "body"
+                                          },
+                                          "importance": {
+                                            "type": "string",
+                                            "title": "Importance",
+                                            "description": "The importance of the message (low, normal, high)",
+                                            "enum": [
+                                              "low",
+                                              "normal",
+                                              "high"
+                                            ],
+                                            "x-ms-property-name-alias": "importance"
+                                          },
+                                          "bodyPreview": {
+                                            "type": "string",
+                                            "title": "Body Preview",
+                                            "description": "The preview of the message",
+                                            "x-ms-visibility": "advanced",
+                                            "x-ms-property-name-alias": "bodyPreview"
+                                          },
+                                          "hasAttachments": {
+                                            "type": "boolean",
+                                            "title": "Has Attachment",
+                                            "description": "Indicates whether the message has attachments",
+                                            "x-ms-property-name-alias": "hasAttachments"
+                                          },
+                                          "id": {
+                                            "type": "string",
+                                            "title": "Message Id",
+                                            "description": "The unique identifier of the message",
+                                            "x-ms-visibility": "advanced",
+                                            "x-ms-property-name-alias": "id"
+                                          },
+                                          "internetMessageId": {
+                                            "type": "string",
+                                            "title": "Internet Message Id",
+                                            "description": "The message ID in the format specified by RFC2822",
+                                            "x-ms-visibility": "advanced",
+                                            "x-ms-property-name-alias": "internetMessageId"
+                                          },
+                                          "conversationId": {
+                                            "type": "string",
+                                            "title": "Conversation Id",
+                                            "description": "The Id of the conversation the email belongs to",
+                                            "x-ms-visibility": "advanced",
+                                            "x-ms-property-name-alias": "conversationId"
+                                          },
+                                          "receivedDateTime": {
+                                            "type": "string",
+                                            "title": "Received Time",
+                                            "format": "date-time",
+                                            "description": "The date and time the message was received",
+                                            "x-ms-visibility": "advanced",
+                                            "x-ms-property-name-alias": "receivedDateTime"
+                                          },
+                                          "isRead": {
+                                            "type": "boolean",
+                                            "title": "Is Read",
+                                            "description": "Indicates whether the message has been read",
+                                            "x-ms-visibility": "advanced",
+                                            "x-ms-property-name-alias": "isRead"
+                                          },
+                                          "attachments": {
+                                            "type": "array",
+                                            "title": "Attachments",
+                                            "items": {
+                                              "type": "object",
+                                              "properties": {
+                                                "id": {
+                                                  "type": "string",
+                                                  "title": "Attachment Id",
+                                                  "description": "Attachment Id",
+                                                  "x-ms-property-name-alias": "id"
+                                                },
+                                                "name": {
+                                                  "type": "string",
+                                                  "title": "Name",
+                                                  "description": "Attachment name",
+                                                  "x-ms-property-name-alias": "name"
+                                                },
+                                                "contentBytes": {
+                                                  "type": "string",
+                                                  "title": "Content",
+                                                  "format": "byte",
+                                                  "description": "Attachment content",
+                                                  "x-ms-property-name-alias": "contentBytes"
+                                                },
+                                                "contentType": {
+                                                  "type": "string",
+                                                  "title": "Content-Type",
+                                                  "description": "Attachment content type",
+                                                  "x-ms-property-name-alias": "contentType"
+                                                },
+                                                "size": {
+                                                  "type": "integer",
+                                                  "title": "Size",
+                                                  "format": "int64",
+                                                  "description": "The size in bytes of the attachment",
+                                                  "x-ms-property-name-alias": "size"
+                                                },
+                                                "isInline": {
+                                                  "type": "boolean",
+                                                  "title": "Is Inline",
+                                                  "description": "Set to true if this is an inline attachment",
+                                                  "x-ms-property-name-alias": "isInline"
+                                                },
+                                                "lastModifiedDateTime": {
+                                                  "type": "string",
+                                                  "title": "Last Modified DateTime",
+                                                  "format": "date-time",
+                                                  "description": "The date and time when the attachment was last modified",
+                                                  "x-ms-property-name-alias": "lastModifiedDateTime"
+                                                },
+                                                "contentId": {
+                                                  "type": "string",
+                                                  "title": "Content Id",
+                                                  "description": "Content Id",
+                                                  "x-ms-property-name-alias": "contentId"
+                                                }
+                                              },
+                                              "required": [],
+                                              "description": "File Attachment"
+                                            },
+                                            "description": "The file attachments for the message",
+                                            "x-ms-visibility": "advanced",
+                                            "x-ms-property-name-alias": "attachments"
+                                          },
+                                          "isHtml": {
+                                            "type": "boolean",
+                                            "title": "Is HTML",
+                                            "description": "Is Html?",
+                                            "x-ms-visibility": "advanced",
+                                            "x-ms-property-name-alias": "isHtml"
+                                          },
+                                          "sensitivityLabelInfo": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "properties": {
+                                                "sensitivityLabelId": {
+                                                  "type": "string",
+                                                  "title": "sensitivityLabelId",
+                                                  "description": "SensitivityLabel Id.",
+                                                  "x-ms-property-name-alias": "sensitivityLabelId"
+                                                },
+                                                "name": {
+                                                  "type": "string",
+                                                  "title": "name",
+                                                  "description": "SensitivityLabel name.",
+                                                  "x-ms-property-name-alias": "name"
+                                                },
+                                                "displayName": {
+                                                  "type": "string",
+                                                  "title": "displayName",
+                                                  "description": "SensitivityLabel displayName info",
+                                                  "x-ms-property-name-alias": "displayName"
+                                                },
+                                                "tooltip": {
+                                                  "type": "string",
+                                                  "title": "tooltip",
+                                                  "description": "SensitivityLabel details on tooltip.",
+                                                  "x-ms-property-name-alias": "tooltip"
+                                                },
+                                                "priority": {
+                                                  "type": "integer",
+                                                  "title": "priority",
+                                                  "format": "int32",
+                                                  "description": "SensitivityLabel priority.",
+                                                  "x-ms-property-name-alias": "priority"
+                                                },
+                                                "color": {
+                                                  "type": "string",
+                                                  "title": "color",
+                                                  "description": "SensitivityLabel color.",
+                                                  "x-ms-property-name-alias": "color"
+                                                },
+                                                "isEncrypted": {
+                                                  "type": "boolean",
+                                                  "title": "isEncrypted",
+                                                  "description": " is SensitivityLabel Encrypted.",
+                                                  "x-ms-property-name-alias": "isEncrypted"
+                                                },
+                                                "isEnabled": {
+                                                  "type": "boolean",
+                                                  "title": "isEnabled",
+                                                  "description": "Whether SensitivityLabel is Enabled.",
+                                                  "x-ms-property-name-alias": "isEnabled"
+                                                },
+                                                "isParent": {
+                                                  "type": "boolean",
+                                                  "title": "isParent",
+                                                  "description": "Whether SensitivityLabel is Parent.",
+                                                  "x-ms-property-name-alias": "isParent"
+                                                },
+                                                "parentSensitivityLabelId": {
+                                                  "type": "string",
+                                                  "title": "parentSensitivityLabelId",
+                                                  "description": "Parent SensitivityLabel Id.",
+                                                  "x-ms-property-name-alias": "parentSensitivityLabelId"
+                                                }
+                                              },
+                                              "required": []
+                                            },
+                                            "x-ms-property-name-alias": "sensitivityLabelInfo"
+                                          }
+                                        },
+                                        "required": [],
+                                        "description": "Graph Client Receive Email Message"
+                                      },
+                                      "description": "A list of the response objects",
+                                      "x-ms-property-name-alias": "body/value"
+                                    }
+                                  },
+                                  "required": [],
+                                  "description": "Represents a wrapper object for batch trigger response",
+                                  "x-ms-property-name-alias": "body"
+                                }
+                              }
+                            }
+                          },
+                          "splitOn": "@triggerOutputs()?['body/value']"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "from": {
+                                "type": "string",
+                                "title": "From",
+                                "format": "email",
+                                "description": "The mailbox owner and sender of the message",
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/from"
+                              },
+                              "toRecipients": {
+                                "type": "string",
+                                "title": "To",
+                                "format": "email",
+                                "description": "The recipients for the message",
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/toRecipients"
+                              },
+                              "ccRecipients": {
+                                "type": "string",
+                                "title": "CC",
+                                "format": "email",
+                                "description": "The Cc recipients for the message",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/ccRecipients"
+                              },
+                              "bccRecipients": {
+                                "type": "string",
+                                "title": "BCC",
+                                "format": "email",
+                                "description": "The Bcc recipients for the message",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/bccRecipients"
+                              },
+                              "replyTo": {
+                                "type": "string",
+                                "title": "Reply To",
+                                "format": "email",
+                                "description": "The email addresses to use when replying",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/replyTo"
+                              },
+                              "subject": {
+                                "type": "string",
+                                "title": "Subject",
+                                "description": "The subject of the message",
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/subject"
+                              },
+                              "body": {
+                                "type": "string",
+                                "title": "Body",
+                                "description": "The body of the message",
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/body"
+                              },
+                              "importance": {
+                                "type": "string",
+                                "title": "Importance",
+                                "description": "The importance of the message (low, normal, high)",
+                                "enum": [
+                                  "low",
+                                  "normal",
+                                  "high"
+                                ],
+                                "x-ms-property-name-alias": "body/importance"
+                              },
+                              "bodyPreview": {
+                                "type": "string",
+                                "title": "Body Preview",
+                                "description": "The preview of the message",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/bodyPreview"
+                              },
+                              "hasAttachments": {
+                                "type": "boolean",
+                                "title": "Has Attachment",
+                                "description": "Indicates whether the message has attachments",
+                                "x-ms-property-name-alias": "body/hasAttachments"
+                              },
+                              "id": {
+                                "type": "string",
+                                "title": "Message Id",
+                                "description": "The unique identifier of the message",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/id"
+                              },
+                              "internetMessageId": {
+                                "type": "string",
+                                "title": "Internet Message Id",
+                                "description": "The message ID in the format specified by RFC2822",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/internetMessageId"
+                              },
+                              "conversationId": {
+                                "type": "string",
+                                "title": "Conversation Id",
+                                "description": "The Id of the conversation the email belongs to",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/conversationId"
+                              },
+                              "receivedDateTime": {
+                                "type": "string",
+                                "title": "Received Time",
+                                "format": "date-time",
+                                "description": "The date and time the message was received",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/receivedDateTime"
+                              },
+                              "isRead": {
+                                "type": "boolean",
+                                "title": "Is Read",
+                                "description": "Indicates whether the message has been read",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/isRead"
+                              },
+                              "attachments": {
+                                "type": "array",
+                                "title": "Attachments",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string",
+                                      "title": "Attachment Id",
+                                      "description": "Attachment Id",
+                                      "x-ms-property-name-alias": "id"
+                                    },
+                                    "name": {
+                                      "type": "string",
+                                      "title": "Name",
+                                      "description": "Attachment name",
+                                      "x-ms-property-name-alias": "name"
+                                    },
+                                    "contentBytes": {
+                                      "type": "string",
+                                      "title": "Content",
+                                      "format": "byte",
+                                      "description": "Attachment content",
+                                      "x-ms-property-name-alias": "contentBytes"
+                                    },
+                                    "contentType": {
+                                      "type": "string",
+                                      "title": "Content-Type",
+                                      "description": "Attachment content type",
+                                      "x-ms-property-name-alias": "contentType"
+                                    },
+                                    "size": {
+                                      "type": "integer",
+                                      "title": "Size",
+                                      "format": "int64",
+                                      "description": "The size in bytes of the attachment",
+                                      "x-ms-property-name-alias": "size"
+                                    },
+                                    "isInline": {
+                                      "type": "boolean",
+                                      "title": "Is Inline",
+                                      "description": "Set to true if this is an inline attachment",
+                                      "x-ms-property-name-alias": "isInline"
+                                    },
+                                    "lastModifiedDateTime": {
+                                      "type": "string",
+                                      "title": "Last Modified DateTime",
+                                      "format": "date-time",
+                                      "description": "The date and time when the attachment was last modified",
+                                      "x-ms-property-name-alias": "lastModifiedDateTime"
+                                    },
+                                    "contentId": {
+                                      "type": "string",
+                                      "title": "Content Id",
+                                      "description": "Content Id",
+                                      "x-ms-property-name-alias": "contentId"
+                                    }
+                                  },
+                                  "required": [],
+                                  "description": "File Attachment"
+                                },
+                                "description": "The file attachments for the message",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/attachments"
+                              },
+                              "isHtml": {
+                                "type": "boolean",
+                                "title": "Is HTML",
+                                "description": "Is Html?",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/isHtml"
+                              },
+                              "sensitivityLabelInfo": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "sensitivityLabelId": {
+                                      "type": "string",
+                                      "title": "sensitivityLabelId",
+                                      "description": "SensitivityLabel Id.",
+                                      "x-ms-property-name-alias": "sensitivityLabelId"
+                                    },
+                                    "name": {
+                                      "type": "string",
+                                      "title": "name",
+                                      "description": "SensitivityLabel name.",
+                                      "x-ms-property-name-alias": "name"
+                                    },
+                                    "displayName": {
+                                      "type": "string",
+                                      "title": "displayName",
+                                      "description": "SensitivityLabel displayName info",
+                                      "x-ms-property-name-alias": "displayName"
+                                    },
+                                    "tooltip": {
+                                      "type": "string",
+                                      "title": "tooltip",
+                                      "description": "SensitivityLabel details on tooltip.",
+                                      "x-ms-property-name-alias": "tooltip"
+                                    },
+                                    "priority": {
+                                      "type": "integer",
+                                      "title": "priority",
+                                      "format": "int32",
+                                      "description": "SensitivityLabel priority.",
+                                      "x-ms-property-name-alias": "priority"
+                                    },
+                                    "color": {
+                                      "type": "string",
+                                      "title": "color",
+                                      "description": "SensitivityLabel color.",
+                                      "x-ms-property-name-alias": "color"
+                                    },
+                                    "isEncrypted": {
+                                      "type": "boolean",
+                                      "title": "isEncrypted",
+                                      "description": " is SensitivityLabel Encrypted.",
+                                      "x-ms-property-name-alias": "isEncrypted"
+                                    },
+                                    "isEnabled": {
+                                      "type": "boolean",
+                                      "title": "isEnabled",
+                                      "description": "Whether SensitivityLabel is Enabled.",
+                                      "x-ms-property-name-alias": "isEnabled"
+                                    },
+                                    "isParent": {
+                                      "type": "boolean",
+                                      "title": "isParent",
+                                      "description": "Whether SensitivityLabel is Parent.",
+                                      "x-ms-property-name-alias": "isParent"
+                                    },
+                                    "parentSensitivityLabelId": {
+                                      "type": "string",
+                                      "title": "parentSensitivityLabelId",
+                                      "description": "Parent SensitivityLabel Id.",
+                                      "x-ms-property-name-alias": "parentSensitivityLabelId"
+                                    }
+                                  },
+                                  "required": []
+                                },
+                                "x-ms-property-name-alias": "body/sensitivityLabelInfo"
+                              }
+                            },
+                            "required": [],
+                            "description": "Graph Client Receive Email Message"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 270,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860",
+                    "name": "Agent",
+                    "type": "agent",
+                    "version": 1,
+                    "position": {
+                      "x": 500,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "mode": "invoke",
+                        "instructions": "@{triggerOutputs()?['body/body']}",
+                        "botSchemaName": "a3p_emailtriggered_vi9PBz",
+                        "isHitlEscalationEnabled": false,
+                        "webSearchEnabled": false,
+                        "inlineInstructions": "",
+                        "outputMode": "structured-simple",
+                        "inlineModel": "claude-opus-5",
+                        "connectionName": "shared_agentnode",
+                        "simpleProperties": [
+                          {
+                            "id": "6f0f4b3e-2b0d-4a0e-9d52-3a7c1e5b8a01",
+                            "name": "EmailReply",
+                            "type": "string",
+                            "description": "Complete HTML body of the reply email, ready to send. Empty when no reply is needed."
+                          },
+                          {
+                            "id": "b2c8d7e4-91a3-4f56-8c1d-5e0a7f3d9b02",
+                            "name": "ReplyNeeded",
+                            "type": "boolean",
+                            "description": "True only when the email contains at least one question that warrants a reply."
+                          }
+                        ],
+                        "jsonSchema": {
+                          "type": "object",
+                          "properties": {
+                            "EmailReply": {
+                              "type": "string",
+                              "description": "Complete HTML body of the reply email, ready to send. Empty when no reply is needed."
+                            },
+                            "ReplyNeeded": {
+                              "type": "boolean",
+                              "description": "True only when the email contains at least one question that warrants a reply."
+                            }
+                          },
+                          "required": [
+                            "EmailReply",
+                            "ReplyNeeded"
+                          ]
+                        },
+                        "instructionsRich": {
+                          "segments": [
+                            {
+                              "type": "token",
+                              "value": "@{triggerOutputs()?['body/body']}",
+                              "tokenRef": {
+                                "type": "trigger",
+                                "stepId": "trigger",
+                                "stepName": "When a new email arrives (V3)",
+                                "outputName": "body/body",
+                                "outputType": "string",
+                                "outputAlias": "body/body",
+                                "outputDisplayName": "Body"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "result": {
+                                "type": "string",
+                                "description": "The agent response text"
+                              },
+                              "status": {
+                                "type": "string",
+                                "description": "The completion status (e.g., Completed)"
+                              },
+                              "conversationId": {
+                                "type": "string",
+                                "description": "Unique identifier for the conversation"
+                              },
+                              "structuredOutput": {
+                                "type": "object",
+                                "properties": {
+                                  "EmailReply": {
+                                    "type": "string",
+                                    "description": "Complete HTML body of the reply email, ready to send. Empty when no reply is needed."
+                                  },
+                                  "ReplyNeeded": {
+                                    "type": "boolean",
+                                    "description": "True only when the email contains at least one question that warrants a reply."
+                                  }
+                                },
+                                "required": [
+                                  "EmailReply",
+                                  "ReplyNeeded"
+                                ],
+                                "title": ""
+                              }
+                            },
+                            "required": [
+                              "result",
+                              "conversationId",
+                              "structuredOutput"
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "9da258d1-7be5-4529-a492-c2617b599a0b",
+                    "name": "Check whether a reply is needed",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 816,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "4ed6099a-256f-4416-ae01-40208a67ce6f",
+                            "name": "Reply needed",
+                            "expression": "{\n  \"and\": [\n    {\n      \"equals\": [\n        \"@body('agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860')?['structuredOutput/ReplyNeeded']\",\n        true\n      ]\n    }\n  ]\n}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:4ed6099a-256f-4416-ae01-40208a67ce6f",
+                          "label": "Reply needed"
+                        },
+                        {
+                          "id": "else",
+                          "label": "No reply"
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 260,
+                      "height": 120
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "connector-5bf67072-0dee-4c89-85b6-d88a53af385b",
+                    "name": "Reply to original email",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 1180,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_office365",
+                        "displayName": "Office 365 Outlook",
+                        "iconUri": "https://res-1.cdn.office.net/files/fabric-cdn-prod_20251008.001/assets/brand-icons/product/svg/outlook_48x1.svg",
+                        "brandColor": "#0078D4",
+                        "operationName": "ReplyToV3",
+                        "parametersSchema": {
+                          "type": "object",
+                          "properties": {
+                            "messageId": {
+                              "type": "string",
+                              "title": "Message Id",
+                              "description": "Id of the email to reply to.",
+                              "minLength": 1,
+                              "x-ms-property-name-alias": "messageId"
+                            },
+                            "replyParameters": {
+                              "type": "object",
+                              "title": "Details of the email reply.",
+                              "properties": {
+                                "To": {
+                                  "type": "string",
+                                  "title": "To",
+                                  "format": "email",
+                                  "description": "Example: recipient1@domain.com; recipient2@domain.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "replyParameters/To"
+                                },
+                                "Cc": {
+                                  "type": "string",
+                                  "title": "CC",
+                                  "format": "email",
+                                  "description": "Example: recipient1@domain.com; recipient2@domain.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "replyParameters/Cc"
+                                },
+                                "Bcc": {
+                                  "type": "string",
+                                  "title": "BCC",
+                                  "format": "email",
+                                  "description": "Example: recipient1@domain.com; recipient2@domain.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "replyParameters/Bcc"
+                                },
+                                "Subject": {
+                                  "type": "string",
+                                  "title": "Subject",
+                                  "description": "Email subject (if empty, the original subject used).",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "replyParameters/Subject"
+                                },
+                                "Body": {
+                                  "type": "string",
+                                  "title": "Body",
+                                  "format": "html",
+                                  "description": "Content of the email.",
+                                  "x-ms-property-name-alias": "replyParameters/Body"
+                                },
+                                "ReplyAll": {
+                                  "type": "boolean",
+                                  "title": "Reply All",
+                                  "description": "True to reply to all recipients. (default: False)",
+                                  "x-ms-property-name-alias": "replyParameters/ReplyAll"
+                                },
+                                "Importance": {
+                                  "type": "string",
+                                  "title": "Importance",
+                                  "description": "Pick an importance. (default: Low)",
+                                  "enum": [
+                                    "Low",
+                                    "Normal",
+                                    "High"
+                                  ],
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "replyParameters/Importance"
+                                },
+                                "Attachments": {
+                                  "type": "array",
+                                  "title": "Attachments",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "Name": {
+                                        "type": "string",
+                                        "title": "Name",
+                                        "description": "Attachment name",
+                                        "x-ms-property-name-alias": "Name"
+                                      },
+                                      "ContentBytes": {
+                                        "type": "string",
+                                        "title": "Content",
+                                        "format": "byte",
+                                        "description": "Attachment content",
+                                        "x-ms-property-name-alias": "ContentBytes"
+                                      }
+                                    },
+                                    "required": [
+                                      "ContentBytes",
+                                      "Name"
+                                    ],
+                                    "description": "Attachment"
+                                  },
+                                  "description": "Details of attachments to be sent along with the reply.",
+                                  "x-ms-property-name-alias": "replyParameters/Attachments"
+                                }
+                              },
+                              "required": [],
+                              "description": "Details of the email reply.",
+                              "x-ms-property-name-alias": "replyParameters"
+                            },
+                            "mailboxAddress": {
+                              "type": "string",
+                              "title": "Original Mailbox Address",
+                              "x-ms-dynamic-list": {
+                                "builtInOperation": "AadGraph.GetUsers",
+                                "parameters": {},
+                                "itemValuePath": "mail"
+                              },
+                              "description": "Address of the shared mailbox to reply from.",
+                              "x-ms-property-name-alias": "mailboxAddress"
+                            }
+                          },
+                          "required": [
+                            "messageId",
+                            "replyParameters"
+                          ]
+                        },
+                        "parameters": {
+                          "replyParameters/Body": "@{body('agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860')?['structuredOutput/EmailReply']}",
+                          "replyParameters/To": "@{triggerOutputs()?['body/from']}",
+                          "messageId": "@{triggerOutputs()?['body/id']}",
+                          "mailboxAddress": "team-inbox@example.com"
+                        },
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_office365"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {}
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-agent",
+                    "source": "start",
+                    "target": "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860"
+                  },
+                  {
+                    "id": "edge-agent-9da258d1-7be5-4529-a492-c2617b599a0b",
+                    "source": "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860",
+                    "target": "9da258d1-7be5-4529-a492-c2617b599a0b"
+                  },
+                  {
+                    "id": "edge-condition-4ed6099a-256f-4416-ae01-40208a67ce6f-connector-5bf67072-0dee-4c89-85b6-d88a53af385b",
+                    "source": "9da258d1-7be5-4529-a492-c2617b599a0b",
+                    "target": "connector-5bf67072-0dee-4c89-85b6-d88a53af385b",
+                    "sourceHandle": "condition:4ed6099a-256f-4416-ae01-40208a67ce6f"
+                  }
+                ],
+                "connectionReferences": {
+                  "shared_office365": {
+                    "api": {
+                      "name": "shared_office365"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "a3p_sharedoffice365_46dda"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-office365-bf22f78d-a930-416c-a41e-77a0b42f7945"
+                  },
+                  "shared_agentnode": {
+                    "api": {
+                      "name": "shared_agentnode"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedagentnode_65c3e92a"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "fc6b40b87a0e4e56b95021b540accd39"
+                  }
+                }
+              },
+              "nodeActionMapping": {
+                "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860": [
+                  "Agent"
+                ],
+                "9da258d1-7be5-4529-a492-c2617b599a0b": [
+                  "Should_reply"
+                ],
+                "connector-5bf67072-0dee-4c89-85b6-d88a53af385b": [
+                  "Should_reply/Reply_to_original_email"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "actions": {
+        "Agent": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "body/prompt": "@{triggerOutputs()?['body/body']}",
+              "body/agentId": "a3p_emailtriggered_vi9PBz",
+              "body/outputSchema": {
+                "type": "object",
+                "properties": {
+                  "EmailReply": {
+                    "type": "string",
+                    "description": "Complete HTML body of the reply email, ready to send. Empty when no reply is needed."
+                  },
+                  "ReplyNeeded": {
+                    "type": "boolean",
+                    "description": "True only when the email contains at least one question that warrants a reply."
+                  }
+                },
+                "required": [
+                  "EmailReply",
+                  "ReplyNeeded"
+                ]
+              }
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
+              "connectionName": "shared_agentnode",
+              "operationId": "InvokeAgent"
+            }
+          },
+          "metadata": {
+            "description": "Agent",
+            "nodeId": "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860"
+          }
+        },
+        "Should_reply": {
+          "type": "If",
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@body('Agent')?['structuredOutput/ReplyNeeded']",
+                  true
+                ]
+              }
+            ]
+          },
+          "actions": {
+            "Reply_to_original_email": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "replyParameters/Body": "@{body('Agent')?['structuredOutput/EmailReply']}",
+                  "replyParameters/To": "@{triggerOutputs()?['body/from']}",
+                  "messageId": "@{triggerOutputs()?['body/id']}",
+                  "mailboxAddress": "team-inbox@example.com"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                  "connectionName": "shared_office365",
+                  "operationId": "ReplyToV3"
+                }
+              },
+              "metadata": {
+                "description": "Reply to original email",
+                "nodeId": "connector-5bf67072-0dee-4c89-85b6-d88a53af385b"
+              }
+            }
+          },
+          "else": {
+            "actions": {}
+          },
+          "runAfter": {
+            "Agent": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Only reply when the agent sets ReplyNeeded to true",
+            "nodeId": "9da258d1-7be5-4529-a492-c2617b599a0b"
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "telemetryMetadata": {
+          "creationSource": "AgenticMultiArtifactBuilder",
+          "modifiedSources": "AgenticMultiArtifactBuilder,WorkflowDesigner"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

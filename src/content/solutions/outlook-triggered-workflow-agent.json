@@ -1,0 +1,230 @@
+{
+  "name": "Team Knowledge Inbox Assistant",
+  "description": "A shared-mailbox research workflow that answers team inbox questions using configured knowledge sources and replies to the original sender with a sourced HTML response.",
+  "tags": [
+    "outlook",
+    "shared-mailbox",
+    "team-inbox",
+    "email",
+    "research",
+    "knowledge",
+    "workflow"
+  ],
+  "category": "Productivity & knowledge",
+  "featured": false,
+  "previewWorkflow": "{5c564b15-d8a5-f111-aaac-000d3a5a5416}",
+  "author": "Sushank Kumar",
+  "authors": [
+    {
+      "name": "Sushank Kumar"
+    }
+  ],
+  "uniqueName": "OutlookTriggeredWorkflowAgent",
+  "version": "1.0.0.0",
+  "publisher": "A3P",
+  "bundle": "bundles/outlook-triggered-workflow-agent.zip",
+  "agentCount": 1,
+  "workflowCount": 1,
+  "componentCount": 1,
+  "agents": [
+    {
+      "id": "a3p_emailtriggered_vi9PBz",
+      "schemaName": "a3p_emailtriggered_vi9PBz",
+      "name": "Team Knowledge Inbox Agent",
+      "model": "claude-opus-5",
+      "instructions": "When a new email arrives in the team shared inbox, research every question using only the knowledge sources configured in this agent. Do not use web search, general knowledge, or any other sources.\nReturn structured output with two fields. EmailReply is the complete HTML body for a reply to the original sender, formatted exactly as it should appear in the email (plain HTML, no Markdown or code fences). ReplyNeeded is true only when the message contains at least one question that warrants a reply. Do not send email yourself; when ReplyNeeded is true the workflow replies to the triggering message in the same thread using EmailReply. If the message contains no question (for example an FYI, automated notification, or thank-you note), set ReplyNeeded to false and EmailReply to an empty string.\nFor each question, use a bold short summary followed by a detailed answer supported by a retrieved source and a link to that source. If a question is only partially answered, include only supported information. List questions the sources cannot answer and suggest two to four concrete follow-up questions. Omit the unanswered list when all questions are answered. Keep the tone professional and concise and do not invent sources.",
+      "channels": [],
+      "toolCount": 0,
+      "skillCount": 1,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:a3p_emailtriggered_vi9PBz",
+        "name": "Team Knowledge Inbox Agent",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "claude-opus-5",
+          "instructions": "When a new email arrives in the team shared inbox, research every question using only the knowledge sources configured in this agent. Do not use web search, general knowledge, or any other sources.\nReturn structured output with two fields. EmailReply is the complete HTML body for a reply to the original sender, formatted exactly as it should appear in the email (plain HTML, no Markdown or code fences). ReplyNeeded is true only when the message contains at least one question that warrants a reply. Do not send email yourself; when ReplyNeeded is true the workflow replies to the triggering message in the same thread using EmailReply. If the message contains no question (for example an FYI, automated notification, or thank-you note), set ReplyNeeded to false and EmailReply to an empty string.\nFor each question, use a bold short summary followed by a detailed answer supported by a retrieved source and a link to that source. If a question is only partially answered, include only supported information. List questions the sources cannot answer and suggest two to four concrete follow-up questions. Omit the unanswered list when all questions are answered. Keep the tone professional and concise and do not invent sources.",
+          "channels": [],
+          "toolCount": 0,
+          "skillCount": 1,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:a3p_emailtriggered_vi9PBz.skill.email-question-research-reply_rQw",
+        "name": "email-question-research-reply",
+        "type": "skill",
+        "position": {
+          "x": -111.99999999999997,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "a3p_emailtriggered_vi9PBz.skill.email-question-research-reply_rQw",
+          "description": "Use when a new email arrives in the team's shared inbox and asks one or more questions. Research each question strictly against the agent's configured knowledge sources and return structured output to the workflow: EmailReply (a professional HTML reply body) and ReplyNeeded (whether a reply is warranted). The workflow replies to the triggering message with EmailReply only when ReplyNeeded is true. Set ReplyNeeded to false for emails containing no question. Do not answer from general or outside knowledge when the configured knowledge sources do not cover the topic."
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:a3p_emailtriggered_vi9PBz-includes-a3p_emailtriggered_vi9PBz.skill.email-question-research-reply_rQw",
+        "source": "agent:a3p_emailtriggered_vi9PBz",
+        "target": "skill:a3p_emailtriggered_vi9PBz.skill.email-question-research-reply_rQw",
+        "label": "includes"
+      }
+    ]
+  },
+  "workflows": [
+    {
+      "id": "{5c564b15-d8a5-f111-aaac-000d3a5a5416}",
+      "name": "Team Knowledge Inbox Assistant",
+      "trigger": "When a new email arrives in a shared mailbox (V2)",
+      "nodeCount": 4,
+      "edgeCount": 3,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start",
+            "name": "When a new email arrives in a shared mailbox (V2)",
+            "type": "start",
+            "position": {
+              "x": 100,
+              "y": 200
+            },
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When a new email arrives in a shared mailbox (V2)",
+              "apiName": "shared_office365",
+              "operationName": "OnSharedMailboxNewEmail",
+              "operationType": "OpenApiConnectionNotification"
+            }
+          },
+          {
+            "id": "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860",
+            "name": "Agent",
+            "type": "agent",
+            "position": {
+              "x": 500,
+              "y": 200
+            },
+            "details": {
+              "botSchemaName": "a3p_emailtriggered_vi9PBz",
+              "mode": "invoke",
+              "instructions": "@{triggerOutputs()?['body/body']}",
+              "inlineInstructions": ""
+            }
+          },
+          {
+            "id": "9da258d1-7be5-4529-a492-c2617b599a0b",
+            "name": "Check whether a reply is needed",
+            "type": "ifElse",
+            "position": {
+              "x": 816,
+              "y": 200
+            },
+            "details": {}
+          },
+          {
+            "id": "connector-5bf67072-0dee-4c89-85b6-d88a53af385b",
+            "name": "Reply to original email",
+            "type": "connector",
+            "position": {
+              "x": 1180,
+              "y": 200
+            },
+            "details": {
+              "displayName": "Office 365 Outlook",
+              "apiName": "shared_office365",
+              "operationName": "ReplyToV3",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "replyParameters/Body": "@{body('agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860')?['structuredOutput/EmailReply']}",
+                "replyParameters/To": "@{triggerOutputs()?['body/from']}",
+                "mailboxAddress": "team-inbox@example.com"
+              }
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-agent",
+            "source": "start",
+            "target": "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860"
+          },
+          {
+            "id": "edge-agent-9da258d1-7be5-4529-a492-c2617b599a0b",
+            "source": "agent-fbcdc597-f2cb-4d02-8246-c3c5296e4860",
+            "target": "9da258d1-7be5-4529-a492-c2617b599a0b"
+          },
+          {
+            "id": "edge-condition-4ed6099a-256f-4416-ae01-40208a67ce6f-connector-5bf67072-0dee-4c89-85b6-d88a53af385b",
+            "source": "9da258d1-7be5-4529-a492-c2617b599a0b",
+            "target": "connector-5bf67072-0dee-4c89-85b6-d88a53af385b",
+            "sourceHandle": "condition:4ed6099a-256f-4416-ae01-40208a67ce6f"
+          }
+        ]
+      }
+    }
+  ],
+  "connectors": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 533
+    },
+    {
+      "path": "botcomponents/a3p_emailtriggered_vi9PBz.skill.email-question-research-reply_rQw/botcomponent.xml",
+      "category": "component",
+      "size": 970
+    },
+    {
+      "path": "botcomponents/a3p_emailtriggered_vi9PBz.skill.email-question-research-reply_rQw/data",
+      "category": "component",
+      "size": 5478
+    },
+    {
+      "path": "botcomponents/Default_FeedbackCollectionBotSettings_tmfBcm/botcomponent.xml",
+      "category": "component",
+      "size": 305
+    },
+    {
+      "path": "botcomponents/Default_FeedbackCollectionBotSettings_tmfBcm/data",
+      "category": "component",
+      "size": 31
+    },
+    {
+      "path": "bots/a3p_emailtriggered_vi9PBz/bot.xml",
+      "category": "bot",
+      "size": 37682
+    },
+    {
+      "path": "bots/a3p_emailtriggered_vi9PBz/configuration.json",
+      "category": "bot",
+      "size": 1710
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 2650
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 2727
+    },
+    {
+      "path": "Workflows/InboxResearchAssistant-5C564B15-D8A5-F111-AAAC-000D3A5A5416.json",
+      "category": "workflow",
+      "size": 69239
+    }
+  ]
+}
