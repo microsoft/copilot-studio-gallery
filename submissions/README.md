@@ -58,6 +58,7 @@ technologies such as `retail`, `sharepoint`, or `mcp` belong in `tags`.
 | `Finance` | Finance and accounts payable teams | Invoice processing, exception handling |
 | `Legal & compliance` | Legal and compliance reviewers | Contract review, policy checks |
 | `Productivity & knowledge` | Individuals working with email, calendar, documents, and knowledge | Email summaries, calendar management, research answers |
+| `Agent Building` | Makers and developers learning to build and extend agents | Agent-building tutorials, hooks labs, reusable agent patterns |
 | `Other` | None of the above fits | Mention the category you'd like in your pull request |
 
 ```json

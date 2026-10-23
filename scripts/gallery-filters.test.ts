@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { collectCategories } from "../src/lib/catalog";
 import { parseSortMode } from "../src/lib/discovery";
 import {
   cloneState, emptyState, filterParams, isFiltered, matches, sameState, stateFromUrl,
@@ -60,6 +61,21 @@ test("retains valid selections with no matches in the Microsoft gallery", () => 
   assert.deepEqual([...carried.authors], ["community"]);
   assert.deepEqual([...carried.tags], ["community-only"]);
   assert.ok(sameState(stateFromUrl(filterParams(carried, "newest"), labels), state));
+});
+
+test("discovers Agent Building before submissions exist and round-trips its filter", () => {
+  const categories = collectCategories([]);
+  assert.equal(new Map(categories).get("Agent Building"), 0);
+  const catalogLabels: FacetLabels = {
+    ...labels,
+    categories: new Map(categories.map(([category]) => [category, category])),
+  };
+  const state = stateFromUrl(new URLSearchParams("category=Agent%20Building"), catalogLabels);
+  assert.deepEqual([...state.categories], ["Agent Building"]);
+  assert.equal(matches({ ...microsoft, categories: ["Agent Building"] }, state), true);
+  assert.equal(matches(microsoft, state), false);
+  assert.equal(filterParams(state, "newest").get("category"), "Agent Building");
+  assert.ok(sameState(stateFromUrl(new URLSearchParams(filterParams(state, "newest").toString()), catalogLabels), state));
 });
 
 test("ignores invalid values without dropping valid selections", () => {

@@ -73,7 +73,7 @@ contributor page.
 `category` is the one fixed category that best matches who uses the solution
 and the business activity it supports: `Customer service`, `Sales & marketing`,
 `IT & security`, `Operations`, `Project & communications management`, `HR`, `Finance`,
-`Legal & compliance`, `Productivity & knowledge`, or `Other`. See
+`Legal & compliance`, `Productivity & knowledge`, `Agent Building`, or `Other`. See
 [Choose a category](submissions/README.md#choose-a-category) for who each one
 is for. Contributors can't add new values yet: use `Other` and suggest one in
 your pull request.

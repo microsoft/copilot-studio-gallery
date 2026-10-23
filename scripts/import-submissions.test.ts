@@ -4,6 +4,7 @@ import { cp, lstat, mkdir, readFile, rm, symlink, writeFile } from "node:fs/prom
 import { join } from "node:path";
 import test from "node:test";
 import AdmZip from "adm-zip";
+import { collectCategories } from "../src/lib/catalog";
 import { isMcpNode } from "../src/lib/graphVisuals";
 import { solutionSchema } from "../src/lib/schema";
 import {
@@ -414,12 +415,25 @@ test("accepts a missing category but only one category from the fixed list", asy
   await writeFile(metadataPath, JSON.stringify(withoutCategory));
   await importSubmissions({ root: workspace, check: true });
   const metadata = withoutCategory;
-  for (const category of ["", "Not a category", ["HR"]]) {
+  for (const category of ["", "Not a category", "Agent building", "agent building", "Agent Building ", ["HR"]]) {
     await writeFile(metadataPath, JSON.stringify({ ...metadata, category }));
     await assert.rejects(() => importSubmissions({ root: workspace, check: true }), /invalid metadata\.json/);
   }
   await writeFile(metadataPath, JSON.stringify({ ...metadata, category: "Finance" }));
   await importSubmissions({ root: workspace, check: true });
+});
+
+test("imports Agent Building into generated content and category discovery", async () => {
+  const metadataPath = join(workspace, "submissions/demo-agent/metadata.json");
+  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  await writeFile(metadataPath, JSON.stringify({ ...metadata, category: "Agent Building" }));
+  await importSubmissions({ root: workspace, check: true });
+  await importSubmissions({ root: workspace });
+  const record = solutionSchema.parse(JSON.parse(await readFile(join(workspace, "src/content/solutions/demo-agent.json"), "utf8")));
+  assert.equal(record.category, "Agent Building");
+  const categories = new Map(collectCategories([{ id: "demo-agent", collection: "solutions", data: record }]));
+  assert.equal(categories.get("Agent Building"), 1);
+  assert.equal(categories.get("Customer service"), 0);
 });
 
 test("rejects invalid metadata, unsafe slugs, and symlinks", async () => {

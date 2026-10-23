@@ -73,7 +73,7 @@ jobs:
             exit 0
           fi
           FILES="$(gh api --paginate "repos/$REPO/pulls/$PR/files" --jq '.[].filename')"
-          SUBMISSION="$(printf '%s\n' "$FILES" | grep -E '^submissions/' || true)"
+          SUBMISSION="$(printf '%s\n' "$FILES" | grep -E '^submissions/' | grep -vxF 'submissions/README.md' || true)"
           SITE="$(printf '%s\n' "$FILES" \
             | grep -vE '^submissions/' \
             | grep -vE '^src/content/solutions/' \
