@@ -47,11 +47,25 @@ test("isDemo matches the demo tag case-insensitively", () => {
   assert.equal(isDemo([]), false);
 });
 
-test("normalizes absent, invalid, and legacy sort modes to newest", () => {
+test("normalizes absent and invalid sort modes to featured", () => {
   assert.equal(parseSortMode("name"), "name");
-  for (const value of ["newest", "featured", "invalid", "", null, undefined]) {
-    assert.equal(parseSortMode(value), "newest");
+  assert.equal(parseSortMode("newest"), "newest");
+  for (const value of ["featured", "invalid", "", null, undefined]) {
+    assert.equal(parseSortMode(value), "featured");
   }
+});
+
+test("featured sorting follows the launch order, then newest", () => {
+  const solutions = [
+    { name: "Unranked old", createdAt: "2026-01-01" },
+    { name: "Second", rank: 1, createdAt: "2026-01-01" },
+    { name: "Unranked new", createdAt: "2026-09-01" },
+    { name: "First", rank: 0 },
+  ];
+  assert.deepEqual(
+    [...solutions].sort((a, b) => compareSolutionOrder(a, b, "featured")).map((solution) => solution.name),
+    ["First", "Second", "Unranked new", "Unranked old"],
+  );
 });
 
 test("Contains uses positive inventory counts and keeps MCP servers separate from tools", () => {

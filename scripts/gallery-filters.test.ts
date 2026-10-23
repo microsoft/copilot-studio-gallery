@@ -80,7 +80,7 @@ test("ignores invalid values without dropping valid selections", () => {
 test("normalizes legacy type links while preserving their remaining filters", () => {
   const legacy = stateFromUrl(new URLSearchParams("makeup=Workflows&contains=skill"), labels);
   assert.equal(legacy.type, "workflows");
-  assert.equal(filterParams(legacy, "newest").toString(), "type=workflows&contains=skill");
+  assert.equal(filterParams(legacy, "featured").toString(), "type=workflows&contains=skill");
   const current = stateFromUrl(new URLSearchParams("type=agents&makeup=Workflows"), labels);
   assert.equal(current.type, "agents");
 });
@@ -125,7 +125,8 @@ test("draft changes do not mutate applied selections", () => {
 test("cleared filters omit defaults and keep a chosen sort order", () => {
   const state = emptyState();
   assert.equal(isFiltered(state), false);
-  assert.equal(filterParams(state, "newest").toString(), "");
+  assert.equal(filterParams(state, "featured").toString(), "");
+  assert.equal(filterParams(state, "newest").toString(), "sort=newest");
   assert.equal(filterParams(state, "name").toString(), "sort=name");
   state.contains.add("skill");
   assert.equal(isFiltered(state), true);

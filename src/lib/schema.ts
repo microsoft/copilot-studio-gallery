@@ -25,7 +25,7 @@ const categorySchema = z
   })
   .optional();
 
-// Copilot Studio Hackathon recognition, set by maintainers during review.
+// PPCC Vegas 2026 Build-a-thon recognition, set by maintainers during review.
 export const HACKATHON_AWARDS = ["hacker", "winner"] as const;
 export type HackathonAward = (typeof HACKATHON_AWARDS)[number];
 const hackathonSchema = z

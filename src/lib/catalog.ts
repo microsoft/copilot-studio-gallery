@@ -1,5 +1,6 @@
 import type { CollectionEntry } from "astro:content";
 import { isDemo } from "./discovery";
+import { launchRank } from "./launchOrder";
 import { CATEGORIES, contributorKey, type Category } from "./schema";
 
 export type SolutionEntry = CollectionEntry<"solutions">;
@@ -24,11 +25,12 @@ export function collectCategories(solutions: SolutionEntry[]): Array<[Category, 
   ]);
 }
 
-/** Built by Microsoft first, demos last, then newest, then name — the gallery's default order. */
+/** Built by Microsoft first, demos last, then the launch order, newest, and name — the gallery's default order. */
 export function compareSolutions(a: SolutionEntry, b: SolutionEntry): number {
   const updated = (entry: SolutionEntry) => entry.data.updatedAt ?? entry.data.createdAt ?? "";
   return Number(b.data.featured) - Number(a.data.featured)
     || Number(isDemo(a.data.tags)) - Number(isDemo(b.data.tags))
+    || launchRank(a.id) - launchRank(b.id)
     || updated(b).localeCompare(updated(a))
     || a.data.name.localeCompare(b.data.name);
 }

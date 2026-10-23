@@ -2,6 +2,7 @@
 import SolutionCard from "./SolutionCard.astro";
 import { collectCategories, collectContributors, collectTags, compareSolutions } from "../lib/catalog";
 import { getPublishedSolutions } from "../lib/published";
+import { launchRank } from "../lib/launchOrder";
 import { COMING_SOON } from "../lib/comingSoon";
 import { CONTAINS_KINDS, containedComponents } from "../lib/discovery";
 import { COMPONENT_LABELS, solutionInventory } from "../lib/inventory";
@@ -49,6 +50,7 @@ function filterAttributes(solution: (typeof solutions)[number]) {
     "data-workflows": data.workflows.map((workflow) => workflow.name).join(" ").toLowerCase(),
     "data-featured": data.featured ? "1" : "0",
     "data-updated": data.updatedAt ?? data.createdAt ?? "",
+    "data-rank": String(launchRank(solution.id)),
   };
 }
 ---
@@ -236,6 +238,7 @@ function filterAttributes(solution: (typeof solutions)[number]) {
         <label class="flex shrink-0 items-center gap-2">
           <span class="hidden text-sm text-muted sm:inline">{microsoftOnly ? "Sort by" : "Sort community"}</span>
           <select id="sort-select" aria-label={`Sort ${catalogName} solutions`} class="h-11 w-28 rounded-lg border border-border bg-elevated px-3 text-sm text-ink sm:w-40">
+            <option value="featured">Featured</option>
             <option value="newest">Newest</option>
             <option value="name">Name</option>
           </select>
@@ -340,6 +343,7 @@ function filterAttributes(solution: (typeof solutions)[number]) {
     return [item, {
       name: data.name ?? "",
       updatedAt: data.updated,
+      rank: Number(data.rank),
       demo: isDemo(list(data.tags)),
       text: [data.name, data.description, data.tags, data.categories, data.agents, data.workflows, data.authorName].join(" ").toLowerCase(),
       types: list(data.types),

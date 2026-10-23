@@ -77,7 +77,7 @@ export function filterParams(state: FilterState, sort: SortMode): URLSearchParam
   FACETS.forEach((facet) => {
     if (state[facet].size) params.set(URL_PARAMS[facet], [...state[facet]].join(","));
   });
-  if (sort !== "newest") params.set("sort", sort);
+  if (sort !== "featured") params.set("sort", sort);
   return params;
 }
 
