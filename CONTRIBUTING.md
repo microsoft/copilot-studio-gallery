@@ -83,7 +83,7 @@ without a category still appear in the gallery, but not under category filters.
 `featured: true` marks a solution as **Built by Microsoft**. Leave it `false`
 unless the solution was built by a Microsoft team.
 
-`hackathon` records a PPCC Vegas 2026 Build-a-thon badge: `hacker` (built a
+`hackathon` records a Copilot Studio Agents & Workflows Build-a-thon badge: `hacker` (built a
 solution at the Build-a-thon) or `winner`. Maintainers set it during review, so
 leave it out of your submission. Every credited author shows the badge on their
 contributor page and in the contributors directory.
