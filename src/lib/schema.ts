@@ -25,6 +25,13 @@ const categorySchema = z
   })
   .optional();
 
+// Copilot Studio Hackathon recognition, set by maintainers during review.
+export const HACKATHON_AWARDS = ["hacker", "winner"] as const;
+export type HackathonAward = (typeof HACKATHON_AWARDS)[number];
+const hackathonSchema = z
+  .enum(HACKATHON_AWARDS, { error: () => `hackathon must be one of: ${HACKATHON_AWARDS.join(", ")}` })
+  .optional();
+
 const githubHandleSchema = z.string().regex(/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i);
 
 export const authorSchema = z.object({
@@ -48,6 +55,7 @@ export const submissionMetadataSchema = z
     createdAt: z.iso.date().optional(),
     updatedAt: z.iso.date().optional(),
     featured: z.boolean().default(false),
+    hackathon: hackathonSchema,
     previewWorkflow: z.string().trim().min(1).optional(),
   })
   .superRefine((metadata, ctx) => {
@@ -139,6 +147,7 @@ export const solutionSchema = z.object({
   createdAt: z.iso.date().optional(),
   updatedAt: z.iso.date().optional(),
   featured: z.boolean().default(false),
+  hackathon: hackathonSchema,
   previewWorkflow: z.string().min(1).optional(),
   uniqueName: z.string(),
   version: z.string(),

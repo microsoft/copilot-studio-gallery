@@ -120,3 +120,10 @@ test("counts MCP servers shipped as connectors once, without double-counting one
   assert.equal(solutionInventory(data).mcpServers, 2);
   assert.equal(solutionInventory({ ...data, connectors: undefined }).mcpServers, 1);
 });
+
+test("hackathon badges list the best award first", async () => {
+  const { earnedHackathonBadges } = await import("../src/lib/hackathon");
+  const solution = (name: string, hackathon?: "hacker" | "winner") => ({ data: { name, hackathon } });
+  const badges = earnedHackathonBadges([solution("B", "hacker"), solution("None"), solution("C", "winner"), solution("A", "hacker")]);
+  assert.deepEqual(badges.map(({ badge, solution }) => `${badge.award}:${solution.data.name}`), ["winner:C", "hacker:A", "hacker:B"]);
+});

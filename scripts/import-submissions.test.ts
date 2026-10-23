@@ -152,6 +152,18 @@ test("generated content requires a valid hero ID only when workflows are present
   assert.throws(() => solutionSchema.parse({ ...agentOnly, previewWorkflow: record.previewWorkflow }), /previewWorkflow must identify/);
 });
 
+test("imports a hackathon award and rejects unknown awards", async () => {
+  const metadataPath = join(workspace, "submissions/demo-agent/metadata.json");
+  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  await writeFile(metadataPath, JSON.stringify({ ...metadata, hackathon: "winner" }));
+  await importSubmissions({ root: workspace });
+  const record = JSON.parse(await readFile(join(workspace, "src/content/solutions/demo-agent.json"), "utf8"));
+  assert.equal(solutionSchema.parse(record).hackathon, "winner");
+
+  await writeFile(metadataPath, JSON.stringify({ ...metadata, hackathon: "champion" }));
+  await assert.rejects(() => importSubmissions({ root: workspace, check: true }), /hackathon must be one of/);
+});
+
 test("keeps agent-only submissions valid but rejects a workflow selection on them", async () => {
   const metadataPath = join(workspace, "submissions/demo-agent/metadata.json");
   const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
