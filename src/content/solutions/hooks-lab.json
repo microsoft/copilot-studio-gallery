@@ -1,0 +1,774 @@
+{
+  "name": "Hooks Lab",
+  "description": "A hands-on Copilot Studio sample teaching six hook events with real weather tools, targeted prompt redaction, blocked calls, changed results and failure context.",
+  "tags": [
+    "hooks",
+    "copilot-studio",
+    "learning",
+    "weather",
+    "tool-use"
+  ],
+  "category": "Agent Building",
+  "createdAt": "2026-10-23",
+  "updatedAt": "2026-10-23",
+  "featured": true,
+  "previewWorkflow": "{7d9cec7c-d2ce-f111-a05d-0022480b1af1}",
+  "author": "adilei",
+  "authors": [
+    {
+      "name": "adilei",
+      "github": "adilei",
+      "url": "https://github.com/adilei"
+    }
+  ],
+  "uniqueName": "HooksLab",
+  "version": "1.0.0.0",
+  "publisher": "Hooks Lab Samples",
+  "bundle": "bundles/hooks-lab.zip",
+  "agentCount": 1,
+  "workflowCount": 6,
+  "componentCount": 6,
+  "agents": [
+    {
+      "id": "cr_hookslab",
+      "schemaName": "cr_hookslab",
+      "name": "Hooks Lab",
+      "model": "Auto",
+      "instructions": "You are Hooks Lab, a working educational agent that demonstrates its configured Copilot Studio hooks.\nFor questions about your configuration, load hooks-configuration-reference. For an explicit demo,\nload hooks-demo-guide and carry out the selected real tool call exactly as described. Explain the\nobserved before/after behavior briefly. Do not simulate a tool call or claim execution from intent.\n\nTreat this as a guided lesson for a first-time visitor, not an engineering diagnostic report.\nUse plain language and the production UX hook names. Give an exact copyable demo prompt\nand explain what the learner should expect. After a demo, briefly explain what happened:\nwhat was requested, what the hook changed or stopped, and what result came back.\nKeep demo replies to at most four short sentences or three short bullets unless asked for\nmore detail. Show only the weather values needed for the lesson, not a full weather report.\nAlways describe the baseline as having \"no tool hooks\", not \"no hooks\": lifecycle hooks remain.\nDo not dump workflow IDs, component names, raw JSON, internal markers or native event names\nunless the user asks for technical details. Use \"made-up example\" rather than unexplained jargon.\nDo not append an operator-trace checklist to every reply. Be honest about missing evidence,\nbut explain only the uncertainty relevant to the result the learner is seeing.\n\"Show my hooks\" should give a simple hook / what to type / what to expect overview.\n\"What did the Start hook tell you about me?\" should quote the actual learning-interest\nnote from this session, without its internal marker. Explain that the sample supplied it\nautomatically; it is not a personal fact inferred from outside information.\n\nTeach exactly these production UX event types: Start (pre-loop), User prompt submitted,\nError, Pre tool use, Post tool use, and After tool failure. AgentStop is not configured\nor part of this sample. Use the UX labels first, with native identifiers only when useful.\nThis v",
+      "channels": [],
+      "toolCount": 7,
+      "skillCount": 2,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:cr_hookslab",
+        "name": "Hooks Lab",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "Auto",
+          "instructions": "You are Hooks Lab, a working educational agent that demonstrates its configured Copilot Studio hooks.\nFor questions about your configuration, load hooks-configuration-reference. For an explicit demo,\nload hooks-demo-guide and carry out the selected real tool call exactly as described. Explain the\nobserved before/after behavior briefly. Do not simulate a tool call or claim execution from intent.\n\nTreat this as a guided lesson for a first-time visitor, not an engineering diagnostic report.\nUse plain language and the production UX hook names. Give an exact copyable demo prompt\nand explain what the learner should expect. After a demo, briefly explain what happened:\nwhat was requested, what the hook changed or stopped, and what result came back.\nKeep demo replies to at most four short sentences or three short bullets unless asked for\nmore detail. Show only the weather values needed for the lesson, not a full weather report.\nAlways describe the baseline as having \"no tool hooks\", not \"no hooks\": lifecycle hooks remain.\nDo not dump workflow IDs, component names, raw JSON, internal markers or native event names\nunless the user asks for technical details. Use \"made-up example\" rather than unexplained jargon.\nDo not append an operator-trace checklist to every reply. Be honest about missing evidence,\nbut explain only the uncertainty relevant to the result the learner is seeing.\n\"Show my hooks\" should give a simple hook / what to type / what to expect overview.\n\"What did the Start hook tell you about me?\" should quote the actual learning-interest\nnote from this session, without its internal marker. Explain that the sample supplied it\nautomatically; it is not a personal fact inferred from outside information.\n\nTeach exactly these production UX event types: Start (pre-loop), User prompt submitted,\nError, Pre tool use, Post tool use, and After tool failure. AgentStop is not configured\nor part of this sample. Use the UX labels first, with native identifiers only when useful.\nThis v",
+          "channels": [],
+          "toolCount": 7,
+          "skillCount": 2,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:cr_hookslab.skill.HooksConfiguration_Hl1",
+        "name": "hooks-configuration-reference",
+        "type": "skill",
+        "position": {
+          "x": 1248,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cr_hookslab.skill.HooksConfiguration_Hl1",
+          "description": "Explains this agent's actual hook events, workflow bindings, scopes, output contracts and limitations."
+        }
+      },
+      {
+        "id": "skill:cr_hookslab.skill.HooksDemoGuide_Hl2",
+        "name": "hooks-demo-guide",
+        "type": "skill",
+        "position": {
+          "x": 908,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cr_hookslab.skill.HooksDemoGuide_Hl2",
+          "description": "Runs explicit, harmless hook demonstrations using real weather tools, built-in web knowledge and bash."
+        }
+      },
+      {
+        "id": "tool:cr_hookslab.tool.WeatherAugment_Hl5",
+        "name": "weather_augment_demo",
+        "type": "tool",
+        "position": {
+          "x": 568,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cr_hookslab.tool.WeatherAugment_Hl5",
+          "operation": "CurrentWeather",
+          "description": "Explicit PostTool context-augmentation demo only. Returns real current weather and the hook appends teaching context without replacing the result."
+        }
+      },
+      {
+        "id": "tool:cr_hookslab.tool.WeatherDeny_Hl3",
+        "name": "weather_deny_demo",
+        "type": "tool",
+        "position": {
+          "x": 228,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cr_hookslab.tool.WeatherDeny_Hl3",
+          "operation": "CurrentWeather",
+          "description": "Explicit PreTool denial demo only. Request weather for Seattle in C; the hook denies the call before the connector executes. Do not retry with weather_live."
+        }
+      },
+      {
+        "id": "tool:cr_hookslab.tool.WeatherFailure_Hl7",
+        "name": "weather_failure_demo",
+        "type": "tool",
+        "position": {
+          "x": -111.99999999999997,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cr_hookslab.tool.WeatherFailure_Hl7",
+          "operation": "CurrentWeather",
+          "description": "Demonstrates After tool failure using one intentional invalid-location weather lookup. Only use for the explicit Demo tool failure request, with Location HOOKLAB_FAIL_NOT_A_REAL_PLACE_8H6E and units C. Do not retry."
+        }
+      },
+      {
+        "id": "tool:cr_hookslab.tool.WeatherLive_Hl1",
+        "name": "weather_live",
+        "type": "tool",
+        "position": {
+          "x": -452,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cr_hookslab.tool.WeatherLive_Hl1",
+          "operation": "CurrentWeather",
+          "description": "Gets real current weather. Use for ordinary requests and baseline comparisons. Location is required; units is C for metric or I for imperial."
+        }
+      },
+      {
+        "id": "tool:cr_hookslab.tool.WeatherReplace_Hl4",
+        "name": "weather_replace_demo",
+        "type": "tool",
+        "position": {
+          "x": -792,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cr_hookslab.tool.WeatherReplace_Hl4",
+          "operation": "CurrentWeather",
+          "description": "Explicit PostTool result-replacement demo only. Runs real current weather, then the hook substitutes clearly labeled synthetic teaching content. Never present it as current weather."
+        }
+      },
+      {
+        "id": "tool:cr_hookslab.tool.WeatherRewrite_Hl2",
+        "name": "weather_rewrite_demo",
+        "type": "tool",
+        "position": {
+          "x": -1132,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cr_hookslab.tool.WeatherRewrite_Hl2",
+          "operation": "CurrentWeather",
+          "description": "Explicit PreTool argument-rewrite demo only. Send Location HOOKLAB_REWRITE:Seattle and units I. The hook removes the marker and changes units to C before real weather execution."
+        }
+      },
+      {
+        "id": "tool:cr_hookslab.tool.WeatherSuppress_Hl6",
+        "name": "weather_suppress_demo",
+        "type": "tool",
+        "position": {
+          "x": -1472,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cr_hookslab.tool.WeatherSuppress_Hl6",
+          "operation": "CurrentWeather",
+          "description": "Explicit PostTool suppressOutput demonstration only. Requests SDK/UI output suppression after real weather execution; not a redaction or security guarantee."
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:cr_hookslab-includes-cr_hookslab.skill.HooksConfiguration_Hl1",
+        "source": "agent:cr_hookslab",
+        "target": "skill:cr_hookslab.skill.HooksConfiguration_Hl1",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cr_hookslab-includes-cr_hookslab.skill.HooksDemoGuide_Hl2",
+        "source": "agent:cr_hookslab",
+        "target": "skill:cr_hookslab.skill.HooksDemoGuide_Hl2",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cr_hookslab-uses-cr_hookslab.tool.WeatherAugment_Hl5",
+        "source": "agent:cr_hookslab",
+        "target": "tool:cr_hookslab.tool.WeatherAugment_Hl5",
+        "label": "uses"
+      },
+      {
+        "id": "agent:cr_hookslab-uses-cr_hookslab.tool.WeatherDeny_Hl3",
+        "source": "agent:cr_hookslab",
+        "target": "tool:cr_hookslab.tool.WeatherDeny_Hl3",
+        "label": "uses"
+      },
+      {
+        "id": "agent:cr_hookslab-uses-cr_hookslab.tool.WeatherFailure_Hl7",
+        "source": "agent:cr_hookslab",
+        "target": "tool:cr_hookslab.tool.WeatherFailure_Hl7",
+        "label": "uses"
+      },
+      {
+        "id": "agent:cr_hookslab-uses-cr_hookslab.tool.WeatherLive_Hl1",
+        "source": "agent:cr_hookslab",
+        "target": "tool:cr_hookslab.tool.WeatherLive_Hl1",
+        "label": "uses"
+      },
+      {
+        "id": "agent:cr_hookslab-uses-cr_hookslab.tool.WeatherReplace_Hl4",
+        "source": "agent:cr_hookslab",
+        "target": "tool:cr_hookslab.tool.WeatherReplace_Hl4",
+        "label": "uses"
+      },
+      {
+        "id": "agent:cr_hookslab-uses-cr_hookslab.tool.WeatherRewrite_Hl2",
+        "source": "agent:cr_hookslab",
+        "target": "tool:cr_hookslab.tool.WeatherRewrite_Hl2",
+        "label": "uses"
+      },
+      {
+        "id": "agent:cr_hookslab-uses-cr_hookslab.tool.WeatherSuppress_Hl6",
+        "source": "agent:cr_hookslab",
+        "target": "tool:cr_hookslab.tool.WeatherSuppress_Hl6",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [
+    {
+      "id": "{416cee55-d2ce-f111-a05d-0022480b1af1}",
+      "name": "Hooks Lab - Prompt rewrite",
+      "trigger": "When an agent calls the flow",
+      "nodeCount": 2,
+      "edgeCount": 1,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start",
+            "name": "When an agent calls the flow",
+            "type": "start",
+            "position": {
+              "x": 100,
+              "y": 200
+            },
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When an agent calls the flow",
+              "apiName": "Skills",
+              "operationName": "SkillsButton"
+            }
+          },
+          {
+            "id": "builtinFunction-e3a87772-df72-4f4a-bc4f-e57fa3728519",
+            "name": "Rewrite_Explicit_Demo",
+            "type": "builtinFunction",
+            "position": {
+              "x": 500,
+              "y": 200
+            },
+            "details": {
+              "category": "request"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-builtinFunction-e3a87772-df72-4f4a-bc4f-e57fa3728519",
+            "source": "start",
+            "target": "builtinFunction-e3a87772-df72-4f4a-bc4f-e57fa3728519"
+          }
+        ]
+      }
+    },
+    {
+      "id": "{eae04f5c-d2ce-f111-a05d-0022480b1af1}",
+      "name": "Hooks Lab - SDK error",
+      "trigger": "When an agent calls the flow",
+      "nodeCount": 2,
+      "edgeCount": 1,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start",
+            "name": "When an agent calls the flow",
+            "type": "start",
+            "position": {
+              "x": 100,
+              "y": 200
+            },
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When an agent calls the flow",
+              "apiName": "Skills",
+              "operationName": "SkillsButton"
+            }
+          },
+          {
+            "id": "builtinFunction-765538e7-5c79-41a2-9a13-cfcbd44965a5",
+            "name": "Choose_Bounded_Recovery",
+            "type": "builtinFunction",
+            "position": {
+              "x": 500,
+              "y": 200
+            },
+            "details": {
+              "category": "request"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-builtinFunction-765538e7-5c79-41a2-9a13-cfcbd44965a5",
+            "source": "start",
+            "target": "builtinFunction-765538e7-5c79-41a2-9a13-cfcbd44965a5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "{aeaca24c-d2ce-f111-a05d-0022480b1af1}",
+      "name": "Hooks Lab - Session start",
+      "trigger": "When an agent calls the flow",
+      "nodeCount": 2,
+      "edgeCount": 1,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start",
+            "name": "When an agent calls the flow",
+            "type": "start",
+            "position": {
+              "x": 100,
+              "y": 200
+            },
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When an agent calls the flow",
+              "apiName": "Skills",
+              "operationName": "SkillsButton"
+            }
+          },
+          {
+            "id": "builtinFunction-9a224503-7a15-4f51-988d-ab5af56f557f",
+            "name": "Seed_Lab_Context",
+            "type": "builtinFunction",
+            "position": {
+              "x": 500,
+              "y": 200
+            },
+            "details": {
+              "category": "request"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-builtinFunction-9a224503-7a15-4f51-988d-ab5af56f557f",
+            "source": "start",
+            "target": "builtinFunction-9a224503-7a15-4f51-988d-ab5af56f557f"
+          }
+        ]
+      }
+    },
+    {
+      "id": "{b0df4f5c-d2ce-f111-a05d-0022480b1af1}",
+      "name": "Hooks Lab - Tool failure",
+      "trigger": "When an agent calls the flow",
+      "nodeCount": 2,
+      "edgeCount": 1,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start",
+            "name": "When an agent calls the flow",
+            "type": "start",
+            "position": {
+              "x": 100,
+              "y": 200
+            },
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When an agent calls the flow",
+              "apiName": "Skills",
+              "operationName": "SkillsButton"
+            }
+          },
+          {
+            "id": "builtinFunction-4a19a1c7-2340-4c56-a729-c299aaec7d7e",
+            "name": "Explain_Controlled_Failure",
+            "type": "builtinFunction",
+            "position": {
+              "x": 500,
+              "y": 200
+            },
+            "details": {
+              "category": "request"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-builtinFunction-4a19a1c7-2340-4c56-a729-c299aaec7d7e",
+            "source": "start",
+            "target": "builtinFunction-4a19a1c7-2340-4c56-a729-c299aaec7d7e"
+          }
+        ]
+      }
+    },
+    {
+      "id": "{bd31f083-d2ce-f111-a05d-0022480b1af1}",
+      "name": "Hooks Lab - Weather post tool",
+      "trigger": "When an agent calls the flow",
+      "nodeCount": 3,
+      "edgeCount": 2,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start",
+            "name": "When an agent calls the flow",
+            "type": "start",
+            "position": {
+              "x": 100,
+              "y": 200
+            },
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When an agent calls the flow",
+              "apiName": "Skills",
+              "operationName": "SkillsButton"
+            }
+          },
+          {
+            "id": "node-1",
+            "name": "Initialize Select_Demo",
+            "type": "variable",
+            "position": {
+              "x": 500,
+              "y": 200
+            },
+            "details": {}
+          },
+          {
+            "id": "builtinFunction-9d369c01-11fe-4568-a342-2287d329b772",
+            "name": "Apply_Weather_Output_Demo",
+            "type": "builtinFunction",
+            "position": {
+              "x": 900,
+              "y": 200
+            },
+            "details": {
+              "category": "request"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-node-1",
+            "source": "start",
+            "target": "node-1"
+          },
+          {
+            "id": "edge-node-1-builtinFunction-9d369c01-11fe-4568-a342-2287d329b772",
+            "source": "node-1",
+            "target": "builtinFunction-9d369c01-11fe-4568-a342-2287d329b772"
+          }
+        ]
+      }
+    },
+    {
+      "id": "{7d9cec7c-d2ce-f111-a05d-0022480b1af1}",
+      "name": "Hooks Lab - Weather pre tool",
+      "trigger": "When an agent calls the flow",
+      "nodeCount": 3,
+      "edgeCount": 2,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start",
+            "name": "When an agent calls the flow",
+            "type": "start",
+            "position": {
+              "x": 100,
+              "y": 200
+            },
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When an agent calls the flow",
+              "apiName": "Skills",
+              "operationName": "SkillsButton"
+            }
+          },
+          {
+            "id": "node-1",
+            "name": "Initialize Select_Demo",
+            "type": "variable",
+            "position": {
+              "x": 500,
+              "y": 200
+            },
+            "details": {}
+          },
+          {
+            "id": "builtinFunction-c8f05c67-b9e3-44a7-b52c-4557cd4044d5",
+            "name": "Apply_Weather_Demo",
+            "type": "builtinFunction",
+            "position": {
+              "x": 900,
+              "y": 200
+            },
+            "details": {
+              "category": "request"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-node-1",
+            "source": "start",
+            "target": "node-1"
+          },
+          {
+            "id": "edge-node-1-builtinFunction-c8f05c67-b9e3-44a7-b52c-4557cd4044d5",
+            "source": "node-1",
+            "target": "builtinFunction-c8f05c67-b9e3-44a7-b52c-4557cd4044d5"
+          }
+        ]
+      }
+    }
+  ],
+  "connectors": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 2060
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 1913
+    },
+    {
+      "path": "Assets/botcomponent_workflowset.xml",
+      "category": "other",
+      "size": 1356
+    },
+    {
+      "path": "botcomponents/cr_hookslab.hook.PromptRewrite_Hl2/botcomponent.xml",
+      "category": "component",
+      "size": 474
+    },
+    {
+      "path": "botcomponents/cr_hookslab.hook.PromptRewrite_Hl2/data",
+      "category": "component",
+      "size": 146
+    },
+    {
+      "path": "botcomponents/cr_hookslab.hook.SdkError_Hl8/botcomponent.xml",
+      "category": "component",
+      "size": 458
+    },
+    {
+      "path": "botcomponents/cr_hookslab.hook.SdkError_Hl8/data",
+      "category": "component",
+      "size": 132
+    },
+    {
+      "path": "botcomponents/cr_hookslab.hook.SessionStart_Hl1/botcomponent.xml",
+      "category": "component",
+      "size": 431
+    },
+    {
+      "path": "botcomponents/cr_hookslab.hook.SessionStart_Hl1/data",
+      "category": "component",
+      "size": 139
+    },
+    {
+      "path": "botcomponents/cr_hookslab.hook.ToolFailure_Hl7/botcomponent.xml",
+      "category": "component",
+      "size": 462
+    },
+    {
+      "path": "botcomponents/cr_hookslab.hook.ToolFailure_Hl7/data",
+      "category": "component",
+      "size": 201
+    },
+    {
+      "path": "botcomponents/cr_hookslab.hook.WeatherPost_Hl4/botcomponent.xml",
+      "category": "component",
+      "size": 453
+    },
+    {
+      "path": "botcomponents/cr_hookslab.hook.WeatherPost_Hl4/data",
+      "category": "component",
+      "size": 279
+    },
+    {
+      "path": "botcomponents/cr_hookslab.hook.WeatherPre_Hl3/botcomponent.xml",
+      "category": "component",
+      "size": 419
+    },
+    {
+      "path": "botcomponents/cr_hookslab.hook.WeatherPre_Hl3/data",
+      "category": "component",
+      "size": 232
+    },
+    {
+      "path": "botcomponents/cr_hookslab.skill.HooksConfiguration_Hl1/botcomponent.xml",
+      "category": "component",
+      "size": 473
+    },
+    {
+      "path": "botcomponents/cr_hookslab.skill.HooksConfiguration_Hl1/data",
+      "category": "component",
+      "size": 10647
+    },
+    {
+      "path": "botcomponents/cr_hookslab.skill.HooksDemoGuide_Hl2/botcomponent.xml",
+      "category": "component",
+      "size": 456
+    },
+    {
+      "path": "botcomponents/cr_hookslab.skill.HooksDemoGuide_Hl2/data",
+      "category": "component",
+      "size": 10226
+    },
+    {
+      "path": "botcomponents/cr_hookslab.tool.WeatherAugment_Hl5/botcomponent.xml",
+      "category": "component",
+      "size": 503
+    },
+    {
+      "path": "botcomponents/cr_hookslab.tool.WeatherAugment_Hl5/data",
+      "category": "component",
+      "size": 181
+    },
+    {
+      "path": "botcomponents/cr_hookslab.tool.WeatherDeny_Hl3/botcomponent.xml",
+      "category": "component",
+      "size": 507
+    },
+    {
+      "path": "botcomponents/cr_hookslab.tool.WeatherDeny_Hl3/data",
+      "category": "component",
+      "size": 181
+    },
+    {
+      "path": "botcomponents/cr_hookslab.tool.WeatherFailure_Hl7/botcomponent.xml",
+      "category": "component",
+      "size": 572
+    },
+    {
+      "path": "botcomponents/cr_hookslab.tool.WeatherFailure_Hl7/data",
+      "category": "component",
+      "size": 181
+    },
+    {
+      "path": "botcomponents/cr_hookslab.tool.WeatherLive_Hl1/botcomponent.xml",
+      "category": "component",
+      "size": 487
+    },
+    {
+      "path": "botcomponents/cr_hookslab.tool.WeatherLive_Hl1/data",
+      "category": "component",
+      "size": 181
+    },
+    {
+      "path": "botcomponents/cr_hookslab.tool.WeatherReplace_Hl4/botcomponent.xml",
+      "category": "component",
+      "size": 538
+    },
+    {
+      "path": "botcomponents/cr_hookslab.tool.WeatherReplace_Hl4/data",
+      "category": "component",
+      "size": 181
+    },
+    {
+      "path": "botcomponents/cr_hookslab.tool.WeatherRewrite_Hl2/botcomponent.xml",
+      "category": "component",
+      "size": 534
+    },
+    {
+      "path": "botcomponents/cr_hookslab.tool.WeatherRewrite_Hl2/data",
+      "category": "component",
+      "size": 181
+    },
+    {
+      "path": "botcomponents/cr_hookslab.tool.WeatherSuppress_Hl6/botcomponent.xml",
+      "category": "component",
+      "size": 515
+    },
+    {
+      "path": "botcomponents/cr_hookslab.tool.WeatherSuppress_Hl6/data",
+      "category": "component",
+      "size": 181
+    },
+    {
+      "path": "bots/cr_hookslab/bot.xml",
+      "category": "bot",
+      "size": 406
+    },
+    {
+      "path": "bots/cr_hookslab/configuration.json",
+      "category": "bot",
+      "size": 8201
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 8174
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4898
+    },
+    {
+      "path": "Workflows/HooksLab-Promptrewrite-416CEE55-D2CE-F111-A05D-0022480B1AF1.json",
+      "category": "workflow",
+      "size": 7295
+    },
+    {
+      "path": "Workflows/HooksLab-SDKerror-EAE04F5C-D2CE-F111-A05D-0022480B1AF1.json",
+      "category": "workflow",
+      "size": 8762
+    },
+    {
+      "path": "Workflows/HooksLab-Sessionstart-AEACA24C-D2CE-F111-A05D-0022480B1AF1.json",
+      "category": "workflow",
+      "size": 6184
+    },
+    {
+      "path": "Workflows/HooksLab-Toolfailure-B0DF4F5C-D2CE-F111-A05D-0022480B1AF1.json",
+      "category": "workflow",
+      "size": 7074
+    },
+    {
+      "path": "Workflows/HooksLab-Weatherposttool-BD31F083-D2CE-F111-A05D-0022480B1AF1.json",
+      "category": "workflow",
+      "size": 12299
+    },
+    {
+      "path": "Workflows/HooksLab-Weatherpretool-7D9CEC7C-D2CE-F111-A05D-0022480B1AF1.json",
+      "category": "workflow",
+      "size": 13155
+    }
+  ]
+}
