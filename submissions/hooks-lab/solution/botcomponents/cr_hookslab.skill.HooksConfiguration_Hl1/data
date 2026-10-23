@@ -1,0 +1,129 @@
+kind: InlineAgentSkill
+skillFolderName: hooks-configuration-reference
+content: |
+  ---
+  name: hooks-configuration-reference
+  description: Explains this agent's actual hook events, workflow bindings, scopes, output contracts and limitations.
+  ---
+  <!-- bic:source=blank -->
+  # Hooks Lab configuration snapshot v4 - tool-scoped demos and limited prompt edits
+
+  Use for configuration Q&A. This is an authored snapshot, not an API for inspecting later portal edits.
+  Do not claim a hook ran just because it is configured. Distinguish live evidence, synthetic workflow
+  tests, and source contracts. This sample targets the six event types in the production UX screenshot
+  provided on 2026-10-23, not every event present in the CLI object model. Explain observed results
+  without inventing trace access or revealing hidden reasoning.
+
+  ## Explain it simply
+
+  For an ordinary "Show my hooks" request, give a short hook / prompt / expected result overview
+  using the demo guide. Do not show the implementation table or IDs below unless asked for technical
+  details. Describe hooks as steps that can change what happens at a particular moment.
+  The learner copies a demo prompt; the agent supplies the tool inputs.
+  Start adds the note "The user is really interested in learning more about hooks."
+  That is sample-provided context, not a personal fact inferred from outside information.
+  User prompt submitted changes only demo-secret, demo-pin and demo-password to [redacted], leaving
+  the rest of the request intact. These are sample words, not real secrets.
+  Error is a walkthrough using made-up examples, not a live system failure.
+
+  ## Implementation reference - details on request
+
+  Model: Auto. Built-in web search: enabled, without hook bindings. Seven maker-configured tools use MSN Weather
+  shared_msnweather / CurrentWeather, Invoker authentication, connection reference
+  new_sharedmsnweather_093bc. The connector requires Location and units (C metric or I imperial);
+  the verified runtime exposes current_weather_location and current_weather_units instead.
+  weather_live has no tool hooks. Dedicated aliases select rewrite, deny, replace, augment, suppress
+  and intentional failure demos.
+  The aliases are distinct tool components, not extra unsupported connector arguments. The demo guide
+  maps maker display names to the actual generated runtime names. weather_rewrite_demo was exposed
+  as current_weather; others used current_weather_cr_hookslabtoolWeather<Scenario>_Hl<N>.
+  That is historical naming evidence, not a guarantee after adding a component. Resolve the dedicated
+  failure tool by its current catalog description or WeatherFailure_Hl7 identity; never use weather_live.
+
+  | Hook component | Production UX event (native event) | Workflow name | Workflow ID | Scope |
+  | --- | --- | --- | --- | --- |
+  | Start (pre-loop) - session context | Start (pre-loop) (SessionStart) | Hooks Lab - Session start | aeaca24c-d2ce-f111-a05d-0022480b1af1 | Session initialization |
+  | User prompt submitted - prompt rewrite | User prompt submitted (UserPromptSubmitted) | Hooks Lab - Prompt rewrite | 416cee55-d2ce-f111-a05d-0022480b1af1 | Every prompt; only three exact demo strings change |
+  | Pre tool use - weather | Pre tool use (PreTool) | Hooks Lab - Weather pre tool | 7d9cec7c-d2ce-f111-a05d-0022480b1af1 | WeatherRewrite_Hl2 and WeatherDeny_Hl3 only |
+  | Post tool use - weather | Post tool use (PostTool) | Hooks Lab - Weather post tool | bd31f083-d2ce-f111-a05d-0022480b1af1 | WeatherReplace_Hl4, WeatherAugment_Hl5 and WeatherSuppress_Hl6 only |
+  | After tool failure - failure context | After tool failure (PostToolFailure) | Hooks Lab - Tool failure | b0df4f5c-d2ce-f111-a05d-0022480b1af1 | WeatherFailure_Hl7 only |
+  | Error - bounded recovery | Error (Error) | Hooks Lab - SDK error | eae04f5c-d2ce-f111-a05d-0022480b1af1 | SDK/model errors |
+
+  Six hook components cover exactly six production UX event types, one binding per type.
+  Every action is WorkflowHookAction. These workflows are hook actions, not ordinary callable tools.
+  All three tool hooks have nonempty filteredTools using the exact component schema names
+  cr_hookslab.tool.<component identity from the table>. No tool appears in more than one tool filter.
+  WeatherLive_Hl1, skill loading and built-in tools have no tool-hook bindings.
+  The two former built-in hook bindings were removed; their existing workflows are retained unbound.
+  Workflow conditions are not hook-binding filters: a wildcard workflow that returns no changes
+  still ran. This version removes that extra execution rather than merely returning a no-op.
+  Component-based filters cannot individually select unregistered SDK built-ins such as bash,
+  so the bash/web hook demos are intentionally removed rather than silently broken.
+
+  Start and User prompt submitted are lifecycle events, not tool-scoped events. A first-turn
+  "Demo weather deny" can therefore show User prompt submitted, Start, and one weather Pre tool
+  use invocation. Loading the guide must not add Pre/Post tool entries. The denial must not invoke
+  the removed built-in hook, a weather Post tool hook, or the failure-demo hook.
+
+  ## Timing and effect
+  - Start (pre-loop) / SessionStart adds the learning-interest note, with an internal HOOKLAB_SESSION_V1 marker.
+    Quote the friendly note, not the marker, in ordinary replies. It cannot deny admission or directly
+    send a greeting. Ordinary follow-up turns should not be described as new sessions.
+  - User prompt submitted / UserPromptSubmitted replaces every occurrence of the exact lowercase strings
+    demo-secret, demo-pin and demo-password with [redacted] through modifiedPrompt. It preserves all other
+    text and does not disable tools, replace the entire request with instructions, or inspect earlier tool calls.
+    Without a matching string it returns an empty modifiedPrompt, meaning no change. Matching is case-sensitive.
+    The original message and workflow history can still contain the original text; this is not secure secret
+    removal. This is not a blocking gate; additionalContext has a CLI no-op caveat.
+  - Pre tool use / PreTool can deny a call, add context or replace its full argument object. A weather rewrite removes
+    HOOKLAB_REWRITE: from the actual location field and forces the units field to C; other fields survive.
+    The workflow recognizes the verified runtime names/keys as well as the maker names/connector keys.
+    The UX describes allow, deny and confirmation, but this sample has verified deny, not allow/ask.
+    Never present allow/ask as tested or as bypasses for platform consent or security.
+  - Post tool use / PostTool runs after a tool executes. The UX describes successful or failed execution;
+    this sample verified result replacement and augmentation on successful calls. Do not infer failure
+    behavior from that coverage. modifiedResult replaces the result before the model consumes it.
+    The required shape is {"textResultForLlm":"...","resultType":"success","toolTelemetry":{}}.
+    Arbitrary JSON is not enough. additionalContext instead preserves the original result and augments it.
+    Never attach inherited citations to synthetic replacement content.
+  - suppressOutput is an SDK/channel visibility request, not proven redaction or a security boundary.
+    Do not promise it hides information from the model or every client.
+  - After tool failure / PostToolFailure is configured to add context to genuine failed tool events.
+    It does not retry or convert failure to success. A deliberate weather-connector 404 triggered it
+    and delivered HOOKLAB_FAILURE_CONTEXT. A bash nonzero exit did not trigger it in the observed
+    preview; a command exit code and a runtime tool-failure event are not necessarily equivalent.
+  - Error requests retry with retryCount 1 when recoverable, abort otherwise. The exact synthetic
+    HOOKLAB_SYNTHETIC_SKIP error exercises skip in workflow contract tests only. Notification is generic
+    and does not echo raw error data. Do not induce platform outages to demonstrate this.
+
+  There is no supported outgoing/final-response interception hook in this sample. Post tool use result
+  replacement does not overwrite messages already sent. No AgentStop, SessionEnd or OnSignIn demo is
+  configured. This CLI has no AgentHook FailureMode setting; do not promise fail-closed hook execution.
+  Host governance still applies to modified arguments. Prompts and hooks do not bypass authorization.
+
+  ## Prior behavior evidence and current scope
+  The following saved-draft checks established the hook effects before the tool-binding cleanup.
+  They are not proof of invocation counts under the new filters; inspect current runs for that.
+  - Start (pre-loop): workflow invocation confirmed. User prompt submitted: the earlier whole-prompt replacement
+    was observed; that historical result does not establish the new limited-redaction behavior.
+  - Pre tool use: weather rewriting and denial observed. The former built-in demos also worked but
+    are no longer configured, because their wildcard hooks cluttered unrelated tool traces.
+  - Post tool use: weather replacement and augmentation observed. Synthetic output was labeled.
+  - suppressOutput: the workflow request was made, but data still reached the model. Client-side hiding
+    was not verified; this is not redaction.
+  - Error: synthetic workflow outputs verified retry/1, abort/0 and skip/0; no live SDK error was induced.
+  - After tool failure: the connector-error behavior was live-verified using the impossible location
+    HOOKLAB_FAIL_NOT_A_REAL_PLACE_8H6E. Connector 404 remained a failure, with added context and no retry.
+    Workflow run 08584088474251052581667746995CU16 succeeded; its Explain_Controlled_Failure action
+    returned HOOKLAB_FAILURE_CONTEXT. That earlier test used weather_live with a wildcard failure
+    binding. This version uses only weather_failure_demo with a specific binding instead.
+    The harmless bash exit-7 command did not invoke this hook.
+  - These observations are saved-draft previews, not published-agent verification. AgentStop is not an
+    outstanding demo: it was removed to match the six production UX event types.
+
+  For examples, load hooks-demo-guide. If any tool or hook is unavailable, report the limitation;
+  never fabricate a successful demonstration.
+mcs.metadata:
+  componentName: hooks-configuration-reference
+  description: Explains this agent's actual hook events, workflow bindings, scopes, output contracts and limitations.
+  schemaName: cr_hookslab.skill.HooksConfiguration_Hl1

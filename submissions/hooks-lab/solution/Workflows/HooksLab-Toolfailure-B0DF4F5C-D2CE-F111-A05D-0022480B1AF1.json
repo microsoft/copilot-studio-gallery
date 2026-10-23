@@ -1,0 +1,194 @@
+{
+  "properties": {
+    "connectionReferences": {},
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "type": "SecureObject",
+          "defaultValue": {}
+        },
+        "$connections": {
+          "type": "Object",
+          "defaultValue": {}
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "event": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string"
+                },
+                "metadata": {
+                  "type": "object"
+                },
+                "toolName": {
+                  "type": "string"
+                },
+                "parameters": {
+                  "type": "object"
+                },
+                "error": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "event",
+                "timestamp",
+                "metadata",
+                "toolName",
+                "error"
+              ]
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "Hooks Lab - Tool failure",
+                "nodes": [
+                  {
+                    "id": "start",
+                    "name": "When an agent calls the flow",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 100,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "connector",
+                        "connector": {
+                          "apiName": "Skills",
+                          "operationName": "SkillsButton",
+                          "kind": "Skills",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {}
+                            }
+                          },
+                          "displayName": "When an agent calls the flow"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-4a19a1c7-2340-4c56-a729-c299aaec7d7e",
+                    "name": "Explain_Controlled_Failure",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 500,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "response",
+                        "operationName": "response",
+                        "parameters": {
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "type": "string",
+                                "x-ms-dynamically-added": true,
+                                "title": "Additional Context",
+                                "x-ms-content-hint": "TEXT"
+                              }
+                            },
+                            "required": [
+                              "text"
+                            ]
+                          },
+                          "body": {
+                            "text": "@if(contains(string(triggerBody()?['parameters']), 'HOOKLAB_FAIL'), '[HOOKLAB_FAILURE_CONTEXT] The lookup failed because this demo used a made-up place. The hook adds this explanation, but it does not fix the lookup, supply weather or try again. This shows a failed tool call, not a problem with the AI system itself. Do not retry the lookup.', '')"
+                          },
+                          "statusCode": 200
+                        },
+                        "displayName": "Explain_Controlled_Failure",
+                        "category": "request",
+                        "categoryDisplayName": "Request",
+                        "kind": "Skills"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-builtinFunction-4a19a1c7-2340-4c56-a729-c299aaec7d7e",
+                    "source": "start",
+                    "target": "builtinFunction-4a19a1c7-2340-4c56-a729-c299aaec7d7e"
+                  }
+                ],
+                "connectionReferences": {}
+              },
+              "nodeActionMapping": {}
+            }
+          }
+        }
+      },
+      "actions": {
+        "Explain_Controlled_Failure": {
+          "type": "Response",
+          "kind": "Skills",
+          "metadata": {
+            "nodeId": "Explain_Controlled_Failure"
+          },
+          "runAfter": {},
+          "inputs": {
+            "statusCode": 200,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "additionalContext": {
+                  "type": "string"
+                }
+              }
+            },
+            "body": {
+              "additionalContext": "@if(contains(string(triggerBody()?['parameters']), 'HOOKLAB_FAIL'), '[HOOKLAB_FAILURE_CONTEXT] The lookup failed because this demo used a made-up place. The hook adds this explanation, but it does not fix the lookup, supply weather or try again. This shows a failed tool call, not a problem with the AI system itself. Do not retry the lookup.', '')"
+            }
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "telemetryMetadata": {
+          "creationSource": "CopilotStudioMcp",
+          "modifiedSources": "CopilotStudioMcp"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

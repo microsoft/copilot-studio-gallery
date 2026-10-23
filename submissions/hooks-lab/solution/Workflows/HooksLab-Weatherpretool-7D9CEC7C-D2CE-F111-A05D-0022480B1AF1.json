@@ -1,0 +1,287 @@
+{
+  "properties": {
+    "connectionReferences": {},
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "type": "SecureObject",
+          "defaultValue": {}
+        },
+        "$connections": {
+          "type": "Object",
+          "defaultValue": {}
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "event": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string"
+                },
+                "metadata": {
+                  "type": "object"
+                },
+                "toolName": {
+                  "type": "string"
+                },
+                "parameters": {
+                  "type": "object"
+                }
+              },
+              "required": [
+                "event",
+                "timestamp",
+                "metadata",
+                "toolName",
+                "parameters"
+              ]
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "Hooks Lab - Weather pre tool",
+                "nodes": [
+                  {
+                    "id": "start",
+                    "name": "When an agent calls the flow",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 100,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "connector",
+                        "connector": {
+                          "apiName": "Skills",
+                          "operationName": "SkillsButton",
+                          "kind": "Skills",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {}
+                            }
+                          },
+                          "displayName": "When an agent calls the flow"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "node-1",
+                    "name": "Initialize Select_Demo",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 500,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "var-1",
+                            "variableName": "Select_Demo",
+                            "mode": "initialize",
+                            "type": "object",
+                            "value": "{\"toolName\":\"@triggerBody()?['toolName']\",\"originalParameters\":\"@triggerBody()?['parameters']\",\"locationKey\":\"@if(contains(triggerBody()?['parameters'], 'current_weather_location'), 'current_weather_location', 'Location')\",\"unitsKey\":\"@if(contains(triggerBody()?['parameters'], 'current_weather_units'), 'current_weather_units', 'units')\",\"deny\":\"@or(equals(triggerBody()?['toolName'], 'weather_deny_demo'), equals(triggerBody()?['toolName'], 'current_weather_cr_hookslabtoolWeatherDeny_Hl3'))\",\"rewrite\":\"@and(or(equals(triggerBody()?['toolName'], 'weather_rewrite_demo'), equals(triggerBody()?['toolName'], 'current_weather'), equals(triggerBody()?['toolName'], 'current_weather_cr_hookslabtoolWeatherRewrite_Hl2')), startsWith(string(coalesce(triggerBody()?['parameters']?['current_weather_location'], triggerBody()?['parameters']?['Location'])), 'HOOKLAB_REWRITE:'))\"}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-c8f05c67-b9e3-44a7-b52c-4557cd4044d5",
+                    "name": "Apply_Weather_Demo",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 900,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "response",
+                        "operationName": "response",
+                        "parameters": {
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "type": "string",
+                                "x-ms-dynamically-added": true,
+                                "title": "Permission Decision",
+                                "x-ms-content-hint": "TEXT"
+                              },
+                              "text_1": {
+                                "type": "string",
+                                "x-ms-dynamically-added": true,
+                                "title": "Permission Decision Reason",
+                                "x-ms-content-hint": "TEXT"
+                              },
+                              "text_2": {
+                                "type": "object",
+                                "x-ms-dynamically-added": true,
+                                "title": "Modified Parameters",
+                                "x-ms-content-hint": "TEXT"
+                              },
+                              "text_3": {
+                                "type": "string",
+                                "x-ms-dynamically-added": true,
+                                "title": "Additional Context",
+                                "x-ms-content-hint": "TEXT"
+                              }
+                            },
+                            "required": [
+                              "text",
+                              "text_1",
+                              "text_2",
+                              "text_3"
+                            ]
+                          },
+                          "body": {
+                            "text": "@if(variables('Select_Demo')?['deny'], 'deny', '')",
+                            "text_1": "@if(variables('Select_Demo')?['deny'], '[HOOKLAB_WEATHER_DENIED] This demo stopped the weather lookup before it ran. No weather was fetched. Normal weather requests still work.', '')",
+                            "text_2": "@if(variables('Select_Demo')?['rewrite'], setProperty(setProperty(triggerBody()?['parameters'], variables('Select_Demo')?['locationKey'], replace(string(coalesce(triggerBody()?['parameters']?['current_weather_location'], triggerBody()?['parameters']?['Location'])), 'HOOKLAB_REWRITE:', '')), variables('Select_Demo')?['unitsKey'], 'C'), null)",
+                            "text_3": "@if(variables('Select_Demo')?['rewrite'], '[HOOKLAB_WEATHER_ARGS] Before the lookup, the hook removed the demo tag from the place name and changed Fahrenheit to Celsius. Everything else stayed the same. The weather returned is real, not a made-up example.', '')"
+                          },
+                          "statusCode": 200
+                        },
+                        "displayName": "Apply_Weather_Demo",
+                        "category": "request",
+                        "categoryDisplayName": "Request",
+                        "kind": "Skills"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "node-1": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-node-1",
+                    "source": "start",
+                    "target": "node-1"
+                  },
+                  {
+                    "id": "edge-node-1-builtinFunction-c8f05c67-b9e3-44a7-b52c-4557cd4044d5",
+                    "source": "node-1",
+                    "target": "builtinFunction-c8f05c67-b9e3-44a7-b52c-4557cd4044d5"
+                  }
+                ],
+                "connectionReferences": {}
+              },
+              "nodeActionMapping": {}
+            }
+          }
+        }
+      },
+      "actions": {
+        "Select_Demo": {
+          "type": "Compose",
+          "metadata": {
+            "nodeId": "Select_Demo"
+          },
+          "runAfter": {},
+          "inputs": {
+            "toolName": "@triggerBody()?['toolName']",
+            "originalParameters": "@triggerBody()?['parameters']",
+            "locationKey": "@if(contains(triggerBody()?['parameters'], 'current_weather_location'), 'current_weather_location', 'Location')",
+            "unitsKey": "@if(contains(triggerBody()?['parameters'], 'current_weather_units'), 'current_weather_units', 'units')",
+            "deny": "@or(equals(triggerBody()?['toolName'], 'weather_deny_demo'), equals(triggerBody()?['toolName'], 'current_weather_cr_hookslabtoolWeatherDeny_Hl3'))",
+            "rewrite": "@and(or(equals(triggerBody()?['toolName'], 'weather_rewrite_demo'), equals(triggerBody()?['toolName'], 'current_weather'), equals(triggerBody()?['toolName'], 'current_weather_cr_hookslabtoolWeatherRewrite_Hl2')), startsWith(string(coalesce(triggerBody()?['parameters']?['current_weather_location'], triggerBody()?['parameters']?['Location'])), 'HOOKLAB_REWRITE:'))"
+          }
+        },
+        "Apply_Weather_Demo": {
+          "type": "Response",
+          "kind": "Skills",
+          "metadata": {
+            "nodeId": "Apply_Weather_Demo"
+          },
+          "runAfter": {
+            "Select_Demo": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "statusCode": 200,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "permissionDecision": {
+                  "type": "string"
+                },
+                "permissionDecisionReason": {
+                  "type": "string"
+                },
+                "modifiedParameters": {
+                  "type": "object"
+                },
+                "additionalContext": {
+                  "type": "string"
+                }
+              }
+            },
+            "body": {
+              "permissionDecision": "@if(outputs('Select_Demo')?['deny'], 'deny', '')",
+              "permissionDecisionReason": "@if(outputs('Select_Demo')?['deny'], '[HOOKLAB_WEATHER_DENIED] This demo stopped the weather lookup before it ran. No weather was fetched. Normal weather requests still work.', '')",
+              "modifiedParameters": "@if(outputs('Select_Demo')?['rewrite'], setProperty(setProperty(triggerBody()?['parameters'], outputs('Select_Demo')?['locationKey'], replace(string(coalesce(triggerBody()?['parameters']?['current_weather_location'], triggerBody()?['parameters']?['Location'])), 'HOOKLAB_REWRITE:', '')), outputs('Select_Demo')?['unitsKey'], 'C'), null)",
+              "additionalContext": "@if(outputs('Select_Demo')?['rewrite'], '[HOOKLAB_WEATHER_ARGS] Before the lookup, the hook removed the demo tag from the place name and changed Fahrenheit to Celsius. Everything else stayed the same. The weather returned is real, not a made-up example.', '')"
+            }
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "telemetryMetadata": {
+          "creationSource": "CopilotStudioMcp",
+          "modifiedSources": "CopilotStudioMcp"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
