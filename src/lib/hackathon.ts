@@ -3,7 +3,7 @@ import type { HackathonAward } from "./schema";
 export interface HackathonBadge {
   award: HackathonAward;
   title: string;
-  /** Path under /public. Replace the file to swap in the final artwork. */
+  /** Path under /public. Add the artwork here before awarding the badge. */
   image: string;
   meaning: string;
   rank: number;
@@ -15,14 +15,14 @@ export const HACKATHON_BADGES: Record<HackathonAward, HackathonBadge> = {
   winner: {
     award: "winner",
     title: "Hackathon Winner",
-    image: "badges/hackathon-winner.svg",
+    image: "badges/hackathon-winner.png",
     meaning: "Won the Copilot Studio agents & workflows hackathon.",
     rank: 2,
   },
   hacker: {
     award: "hacker",
     title: "Agents & Workflows Hacker",
-    image: "badges/hackathon-hacker.svg",
+    image: "badges/hackathon-hacker.png",
     meaning: "Built and shared a solution at the Copilot Studio agents & workflows hackathon.",
     rank: 1,
   },
