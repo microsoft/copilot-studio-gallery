@@ -86,8 +86,7 @@ unless the solution was built by a Microsoft team.
 `hackathon` records a Copilot Studio Hackathon badge: `hacker` (built a
 solution at the hackathon) or `winner`. Maintainers set it during review, so
 leave it out of your submission. Every credited author shows the badge on their
-contributor page and in the contributors directory. Add the badge artwork to
-`public/badges/` (see `src/lib/hackathon.ts`) before awarding the first badge.
+contributor page and in the contributors directory.
 
 Solution identity, version, publisher, agents, workflows, and their components
 are derived from the exploded payload and cannot be overridden in metadata.

@@ -3,7 +3,7 @@ import type { HackathonAward } from "./schema";
 export interface HackathonBadge {
   award: HackathonAward;
   title: string;
-  /** Path under /public. Add the artwork here before awarding the badge. */
+  /** Badge artwork, relative to /public. */
   image: string;
   meaning: string;
   rank: number;
