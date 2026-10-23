@@ -108,6 +108,9 @@ Merges to `main` deploy the static site to:
 
 <https://microsoft.github.io/copilot-studio-gallery/>
 
+Production builds load Microsoft Clarity project `z2dufgqwq5` on every page
+through the shared layout. Local development does not load Clarity.
+
 ## License
 
 [MIT](LICENSE)
