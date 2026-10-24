@@ -36,7 +36,7 @@ preinstalled packages (pandas, matplotlib, reportlab, Pillow).
 
 | Name | Type | Used for |
 | --- | --- | --- |
-| SharePoint (Work IQ SharePoint MCP) | Tool | Listing and reading the sales files. Limited to read operations. |
+| SharePoint MCP | Tool | Listing and reading the sales files. Limited to read operations. |
 | Draft an email message (Office 365 Outlook) | Tool | Creating the email draft with the PDF attached. Nothing is sent automatically. |
 | `https://www.xe.com/currencyconverter/` | Knowledge | Looking up spot exchange rates at the moment of analysis. |
 
@@ -62,7 +62,7 @@ preinstalled packages (pandas, matplotlib, reportlab, Pillow).
 
 Download the solution ZIP from this page and import it through **Solutions →
 Import solution**. Create or select connections for **Office 365 Outlook** and
-**Work IQ SharePoint** when asked.
+**SharePoint MCP** when asked.
 
 ### 2. Point the agent at your sales data
 
