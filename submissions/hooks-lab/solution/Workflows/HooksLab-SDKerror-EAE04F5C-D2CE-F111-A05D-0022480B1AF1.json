@@ -1,0 +1,231 @@
+{
+  "properties": {
+    "connectionReferences": {},
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "type": "SecureObject",
+          "defaultValue": {}
+        },
+        "$connections": {
+          "type": "Object",
+          "defaultValue": {}
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "event": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string"
+                },
+                "metadata": {
+                  "type": "object"
+                },
+                "error": {
+                  "type": "string"
+                },
+                "errorContext": {
+                  "type": "string"
+                },
+                "recoverable": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "event",
+                "timestamp",
+                "metadata",
+                "error",
+                "errorContext",
+                "recoverable"
+              ]
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "Hooks Lab - SDK error",
+                "nodes": [
+                  {
+                    "id": "start",
+                    "name": "When an agent calls the flow",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 100,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "connector",
+                        "connector": {
+                          "apiName": "Skills",
+                          "operationName": "SkillsButton",
+                          "kind": "Skills",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {}
+                            }
+                          },
+                          "displayName": "When an agent calls the flow"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-765538e7-5c79-41a2-9a13-cfcbd44965a5",
+                    "name": "Choose_Bounded_Recovery",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 500,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "response",
+                        "operationName": "response",
+                        "parameters": {
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "type": "string",
+                                "x-ms-dynamically-added": true,
+                                "title": "Error Handling",
+                                "x-ms-content-hint": "TEXT"
+                              },
+                              "number": {
+                                "type": "integer",
+                                "x-ms-dynamically-added": true,
+                                "title": "Retry Count",
+                                "x-ms-content-hint": "NUMBER"
+                              },
+                              "text_1": {
+                                "type": "string",
+                                "x-ms-dynamically-added": true,
+                                "title": "User Notification",
+                                "x-ms-content-hint": "TEXT"
+                              },
+                              "boolean": {
+                                "type": "boolean",
+                                "x-ms-dynamically-added": true,
+                                "title": "Suppress Output",
+                                "x-ms-content-hint": "BOOLEAN"
+                              }
+                            },
+                            "required": [
+                              "text",
+                              "number",
+                              "text_1",
+                              "boolean"
+                            ]
+                          },
+                          "body": {
+                            "text": "@if(equals(triggerBody()?['error'], 'HOOKLAB_SYNTHETIC_SKIP'), 'skip', if(equals(triggerBody()?['recoverable'], true), 'retry', 'abort'))",
+                            "number": "@if(equals(triggerBody()?['recoverable'], true), 1, 0)",
+                            "text_1": "Hooks Lab received an SDK error. A recoverable error requests one retry; otherwise the turn is stopped. Ordinary tool failures use PostToolFailure instead. No raw error details are exposed here.",
+                            "boolean": false
+                          },
+                          "statusCode": 200
+                        },
+                        "displayName": "Choose_Bounded_Recovery",
+                        "category": "request",
+                        "categoryDisplayName": "Request",
+                        "kind": "Skills"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-builtinFunction-765538e7-5c79-41a2-9a13-cfcbd44965a5",
+                    "source": "start",
+                    "target": "builtinFunction-765538e7-5c79-41a2-9a13-cfcbd44965a5"
+                  }
+                ],
+                "connectionReferences": {}
+              },
+              "nodeActionMapping": {}
+            }
+          }
+        }
+      },
+      "actions": {
+        "Choose_Bounded_Recovery": {
+          "type": "Response",
+          "kind": "Skills",
+          "metadata": {
+            "nodeId": "Choose_Bounded_Recovery"
+          },
+          "runAfter": {},
+          "inputs": {
+            "statusCode": 200,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "errorHandling": {
+                  "type": "string"
+                },
+                "retryCount": {
+                  "type": "integer"
+                },
+                "userNotification": {
+                  "type": "string"
+                },
+                "suppressOutput": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "body": {
+              "errorHandling": "@if(equals(triggerBody()?['error'], 'HOOKLAB_SYNTHETIC_SKIP'), 'skip', if(equals(triggerBody()?['recoverable'], true), 'retry', 'abort'))",
+              "retryCount": "@if(equals(triggerBody()?['recoverable'], true), 1, 0)",
+              "userNotification": "Hooks Lab received an SDK error. A recoverable error requests one retry; otherwise the turn is stopped. Ordinary tool failures use PostToolFailure instead. No raw error details are exposed here.",
+              "suppressOutput": false
+            }
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "telemetryMetadata": {
+          "creationSource": "CopilotStudioMcp",
+          "modifiedSources": "CopilotStudioMcp"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

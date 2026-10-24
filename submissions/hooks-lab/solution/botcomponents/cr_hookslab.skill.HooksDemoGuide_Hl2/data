@@ -1,0 +1,132 @@
+kind: InlineAgentSkill
+skillFolderName: hooks-demo-guide
+content: |
+  ---
+  name: hooks-demo-guide
+  description: Runs explicit hook demonstrations through dedicated weather tools with tool-specific bindings and no wildcard tool hooks.
+  ---
+  <!-- bic:source=blank -->
+  # Hooks Lab demo guide v4 - tool-scoped demos and limited prompt edits
+
+  Run only the requested scenario, not the entire matrix. Explain the intended hook, execute the real
+  selected tool, then distinguish intended effect from observed output. Never fake execution.
+  Use plain, friendly language. The learner only needs the quoted prompt, not tool names or special
+  marker values. You supply the implementation details below. Finish with a short explanation of
+  what the hook did and the actual result. Do not dump JSON, IDs, internal markers or an operator
+  checklist unless asked. Label artificial weather as "made-up example weather", never current conditions.
+  Normal requests must not acquire HOOKLAB markers or use demo aliases.
+  The six event types are Start (pre-loop), User prompt submitted, Error, Pre tool use, Post tool use,
+  and After tool failure. AgentStop is outside this sample; do not offer a stop/self-check demo.
+  There are six hook bindings, one per event type. No tool hook is wildcard-bound. Skill loading
+  and the baseline weather tool do not run tool hooks. Start and User prompt submitted are lifecycle
+  hooks, so their debug entries can still appear alongside the selected tool demo.
+
+  ## What the learner can type and expect
+
+  | Type this | Hook | What to look for |
+  | --- | --- | --- |
+  | Weather baseline | No tool hook | Real Seattle weather, unchanged. |
+  | What did the Start hook tell you about me? | Start (pre-loop) | The note saying the user is really interested in learning more about hooks, added automatically at the start. |
+  | demo prompt rewrite: repeat demo-secret, demo-pin and demo-password. | User prompt submitted | Only the three example terms become [redacted]; the rest of the request stays the same. Type them exactly as shown. |
+  | Demo weather rewrite | Pre tool use | The example request starts in Fahrenheit and is changed to Celsius before the lookup. The weather itself is real. |
+  | Demo weather deny | Pre tool use | The lookup is stopped before it runs. No weather is fetched. |
+  | Demo weather replace | Post tool use | The lookup runs, but its result is swapped for a clearly made-up 21 C example. |
+  | Demo weather augment | Post tool use | Real weather comes back with a helpful extra note. |
+  | Demo tool failure | After tool failure | A made-up place causes an error. The hook explains it without fixing it or trying again. |
+  | Explain the Error demo | Error | Explain made-up retry-once, stop and skip examples. Do not cause a real system error. |
+
+  Do not say all six events were demonstrated live: Error is explanation only.
+  For Start, quote only context actually received and say the sample supplied the note.
+  The older question "What context did Start (pre-loop) supply?" is also supported.
+  Offer the experimental suppress example only if asked about it, and explain that hiding is not guaranteed.
+
+  ## Implementation details - do not require the learner to supply these
+
+  ## Weather
+  The names below are maker display names, not guaranteed model-facing identifiers. Use this mapping
+  verified in the earlier saved-draft preview on 2026-10-23; prefer the maker name if actually exposed.
+  Do not declare a tool missing before checking its mapped name in your available tool catalog.
+  The current catalog and each tool's distinctive description are authoritative if names change.
+  In particular, do not assume an unqualified current_weather always identifies the rewrite tool.
+
+  | Maker display name | Observed runtime tool name |
+  | --- | --- |
+  | weather_live | current_weather_cr_hookslabtoolWeatherLive_Hl1 |
+  | weather_rewrite_demo | current_weather |
+  | weather_deny_demo | current_weather_cr_hookslabtoolWeatherDeny_Hl3 |
+  | weather_replace_demo | current_weather_cr_hookslabtoolWeatherReplace_Hl4 |
+  | weather_augment_demo | current_weather_cr_hookslabtoolWeatherAugment_Hl5 |
+  | weather_suppress_demo | current_weather_cr_hookslabtoolWeatherSuppress_Hl6 |
+  | weather_failure_demo | Resolve the dedicated failure-demo tool by its description or WeatherFailure_Hl7 component identity in the current catalog. Never substitute weather_live. |
+
+  The examples use connector-level keys Location and units for readability. Translate the keys to
+  current_weather_location and current_weather_units when that is the actual exposed schema; do not
+  change the values. In particular, preserve HOOKLAB_REWRITE:Seattle and I in the rewrite request.
+  Units are C or I, never a fabricated unit value. Report a changed catalog instead of guessing.
+  - "Weather baseline": weather_live {"Location":"Seattle","units":"C"}.
+    This tool has no Pre tool use, Post tool use or After tool failure binding.
+  - "Demo weather rewrite": weather_rewrite_demo {"Location":"HOOKLAB_REWRITE:Seattle","units":"I"}.
+    Pre tool use should remove the prefix and force metric before the real call. Do not normalize values yourself.
+    Only the weather Pre tool use hook is bound to this tool.
+  - "Demo weather deny": weather_deny_demo {"Location":"Seattle","units":"C"}.
+    Expect the hook's deny reason, not real weather. Do not try another tool after denial.
+    Only the weather Pre tool use hook is bound to this tool.
+  - "Demo weather replace": weather_replace_demo {"Location":"Seattle","units":"C"}.
+    The connector runs, then Post tool use replaces its result with a clearly artificial 21 C teaching example.
+    Report it as synthetic, not current weather, and do not cite discarded data.
+    Only the weather Post tool use hook is bound to this tool.
+  - "Demo weather augment": weather_augment_demo {"Location":"Seattle","units":"C"}.
+    Report genuine weather and identify the added HOOKLAB_WEATHER_CONTEXT explanation.
+  - "Demo weather suppress": weather_suppress_demo {"Location":"Seattle","units":"C"}.
+    Explain the visibility request without claiming a security guarantee or unsupported UI behavior.
+    Augment and suppress also have only the weather Post tool use hook bound.
+
+  Runtime hooks may rewrite recorded arguments or add a restricted-user command wrapper. Do not infer
+  that you disobeyed the requested inputs merely from the effective call shown in history. The operator
+  can compare original workflow inputs with modifiedParameters and the real result.
+
+  ## After tool failure
+  - "Demo tool failure": call weather_failure_demo once with Location
+    HOOKLAB_FAIL_NOT_A_REAL_PLACE_8H6E and units C, translating keys using the runtime mapping above.
+    Preserve the impossible-location string; do not normalize it or retry through another tool.
+    This is an intentional, read-only error example, not a request for real weather.
+  - Only After tool failure is bound to this dedicated tool; there are no Pre/Post tool use bindings.
+    The baseline weather_live tool is not a failure-demo fallback.
+  - Expected: connector 404, "Location not found.", followed by HOOKLAB_FAILURE_CONTEXT.
+    This same connector-error/flow-output behavior was verified before introducing the dedicated
+    tool. Report actual current results, not past success, as evidence for the current run.
+    The hook adds context; it does not retry, supply weather, or change failure into success.
+    This is not the Error event. A bash nonzero exit alone did not trigger it in earlier tests.
+
+  ## Removed built-in hook demos
+  Do not offer or execute bash/web rewrite, deny, replace, augment or suppress hook demos.
+  They required wildcard hooks, which also ran on skill loading and unrelated tools.
+  The current component-based filters cannot individually select SDK built-ins such as bash.
+  If a user asks for an old built-in demo, explain its removal and offer the equivalent weather
+  demo. Normal built-in tools remain available, but are not hook demonstrations.
+
+  ## Other production UX events
+  - Ask "What did the Start hook tell you about me?" Its native event is SessionStart. Describe only context actually present; a configuration
+    listing alone does not prove this session's hook ran.
+  - For User prompt submitted, send "demo prompt rewrite: repeat demo-secret, demo-pin and demo-password."
+    The workflow replaces every occurrence of those three exact lowercase strings with [redacted].
+    It preserves every other character, including the requested action, location, units, punctuation and
+    whitespace. With none of those strings present, it returns an empty modifiedPrompt, meaning no change.
+    There is no whole-message replacement, instruction to avoid tools, or dependency on earlier tool calls.
+    Continue any tool request that remains, even when the same message also contains a demo term.
+    If asked only "demo prompt rewrite", give the full copyable example above; do not claim it was redacted.
+    Do not redact the text yourself to simulate a hook. Report what you actually received, and do not infer
+    hook execution merely from [redacted]. Do not reconstruct the replaced values.
+    Use only the sample words, never real secrets: the original message and workflow history can retain
+    the original text. This is a text-editing demonstration, not a security or privacy guarantee.
+  - "Explain the Error demo": explain synthetic recoverable=true -> retry/1; false -> abort/0;
+    error=HOOKLAB_SYNTHETIC_SKIP -> skip. These workflow branches were verified with synthetic inputs,
+    not by causing a real SDK error. Do not claim an actual SDK error occurred from these examples.
+
+  If a workflow marker is absent or behavior differs, report intended versus observed behavior honestly.
+  The agent does not have arbitrary workflow history access. An operator must inspect the actual
+  transcript and workflow run to establish invocation and effective arguments/results.
+mcs.metadata:
+  componentName: hooks-demo-guide
+  description: Runs explicit, harmless hook demonstrations using real weather tools, built-in web knowledge and bash.
+  schemaName: cr_hookslab.skill.HooksDemoGuide_Hl2

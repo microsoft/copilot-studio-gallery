@@ -1,0 +1,517 @@
+{
+  "name": "WanDelay Smart Logistics",
+  "description": "A logistics use case implemented as a multi-agent solution that reasons over shipment, dock, queue, and weather information to plan loading assignments. In-built 'Memory' retains shipment, plan, and driver context for follow-up decisions.",
+  "tags": [
+    "logistics",
+    "agentic-reasoning",
+    "context-memory",
+    "mcp",
+    "skills",
+    "multi-agent"
+  ],
+  "createdAt": "2026-09-21",
+  "updatedAt": "2026-10-17",
+  "featured": false,
+  "author": "Vineet Kaul",
+  "authors": [
+    {
+      "name": "Vineet Kaul",
+      "url": "https://github.com/kaul-vineet"
+    }
+  ],
+  "uniqueName": "WanDelayLoadingBayPickup",
+  "version": "1.0.0.15",
+  "publisher": "CAT",
+  "bundle": "bundles/wandelay-loading-bay-pickup.zip",
+  "agentCount": 2,
+  "workflowCount": 0,
+  "componentCount": 3,
+  "agents": [
+    {
+      "id": "cr26e_storeassociateassistant_ZQHUx1",
+      "schemaName": "cr26e_storeassociateassistant_ZQHUx1",
+      "name": "Dispatch Assistant",
+      "model": "Sonnet46",
+      "instructions": "You are the Dispatch Assistant for WanDelay outbound shipment pickup. You support WanDelay Loading Bay Pickup by retrieving only the verified shipment and Drive Priority Pass facts required for a loading-dock recommendation.\n\nBe concise and factual. Ground every response in your attached MCP tools. Never guess or infer shipment, consignee, destination, pickup-facility, driver, or pass information.\n\nWhen a shipment reference or Drive Priority Pass ID is supplied:\n\n1. Use the Outbound Shipment Pickup MCP to verify the shipment reference.\n2. If the shipment is not found, clearly report that and stop.\n3. If the shipment status is not exactly ready_for_pickup, report the verified status and stop.\n4. Retain and return only shipment_reference; consignee name; delivery_destination name and address; pickupFacility code, name, address, and location; and status.\n5. If a Drive Priority Pass ID is supplied, use the Drive Priority Pass MCP and return only the exact verified driver_name and tier_code.\n6. Accept only standard, plus, extra, or mega as tier_code values.\n7. If the pass ID is missing or invalid, or the pass lookup fails, return the verified shipment facts with tier_code standard and no driver_name.\n\nNever infer a tier from a pass ID or driver statement. Never return cargo, trailer type, weight, pickup window, email addresses, connector identifiers, legacy membership fields, or any other shipment or pass fields.",
+      "channels": [
+        "MsTeams"
+      ],
+      "toolCount": 2,
+      "skillCount": 0,
+      "connectedAgentCount": 0
+    },
+    {
+      "id": "crf98_curbsidepickupassistant_Q0mRmz",
+      "schemaName": "crf98_curbsidepickupassistant_Q0mRmz",
+      "name": "WanDelay Loading Assistant",
+      "model": "claude-opus-5",
+      "instructions": "You are WanDelay Loading Bay Pickup. Verify shipment information, route tool calls, retain the active loading plan, present selector results, answer from retained evidence, and manage assignment-pass eligibility.\n\nThe attached loading-dock-selector owns dock selection, weather interpretation, deterministic queue and ETA calculations, immutable plan inputs, decision evidence, complete driver-ready content, and plan-specific causal reasoning.\n\nThe main agent owns intake, tool routing, basic result checks, same-session state, presentation, retained-evidence follow-ups, and PDF eligibility.\n\nDo not recreate the selector's calculations, selection logic, dock comparisons, weather interpretation, or causal relationships.\n\nDISPLAY RULES\n\nUse these rules so every driver-visible response has a consistent format without changing the selector's factual or causal content.\n\nPresent every driver-visible text response as one Markdown blockquote card with no text before or after it. Always render loading-plan cards with an explicit <br> at the end of every row so each line breaks on its own, including the &nbsp; spacer rows.\n\nAdd a suitable emoji and bold heading or label. Keep verified factual content plain. Present complete causal explanations in bold.\n\nRemain silent while tools execute. Do not send progress messages, partial results, early queue summaries, transitions, or tool narration.\n\nWhen structured driver-ready content is available:\n1. Display only the relevant nonempty attributes.\n2. Preserve the selector's attribute order.\n3. Add only blockquote markers, suitable icons, and bold headings or labels.\n4. Present each attribute's complete content.\n5. Do not summarize, paraphrase, expand, reinterpret, combine, or add reasoning.\n\nA successfully generated PDF is the only driver-visible response that is not a Markdown blockquote card. Return only the generated file with no additional text.\n\nDRIVER INPUT\n\nCollect only the missing information required to verify the shipment and cre",
+      "channels": [
+        "Microsoft365Copilot",
+        "MsTeams"
+      ],
+      "toolCount": 3,
+      "skillCount": 2,
+      "connectedAgentCount": 1
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "name": "Dispatch Assistant",
+        "type": "agent",
+        "position": {
+          "x": -111.99999999999997,
+          "y": -536
+        },
+        "details": {
+          "model": "Sonnet46",
+          "instructions": "You are the Dispatch Assistant for WanDelay outbound shipment pickup. You support WanDelay Loading Bay Pickup by retrieving only the verified shipment and Drive Priority Pass facts required for a loading-dock recommendation.\n\nBe concise and factual. Ground every response in your attached MCP tools. Never guess or infer shipment, consignee, destination, pickup-facility, driver, or pass information.\n\nWhen a shipment reference or Drive Priority Pass ID is supplied:\n\n1. Use the Outbound Shipment Pickup MCP to verify the shipment reference.\n2. If the shipment is not found, clearly report that and stop.\n3. If the shipment status is not exactly ready_for_pickup, report the verified status and stop.\n4. Retain and return only shipment_reference; consignee name; delivery_destination name and address; pickupFacility code, name, address, and location; and status.\n5. If a Drive Priority Pass ID is supplied, use the Drive Priority Pass MCP and return only the exact verified driver_name and tier_code.\n6. Accept only standard, plus, extra, or mega as tier_code values.\n7. If the pass ID is missing or invalid, or the pass lookup fails, return the verified shipment facts with tier_code standard and no driver_name.\n\nNever infer a tier from a pass ID or driver statement. Never return cargo, trailer type, weight, pickup window, email addresses, connector identifiers, legacy membership fields, or any other shipment or pass fields.",
+          "channels": [
+            "MsTeams"
+          ],
+          "toolCount": 2,
+          "skillCount": 0,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "agent:crf98_curbsidepickupassistant_Q0mRmz",
+        "name": "WanDelay Loading Assistant",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "claude-opus-5",
+          "instructions": "You are WanDelay Loading Bay Pickup. Verify shipment information, route tool calls, retain the active loading plan, present selector results, answer from retained evidence, and manage assignment-pass eligibility.\n\nThe attached loading-dock-selector owns dock selection, weather interpretation, deterministic queue and ETA calculations, immutable plan inputs, decision evidence, complete driver-ready content, and plan-specific causal reasoning.\n\nThe main agent owns intake, tool routing, basic result checks, same-session state, presentation, retained-evidence follow-ups, and PDF eligibility.\n\nDo not recreate the selector's calculations, selection logic, dock comparisons, weather interpretation, or causal relationships.\n\nDISPLAY RULES\n\nUse these rules so every driver-visible response has a consistent format without changing the selector's factual or causal content.\n\nPresent every driver-visible text response as one Markdown blockquote card with no text before or after it. Always render loading-plan cards with an explicit <br> at the end of every row so each line breaks on its own, including the &nbsp; spacer rows.\n\nAdd a suitable emoji and bold heading or label. Keep verified factual content plain. Present complete causal explanations in bold.\n\nRemain silent while tools execute. Do not send progress messages, partial results, early queue summaries, transitions, or tool narration.\n\nWhen structured driver-ready content is available:\n1. Display only the relevant nonempty attributes.\n2. Preserve the selector's attribute order.\n3. Add only blockquote markers, suitable icons, and bold headings or labels.\n4. Present each attribute's complete content.\n5. Do not summarize, paraphrase, expand, reinterpret, combine, or add reasoning.\n\nA successfully generated PDF is the only driver-visible response that is not a Markdown blockquote card. Return only the generated file with no additional text.\n\nDRIVER INPUT\n\nCollect only the missing information required to verify the shipment and cre",
+          "channels": [
+            "Microsoft365Copilot",
+            "MsTeams"
+          ],
+          "toolCount": 3,
+          "skillCount": 2,
+          "connectedAgentCount": 1
+        }
+      },
+      {
+        "id": "skill:crf98_curbsidepickupassistant_Q0mRmz.skill.curbside-slip-pdf_dpE",
+        "name": "dock-assignment-pass-pdf",
+        "type": "skill",
+        "position": {
+          "x": 568,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "crf98_curbsidepickupassistant_Q0mRmz.skill.curbside-slip-pdf_dpE",
+          "description": "Render the completed loading-dock assignment as a driver-facing PDF without reserving or guaranteeing the dock."
+        }
+      },
+      {
+        "id": "skill:crf98_curbsidepickupassistant_Q0mRmz.skill.staging-window-calculator_AjW",
+        "name": "loading-dock-selector",
+        "type": "skill",
+        "position": {
+          "x": 228,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "crf98_curbsidepickupassistant_Q0mRmz.skill.staging-window-calculator_AjW",
+          "description": "Reason over multi-condition weather, one current loading-dock snapshot, optional ETA, and verified Drive Priority Pass tier to select and explain one dock."
+        }
+      },
+      {
+        "id": "tool:cr26e_storeassociateassistant_ZQHUx1.tool.MembershipMCPv2-MembershipMCPv2Server_9Ac",
+        "name": "Drive Priority Pass MCP — Drive Priority Pass MCP Server",
+        "type": "tool",
+        "position": {
+          "x": -281.99999999999994,
+          "y": -856
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cr26e_storeassociateassistant_ZQHUx1.tool.MembershipMCPv2-MembershipMCPv2Server_9Ac",
+          "operation": "InvokeDrivePriorityPassMCP",
+          "description": "MCP server for verified Drive Priority Pass lookup and exact tier codes."
+        }
+      },
+      {
+        "id": "tool:crf98_curbsidepickupassistant_Q0mRmz.tool.Getcurrentweather_9He",
+        "name": "Get current weather",
+        "type": "tool",
+        "position": {
+          "x": -111.99999999999997,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "crf98_curbsidepickupassistant_Q0mRmz.tool.Getcurrentweather_9He",
+          "operation": "CurrentWeather",
+          "description": "Get the current weather for a location."
+        }
+      },
+      {
+        "id": "tool:crf98_curbsidepickupassistant_Q0mRmz.tool.Getforecastfortoday_sUH",
+        "name": "Get forecast for today",
+        "type": "tool",
+        "position": {
+          "x": -452,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "crf98_curbsidepickupassistant_Q0mRmz.tool.Getforecastfortoday_sUH",
+          "operation": "TodaysForecast",
+          "description": "Get the forecast for the current day in the specified location."
+        }
+      },
+      {
+        "id": "tool:cr26e_storeassociateassistant_ZQHUx1.tool.OrderManagementMCP-OrderManagementMCPServer_LQG",
+        "name": "Outbound Shipment Pickup MCP — Outbound Shipment Pickup MCP Server",
+        "type": "tool",
+        "position": {
+          "x": 58.00000000000006,
+          "y": -856
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cr26e_storeassociateassistant_ZQHUx1.tool.OrderManagementMCP-OrderManagementMCPServer_LQG",
+          "operation": "InvokeMCP",
+          "description": "MCP server for ready outbound shipment pickup records. Stable tool names are retained for portable mappings."
+        }
+      },
+      {
+        "id": "tool:crf98_curbsidepickupassistant_Q0mRmz.tool.WanDelayCurbPickupMCP-WanDelayLoadingBayPickupMCPServe_MWH",
+        "name": "WanDelay Curb Pickup MCP — WanDelay Loading Bay Pickup MCP Server",
+        "type": "tool",
+        "position": {
+          "x": -792,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "crf98_curbsidepickupassistant_Q0mRmz.tool.WanDelayCurbPickupMCP-WanDelayLoadingBayPickupMCPServe_MWH",
+          "operation": "InvokeLoadingBayPickupMCP",
+          "description": "MCP server for WanDelay distribution-center and loading-dock operations."
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1-uses-cr26e_storeassociateassistant_ZQHUx1.tool.MembershipMCPv2-MembershipMCPv2Server_9Ac",
+        "source": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "target": "tool:cr26e_storeassociateassistant_ZQHUx1.tool.MembershipMCPv2-MembershipMCPv2Server_9Ac",
+        "label": "uses"
+      },
+      {
+        "id": "agent:cr26e_storeassociateassistant_ZQHUx1-uses-cr26e_storeassociateassistant_ZQHUx1.tool.OrderManagementMCP-OrderManagementMCPServer_LQG",
+        "source": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "target": "tool:cr26e_storeassociateassistant_ZQHUx1.tool.OrderManagementMCP-OrderManagementMCPServer_LQG",
+        "label": "uses"
+      },
+      {
+        "id": "agent:crf98_curbsidepickupassistant_Q0mRmz-delegates-crf98_curbsidepickupassistant_Q0mRmz.action.cr26e_storeassociateassistant_ZQHUx1_YbrqUdtD",
+        "source": "agent:crf98_curbsidepickupassistant_Q0mRmz",
+        "target": "agent:cr26e_storeassociateassistant_ZQHUx1",
+        "label": "delegates"
+      },
+      {
+        "id": "agent:crf98_curbsidepickupassistant_Q0mRmz-includes-crf98_curbsidepickupassistant_Q0mRmz.skill.curbside-slip-pdf_dpE",
+        "source": "agent:crf98_curbsidepickupassistant_Q0mRmz",
+        "target": "skill:crf98_curbsidepickupassistant_Q0mRmz.skill.curbside-slip-pdf_dpE",
+        "label": "includes"
+      },
+      {
+        "id": "agent:crf98_curbsidepickupassistant_Q0mRmz-includes-crf98_curbsidepickupassistant_Q0mRmz.skill.staging-window-calculator_AjW",
+        "source": "agent:crf98_curbsidepickupassistant_Q0mRmz",
+        "target": "skill:crf98_curbsidepickupassistant_Q0mRmz.skill.staging-window-calculator_AjW",
+        "label": "includes"
+      },
+      {
+        "id": "agent:crf98_curbsidepickupassistant_Q0mRmz-uses-crf98_curbsidepickupassistant_Q0mRmz.tool.Getcurrentweather_9He",
+        "source": "agent:crf98_curbsidepickupassistant_Q0mRmz",
+        "target": "tool:crf98_curbsidepickupassistant_Q0mRmz.tool.Getcurrentweather_9He",
+        "label": "uses"
+      },
+      {
+        "id": "agent:crf98_curbsidepickupassistant_Q0mRmz-uses-crf98_curbsidepickupassistant_Q0mRmz.tool.Getforecastfortoday_sUH",
+        "source": "agent:crf98_curbsidepickupassistant_Q0mRmz",
+        "target": "tool:crf98_curbsidepickupassistant_Q0mRmz.tool.Getforecastfortoday_sUH",
+        "label": "uses"
+      },
+      {
+        "id": "agent:crf98_curbsidepickupassistant_Q0mRmz-uses-crf98_curbsidepickupassistant_Q0mRmz.tool.WanDelayCurbPickupMCP-WanDelayLoadingBayPickupMCPServe_MWH",
+        "source": "agent:crf98_curbsidepickupassistant_Q0mRmz",
+        "target": "tool:crf98_curbsidepickupassistant_Q0mRmz.tool.WanDelayCurbPickupMCP-WanDelayLoadingBayPickupMCPServe_MWH",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [],
+  "connectors": [
+    {
+      "id": "cat_membership-20mcp-20v2",
+      "name": "Drive Priority Pass MCP",
+      "description": "Drive Priority Pass lookup with verified driver, tier, and preserved tier-code data. A dedicated operation identity prevents reuse of the legacy membership tool schema. Runs entirely inside the connector — no external MCP server needed.",
+      "mcp": true
+    },
+    {
+      "id": "new_order-20management-20mcp",
+      "name": "Outbound Shipment Pickup MCP",
+      "description": "Outbound shipment pickup lookup with consignee, destination, pickup facility, cargo, readiness, and pickup-window data. Runs entirely inside the connector — no external MCP server needed.",
+      "mcp": true
+    },
+    {
+      "id": "cat_curb-20pickup-20mcp",
+      "name": "WanDelay Loading Bay Pickup MCP",
+      "description": "WanDelay distribution-center and loading-dock lookup. A dedicated operation identity prevents reuse of the legacy retail-location tool schema. Runs entirely inside the connector — no external MCP server needed.",
+      "mcp": true
+    }
+  ],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 1933
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 1865
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.MembershipMCPv2-MembershipMCPv2Server_9Ac/botcomponent.xml",
+      "category": "component",
+      "size": 530
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.MembershipMCPv2-MembershipMCPv2Server_9Ac/data",
+      "category": "component",
+      "size": 289
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.OrderManagementMCP-OrderManagementMCPServer_LQG/botcomponent.xml",
+      "category": "component",
+      "size": 582
+    },
+    {
+      "path": "botcomponents/cr26e_storeassociateassistant_ZQHUx1.tool.OrderManagementMCP-OrderManagementMCPServer_LQG/data",
+      "category": "component",
+      "size": 275
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.action.cr26e_storeassociateassistant_ZQHUx1_YbrqUdtD/botcomponent.xml",
+      "category": "component",
+      "size": 699
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.action.cr26e_storeassociateassistant_ZQHUx1_YbrqUdtD/data",
+      "category": "component",
+      "size": 118
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.action.cr26e_storeassociateassistant_ZQHUx1_YbrqUdtD/dependencies.json",
+      "category": "component",
+      "size": 68
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.file.blastboxstagingpy_RnlUT/botcomponent.xml",
+      "category": "component",
+      "size": 618
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.file.blastboxstagingpy_RnlUT/filedata/loading_dock_reasoning.py",
+      "category": "component",
+      "size": 25094
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.file.curbsideslippy_81DiC/botcomponent.xml",
+      "category": "component",
+      "size": 603
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.file.curbsideslippy_81DiC/filedata/dock_assignment_pass.py",
+      "category": "component",
+      "size": 7828
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.file.skillmd_FPadO/botcomponent.xml",
+      "category": "component",
+      "size": 574
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.file.skillmd_FPadO/filedata/SKILL.md",
+      "category": "component",
+      "size": 38509
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.file.skillmd_gYycZ/botcomponent.xml",
+      "category": "component",
+      "size": 566
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.file.skillmd_gYycZ/filedata/SKILL.md",
+      "category": "component",
+      "size": 2921
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.skill.curbside-slip-pdf_dpE/botcomponent.xml",
+      "category": "component",
+      "size": 516
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.skill.curbside-slip-pdf_dpE/data",
+      "category": "component",
+      "size": 143
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.skill.staging-window-calculator_AjW/botcomponent.xml",
+      "category": "component",
+      "size": 565
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.skill.staging-window-calculator_AjW/data",
+      "category": "component",
+      "size": 150
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.tool.Getcurrentweather_9He/botcomponent.xml",
+      "category": "component",
+      "size": 438
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.tool.Getcurrentweather_9He/data",
+      "category": "component",
+      "size": 211
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.tool.Getforecastfortoday_sUH/botcomponent.xml",
+      "category": "component",
+      "size": 467
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.tool.Getforecastfortoday_sUH/data",
+      "category": "component",
+      "size": 211
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.tool.WanDelayCurbPickupMCP-WanDelayLoadingBayPickupMCPServe_MWH/botcomponent.xml",
+      "category": "component",
+      "size": 557
+    },
+    {
+      "path": "botcomponents/crf98_curbsidepickupassistant_Q0mRmz.tool.WanDelayCurbPickupMCP-WanDelayLoadingBayPickupMCPServe_MWH/data",
+      "category": "component",
+      "size": 298
+    },
+    {
+      "path": "botcomponents/Default_FeedbackCollectionBotSettings_vUyVfa/botcomponent.xml",
+      "category": "component",
+      "size": 316
+    },
+    {
+      "path": "botcomponents/Default_FeedbackCollectionBotSettings_vUyVfa/data",
+      "category": "component",
+      "size": 31
+    },
+    {
+      "path": "bots/cr26e_storeassociateassistant_ZQHUx1/bot.xml",
+      "category": "bot",
+      "size": 39185
+    },
+    {
+      "path": "bots/cr26e_storeassociateassistant_ZQHUx1/configuration.json",
+      "category": "bot",
+      "size": 1930
+    },
+    {
+      "path": "bots/crf98_curbsidepickupassistant_Q0mRmz/bot.xml",
+      "category": "bot",
+      "size": 41209
+    },
+    {
+      "path": "bots/crf98_curbsidepickupassistant_Q0mRmz/configuration.json",
+      "category": "bot",
+      "size": 20987
+    },
+    {
+      "path": "Connector/cat_curb-20pickup-20mcp_connectionparameters.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/cat_curb-20pickup-20mcp_customcodeblobcontent.csx",
+      "category": "other",
+      "size": 53655
+    },
+    {
+      "path": "Connector/cat_curb-20pickup-20mcp_openapidefinition.json",
+      "category": "other",
+      "size": 1035
+    },
+    {
+      "path": "Connector/cat_curb-20pickup-20mcp_policytemplateinstances.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/cat_membership-20mcp-20v2_connectionparameters.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/cat_membership-20mcp-20v2_customcodeblobcontent.csx",
+      "category": "other",
+      "size": 41709
+    },
+    {
+      "path": "Connector/cat_membership-20mcp-20v2_iconblob.Png",
+      "category": "asset",
+      "size": 2895
+    },
+    {
+      "path": "Connector/cat_membership-20mcp-20v2_openapidefinition.json",
+      "category": "other",
+      "size": 1099
+    },
+    {
+      "path": "Connector/cat_membership-20mcp-20v2_policytemplateinstances.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/new_order-20management-20mcp_connectionparameters.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/new_order-20management-20mcp_customcodeblobcontent.csx",
+      "category": "other",
+      "size": 52142
+    },
+    {
+      "path": "Connector/new_order-20management-20mcp_openapidefinition.json",
+      "category": "other",
+      "size": 1026
+    },
+    {
+      "path": "Connector/new_order-20management-20mcp_policytemplateinstances.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 6216
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4322
+    }
+  ]
+}

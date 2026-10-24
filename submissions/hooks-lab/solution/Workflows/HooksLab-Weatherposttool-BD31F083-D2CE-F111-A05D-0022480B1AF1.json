@@ -1,0 +1,276 @@
+{
+  "properties": {
+    "connectionReferences": {},
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "type": "SecureObject",
+          "defaultValue": {}
+        },
+        "$connections": {
+          "type": "Object",
+          "defaultValue": {}
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "event": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string"
+                },
+                "metadata": {
+                  "type": "object"
+                },
+                "toolName": {
+                  "type": "string"
+                },
+                "parameters": {
+                  "type": "object"
+                },
+                "result": {
+                  "type": "object"
+                }
+              },
+              "required": [
+                "event",
+                "timestamp",
+                "metadata",
+                "toolName",
+                "result"
+              ]
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "Hooks Lab - Weather post tool",
+                "nodes": [
+                  {
+                    "id": "start",
+                    "name": "When an agent calls the flow",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 100,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "connector",
+                        "connector": {
+                          "apiName": "Skills",
+                          "operationName": "SkillsButton",
+                          "kind": "Skills",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {}
+                            }
+                          },
+                          "displayName": "When an agent calls the flow"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "node-1",
+                    "name": "Initialize Select_Demo",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 500,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "var-1",
+                            "variableName": "Select_Demo",
+                            "mode": "initialize",
+                            "type": "object",
+                            "value": "{\"toolName\":\"@triggerBody()?['toolName']\",\"replace\":\"@or(equals(triggerBody()?['toolName'], 'weather_replace_demo'), equals(triggerBody()?['toolName'], 'current_weather_cr_hookslabtoolWeatherReplace_Hl4'))\",\"augment\":\"@or(equals(triggerBody()?['toolName'], 'weather_augment_demo'), equals(triggerBody()?['toolName'], 'current_weather_cr_hookslabtoolWeatherAugment_Hl5'))\",\"suppress\":\"@or(equals(triggerBody()?['toolName'], 'weather_suppress_demo'), equals(triggerBody()?['toolName'], 'current_weather_cr_hookslabtoolWeatherSuppress_Hl6'))\"}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-9d369c01-11fe-4568-a342-2287d329b772",
+                    "name": "Apply_Weather_Output_Demo",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 900,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "response",
+                        "operationName": "response",
+                        "parameters": {
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "type": "object",
+                                "x-ms-dynamically-added": true,
+                                "title": "Modified Result",
+                                "x-ms-content-hint": "TEXT"
+                              },
+                              "text_1": {
+                                "type": "string",
+                                "x-ms-dynamically-added": true,
+                                "title": "Additional Context",
+                                "x-ms-content-hint": "TEXT"
+                              },
+                              "boolean": {
+                                "type": "boolean",
+                                "x-ms-dynamically-added": true,
+                                "title": "Suppress Output",
+                                "x-ms-content-hint": "BOOLEAN"
+                              }
+                            },
+                            "required": [
+                              "text",
+                              "text_1",
+                              "boolean"
+                            ]
+                          },
+                          "body": {
+                            "text": "@if(variables('Select_Demo')?['replace'], json('{\"textResultForLlm\":\"[HOOKLAB_WEATHER_REPLACED] SYNTHETIC TEACHING RESULT: made-up example weather, 21 C with educational sunshine. The weather lookup ran, then the hook swapped its answer for this example before the agent received it. These values are not real weather. Explain the swap without guessing or citing the discarded answer.\",\"resultType\":\"success\",\"toolTelemetry\":{}}'), null)",
+                            "text_1": "@if(variables('Select_Demo')?['augment'], '[HOOKLAB_WEATHER_CONTEXT] This is real weather. The hook kept the result unchanged and added this helpful note. Adding a note is different from replacing the answer.', if(variables('Select_Demo')?['suppress'], '[HOOKLAB_WEATHER_SUPPRESS] The hook asked to hide the tool output. Whether it is hidden depends on the chat experience; the agent may still receive it. Do not treat this as a way to protect private data or claim it was hidden without evidence.', ''))",
+                            "boolean": "@variables('Select_Demo')?['suppress']"
+                          },
+                          "statusCode": 200
+                        },
+                        "displayName": "Apply_Weather_Output_Demo",
+                        "category": "request",
+                        "categoryDisplayName": "Request",
+                        "kind": "Skills"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "node-1": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-node-1",
+                    "source": "start",
+                    "target": "node-1"
+                  },
+                  {
+                    "id": "edge-node-1-builtinFunction-9d369c01-11fe-4568-a342-2287d329b772",
+                    "source": "node-1",
+                    "target": "builtinFunction-9d369c01-11fe-4568-a342-2287d329b772"
+                  }
+                ],
+                "connectionReferences": {}
+              },
+              "nodeActionMapping": {}
+            }
+          }
+        }
+      },
+      "actions": {
+        "Select_Demo": {
+          "type": "Compose",
+          "metadata": {
+            "nodeId": "Select_Demo"
+          },
+          "runAfter": {},
+          "inputs": {
+            "toolName": "@triggerBody()?['toolName']",
+            "replace": "@or(equals(triggerBody()?['toolName'], 'weather_replace_demo'), equals(triggerBody()?['toolName'], 'current_weather_cr_hookslabtoolWeatherReplace_Hl4'))",
+            "augment": "@or(equals(triggerBody()?['toolName'], 'weather_augment_demo'), equals(triggerBody()?['toolName'], 'current_weather_cr_hookslabtoolWeatherAugment_Hl5'))",
+            "suppress": "@or(equals(triggerBody()?['toolName'], 'weather_suppress_demo'), equals(triggerBody()?['toolName'], 'current_weather_cr_hookslabtoolWeatherSuppress_Hl6'))"
+          }
+        },
+        "Apply_Weather_Output_Demo": {
+          "type": "Response",
+          "kind": "Skills",
+          "metadata": {
+            "nodeId": "Apply_Weather_Output_Demo"
+          },
+          "runAfter": {
+            "Select_Demo": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "statusCode": 200,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "modifiedResult": {
+                  "type": "object"
+                },
+                "additionalContext": {
+                  "type": "string"
+                },
+                "suppressOutput": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "body": {
+              "modifiedResult": "@if(outputs('Select_Demo')?['replace'], json('{\"textResultForLlm\":\"[HOOKLAB_WEATHER_REPLACED] SYNTHETIC TEACHING RESULT: made-up example weather, 21 C with educational sunshine. The weather lookup ran, then the hook swapped its answer for this example before the agent received it. These values are not real weather. Explain the swap without guessing or citing the discarded answer.\",\"resultType\":\"success\",\"toolTelemetry\":{}}'), null)",
+              "additionalContext": "@if(outputs('Select_Demo')?['augment'], '[HOOKLAB_WEATHER_CONTEXT] This is real weather. The hook kept the result unchanged and added this helpful note. Adding a note is different from replacing the answer.', if(outputs('Select_Demo')?['suppress'], '[HOOKLAB_WEATHER_SUPPRESS] The hook asked to hide the tool output. Whether it is hidden depends on the chat experience; the agent may still receive it. Do not treat this as a way to protect private data or claim it was hidden without evidence.', ''))",
+              "suppressOutput": "@outputs('Select_Demo')?['suppress']"
+            }
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "telemetryMetadata": {
+          "creationSource": "CopilotStudioMcp",
+          "modifiedSources": "CopilotStudioMcp"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
