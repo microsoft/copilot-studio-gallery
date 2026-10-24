@@ -1,0 +1,183 @@
+{
+  "properties": {
+    "connectionReferences": {},
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "type": "SecureObject",
+          "defaultValue": {}
+        },
+        "$connections": {
+          "type": "Object",
+          "defaultValue": {}
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "event": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string"
+                },
+                "metadata": {
+                  "type": "object"
+                }
+              },
+              "required": [
+                "event",
+                "timestamp",
+                "metadata"
+              ]
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "Hooks Lab - Session start",
+                "nodes": [
+                  {
+                    "id": "start",
+                    "name": "When an agent calls the flow",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 100,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "connector",
+                        "connector": {
+                          "apiName": "Skills",
+                          "operationName": "SkillsButton",
+                          "kind": "Skills",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {}
+                            }
+                          },
+                          "displayName": "When an agent calls the flow"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-9a224503-7a15-4f51-988d-ab5af56f557f",
+                    "name": "Seed_Lab_Context",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 500,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "response",
+                        "operationName": "response",
+                        "parameters": {
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "type": "string",
+                                "x-ms-dynamically-added": true,
+                                "title": "Additional Context",
+                                "x-ms-content-hint": "TEXT"
+                              }
+                            },
+                            "required": [
+                              "text"
+                            ]
+                          },
+                          "body": {
+                            "text": "[HOOKLAB_SESSION_V1] The user is really interested in learning more about hooks."
+                          },
+                          "statusCode": 200
+                        },
+                        "displayName": "Seed_Lab_Context",
+                        "category": "request",
+                        "categoryDisplayName": "Request",
+                        "kind": "Skills"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-builtinFunction-9a224503-7a15-4f51-988d-ab5af56f557f",
+                    "source": "start",
+                    "target": "builtinFunction-9a224503-7a15-4f51-988d-ab5af56f557f"
+                  }
+                ],
+                "connectionReferences": {}
+              },
+              "nodeActionMapping": {}
+            }
+          }
+        }
+      },
+      "actions": {
+        "Seed_Lab_Context": {
+          "type": "Response",
+          "kind": "Skills",
+          "metadata": {
+            "nodeId": "Seed_Lab_Context"
+          },
+          "runAfter": {},
+          "inputs": {
+            "statusCode": 200,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "additionalContext": {
+                  "type": "string"
+                }
+              }
+            },
+            "body": {
+              "additionalContext": "[HOOKLAB_SESSION_V1] The user is really interested in learning more about hooks."
+            }
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "telemetryMetadata": {
+          "creationSource": "CopilotStudioMcp",
+          "modifiedSources": "CopilotStudioMcp"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

@@ -1,0 +1,199 @@
+{
+  "properties": {
+    "connectionReferences": {},
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "type": "SecureObject",
+          "defaultValue": {}
+        },
+        "$connections": {
+          "type": "Object",
+          "defaultValue": {}
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "event": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string"
+                },
+                "metadata": {
+                  "type": "object"
+                },
+                "prompt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "event",
+                "timestamp",
+                "metadata",
+                "prompt"
+              ]
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "Hooks Lab - Prompt rewrite",
+                "nodes": [
+                  {
+                    "id": "start",
+                    "name": "When an agent calls the flow",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 100,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "connector",
+                        "connector": {
+                          "apiName": "Skills",
+                          "operationName": "SkillsButton",
+                          "kind": "Skills",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {}
+                            }
+                          },
+                          "displayName": "When an agent calls the flow"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-e3a87772-df72-4f4a-bc4f-e57fa3728519",
+                    "name": "Rewrite_Explicit_Demo",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 500,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "response",
+                        "operationName": "response",
+                        "parameters": {
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "type": "string",
+                                "x-ms-dynamically-added": true,
+                                "title": "Modified Prompt",
+                                "x-ms-content-hint": "TEXT"
+                              },
+                              "boolean": {
+                                "type": "boolean",
+                                "x-ms-dynamically-added": true,
+                                "title": "Suppress Output",
+                                "x-ms-content-hint": "BOOLEAN"
+                              }
+                            },
+                            "required": [
+                              "text",
+                              "boolean"
+                            ]
+                          },
+                          "body": {
+                            "text": "@if(or(contains(triggerBody()?['prompt'], 'demo-secret'), contains(triggerBody()?['prompt'], 'demo-pin'), contains(triggerBody()?['prompt'], 'demo-password')), replace(replace(replace(triggerBody()?['prompt'], 'demo-secret', '[redacted]'), 'demo-pin', '[redacted]'), 'demo-password', '[redacted]'), '')",
+                            "boolean": false
+                          },
+                          "statusCode": 200
+                        },
+                        "displayName": "Rewrite_Explicit_Demo",
+                        "category": "request",
+                        "categoryDisplayName": "Request",
+                        "kind": "Skills"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-builtinFunction-e3a87772-df72-4f4a-bc4f-e57fa3728519",
+                    "source": "start",
+                    "target": "builtinFunction-e3a87772-df72-4f4a-bc4f-e57fa3728519"
+                  }
+                ],
+                "connectionReferences": {}
+              },
+              "nodeActionMapping": {}
+            }
+          }
+        }
+      },
+      "actions": {
+        "Rewrite_Explicit_Demo": {
+          "type": "Response",
+          "kind": "Skills",
+          "metadata": {
+            "nodeId": "Rewrite_Explicit_Demo"
+          },
+          "runAfter": {},
+          "inputs": {
+            "statusCode": 200,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "modifiedPrompt": {
+                  "type": "string"
+                },
+                "suppressOutput": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "body": {
+              "modifiedPrompt": "@if(or(contains(triggerBody()?['prompt'], 'demo-secret'), contains(triggerBody()?['prompt'], 'demo-pin'), contains(triggerBody()?['prompt'], 'demo-password')), replace(replace(replace(triggerBody()?['prompt'], 'demo-secret', '[redacted]'), 'demo-pin', '[redacted]'), 'demo-password', '[redacted]'), '')",
+              "suppressOutput": false
+            }
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "telemetryMetadata": {
+          "creationSource": "CopilotStudioMcp",
+          "modifiedSources": "CopilotStudioMcp"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
