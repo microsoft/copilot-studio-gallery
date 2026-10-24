@@ -1,0 +1,544 @@
+{
+  "name": "Sales Analyser",
+  "description": "An agent that turns monthly sales spreadsheets in SharePoint into trustworthy analysis: it cleans and reconciles the data, computes YoY, MoM, QoQ and YTD metrics with live currency conversion and outlier flags, explains every transformation, and delivers a branded PDF report and an Outlook-ready newsletter email.",
+  "tags": [
+    "sales",
+    "analytics",
+    "reporting",
+    "sharepoint",
+    "outlook",
+    "skills",
+    "python",
+    "currency-conversion"
+  ],
+  "category": "Finance",
+  "createdAt": "2026-10-24",
+  "updatedAt": "2026-10-24",
+  "featured": true,
+  "author": "Adriana Trujillo",
+  "authors": [
+    {
+      "name": "Adriana Trujillo",
+      "github": "adrianatruji"
+    }
+  ],
+  "uniqueName": "crf9c_salesanalyser_WEs93i",
+  "version": "1.0",
+  "publisher": "crf9c",
+  "bundle": "bundles/sales-analyser.zip",
+  "agentCount": 1,
+  "workflowCount": 0,
+  "componentCount": 70,
+  "agents": [
+    {
+      "id": "crf9c_salesanalyser_WEs93i",
+      "schemaName": "crf9c_salesanalyser_WEs93i",
+      "name": "Sales Analyser",
+      "model": "claude-opus-5",
+      "instructions": "You are Sales Analyser, a sales insights assistant. You help finance and revenue operations colleagues turn monthly sales exports into trustworthy, business-friendly analysis, reports and emails, and you answer their questions about the figures.\n\nData:\n- Default data location: SharePoint site <your-sharepoint-site-url>, library \"Shared Documents\", folder \"Monthly Sales\". If the site is still the <your-sharepoint-site-url> placeholder, ask the user which SharePoint site, library and folder hold their sales files before doing anything else. Use the SharePoint tool to list and read the files there. If the user points you to another site, library or folder, read from that instead and say so.\n- SharePoint is read-only for you. Only list, search and read files. Never create, upload, write, update, move, copy, rename or delete files or folders in SharePoint, even if asked; explain that you can only read from it.\n- Outputs (PDF report, charts, master file, other generated files) are created in the code sandbox and given to the user directly as chat attachments. When an email is requested, the PDF is also attached to the email draft.\n\nHow to work:\n- Any request that needs figures from the sales spreadsheets (for example \"analyse Q4\", \"how did sales do last month\", \"compare regions\", YoY/MoM/QoQ/YTD growth, top products, trends, outliers, currency-converted totals, building or updating a master file) goes through the spreadsheet-data-analysis-reporting skill first. Never compute or quote figures outside that skill.\n- For a report, run the analysis skill first, then polished-report-builder (PDF), and give the PDF to the user as a chat attachment. For an email, use newsletter-style-email-composer once the figures and report exist, and attach the PDF to the draft.\n- Branding (colours, fonts, logo, header and footer text) lives in one file: assets/style-tokens.json in the analysis skill (the logo image is a placeholder, assets/logo-placeholder.png, shown in the PDF header only). ",
+      "channels": [],
+      "toolCount": 2,
+      "skillCount": 3,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:crf9c_salesanalyser_WEs93i",
+        "name": "Sales Analyser",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "claude-opus-5",
+          "instructions": "You are Sales Analyser, a sales insights assistant. You help finance and revenue operations colleagues turn monthly sales exports into trustworthy, business-friendly analysis, reports and emails, and you answer their questions about the figures.\n\nData:\n- Default data location: SharePoint site <your-sharepoint-site-url>, library \"Shared Documents\", folder \"Monthly Sales\". If the site is still the <your-sharepoint-site-url> placeholder, ask the user which SharePoint site, library and folder hold their sales files before doing anything else. Use the SharePoint tool to list and read the files there. If the user points you to another site, library or folder, read from that instead and say so.\n- SharePoint is read-only for you. Only list, search and read files. Never create, upload, write, update, move, copy, rename or delete files or folders in SharePoint, even if asked; explain that you can only read from it.\n- Outputs (PDF report, charts, master file, other generated files) are created in the code sandbox and given to the user directly as chat attachments. When an email is requested, the PDF is also attached to the email draft.\n\nHow to work:\n- Any request that needs figures from the sales spreadsheets (for example \"analyse Q4\", \"how did sales do last month\", \"compare regions\", YoY/MoM/QoQ/YTD growth, top products, trends, outliers, currency-converted totals, building or updating a master file) goes through the spreadsheet-data-analysis-reporting skill first. Never compute or quote figures outside that skill.\n- For a report, run the analysis skill first, then polished-report-builder (PDF), and give the PDF to the user as a chat attachment. For an email, use newsletter-style-email-composer once the figures and report exist, and attach the PDF to the draft.\n- Branding (colours, fonts, logo, header and footer text) lives in one file: assets/style-tokens.json in the analysis skill (the logo image is a placeholder, assets/logo-placeholder.png, shown in the PDF header only). ",
+          "channels": [],
+          "toolCount": 2,
+          "skillCount": 3,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:crf9c_salesanalyser_WEs93i.skill.newsletter-style-email-composer_4LB",
+        "name": "newsletter-style-email-composer",
+        "type": "skill",
+        "position": {
+          "x": 568,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "crf9c_salesanalyser_WEs93i.skill.newsletter-style-email-composer_4LB",
+          "description": "Use when the user asks to email a report, findings, or metrics to someone as a polished, newsletter-style message. Builds an Outlook-safe HTML email from figures that already exist (headline, KPI tiles, up to two bar charts drawn with HTML table cells so they render in classic Outlook, Gmail and dark mode, short findings, data notes and the non-audit disclaimer) using the shared brand tokens, attaches the PDF report, and creates a draft for the user to review. Do NOT use for a short plain-text status update, or for building the underlying analysis, charts, or report itself -- this skill only composes the email."
+        }
+      },
+      {
+        "id": "skill:crf9c_salesanalyser_WEs93i.skill.polished-report-builder_TUr",
+        "name": "polished-report-builder",
+        "type": "skill",
+        "position": {
+          "x": 228,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "crf9c_salesanalyser_WEs93i.skill.polished-report-builder_TUr",
+          "description": "Use when the user asks to turn analysis results, metrics, or findings into a polished, presentation-ready report, one-pager, or executive summary -- especially when existing analysis (e.g. from the spreadsheet analysis skill) needs to become a document someone will actually read. Builds a branded PDF with reportlab from a short content file (headline, KPI tiles, one chart per point, data notes and the non-audit disclaimer) using the shared brand tokens, and runs a QA pass before delivery to catch walls of text, chart clutter, low-resolution charts, missing data notes or poor contrast. Do NOT use for a quick inline chat answer, a single ad-hoc chart with no report structure around it, a raw data export with no narrative, or to compute the figures themselves."
+        }
+      },
+      {
+        "id": "skill:crf9c_salesanalyser_WEs93i.skill.spreadsheet-data-analysis-reporting_dHq",
+        "name": "spreadsheet-data-analysis-reporting",
+        "type": "skill",
+        "position": {
+          "x": -111.99999999999997,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "crf9c_salesanalyser_WEs93i.skill.spreadsheet-data-analysis-reporting_dHq",
+          "description": "Use for any request that needs figures from the sales spreadsheets (Excel/CSV), even a single file or a single period - e.g. 'analyse Q4', 'how did sales do last month', 'compare regions', YoY/MoM/QoQ/YTD growth, top products, share of revenue, trends, outliers, currency-converted totals, or building/updating a consolidated master file. Finds and loads the relevant files, cleans and normalises them, computes metrics with standard definitions and edge-case handling, flags outliers and data issues, explains every transformation, and produces on-brand charts. Use this before the report or email skills whenever numbers must be computed. Do NOT use for questions that need no data (e.g. 'what does YoY mean') or for re-formatting results already computed in this conversation."
+        }
+      },
+      {
+        "id": "tool:crf9c_salesanalyser_WEs93i.tool.Draftanemailmessage_Flc",
+        "name": "Draft an email message",
+        "type": "tool",
+        "position": {
+          "x": -452,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "crf9c_salesanalyser_WEs93i.tool.Draftanemailmessage_Flc",
+          "operation": "DraftEmail",
+          "description": "This operation drafts an email message."
+        }
+      },
+      {
+        "id": "tool:crf9c_salesanalyser_WEs93i.tool.SharePoint-SharePoint_y1b",
+        "name": "SharePoint — SharePoint",
+        "type": "tool",
+        "position": {
+          "x": -792,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "crf9c_salesanalyser_WEs93i.tool.SharePoint-SharePoint_y1b",
+          "operation": "mcp_SharePointRemoteServer",
+          "description": "MCP server for Microsoft SharePoint operations. This feature is in preview and is part of the tools, providing shared work intelligence and actions for agents. Availability and capabilities are subject to change. Learn more: https://aka.ms/AboutWorkIQ"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:crf9c_salesanalyser_WEs93i-includes-crf9c_salesanalyser_WEs93i.skill.newsletter-style-email-composer_4LB",
+        "source": "agent:crf9c_salesanalyser_WEs93i",
+        "target": "skill:crf9c_salesanalyser_WEs93i.skill.newsletter-style-email-composer_4LB",
+        "label": "includes"
+      },
+      {
+        "id": "agent:crf9c_salesanalyser_WEs93i-includes-crf9c_salesanalyser_WEs93i.skill.polished-report-builder_TUr",
+        "source": "agent:crf9c_salesanalyser_WEs93i",
+        "target": "skill:crf9c_salesanalyser_WEs93i.skill.polished-report-builder_TUr",
+        "label": "includes"
+      },
+      {
+        "id": "agent:crf9c_salesanalyser_WEs93i-includes-crf9c_salesanalyser_WEs93i.skill.spreadsheet-data-analysis-reporting_dHq",
+        "source": "agent:crf9c_salesanalyser_WEs93i",
+        "target": "skill:crf9c_salesanalyser_WEs93i.skill.spreadsheet-data-analysis-reporting_dHq",
+        "label": "includes"
+      },
+      {
+        "id": "agent:crf9c_salesanalyser_WEs93i-uses-crf9c_salesanalyser_WEs93i.tool.Draftanemailmessage_Flc",
+        "source": "agent:crf9c_salesanalyser_WEs93i",
+        "target": "tool:crf9c_salesanalyser_WEs93i.tool.Draftanemailmessage_Flc",
+        "label": "uses"
+      },
+      {
+        "id": "agent:crf9c_salesanalyser_WEs93i-uses-crf9c_salesanalyser_WEs93i.tool.SharePoint-SharePoint_y1b",
+        "source": "agent:crf9c_salesanalyser_WEs93i",
+        "target": "tool:crf9c_salesanalyser_WEs93i.tool.SharePoint-SharePoint_y1b",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [],
+  "connectors": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 1398
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 422
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.assetsanalysisnotestemplatemd_vA6tS/botcomponent.xml",
+      "category": "component",
+      "size": 583
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.assetsanalysisnotestemplatemd_vA6tS/filedata/analysis-notes-template.md",
+      "category": "component",
+      "size": 1363
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.assetsemailcontentexamplejson_kokwj/botcomponent.xml",
+      "category": "component",
+      "size": 583
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.assetsemailcontentexamplejson_kokwj/filedata/email-content-example.json",
+      "category": "component",
+      "size": 2569
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.assetslogoplaceholderpng_Lq7xT/botcomponent.xml",
+      "category": "component",
+      "size": 560
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.assetslogoplaceholderpng_Lq7xT/filedata/logo-placeholder.png",
+      "category": "component",
+      "size": 5309
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.assetsnewsletteremailtemplatehtml_0JaYa/botcomponent.xml",
+      "category": "component",
+      "size": 478
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.assetsnewsletteremailtemplatehtml_0JaYa/filedata/newsletter-email-template.html",
+      "category": "component",
+      "size": 6714
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.assetsreportcontentexamplejson_8fbwz/botcomponent.xml",
+      "category": "component",
+      "size": 587
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.assetsreportcontentexamplejson_8fbwz/filedata/report-content-example.json",
+      "category": "component",
+      "size": 2550
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.assetsstyletokensjson_nVpmN/botcomponent.xml",
+      "category": "component",
+      "size": 548
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.assetsstyletokensjson_nVpmN/filedata/style-tokens.json",
+      "category": "component",
+      "size": 3217
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referenceschartselectionguidemd_TxQKv/botcomponent.xml",
+      "category": "component",
+      "size": 468
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referenceschartselectionguidemd_TxQKv/filedata/chart-selection-guide.md",
+      "category": "component",
+      "size": 3522
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referencescontentbalanceguidemd_dNENp/botcomponent.xml",
+      "category": "component",
+      "size": 468
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referencescontentbalanceguidemd_dNENp/filedata/content-balance-guide.md",
+      "category": "component",
+      "size": 5615
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referencesdatapreparationmd_bHU65/botcomponent.xml",
+      "category": "component",
+      "size": 568
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referencesdatapreparationmd_bHU65/filedata/data-preparation.md",
+      "category": "component",
+      "size": 3677
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referencesemailrenderingandaccessibility_T4NLx/botcomponent.xml",
+      "category": "component",
+      "size": 513
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referencesemailrenderingandaccessibility_T4NLx/filedata/email-rendering-and-accessibility-notes.md",
+      "category": "component",
+      "size": 3934
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referencesfieldmappingchecklistmd_I_uU_/botcomponent.xml",
+      "category": "component",
+      "size": 474
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referencesfieldmappingchecklistmd_I_uU_/filedata/field-mapping-checklist.md",
+      "category": "component",
+      "size": 3517
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referencesfxconversionmd_XNO5x/botcomponent.xml",
+      "category": "component",
+      "size": 556
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referencesfxconversionmd_XNO5x/filedata/fx-conversion.md",
+      "category": "component",
+      "size": 3093
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referencesmetricsglossarymd_DnWW2/botcomponent.xml",
+      "category": "component",
+      "size": 454
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referencesmetricsglossarymd_DnWW2/filedata/metrics-glossary.md",
+      "category": "component",
+      "size": 3974
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referencesoutlierguidancemd_yWDKi/botcomponent.xml",
+      "category": "component",
+      "size": 568
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referencesoutlierguidancemd_yWDKi/filedata/outlier-guidance.md",
+      "category": "component",
+      "size": 2048
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referencesstyletokensmd_9O0eH/botcomponent.xml",
+      "category": "component",
+      "size": 442
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.referencesstyletokensmd_9O0eH/filedata/style-tokens.md",
+      "category": "component",
+      "size": 2890
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptsbuildemailpy_6QId3/botcomponent.xml",
+      "category": "component",
+      "size": 539
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptsbuildemailpy_6QId3/filedata/build_email.py",
+      "category": "component",
+      "size": 13533
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptschartstylepy_h321b/botcomponent.xml",
+      "category": "component",
+      "size": 539
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptschartstylepy_h321b/filedata/chart_style.py",
+      "category": "component",
+      "size": 20048
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptscomputemetricspy_AzsMw/botcomponent.xml",
+      "category": "component",
+      "size": 445
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptscomputemetricspy_AzsMw/filedata/compute_metrics.py",
+      "category": "component",
+      "size": 15069
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptsdiscoverfieldspy_1PUTY/botcomponent.xml",
+      "category": "component",
+      "size": 445
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptsdiscoverfieldspy_1PUTY/filedata/discover_fields.py",
+      "category": "component",
+      "size": 6449
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptsflagoutlierspy_xjOij/botcomponent.xml",
+      "category": "component",
+      "size": 547
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptsflagoutlierspy_xjOij/filedata/flag_outliers.py",
+      "category": "component",
+      "size": 9585
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptsfxconvertpy_Qm7tZ/botcomponent.xml",
+      "category": "component",
+      "size": 535
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptsfxconvertpy_Qm7tZ/filedata/fx_convert.py",
+      "category": "component",
+      "size": 8956
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptspreparedatapy_bljPO/botcomponent.xml",
+      "category": "component",
+      "size": 543
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptspreparedatapy_bljPO/filedata/prepare_data.py",
+      "category": "component",
+      "size": 24076
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptsqareportpy_aMt6L/botcomponent.xml",
+      "category": "component",
+      "size": 427
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptsqareportpy_aMt6L/filedata/qa_report.py",
+      "category": "component",
+      "size": 11023
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptsrenderreportpy_Tk7VR/botcomponent.xml",
+      "category": "component",
+      "size": 439
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptsrenderreportpy_Tk7VR/filedata/render_report.py",
+      "category": "component",
+      "size": 20492
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptsvisualcheckpy_YxSPP/botcomponent.xml",
+      "category": "component",
+      "size": 436
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.scriptsvisualcheckpy_YxSPP/filedata/visual_check.py",
+      "category": "component",
+      "size": 5329
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.skillmd_6IAVT/botcomponent.xml",
+      "category": "component",
+      "size": 401
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.skillmd_6IAVT/filedata/SKILL.md",
+      "category": "component",
+      "size": 5929
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.skillmd_k_QDN/botcomponent.xml",
+      "category": "component",
+      "size": 401
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.skillmd_k_QDN/filedata/SKILL.md",
+      "category": "component",
+      "size": 4279
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.skillmd_oCdhy/botcomponent.xml",
+      "category": "component",
+      "size": 401
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.file.skillmd_oCdhy/filedata/SKILL.md",
+      "category": "component",
+      "size": 3616
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.httpswwwxecomcurrencyconverter_pg8TOp2uM8kN/botcomponent.xml",
+      "category": "component",
+      "size": 739
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.httpswwwxecomcurrencyconverter_pg8TOp2uM8kN/data",
+      "category": "component",
+      "size": 124
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.skill.newsletter-style-email-composer_4LB/botcomponent.xml",
+      "category": "component",
+      "size": 1024
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.skill.newsletter-style-email-composer_4LB/data",
+      "category": "component",
+      "size": 98
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.skill.polished-report-builder_TUr/botcomponent.xml",
+      "category": "component",
+      "size": 1157
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.skill.polished-report-builder_TUr/data",
+      "category": "component",
+      "size": 90
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.skill.spreadsheet-data-analysis-reporting_dHq/botcomponent.xml",
+      "category": "component",
+      "size": 1193
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.skill.spreadsheet-data-analysis-reporting_dHq/data",
+      "category": "component",
+      "size": 102
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.tool.Draftanemailmessage_Flc/botcomponent.xml",
+      "category": "component",
+      "size": 423
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.tool.Draftanemailmessage_Flc/data",
+      "category": "component",
+      "size": 228
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.tool.SharePoint-SharePoint_y1b/botcomponent.xml",
+      "category": "component",
+      "size": 640
+    },
+    {
+      "path": "botcomponents/crf9c_salesanalyser_WEs93i.tool.SharePoint-SharePoint_y1b/data",
+      "category": "component",
+      "size": 602
+    },
+    {
+      "path": "bots/crf9c_salesanalyser_WEs93i/bot.xml",
+      "category": "bot",
+      "size": 37671
+    },
+    {
+      "path": "bots/crf9c_salesanalyser_WEs93i/configuration.json",
+      "category": "bot",
+      "size": 6570
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 1607
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 3863
+    }
+  ]
+}
