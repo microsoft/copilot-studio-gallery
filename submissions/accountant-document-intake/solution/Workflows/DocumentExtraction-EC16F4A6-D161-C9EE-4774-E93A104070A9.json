@@ -1,0 +1,2374 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedcommondataserviceforapps_affed"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-commondataserviceforapps-86a66117-1e77-4cd9-8613-de5b8c6935f2"
+      },
+      "shared_agentnode": {
+        "api": {
+          "name": "shared_agentnode"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedagentnode_423b8"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-agentnode-d89acbed-b2af-4499-b2cb-31f8037a1255"
+      },
+      "shared_sharepointonline-1": {
+        "api": {
+          "name": "shared_sharepointonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedsharepointonline_f336d932"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "53d51926cc40469183b0895e236ba3d7"
+      },
+      "shared_sharepointonline-2": {
+        "api": {
+          "name": "shared_sharepointonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedsharepointonline_c6307d22"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "53d51926cc40469183b0895e236ba3d7"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "When_a_file_is_created__properties_only_": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://contoso.sharepoint.com/sites/AccountsIntake",
+              "table": "19a617e5-de00-41cf-b955-2536d620a934",
+              "folderPath": "/Shared Documents/Monthly Docs"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetOnNewFileItems",
+              "connectionName": "shared_sharepointonline-1"
+            },
+            "authentication": "@parameters('$authentication')"
+          },
+          "recurrence": {
+            "frequency": "Minute",
+            "interval": 1
+          },
+          "splitOn": "@triggerOutputs()?['body/value']",
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "Document Extraction",
+                "nodes": [
+                  {
+                    "id": "start",
+                    "name": "When a file is created (properties only)",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 100,
+                      "y": 380.5
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "connector",
+                        "connector": {
+                          "apiName": "shared_sharepointonline",
+                          "operationName": "GetOnNewFileItems",
+                          "operationType": "OpenApiConnection",
+                          "inputs": {
+                            "dataset": "https://contoso.sharepoint.com/sites/AccountsIntake",
+                            "table": "19a617e5-de00-41cf-b955-2536d620a934",
+                            "folderPath": "/Shared Documents/Monthly Docs"
+                          },
+                          "displayName": "When a file is created (properties only)",
+                          "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1827/1.0.1827.4913/sharepointonline/icon.png",
+                          "brandColor": "",
+                          "connectionName": "shared_sharepointonline-1",
+                          "parametersSchema": {
+                            "type": "object",
+                            "properties": {
+                              "dataset": {
+                                "type": "string",
+                                "title": "Site Address",
+                                "x-ms-dynamic-list": {
+                                  "operationId": "GetDataSets",
+                                  "parameters": {},
+                                  "itemsPath": "value",
+                                  "itemValuePath": "Name",
+                                  "itemTitlePath": "DisplayName"
+                                },
+                                "description": "Example: https://contoso.sharepoint.com/sites/sitename",
+                                "minLength": 1,
+                                "x-ms-property-name-alias": "dataset"
+                              },
+                              "table": {
+                                "type": "string",
+                                "title": "Library Name",
+                                "x-ms-dynamic-list": {
+                                  "operationId": "GetTablesForLibraries",
+                                  "parameters": {
+                                    "dataset": {
+                                      "parameterReference": "dataset",
+                                      "required": true
+                                    }
+                                  },
+                                  "itemsPath": "value",
+                                  "itemValuePath": "Name",
+                                  "itemTitlePath": "DisplayName"
+                                },
+                                "description": "SharePoint library name",
+                                "minLength": 1,
+                                "x-ms-property-name-alias": "table"
+                              },
+                              "folderPath": {
+                                "type": "string",
+                                "title": "Folder",
+                                "x-ms-dynamic-tree": {
+                                  "settings": {
+                                    "canSelectParentNodes": true,
+                                    "canSelectLeafNodes": false
+                                  },
+                                  "open": {
+                                    "operationId": "ListAllRootFolders",
+                                    "parameters": {
+                                      "dataset": {
+                                        "parameterReference": "dataset",
+                                        "required": true
+                                      }
+                                    },
+                                    "itemValuePath": "Path",
+                                    "itemTitlePath": "DisplayName",
+                                    "itemFullTitlePath": "Path",
+                                    "itemIsParent": "(IsFolder eq true)"
+                                  },
+                                  "browse": {
+                                    "operationId": "ListFolder",
+                                    "parameters": {
+                                      "dataset": {
+                                        "parameterReference": "dataset",
+                                        "required": true
+                                      },
+                                      "id": {
+                                        "selectedItemValuePath": "Id"
+                                      }
+                                    },
+                                    "itemValuePath": "Path",
+                                    "itemTitlePath": "DisplayName",
+                                    "itemFullTitlePath": "Path",
+                                    "itemIsParent": "(IsFolder eq true)"
+                                  }
+                                },
+                                "description": "Select a folder, or leave blank for the whole library",
+                                "x-ms-property-name-alias": "folderPath"
+                              },
+                              "view": {
+                                "type": "string",
+                                "title": "Limit Columns by View",
+                                "x-ms-dynamic-list": {
+                                  "operationId": "GetTableViews",
+                                  "parameters": {
+                                    "dataset": {
+                                      "parameterReference": "dataset",
+                                      "required": true
+                                    },
+                                    "table": {
+                                      "parameterReference": "table",
+                                      "required": true
+                                    }
+                                  },
+                                  "itemValuePath": "Name",
+                                  "itemTitlePath": "DisplayName"
+                                },
+                                "description": "Avoid column threshold issues by only using columns defined in a view",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "view"
+                              }
+                            },
+                            "required": [
+                              "dataset",
+                              "table"
+                            ]
+                          },
+                          "triggerBatchMode": "Batch",
+                          "outputSchema": {
+                            "200": {
+                              "type": "object",
+                              "properties": {
+                                "body": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "x-ms-dynamic-properties": {
+                                          "operationId": "GetTable",
+                                          "parameters": {
+                                            "dataset": {
+                                              "parameterReference": "dataset",
+                                              "required": true
+                                            },
+                                            "view": {
+                                              "parameterReference": "view",
+                                              "required": false
+                                            },
+                                            "table": {
+                                              "parameterReference": "table",
+                                              "required": true
+                                            }
+                                          },
+                                          "itemValuePath": "Schema/Items"
+                                        },
+                                        "description": "Table item entity"
+                                      },
+                                      "description": "List of Items",
+                                      "x-ms-property-name-alias": "body/value"
+                                    }
+                                  },
+                                  "required": [],
+                                  "description": "List of Items",
+                                  "x-ms-property-name-alias": "body"
+                                }
+                              }
+                            }
+                          },
+                          "splitOn": "@triggerOutputs()?['body/value']"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "ID": {
+                                "type": "integer",
+                                "title": "ID",
+                                "readOnly": true,
+                                "format": "int64",
+                                "description": "List item id. Use this value for specifying the item to act on in other list related actions.",
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/ID"
+                              },
+                              "Title": {
+                                "type": "string",
+                                "title": "Title",
+                                "readOnly": false,
+                                "maxLength": 255,
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq",
+                                    "startswith"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/Title"
+                              },
+                              "Modified": {
+                                "type": "string",
+                                "title": "Modified",
+                                "readOnly": true,
+                                "format": "date-time",
+                                "description": "When this item was last changed.",
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq",
+                                    "gt",
+                                    "ge",
+                                    "lt",
+                                    "le",
+                                    "ne"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/Modified"
+                              },
+                              "Editor": {
+                                "type": "object",
+                                "title": "Modified By",
+                                "properties": {
+                                  "Claims": {
+                                    "type": "string",
+                                    "title": "Claims",
+                                    "readOnly": true,
+                                    "x-ms-dynamic-list": {
+                                      "operationId": "GetEntityValues",
+                                      "parameters": {
+                                        "dataset": {
+                                          "parameterReference": "dataset",
+                                          "required": true
+                                        },
+                                        "table": {
+                                          "parameterReference": "table",
+                                          "required": true
+                                        },
+                                        "id": {
+                                          "value": "d31655d1-1d5b-4511-95a1-7a09e9b75bf2"
+                                        }
+                                      },
+                                      "itemsPath": "value",
+                                      "itemValuePath": "Claims",
+                                      "itemTitlePath": "DisplayName"
+                                    },
+                                    "description": "Internal identifier for the user who last changed this item.",
+                                    "x-ms-property-name-alias": "body/Editor/Claims"
+                                  },
+                                  "DisplayName": {
+                                    "type": "string",
+                                    "title": "DisplayName",
+                                    "readOnly": true,
+                                    "description": "The name of the user who last changed this item.",
+                                    "x-ms-capabilities": {
+                                      "filterFunctions": [
+                                        "eq",
+                                        "startswith"
+                                      ]
+                                    },
+                                    "x-ms-property-name-alias": "body/Editor/DisplayName"
+                                  },
+                                  "Email": {
+                                    "type": "string",
+                                    "title": "Email",
+                                    "readOnly": true,
+                                    "format": "email",
+                                    "description": "Email address of the user who last changed this item.",
+                                    "x-ms-capabilities": {
+                                      "filterFunctions": [
+                                        "eq",
+                                        "startswith"
+                                      ]
+                                    },
+                                    "x-ms-property-name-alias": "body/Editor/Email"
+                                  },
+                                  "Picture": {
+                                    "type": "string",
+                                    "title": "Picture",
+                                    "readOnly": true,
+                                    "format": "uri",
+                                    "description": "Link to a picture of the user who last changed this item.",
+                                    "x-ms-property-name-alias": "body/Editor/Picture"
+                                  },
+                                  "Department": {
+                                    "type": "string",
+                                    "title": "Department",
+                                    "readOnly": true,
+                                    "description": "Department name of the user who last changed this item.",
+                                    "x-ms-property-name-alias": "body/Editor/Department"
+                                  },
+                                  "JobTitle": {
+                                    "type": "string",
+                                    "title": "JobTitle",
+                                    "readOnly": true,
+                                    "description": "Job title of the user who last changed this item.",
+                                    "x-ms-property-name-alias": "body/Editor/JobTitle"
+                                  }
+                                },
+                                "required": [],
+                                "readOnly": true,
+                                "description": "The user who last changed this item.",
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/Editor"
+                              },
+                              "Location": {
+                                "type": "object",
+                                "title": "Location",
+                                "properties": {
+                                  "TermGuid": {
+                                    "type": "string",
+                                    "title": "TermGuid",
+                                    "readOnly": true,
+                                    "x-ms-property-name-alias": "body/Location/TermGuid"
+                                  },
+                                  "Value": {
+                                    "type": "string",
+                                    "title": "Value",
+                                    "x-ms-dynamic-list": {
+                                      "operationId": "GetEntityValues",
+                                      "parameters": {
+                                        "dataset": {
+                                          "parameterReference": "dataset",
+                                          "required": true
+                                        },
+                                        "table": {
+                                          "parameterReference": "table",
+                                          "required": true
+                                        },
+                                        "id": {
+                                          "value": "e384c5af-ce9f-4eb8-953a-3dc351763958"
+                                        }
+                                      },
+                                      "itemsPath": "value",
+                                      "itemValuePath": "Value",
+                                      "itemTitlePath": "Label"
+                                    },
+                                    "default": "",
+                                    "x-ms-property-name-alias": "body/Location/Value"
+                                  },
+                                  "WssId": {
+                                    "type": "integer",
+                                    "title": "WssId",
+                                    "readOnly": true,
+                                    "format": "int64",
+                                    "x-ms-property-name-alias": "body/Location/WssId"
+                                  },
+                                  "Label": {
+                                    "type": "string",
+                                    "title": "Label",
+                                    "readOnly": true,
+                                    "x-ms-property-name-alias": "body/Location/Label"
+                                  },
+                                  "Path": {
+                                    "type": "string",
+                                    "title": "Path",
+                                    "readOnly": true,
+                                    "x-ms-property-name-alias": "body/Location/Path"
+                                  }
+                                },
+                                "required": [],
+                                "readOnly": false,
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/Location"
+                              },
+                              "Country": {
+                                "type": "object",
+                                "title": "Country",
+                                "properties": {
+                                  "Value": {
+                                    "type": "string",
+                                    "title": "Value",
+                                    "x-ms-dynamic-list": {
+                                      "operationId": "GetEntityValues",
+                                      "parameters": {
+                                        "dataset": {
+                                          "parameterReference": "dataset",
+                                          "required": true
+                                        },
+                                        "table": {
+                                          "parameterReference": "table",
+                                          "required": true
+                                        },
+                                        "id": {
+                                          "value": "2a4a7b6b-f0b1-4134-8c12-8d3d27906dc2"
+                                        }
+                                      },
+                                      "itemsPath": "value",
+                                      "itemValuePath": "Value",
+                                      "itemTitlePath": "Value"
+                                    },
+                                    "default": "France",
+                                    "x-ms-property-name-alias": "body/Country/Value"
+                                  }
+                                },
+                                "required": [],
+                                "readOnly": false,
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/Country"
+                              },
+                              "OData__ColorTag": {
+                                "type": "string",
+                                "title": "Color Tag",
+                                "readOnly": true,
+                                "maxLength": 255,
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq",
+                                    "startswith"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/OData__ColorTag"
+                              },
+                              "ComplianceAssetId": {
+                                "type": "string",
+                                "title": "Compliance Asset Id",
+                                "readOnly": true,
+                                "maxLength": 255,
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq",
+                                    "startswith"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/ComplianceAssetId"
+                              },
+                              "OData__ExtendedDescription": {
+                                "type": "string",
+                                "title": "Description",
+                                "readOnly": false,
+                                "x-ms-property-name-alias": "body/OData__ExtendedDescription"
+                              },
+                              "Created": {
+                                "type": "string",
+                                "title": "Created",
+                                "readOnly": true,
+                                "format": "date-time",
+                                "description": "When this item was created.",
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq",
+                                    "gt",
+                                    "ge",
+                                    "lt",
+                                    "le",
+                                    "ne"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/Created"
+                              },
+                              "Author": {
+                                "type": "object",
+                                "title": "Created By",
+                                "properties": {
+                                  "Claims": {
+                                    "type": "string",
+                                    "title": "Claims",
+                                    "readOnly": true,
+                                    "x-ms-dynamic-list": {
+                                      "operationId": "GetEntityValues",
+                                      "parameters": {
+                                        "dataset": {
+                                          "parameterReference": "dataset",
+                                          "required": true
+                                        },
+                                        "table": {
+                                          "parameterReference": "table",
+                                          "required": true
+                                        },
+                                        "id": {
+                                          "value": "1df5e554-ec7e-46a6-901d-d85a3881cb18"
+                                        }
+                                      },
+                                      "itemsPath": "value",
+                                      "itemValuePath": "Claims",
+                                      "itemTitlePath": "DisplayName"
+                                    },
+                                    "description": "Internal identifier for the user who created this item.",
+                                    "x-ms-property-name-alias": "body/Author/Claims"
+                                  },
+                                  "DisplayName": {
+                                    "type": "string",
+                                    "title": "DisplayName",
+                                    "readOnly": true,
+                                    "description": "The name of the user who created this item.",
+                                    "x-ms-capabilities": {
+                                      "filterFunctions": [
+                                        "eq",
+                                        "startswith"
+                                      ]
+                                    },
+                                    "x-ms-property-name-alias": "body/Author/DisplayName"
+                                  },
+                                  "Email": {
+                                    "type": "string",
+                                    "title": "Email",
+                                    "readOnly": true,
+                                    "format": "email",
+                                    "description": "Email address of the user who created this item.",
+                                    "x-ms-capabilities": {
+                                      "filterFunctions": [
+                                        "eq",
+                                        "startswith"
+                                      ]
+                                    },
+                                    "x-ms-property-name-alias": "body/Author/Email"
+                                  },
+                                  "Picture": {
+                                    "type": "string",
+                                    "title": "Picture",
+                                    "readOnly": true,
+                                    "format": "uri",
+                                    "description": "Link to a picture of the user who created this item.",
+                                    "x-ms-property-name-alias": "body/Author/Picture"
+                                  },
+                                  "Department": {
+                                    "type": "string",
+                                    "title": "Department",
+                                    "readOnly": true,
+                                    "description": "Department name of the user who created this item.",
+                                    "x-ms-property-name-alias": "body/Author/Department"
+                                  },
+                                  "JobTitle": {
+                                    "type": "string",
+                                    "title": "JobTitle",
+                                    "readOnly": true,
+                                    "description": "Job title of the user who created this item.",
+                                    "x-ms-property-name-alias": "body/Author/JobTitle"
+                                  }
+                                },
+                                "required": [],
+                                "readOnly": true,
+                                "description": "The user who created this item.",
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/Author"
+                              },
+                              "CheckoutUser": {
+                                "type": "object",
+                                "title": "Checked Out To",
+                                "properties": {
+                                  "Claims": {
+                                    "type": "string",
+                                    "title": "Claims",
+                                    "readOnly": true,
+                                    "x-ms-dynamic-list": {
+                                      "operationId": "GetEntityValues",
+                                      "parameters": {
+                                        "dataset": {
+                                          "parameterReference": "dataset",
+                                          "required": true
+                                        },
+                                        "table": {
+                                          "parameterReference": "table",
+                                          "required": true
+                                        },
+                                        "id": {
+                                          "value": "3881510a-4e4a-4ee8-b102-8ee8e2d0dd4b"
+                                        }
+                                      },
+                                      "itemsPath": "value",
+                                      "itemValuePath": "Claims",
+                                      "itemTitlePath": "DisplayName"
+                                    },
+                                    "x-ms-property-name-alias": "body/CheckoutUser/Claims"
+                                  },
+                                  "DisplayName": {
+                                    "type": "string",
+                                    "title": "DisplayName",
+                                    "readOnly": true,
+                                    "x-ms-capabilities": {
+                                      "filterFunctions": [
+                                        "eq",
+                                        "startswith"
+                                      ]
+                                    },
+                                    "x-ms-property-name-alias": "body/CheckoutUser/DisplayName"
+                                  },
+                                  "Email": {
+                                    "type": "string",
+                                    "title": "Email",
+                                    "readOnly": true,
+                                    "format": "email",
+                                    "x-ms-capabilities": {
+                                      "filterFunctions": [
+                                        "eq",
+                                        "startswith"
+                                      ]
+                                    },
+                                    "x-ms-property-name-alias": "body/CheckoutUser/Email"
+                                  },
+                                  "Picture": {
+                                    "type": "string",
+                                    "title": "Picture",
+                                    "readOnly": true,
+                                    "format": "uri",
+                                    "x-ms-property-name-alias": "body/CheckoutUser/Picture"
+                                  },
+                                  "Department": {
+                                    "type": "string",
+                                    "title": "Department",
+                                    "readOnly": true,
+                                    "x-ms-property-name-alias": "body/CheckoutUser/Department"
+                                  },
+                                  "JobTitle": {
+                                    "type": "string",
+                                    "title": "JobTitle",
+                                    "readOnly": true,
+                                    "x-ms-property-name-alias": "body/CheckoutUser/JobTitle"
+                                  }
+                                },
+                                "required": [],
+                                "readOnly": true,
+                                "x-ms-capabilities": {
+                                  "filterFunctions": [
+                                    "eq"
+                                  ]
+                                },
+                                "x-ms-property-name-alias": "body/CheckoutUser"
+                              },
+                              "OData__DisplayName": {
+                                "type": "string",
+                                "title": "Sensitivity",
+                                "readOnly": true,
+                                "x-ms-property-name-alias": "body/OData__DisplayName"
+                              },
+                              "{Identifier}": {
+                                "type": "string",
+                                "title": "Identifier",
+                                "readOnly": true,
+                                "description": "Value that can be used in file related actions for selecting a file.",
+                                "x-ms-property-name-alias": "body/{Identifier}"
+                              },
+                              "{IsFolder}": {
+                                "type": "boolean",
+                                "title": "Is folder",
+                                "readOnly": true,
+                                "description": "True when the item is a folder, false otherwise.",
+                                "x-ms-property-name-alias": "body/{IsFolder}"
+                              },
+                              "{Thumbnail}": {
+                                "type": "object",
+                                "title": "Thumbnail",
+                                "properties": {
+                                  "Small": {
+                                    "type": "string",
+                                    "title": "Small",
+                                    "readOnly": true,
+                                    "description": "URL to the small, highly compressed size thumbnail of the item, if available.",
+                                    "x-ms-property-name-alias": "body/{Thumbnail}/Small"
+                                  },
+                                  "Medium": {
+                                    "type": "string",
+                                    "title": "Medium",
+                                    "readOnly": true,
+                                    "description": "URL to the standard size thumbnail of the item, if available.",
+                                    "x-ms-property-name-alias": "body/{Thumbnail}/Medium"
+                                  },
+                                  "Large": {
+                                    "type": "string",
+                                    "title": "Large",
+                                    "readOnly": true,
+                                    "description": "URL to the largest size thumbnail of the item, if available.",
+                                    "x-ms-property-name-alias": "body/{Thumbnail}/Large"
+                                  }
+                                },
+                                "required": [],
+                                "readOnly": true,
+                                "description": "URL to the thumbnails of the item in 3 different sizes, if available.",
+                                "x-ms-property-name-alias": "body/{Thumbnail}"
+                              },
+                              "{Link}": {
+                                "type": "string",
+                                "title": "Link to item",
+                                "readOnly": true,
+                                "description": "Link that can be used to get to the file or list item. Only people with permissions to the item will be able to open the link.",
+                                "x-ms-property-name-alias": "body/{Link}"
+                              },
+                              "{Name}": {
+                                "type": "string",
+                                "title": "Name",
+                                "readOnly": true,
+                                "description": "File name of the item in document libraries, display name of the item in lists.",
+                                "x-ms-property-name-alias": "body/{Name}"
+                              },
+                              "{FilenameWithExtension}": {
+                                "type": "string",
+                                "title": "File name with extension",
+                                "readOnly": true,
+                                "description": "For libraries, returns file name including extension. For lists, returns the title property.",
+                                "x-ms-property-name-alias": "body/{FilenameWithExtension}"
+                              },
+                              "{Path}": {
+                                "type": "string",
+                                "title": "Folder path",
+                                "readOnly": true,
+                                "description": "Path to the folder the item is in, relative to the site address.",
+                                "x-ms-property-name-alias": "body/{Path}"
+                              },
+                              "{FullPath}": {
+                                "type": "string",
+                                "title": "Full Path",
+                                "readOnly": true,
+                                "description": "Full path of an item or a folder or a file",
+                                "x-ms-property-name-alias": "body/{FullPath}"
+                              },
+                              "{ModerationStatus}": {
+                                "type": "string",
+                                "title": "Content approval status",
+                                "readOnly": true,
+                                "description": "The content approval status. It can be one of the following: Draft, Pending, Approved, or Rejected",
+                                "x-ms-property-name-alias": "body/{ModerationStatus}"
+                              },
+                              "{ModerationComment}": {
+                                "type": "string",
+                                "title": "Comments associated with the content approval of this list item",
+                                "readOnly": true,
+                                "description": "The comments associated with moderation of the list item.",
+                                "x-ms-property-name-alias": "body/{ModerationComment}"
+                              },
+                              "{ContentType}": {
+                                "type": "object",
+                                "title": "Content type",
+                                "properties": {
+                                  "Id": {
+                                    "type": "string",
+                                    "title": "Id",
+                                    "x-ms-dynamic-list": {
+                                      "operationId": "GetEntityValues",
+                                      "parameters": {
+                                        "dataset": {
+                                          "parameterReference": "dataset",
+                                          "required": true
+                                        },
+                                        "table": {
+                                          "parameterReference": "table",
+                                          "required": true
+                                        },
+                                        "id": {
+                                          "value": "4651e8f2-38c9-4ad0-8def-41f743f76f30"
+                                        }
+                                      },
+                                      "itemsPath": "value",
+                                      "itemValuePath": "Id",
+                                      "itemTitlePath": "Name"
+                                    },
+                                    "x-ms-property-name-alias": "body/{ContentType}/Id"
+                                  },
+                                  "Name": {
+                                    "type": "string",
+                                    "title": "Name",
+                                    "readOnly": true,
+                                    "x-ms-property-name-alias": "body/{ContentType}/Name"
+                                  }
+                                },
+                                "required": [],
+                                "readOnly": false,
+                                "description": "Name of the Content type of the item.",
+                                "x-ms-property-name-alias": "body/{ContentType}"
+                              },
+                              "{IsCheckedOut}": {
+                                "type": "boolean",
+                                "title": "Checked out",
+                                "readOnly": true,
+                                "description": "True when the file is checked out, false otherwise.",
+                                "x-ms-property-name-alias": "body/{IsCheckedOut}"
+                              },
+                              "{DriveId}": {
+                                "type": "string",
+                                "title": "Drive ID",
+                                "readOnly": true,
+                                "description": "Unique identifier for the document library in MS Graph",
+                                "x-ms-property-name-alias": "body/{DriveId}"
+                              },
+                              "{DriveItemId}": {
+                                "type": "string",
+                                "title": "Drive item ID",
+                                "readOnly": true,
+                                "description": "Unique identifier for the file in MS Graph.",
+                                "x-ms-property-name-alias": "body/{DriveItemId}"
+                              },
+                              "{SensitivityLabelId}": {
+                                "type": "string",
+                                "title": "Sensitivity Label Id",
+                                "readOnly": true,
+                                "description": "Identifier of the file sensitivity label.",
+                                "x-ms-property-name-alias": "body/{SensitivityLabelId}"
+                              },
+                              "{SensitivityLabelName}": {
+                                "type": "string",
+                                "title": "Sensitivity Label Display Name",
+                                "readOnly": true,
+                                "description": "Display name of the file sensitivity label.",
+                                "x-ms-property-name-alias": "body/{SensitivityLabelName}"
+                              },
+                              "{VersionNumber}": {
+                                "type": "string",
+                                "title": "Version number",
+                                "readOnly": true,
+                                "description": "The version number of the file or the list item.",
+                                "x-ms-property-name-alias": "body/{VersionNumber}"
+                              },
+                              "{TriggerWindowStartToken}": {
+                                "type": "string",
+                                "title": "Trigger Window Start Token",
+                                "readOnly": true,
+                                "description": "A token expressing the time of the last flow check. Use this if you want to check if one or more columns were modified since the last flow check.",
+                                "x-ms-property-name-alias": "body/{TriggerWindowStartToken}"
+                              },
+                              "{TriggerWindowEndToken}": {
+                                "type": "string",
+                                "title": "Trigger Window End Token",
+                                "readOnly": true,
+                                "description": "A token expressing the time of the current flow check. Use this if you want to check if one or more columns were modified since the last flow check.",
+                                "x-ms-property-name-alias": "body/{TriggerWindowEndToken}"
+                              }
+                            },
+                            "required": []
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 320,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "node-1",
+                    "name": "Skip folders and transient Office lock files — not real do",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 478,
+                      "y": 329
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "0",
+                            "name": "Not a processable file",
+                            "expression": "{\n  \"or\": [\n    {\n      \"equals\": [\n        \"@triggerOutputs()?['body/{IsFolder}']\",\n        true\n      ]\n    },\n    {\n      \"startsWith\": [\n        \"@triggerOutputs()?['body/{FilenameWithExtension}']\",\n        \"~$\"\n      ]\n    }\n  ]\n}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:0",
+                          "label": "Not a processable file"
+                        },
+                        {
+                          "id": "else",
+                          "label": "Else"
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 320,
+                      "height": 169
+                    }
+                  },
+                  {
+                    "id": "end-e1663dbd-7956-4220-b0eb-5f73bd6ab0f1",
+                    "name": "End",
+                    "type": "end",
+                    "version": 1,
+                    "position": {
+                      "x": 856,
+                      "y": 300
+                    },
+                    "data": {
+                      "config": {
+                        "runStatus": "Succeeded"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "node-2",
+                    "name": "Skip previously generated outputs — only source documents ",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 1422,
+                      "y": 358
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "0",
+                            "name": "Generated output, not a source document",
+                            "expression": "{\n  \"and\": [\n    {\n      \"equals\": [\n        \"@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/isSourceDocument']\",\n        false\n      ]\n    }\n  ]\n}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:0",
+                          "label": "Generated output, not a source document"
+                        },
+                        {
+                          "id": "else",
+                          "label": "Else"
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 320,
+                      "height": 169
+                    }
+                  },
+                  {
+                    "id": "end-e4977453-c833-49cd-a58b-40b2c8e38e75",
+                    "name": "End_2",
+                    "type": "end",
+                    "version": 1,
+                    "position": {
+                      "x": 1800,
+                      "y": 380.5
+                    },
+                    "data": {
+                      "config": {
+                        "runStatus": "Succeeded"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "node-3",
+                    "name": "Create Accounting Extraction Row",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 1800,
+                      "y": 473
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "operationName": "CreateRecord",
+                        "parameters": {
+                          "entityName": "cr900_accountings",
+                          "item/cr900_invoicenumber": "@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/invoiceNumber']",
+                          "item/cr900_invoicedate": "@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/invoiceDate']",
+                          "item/cr900_vendorname": "@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/vendorName']",
+                          "item/cr900_amountdue": "@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/amountDue']",
+                          "item/cr900_currency": "@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/currency']",
+                          "item/cr900_extractionstatus": "@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/extractionStatus']",
+                          "item/cr900_transformationnote": "@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/transformationNote']",
+                          "item/cr900_outliersnote": "@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/outliersNote']",
+                          "item/cr900_sourcefilename": "@triggerOutputs()?['body/{FilenameWithExtension}']",
+                          "item/cr900_ingestiontimestamp": "@utcNow()"
+                        },
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1834/1.0.1834.5101/commondataserviceforapps/icon.png",
+                        "brandColor": "",
+                        "displayName": "Create Accounting Extraction Row",
+                        "parametersSchema": {
+                          "type": "object",
+                          "properties": {
+                            "x-ms-odata-metadata-full": {
+                              "type": "boolean",
+                              "title": "Return Full Metadata",
+                              "description": "The header parameter to customer to opt-in returning full odata metadata in response.",
+                              "x-ms-visibility": "advanced",
+                              "x-ms-property-name-alias": "x-ms-odata-metadata-full"
+                            },
+                            "entityName": {
+                              "type": "string",
+                              "title": "Table name",
+                              "x-ms-dynamic-list": {
+                                "operationId": "GetEntities",
+                                "parameters": {},
+                                "itemsPath": "value",
+                                "itemValuePath": "EntitySetName",
+                                "itemTitlePath": "DisplayCollectionName/UserLocalizedLabel/Label"
+                              },
+                              "description": "Choose a table",
+                              "minLength": 1,
+                              "x-ms-property-name-alias": "entityName"
+                            },
+                            "item": {
+                              "type": "object",
+                              "title": "Row Item",
+                              "x-ms-dynamic-properties": {
+                                "operationId": "GetMetadataForPostEntity",
+                                "parameters": {
+                                  "entityName": {
+                                    "parameterReference": "entityName",
+                                    "required": true
+                                  }
+                                },
+                                "itemValuePath": "schema"
+                              },
+                              "description": "Row to create",
+                              "x-ms-property-name-alias": "item"
+                            }
+                          },
+                          "required": [
+                            "entityName",
+                            "item"
+                          ]
+                        },
+                        "resolvedDynamicSchemas": {
+                          "item": {
+                            "type": "object",
+                            "properties": {
+                              "cr900_accountingid": {
+                                "type": "string",
+                                "title": "Accounting",
+                                "format": "guid",
+                                "description": "Unique identifier for entity instances",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "cr900_accountingid"
+                              },
+                              "cr900_amountdue": {
+                                "type": "number",
+                                "title": "Amount Due",
+                                "format": "double",
+                                "description": "",
+                                "maximum": 100000000000,
+                                "minimum": -100000000000,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "cr900_amountdue"
+                              },
+                              "cr900_currency": {
+                                "type": "string",
+                                "title": "Currency",
+                                "description": "",
+                                "maxLength": 100,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "cr900_currency"
+                              },
+                              "cr900_extractionstatus": {
+                                "type": "integer",
+                                "title": "Extraction Status",
+                                "x-ms-dynamic-list": {
+                                  "operationId": "GetOptionSetMetadataWithEntitySetName",
+                                  "parameters": {
+                                    "entityName": {
+                                      "parameterReference": "entityName",
+                                      "required": true
+                                    },
+                                    "attributeMetadataId": {
+                                      "value": "5cf021bf-4734-45e2-9e38-ef838a1a494b"
+                                    },
+                                    "type": {
+                                      "value": "Picklist"
+                                    }
+                                  },
+                                  "itemsPath": "value",
+                                  "itemValuePath": "value",
+                                  "itemTitlePath": "Label/UserLocalizedLabel/Label"
+                                },
+                                "format": "int32",
+                                "description": "",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "cr900_extractionstatus"
+                              },
+                              "importsequencenumber": {
+                                "type": "integer",
+                                "title": "Import Sequence Number",
+                                "format": "int32",
+                                "description": "Sequence number of the import that created this record.",
+                                "maximum": 2147483647,
+                                "minimum": -2147483648,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "importsequencenumber"
+                              },
+                              "cr900_ingestiontimestamp": {
+                                "type": "string",
+                                "title": "Ingestion Timestamp",
+                                "format": "date-time",
+                                "description": "",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "cr900_ingestiontimestamp"
+                              },
+                              "cr900_invoicedate": {
+                                "type": "string",
+                                "title": "Invoice Date",
+                                "format": "date-time",
+                                "description": "",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "cr900_invoicedate"
+                              },
+                              "cr900_invoicenumber": {
+                                "type": "string",
+                                "title": "Invoice Number",
+                                "description": "Identifiable number for invoice",
+                                "maxLength": 100,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "cr900_invoicenumber"
+                              },
+                              "cr900_outliersnote": {
+                                "type": "string",
+                                "title": "Outliers Note",
+                                "description": "",
+                                "maxLength": 8000,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "cr900_outliersnote"
+                              },
+                              "ownerid@odata.bind": {
+                                "type": "string",
+                                "title": "Owner (Owners)",
+                                "description": "Owner Id",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "ownerid@odata.bind"
+                              },
+                              "overriddencreatedon": {
+                                "type": "string",
+                                "title": "Record Created On",
+                                "format": "date-time",
+                                "description": "Date and time that the record was migrated.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "overriddencreatedon"
+                              },
+                              "cr900_sourcefilename": {
+                                "type": "string",
+                                "title": "Source File Name",
+                                "description": "",
+                                "maxLength": 100,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "cr900_sourcefilename"
+                              },
+                              "statuscode": {
+                                "type": "integer",
+                                "title": "Status Reason",
+                                "x-ms-dynamic-list": {
+                                  "operationId": "GetOptionSetMetadataWithEntitySetName",
+                                  "parameters": {
+                                    "entityName": {
+                                      "parameterReference": "entityName",
+                                      "required": true
+                                    },
+                                    "attributeMetadataId": {
+                                      "value": "45b631ca-1080-4964-9a21-b932f6e50302"
+                                    },
+                                    "type": {
+                                      "value": "Status"
+                                    }
+                                  },
+                                  "itemsPath": "value",
+                                  "itemValuePath": "value",
+                                  "itemTitlePath": "Label/UserLocalizedLabel/Label"
+                                },
+                                "format": "int32",
+                                "description": "Reason for the status of the Accounting",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "statuscode"
+                              },
+                              "timezoneruleversionnumber": {
+                                "type": "integer",
+                                "title": "Time Zone Rule Version Number",
+                                "format": "int32",
+                                "description": "For internal use only.",
+                                "maximum": 2147483647,
+                                "minimum": -1,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "timezoneruleversionnumber"
+                              },
+                              "cr900_transformationnote": {
+                                "type": "string",
+                                "title": "Transformation Note",
+                                "description": "",
+                                "maxLength": 8000,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "cr900_transformationnote"
+                              },
+                              "utcconversiontimezonecode": {
+                                "type": "integer",
+                                "title": "UTC Conversion Time Zone Code",
+                                "format": "int32",
+                                "description": "Time zone code that was in use when the record was created.",
+                                "maximum": 2147483647,
+                                "minimum": -1,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "utcconversiontimezonecode"
+                              },
+                              "cr900_vendorname": {
+                                "type": "string",
+                                "title": "Vendor Name",
+                                "description": "",
+                                "maxLength": 850,
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "cr900_vendorname"
+                              }
+                            },
+                            "required": [
+                              "cr900_vendorname"
+                            ]
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "cr900_accountingid": {
+                                "type": "string",
+                                "title": "Accounting",
+                                "format": "guid",
+                                "description": "Unique identifier for entity instances",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cr900_accountingid"
+                              },
+                              "cr900_amountdue": {
+                                "type": "number",
+                                "title": "Amount Due",
+                                "format": "double",
+                                "description": "",
+                                "maximum": 100000000000,
+                                "minimum": -100000000000,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cr900_amountdue"
+                              },
+                              "_createdonbehalfby_value@Microsoft.Dynamics.CRM.lookuplogicalname": {
+                                "type": "string",
+                                "title": "Created By (Delegate) (Type)",
+                                "description": "Unique identifier of the delegate user who created the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_createdonbehalfby_value@Microsoft.Dynamics.CRM.lookuplogicalname"
+                              },
+                              "_createdonbehalfby_value": {
+                                "type": "string",
+                                "title": "Created By (Delegate) (Value)",
+                                "description": "Unique identifier of the delegate user who created the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_createdonbehalfby_value"
+                              },
+                              "_createdby_value@Microsoft.Dynamics.CRM.lookuplogicalname": {
+                                "type": "string",
+                                "title": "Created By (Type)",
+                                "description": "Unique identifier of the user who created the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_createdby_value@Microsoft.Dynamics.CRM.lookuplogicalname"
+                              },
+                              "_createdby_value": {
+                                "type": "string",
+                                "title": "Created By (Value)",
+                                "description": "Unique identifier of the user who created the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_createdby_value"
+                              },
+                              "createdon": {
+                                "type": "string",
+                                "title": "Created On",
+                                "format": "date-time",
+                                "description": "Date and time when the record was created.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/createdon"
+                              },
+                              "cr900_currency": {
+                                "type": "string",
+                                "title": "Currency",
+                                "description": "",
+                                "maxLength": 100,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cr900_currency"
+                              },
+                              "cr900_extractionstatus": {
+                                "type": "integer",
+                                "title": "Extraction Status",
+                                "x-ms-dynamic-list": {
+                                  "operationId": "GetOptionSetMetadataWithEntitySetName",
+                                  "parameters": {
+                                    "entityName": {
+                                      "parameterReference": "entityName",
+                                      "required": true
+                                    },
+                                    "attributeMetadataId": {
+                                      "value": "5cf021bf-4734-45e2-9e38-ef838a1a494b"
+                                    },
+                                    "type": {
+                                      "value": "Picklist"
+                                    }
+                                  },
+                                  "itemsPath": "value",
+                                  "itemValuePath": "value",
+                                  "itemTitlePath": "Label/UserLocalizedLabel/Label"
+                                },
+                                "format": "int32",
+                                "description": "",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cr900_extractionstatus"
+                              },
+                              "importsequencenumber": {
+                                "type": "integer",
+                                "title": "Import Sequence Number",
+                                "format": "int32",
+                                "description": "Sequence number of the import that created this record.",
+                                "maximum": 2147483647,
+                                "minimum": -2147483648,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/importsequencenumber"
+                              },
+                              "cr900_ingestiontimestamp": {
+                                "type": "string",
+                                "title": "Ingestion Timestamp",
+                                "format": "date-time",
+                                "description": "",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cr900_ingestiontimestamp"
+                              },
+                              "cr900_invoicedate": {
+                                "type": "string",
+                                "title": "Invoice Date",
+                                "format": "date-time",
+                                "description": "",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cr900_invoicedate"
+                              },
+                              "cr900_invoicenumber": {
+                                "type": "string",
+                                "title": "Invoice Number",
+                                "description": "Identifiable number for invoice",
+                                "maxLength": 100,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cr900_invoicenumber"
+                              },
+                              "_modifiedonbehalfby_value@Microsoft.Dynamics.CRM.lookuplogicalname": {
+                                "type": "string",
+                                "title": "Modified By (Delegate) (Type)",
+                                "description": "Unique identifier of the delegate user who modified the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_modifiedonbehalfby_value@Microsoft.Dynamics.CRM.lookuplogicalname"
+                              },
+                              "_modifiedonbehalfby_value": {
+                                "type": "string",
+                                "title": "Modified By (Delegate) (Value)",
+                                "description": "Unique identifier of the delegate user who modified the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_modifiedonbehalfby_value"
+                              },
+                              "_modifiedby_value@Microsoft.Dynamics.CRM.lookuplogicalname": {
+                                "type": "string",
+                                "title": "Modified By (Type)",
+                                "description": "Unique identifier of the user who modified the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_modifiedby_value@Microsoft.Dynamics.CRM.lookuplogicalname"
+                              },
+                              "_modifiedby_value": {
+                                "type": "string",
+                                "title": "Modified By (Value)",
+                                "description": "Unique identifier of the user who modified the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_modifiedby_value"
+                              },
+                              "modifiedon": {
+                                "type": "string",
+                                "title": "Modified On",
+                                "format": "date-time",
+                                "description": "Date and time when the record was modified.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/modifiedon"
+                              },
+                              "@odata.id": {
+                                "type": "string",
+                                "title": "OData Id",
+                                "description": "OData row id",
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/@odata.id"
+                              },
+                              "cr900_outliersnote": {
+                                "type": "string",
+                                "title": "Outliers Note",
+                                "description": "",
+                                "maxLength": 8000,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cr900_outliersnote"
+                              },
+                              "_ownerid_value@Microsoft.Dynamics.CRM.lookuplogicalname": {
+                                "type": "string",
+                                "title": "Owner (Type)",
+                                "description": "Owner Id",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_ownerid_value@Microsoft.Dynamics.CRM.lookuplogicalname"
+                              },
+                              "_ownerid_value": {
+                                "type": "string",
+                                "title": "Owner (Value)",
+                                "description": "Owner Id",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_ownerid_value"
+                              },
+                              "_owningbusinessunit_value@Microsoft.Dynamics.CRM.lookuplogicalname": {
+                                "type": "string",
+                                "title": "Owning Business Unit (Type)",
+                                "description": "Unique identifier for the business unit that owns the record",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_owningbusinessunit_value@Microsoft.Dynamics.CRM.lookuplogicalname"
+                              },
+                              "_owningbusinessunit_value": {
+                                "type": "string",
+                                "title": "Owning Business Unit (Value)",
+                                "description": "Unique identifier for the business unit that owns the record",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_owningbusinessunit_value"
+                              },
+                              "_owningteam_value@Microsoft.Dynamics.CRM.lookuplogicalname": {
+                                "type": "string",
+                                "title": "Owning Team (Type)",
+                                "description": "Unique identifier for the team that owns the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_owningteam_value@Microsoft.Dynamics.CRM.lookuplogicalname"
+                              },
+                              "_owningteam_value": {
+                                "type": "string",
+                                "title": "Owning Team (Value)",
+                                "description": "Unique identifier for the team that owns the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_owningteam_value"
+                              },
+                              "_owninguser_value@Microsoft.Dynamics.CRM.lookuplogicalname": {
+                                "type": "string",
+                                "title": "Owning User (Type)",
+                                "description": "Unique identifier for the user that owns the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_owninguser_value@Microsoft.Dynamics.CRM.lookuplogicalname"
+                              },
+                              "_owninguser_value": {
+                                "type": "string",
+                                "title": "Owning User (Value)",
+                                "description": "Unique identifier for the user that owns the record.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/_owninguser_value"
+                              },
+                              "overriddencreatedon": {
+                                "type": "string",
+                                "title": "Record Created On",
+                                "format": "date-time",
+                                "description": "Date and time that the record was migrated.",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/overriddencreatedon"
+                              },
+                              "cr900_sourcefilename": {
+                                "type": "string",
+                                "title": "Source File Name",
+                                "description": "",
+                                "maxLength": 100,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cr900_sourcefilename"
+                              },
+                              "statecode": {
+                                "type": "integer",
+                                "title": "Status",
+                                "x-ms-dynamic-list": {
+                                  "operationId": "GetOptionSetMetadataWithEntitySetName",
+                                  "parameters": {
+                                    "entityName": {
+                                      "parameterReference": "entityName",
+                                      "required": true
+                                    },
+                                    "attributeMetadataId": {
+                                      "value": "d13cbe3f-f21e-427e-8500-3406bcd85899"
+                                    },
+                                    "type": {
+                                      "value": "State"
+                                    }
+                                  },
+                                  "itemsPath": "value",
+                                  "itemValuePath": "value",
+                                  "itemTitlePath": "Label/UserLocalizedLabel/Label"
+                                },
+                                "format": "int32",
+                                "description": "Status of the Accounting",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/statecode"
+                              },
+                              "statuscode": {
+                                "type": "integer",
+                                "title": "Status Reason",
+                                "x-ms-dynamic-list": {
+                                  "operationId": "GetOptionSetMetadataWithEntitySetName",
+                                  "parameters": {
+                                    "entityName": {
+                                      "parameterReference": "entityName",
+                                      "required": true
+                                    },
+                                    "attributeMetadataId": {
+                                      "value": "45b631ca-1080-4964-9a21-b932f6e50302"
+                                    },
+                                    "type": {
+                                      "value": "Status"
+                                    }
+                                  },
+                                  "itemsPath": "value",
+                                  "itemValuePath": "value",
+                                  "itemTitlePath": "Label/UserLocalizedLabel/Label"
+                                },
+                                "format": "int32",
+                                "description": "Reason for the status of the Accounting",
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/statuscode"
+                              },
+                              "timezoneruleversionnumber": {
+                                "type": "integer",
+                                "title": "Time Zone Rule Version Number",
+                                "format": "int32",
+                                "description": "For internal use only.",
+                                "maximum": 2147483647,
+                                "minimum": -1,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/timezoneruleversionnumber"
+                              },
+                              "cr900_transformationnote": {
+                                "type": "string",
+                                "title": "Transformation Note",
+                                "description": "",
+                                "maxLength": 8000,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/cr900_transformationnote"
+                              },
+                              "utcconversiontimezonecode": {
+                                "type": "integer",
+                                "title": "UTC Conversion Time Zone Code",
+                                "format": "int32",
+                                "description": "Time zone code that was in use when the record was created.",
+                                "maximum": 2147483647,
+                                "minimum": -1,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/utcconversiontimezonecode"
+                              },
+                              "cr900_vendorname": {
+                                "type": "string",
+                                "title": "Vendor Name",
+                                "description": "",
+                                "maxLength": 850,
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "body/cr900_vendorname"
+                              },
+                              "versionnumber": {
+                                "type": "integer",
+                                "title": "Version Number",
+                                "format": "int64",
+                                "description": "Version Number",
+                                "maximum": 9223372036854776000,
+                                "minimum": -9223372036854776000,
+                                "x-ms-visibility": "advanced",
+                                "x-ms-property-name-alias": "body/versionnumber"
+                              }
+                            },
+                            "required": []
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 294,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "agentExtract-afd3982c-a512-42b3-b685-c47205af8d14",
+                    "name": "Extract",
+                    "type": "agentExtract",
+                    "version": 1,
+                    "position": {
+                      "x": 1139,
+                      "y": 409.5
+                    },
+                    "data": {
+                      "config": {
+                        "input": "@body('connector-423b5e4b-f0a3-4570-b9a1-e2248f88d815')",
+                        "outputMode": "structured-simple",
+                        "inlineModel": "claude-opus-5-5",
+                        "connectionName": "shared_agentnode",
+                        "simpleProperties": [
+                          {
+                            "id": "97a1cc05-d9c0-4088-b25d-f4b158a47097",
+                            "name": "invoiceNumber",
+                            "type": "string",
+                            "description": "The invoice, receipt, or bill number as printed on the document. Leave empty if the document has none.",
+                            "required": false
+                          },
+                          {
+                            "id": "69752bc6-1ae3-4c24-9c39-6949cad468a6",
+                            "name": "invoiceDate",
+                            "type": "string",
+                            "description": "The date on the document (issue date or billing date). Format is yyyy-mm-dd. Leave empty if no date is present.",
+                            "required": false
+                          },
+                          {
+                            "id": "05e5fd86-7ea7-4a6b-ad57-e141fb4cfefa",
+                            "name": "vendorName",
+                            "type": "string",
+                            "description": "The vendor, supplier, or biller the document is from. Use 'Unknown' if it cannot be determined.",
+                            "required": false
+                          },
+                          {
+                            "id": "bf8e39f7-2912-4a67-bf6c-2563b7314508",
+                            "name": "amountDue",
+                            "type": "number",
+                            "description": "The total amount owed or billed, as shown on the document. Leave empty if there's no payable amount.",
+                            "required": false
+                          },
+                          {
+                            "id": "2e535712-ec8c-4217-98ca-f7ca8044d971",
+                            "name": "currency",
+                            "type": "string",
+                            "description": "The currency the amount is stated in (e.g. USD, EUR, GBP). Leave empty if not indicated.",
+                            "required": false
+                          },
+                          {
+                            "id": "62f1ff2d-e4fd-4a61-8adf-56c860569963",
+                            "name": "extractionStatus",
+                            "type": "enum",
+                            "description": "1='Full' if every relevant figure was read with confidence; 2='Partial' if any part of the document was unreadable, ambiguous, or required inference.",
+                            "required": false,
+                            "enumValues": [
+                              "1",
+                              "2"
+                            ]
+                          },
+                          {
+                            "id": "d4b8e0c3-6492-482d-b5cf-63a5acfc674a",
+                            "name": "transformationNote",
+                            "type": "string",
+                            "description": "Plain-language explanation of how each figure was derived or interpreted — e.g. a currency conversion, a handwritten value, or a figure inferred rather than explicitly labelled.",
+                            "required": false
+                          },
+                          {
+                            "id": "004de0e9-06b7-47b9-bef3-4a20c2e68ea9",
+                            "name": "outliersNote",
+                            "type": "string",
+                            "description": "Anything unusual worth a human's attention — a duplicate-looking invoice number, an out-of-range amount, a mismatched date, etc. Empty when nothing is unusual.",
+                            "required": false
+                          },
+                          {
+                            "id": "675a1150-e4dc-4670-87c5-69f74bca375b",
+                            "name": "isSourceDocument",
+                            "type": "boolean",
+                            "description": "False when this file is clearly a previously generated output — a report, summary, export, or reconciliation — rather than a genuine source accounting document.",
+                            "required": false
+                          }
+                        ],
+                        "jsonSchema": {
+                          "type": "object",
+                          "properties": {
+                            "invoiceNumber": {
+                              "type": "string",
+                              "description": "The invoice, receipt, or bill number as printed on the document. Leave empty if the document has none."
+                            },
+                            "invoiceDate": {
+                              "type": "string",
+                              "description": "The date on the document (issue date or billing date). Format is yyyy-mm-dd. Leave empty if no date is present."
+                            },
+                            "vendorName": {
+                              "type": "string",
+                              "description": "The vendor, supplier, or biller the document is from. Use 'Unknown' if it cannot be determined."
+                            },
+                            "amountDue": {
+                              "type": "number",
+                              "description": "The total amount owed or billed, as shown on the document. Leave empty if there's no payable amount."
+                            },
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency the amount is stated in (e.g. USD, EUR, GBP). Leave empty if not indicated."
+                            },
+                            "extractionStatus": {
+                              "type": "string",
+                              "enum": [
+                                "1",
+                                "2"
+                              ],
+                              "description": "1='Full' if every relevant figure was read with confidence; 2='Partial' if any part of the document was unreadable, ambiguous, or required inference."
+                            },
+                            "transformationNote": {
+                              "type": "string",
+                              "description": "Plain-language explanation of how each figure was derived or interpreted — e.g. a currency conversion, a handwritten value, or a figure inferred rather than explicitly labelled."
+                            },
+                            "outliersNote": {
+                              "type": "string",
+                              "description": "Anything unusual worth a human's attention — a duplicate-looking invoice number, an out-of-range amount, a mismatched date, etc. Empty when nothing is unusual."
+                            },
+                            "isSourceDocument": {
+                              "type": "boolean",
+                              "description": "False when this file is clearly a previously generated output — a report, summary, export, or reconciliation — rather than a genuine source accounting document."
+                            }
+                          }
+                        },
+                        "inputRich": {
+                          "segments": [
+                            {
+                              "type": "token",
+                              "value": "File Content",
+                              "tokenRef": {
+                                "type": "step",
+                                "stepId": "connector-423b5e4b-f0a3-4570-b9a1-e2248f88d815",
+                                "stepName": "Get file content",
+                                "outputName": "body",
+                                "outputDisplayName": "File Content",
+                                "outputType": "string",
+                                "outputFormat": "binary",
+                                "sourceNodeType": "connector",
+                                "outputAlias": "body"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "structuredOutput": {
+                                "type": "object",
+                                "properties": {
+                                  "invoiceNumber": {
+                                    "type": "string",
+                                    "description": "The invoice, receipt, or bill number as printed on the document. Leave empty if the document has none."
+                                  },
+                                  "invoiceDate": {
+                                    "type": "string",
+                                    "description": "The date on the document (issue date or billing date). Format is yyyy-mm-dd. Leave empty if no date is present."
+                                  },
+                                  "vendorName": {
+                                    "type": "string",
+                                    "description": "The vendor, supplier, or biller the document is from. Use 'Unknown' if it cannot be determined."
+                                  },
+                                  "amountDue": {
+                                    "type": "number",
+                                    "description": "The total amount owed or billed, as shown on the document. Leave empty if there's no payable amount."
+                                  },
+                                  "currency": {
+                                    "type": "string",
+                                    "description": "The currency the amount is stated in (e.g. USD, EUR, GBP). Leave empty if not indicated."
+                                  },
+                                  "extractionStatus": {
+                                    "type": "string",
+                                    "enum": [
+                                      "1",
+                                      "2"
+                                    ],
+                                    "description": "1='Full' if every relevant figure was read with confidence; 2='Partial' if any part of the document was unreadable, ambiguous, or required inference."
+                                  },
+                                  "transformationNote": {
+                                    "type": "string",
+                                    "description": "Plain-language explanation of how each figure was derived or interpreted — e.g. a currency conversion, a handwritten value, or a figure inferred rather than explicitly labelled."
+                                  },
+                                  "outliersNote": {
+                                    "type": "string",
+                                    "description": "Anything unusual worth a human's attention — a duplicate-looking invoice number, an out-of-range amount, a mismatched date, etc. Empty when nothing is unusual."
+                                  },
+                                  "isSourceDocument": {
+                                    "type": "boolean",
+                                    "description": "False when this file is clearly a previously generated output — a report, summary, export, or reconciliation — rather than a genuine source accounting document."
+                                  }
+                                },
+                                "title": ""
+                              }
+                            },
+                            "required": [
+                              "structuredOutput"
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "selected": true
+                  },
+                  {
+                    "id": "connector-423b5e4b-f0a3-4570-b9a1-e2248f88d815",
+                    "name": "Get file content",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 856,
+                      "y": 409.5
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_sharepointonline",
+                        "displayName": "SharePoint",
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1827/1.0.1827.4913/sharepointonline/icon.png",
+                        "brandColor": "",
+                        "operationName": "GetFileContent",
+                        "connectionName": "shared_sharepointonline-2",
+                        "operationType": "OpenApiConnection",
+                        "parametersSchema": {
+                          "type": "object",
+                          "properties": {
+                            "dataset": {
+                              "type": "string",
+                              "title": "Site Address",
+                              "x-ms-dynamic-list": {
+                                "operationId": "GetDataSets",
+                                "parameters": {},
+                                "itemsPath": "value",
+                                "itemValuePath": "Name",
+                                "itemTitlePath": "DisplayName"
+                              },
+                              "description": "Example: https://contoso.sharepoint.com/sites/sitename.",
+                              "minLength": 1,
+                              "x-ms-property-name-alias": "dataset"
+                            },
+                            "id": {
+                              "type": "string",
+                              "title": "File Identifier",
+                              "x-ms-dynamic-tree": {
+                                "settings": {
+                                  "canSelectParentNodes": false,
+                                  "canSelectLeafNodes": true
+                                },
+                                "open": {
+                                  "operationId": "ListAllRootFolders",
+                                  "parameters": {
+                                    "dataset": {
+                                      "parameterReference": "dataset",
+                                      "required": true
+                                    }
+                                  },
+                                  "itemValuePath": "Id",
+                                  "itemTitlePath": "DisplayName",
+                                  "itemFullTitlePath": "Path",
+                                  "itemIsParent": "(IsFolder eq true)"
+                                },
+                                "browse": {
+                                  "operationId": "ListFolder",
+                                  "parameters": {
+                                    "dataset": {
+                                      "parameterReference": "dataset",
+                                      "required": true
+                                    },
+                                    "id": {
+                                      "selectedItemValuePath": "Id"
+                                    }
+                                  },
+                                  "itemValuePath": "Id",
+                                  "itemTitlePath": "DisplayName",
+                                  "itemFullTitlePath": "Path",
+                                  "itemIsParent": "(IsFolder eq true)"
+                                }
+                              },
+                              "description": "Select a file.",
+                              "minLength": 1,
+                              "x-ms-property-name-alias": "id"
+                            },
+                            "inferContentType": {
+                              "type": "boolean",
+                              "title": "Infer content type",
+                              "description": "Infer content-type based on extension.",
+                              "default": true,
+                              "x-ms-visibility": "advanced",
+                              "x-ms-property-name-alias": "inferContentType"
+                            }
+                          },
+                          "required": [
+                            "dataset",
+                            "id"
+                          ]
+                        },
+                        "parameters": {
+                          "inferContentType": true,
+                          "dataset": "https://contoso.sharepoint.com/sites/AccountsIntake",
+                          "id": "@triggerOutputs()?['body/{Identifier}']"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "body": {
+                                "type": "string",
+                                "title": "File Content",
+                                "format": "binary",
+                                "description": "The content of the file.",
+                                "x-ms-property-name-alias": "body"
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-node-1",
+                    "source": "start",
+                    "target": "node-1"
+                  },
+                  {
+                    "id": "edge-node-1-condition:0-end-e1663dbd-7956-4220-b0eb-5f73bd6ab0f1",
+                    "source": "node-1",
+                    "target": "end-e1663dbd-7956-4220-b0eb-5f73bd6ab0f1",
+                    "sourceHandle": "condition:0"
+                  },
+                  {
+                    "id": "edge-node-2-condition:0-end-e4977453-c833-49cd-a58b-40b2c8e38e75",
+                    "source": "node-2",
+                    "target": "end-e4977453-c833-49cd-a58b-40b2c8e38e75",
+                    "sourceHandle": "condition:0"
+                  },
+                  {
+                    "id": "edge-node-2-else-node-3",
+                    "source": "node-2",
+                    "target": "node-3",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-agentExtract-afd3982c-a512-42b3-b685-c47205af8d14-node-2",
+                    "source": "agentExtract-afd3982c-a512-42b3-b685-c47205af8d14",
+                    "target": "node-2"
+                  },
+                  {
+                    "id": "edge-node-1-else-connector-423b5e4b-f0a3-4570-b9a1-e2248f88d815",
+                    "source": "node-1",
+                    "target": "connector-423b5e4b-f0a3-4570-b9a1-e2248f88d815",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-connector-423b5e4b-f0a3-4570-b9a1-e2248f88d815-agentExtract-afd3982c-a512-42b3-b685-c47205af8d14",
+                    "source": "connector-423b5e4b-f0a3-4570-b9a1-e2248f88d815",
+                    "target": "agentExtract-afd3982c-a512-42b3-b685-c47205af8d14"
+                  }
+                ],
+                "connectionReferences": {
+                  "shared_commondataserviceforapps": {
+                    "api": {
+                      "name": "shared_commondataserviceforapps"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedcommondataserviceforapps_affed"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-commondataserviceforapps-86a66117-1e77-4cd9-8613-de5b8c6935f2"
+                  },
+                  "shared_agentnode": {
+                    "api": {
+                      "name": "shared_agentnode"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedagentnode_423b8"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-agentnode-d89acbed-b2af-4499-b2cb-31f8037a1255"
+                  },
+                  "shared_sharepointonline-1": {
+                    "api": {
+                      "name": "shared_sharepointonline"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedsharepointonline_f336d932"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "53d51926cc40469183b0895e236ba3d7"
+                  },
+                  "shared_sharepointonline-2": {
+                    "api": {
+                      "name": "shared_sharepointonline"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedsharepointonline_c6307d22"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "53d51926cc40469183b0895e236ba3d7"
+                  }
+                },
+                "parameters": {
+                  "$authentication": {
+                    "type": "SecureObject",
+                    "defaultValue": {}
+                  },
+                  "$connections": {
+                    "type": "Object",
+                    "defaultValue": {}
+                  }
+                }
+              },
+              "nodeActionMapping": {
+                "end-e1663dbd-7956-4220-b0eb-5f73bd6ab0f1": [
+                  "end-e1663dbd-7956-4220-b0eb-5f73bd6ab0f1"
+                ],
+                "connector-423b5e4b-f0a3-4570-b9a1-e2248f88d815": [
+                  "Get_file_content"
+                ],
+                "agentExtract-afd3982c-a512-42b3-b685-c47205af8d14": [
+                  "Extract"
+                ],
+                "end-e4977453-c833-49cd-a58b-40b2c8e38e75": [
+                  "end-e4977453-c833-49cd-a58b-40b2c8e38e75"
+                ],
+                "node-3": [
+                  "Create_Accounting_Extraction_Row"
+                ],
+                "node-2": [
+                  "Skip_previously_generated_outputs___only_source_documents_"
+                ],
+                "node-1": [
+                  "Skip_folders_and_transient_Office_lock_files___not_real_do"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "actions": {
+        "Skip_folders_and_transient_Office_lock_files___not_real_do": {
+          "type": "If",
+          "expression": {
+            "or": [
+              {
+                "equals": [
+                  "@triggerOutputs()?['body/{IsFolder}']",
+                  true
+                ]
+              },
+              {
+                "startsWith": [
+                  "@triggerOutputs()?['body/{FilenameWithExtension}']",
+                  "~$"
+                ]
+              }
+            ]
+          },
+          "actions": {
+            "end-e1663dbd-7956-4220-b0eb-5f73bd6ab0f1": {
+              "type": "Terminate",
+              "inputs": {
+                "runStatus": "Succeeded"
+              },
+              "metadata": {
+                "description": "End",
+                "nodeId": "end-e1663dbd-7956-4220-b0eb-5f73bd6ab0f1"
+              }
+            }
+          },
+          "else": {
+            "actions": {
+              "Get_file_content": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "inferContentType": true,
+                    "dataset": "https://contoso.sharepoint.com/sites/AccountsIntake",
+                    "id": "@triggerOutputs()?['body/{Identifier}']"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "connectionName": "shared_sharepointonline-2",
+                    "operationId": "GetFileContent"
+                  }
+                },
+                "metadata": {
+                  "description": "Get file content",
+                  "nodeId": "connector-423b5e4b-f0a3-4570-b9a1-e2248f88d815"
+                }
+              },
+              "Extract": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "body/definition": {
+                      "components": [],
+                      "environmentVariables": [],
+                      "flows": [],
+                      "dataverseTableSearchs": [],
+                      "dataverseTableSearchGlossaryConfigurations": [],
+                      "dataverseTableSearchEntityConfigurations": [],
+                      "dataverseTableSearchEntityColumnSynonyms": [],
+                      "connectionReferences": [],
+                      "connectorDefinitions": [],
+                      "aIModelDefinitions": [],
+                      "aIPluginOperations": [],
+                      "connectedAgentDefinitions": [],
+                      "componentCollections": [],
+                      "connectedBots": [],
+                      "diagnostics": [],
+                      "entity": {
+                        "authorizedSecurityGroupIds": [],
+                        "supportedLanguages": [],
+                        "diagnostics": [],
+                        "schemaName": "workflow_extractnode_v1",
+                        "language": 1033,
+                        "accessControlPolicy": "Any",
+                        "authenticationMode": "Integrated",
+                        "authenticationTrigger": "Always",
+                        "synchronizationStatus": {
+                          "graphDriveItems": [],
+                          "diagnostics": [],
+                          "lastPublishedDetails": {
+                            "diagnosticDetails": [],
+                            "diagnostics": [],
+                            "authenticationMode": "Integrated",
+                            "$kind": "SuccessfulPublishResultDetails"
+                          },
+                          "$kind": "BotSynchronizationDetails"
+                        },
+                        "configuration": {
+                          "categories": [],
+                          "channels": [],
+                          "settings": {},
+                          "memoryParameters": [],
+                          "diagnostics": [],
+                          "recognizer": {
+                            "diagnostics": [],
+                            "$kind": "CLICopilotRecognizer"
+                          },
+                          "agentSettings": {
+                            "conversationStarters": [],
+                            "diagnostics": [],
+                            "model": {
+                              "diagnostics": [],
+                              "series": "claude-opus-5-5",
+                              "$kind": "ModelConfig"
+                            },
+                            "instructions": {
+                              "segments": [
+                                {
+                                  "diagnostics": [],
+                                  "value": "Extract the values defined by the output schema from the following content. Return only values that are supported by the content. If an optional property is absent, omit that property entirely and do not replace it with a placeholder. For a required property whose value cannot be found, leave its value empty. Preserve explicitly present schema-valid values, including empty strings, empty arrays, zero, false, and enum values. Do not infer or fabricate data.",
+                                  "$kind": "StaticSegment"
+                                }
+                              ],
+                              "diagnostics": [],
+                              "$kind": "Instructions"
+                            },
+                            "output": {
+                              "diagnostics": [],
+                              "schema": "{\"type\":\"object\",\"properties\":{\"invoiceNumber\":{\"type\":\"string\",\"description\":\"The invoice, receipt, or bill number as printed on the document. Leave empty if the document has none.\"},\"invoiceDate\":{\"type\":\"string\",\"description\":\"The date on the document (issue date or billing date). Format is yyyy-mm-dd. Leave empty if no date is present.\"},\"vendorName\":{\"type\":\"string\",\"description\":\"The vendor, supplier, or biller the document is from. Use 'Unknown' if it cannot be determined.\"},\"amountDue\":{\"type\":\"number\",\"description\":\"The total amount owed or billed, as shown on the document. Leave empty if there's no payable amount.\"},\"currency\":{\"type\":\"string\",\"description\":\"The currency the amount is stated in (e.g. USD, EUR, GBP). Leave empty if not indicated.\"},\"extractionStatus\":{\"type\":\"string\",\"enum\":[\"1\",\"2\"],\"description\":\"1='Full' if every relevant figure was read with confidence; 2='Partial' if any part of the document was unreadable, ambiguous, or required inference.\"},\"transformationNote\":{\"type\":\"string\",\"description\":\"Plain-language explanation of how each figure was derived or interpreted — e.g. a currency conversion, a handwritten value, or a figure inferred rather than explicitly labelled.\"},\"outliersNote\":{\"type\":\"string\",\"description\":\"Anything unusual worth a human's attention — a duplicate-looking invoice number, an out-of-range amount, a mismatched date, etc. Empty when nothing is unusual.\"},\"isSourceDocument\":{\"type\":\"boolean\",\"description\":\"False when this file is clearly a previously generated output — a report, summary, export, or reconciliation — rather than a genuine source accounting document.\"}}}",
+                              "$kind": "StructuredAgentOutput"
+                            },
+                            "$kind": "AgentSettings"
+                          },
+                          "$kind": "BotConfiguration"
+                        },
+                        "$kind": "BotEntity"
+                      },
+                      "$kind": "BotDefinition"
+                    },
+                    "body/message": "{document}",
+                    "body/files": [
+                      {
+                        "name": "document",
+                        "content": "@body('Get_file_content')",
+                        "contentType": "@body('Get_file_content')?['$content-type']"
+                      }
+                    ]
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
+                    "connectionName": "shared_agentnode",
+                    "operationId": "InvokeDefinition"
+                  }
+                },
+                "runAfter": {
+                  "Get_file_content": [
+                    "Succeeded"
+                  ]
+                },
+                "metadata": {
+                  "description": "Extract",
+                  "nodeId": "agentExtract-afd3982c-a512-42b3-b685-c47205af8d14"
+                }
+              },
+              "Skip_previously_generated_outputs___only_source_documents_": {
+                "type": "If",
+                "expression": {
+                  "and": [
+                    {
+                      "equals": [
+                        "@body('Extract')?['structuredOutput/isSourceDocument']",
+                        false
+                      ]
+                    }
+                  ]
+                },
+                "actions": {
+                  "end-e4977453-c833-49cd-a58b-40b2c8e38e75": {
+                    "type": "Terminate",
+                    "inputs": {
+                      "runStatus": "Succeeded"
+                    },
+                    "metadata": {
+                      "description": "End_2",
+                      "nodeId": "end-e4977453-c833-49cd-a58b-40b2c8e38e75"
+                    }
+                  }
+                },
+                "else": {
+                  "actions": {
+                    "Create_Accounting_Extraction_Row": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "entityName": "cr900_accountings",
+                          "item/cr900_invoicenumber": "@body('Extract')?['structuredOutput/invoiceNumber']",
+                          "item/cr900_invoicedate": "@body('Extract')?['structuredOutput/invoiceDate']",
+                          "item/cr900_vendorname": "@body('Extract')?['structuredOutput/vendorName']",
+                          "item/cr900_amountdue": "@body('Extract')?['structuredOutput/amountDue']",
+                          "item/cr900_currency": "@body('Extract')?['structuredOutput/currency']",
+                          "item/cr900_extractionstatus": "@body('Extract')?['structuredOutput/extractionStatus']",
+                          "item/cr900_transformationnote": "@body('Extract')?['structuredOutput/transformationNote']",
+                          "item/cr900_outliersnote": "@body('Extract')?['structuredOutput/outliersNote']",
+                          "item/cr900_sourcefilename": "@triggerOutputs()?['body/{FilenameWithExtension}']",
+                          "item/cr900_ingestiontimestamp": "@utcNow()"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                          "connectionName": "shared_commondataserviceforapps",
+                          "operationId": "CreateRecord"
+                        }
+                      },
+                      "metadata": {
+                        "description": "Create Accounting Extraction Row",
+                        "nodeId": "node-3"
+                      }
+                    }
+                  }
+                },
+                "runAfter": {
+                  "Extract": [
+                    "Succeeded"
+                  ]
+                },
+                "metadata": {
+                  "description": "Skip previously generated outputs — only source documents ",
+                  "nodeId": "node-2"
+                }
+              }
+            }
+          },
+          "metadata": {
+            "description": "Skip folders and transient Office lock files — not real do",
+            "nodeId": "node-1"
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "telemetryMetadata": {
+          "creationSource": "WorkflowDesigner",
+          "modifiedSources": "WorkflowDesigner"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
