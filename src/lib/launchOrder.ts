@@ -7,14 +7,15 @@ export const LAUNCH_ORDER = [
   "hr-new-hire-welcome-packet",
   "rfp-response-manager",
   "inbound-request-triage",
-  "email-thread-synthesis",
   "contract-compliance-reviewer",
+  "email-thread-synthesis",
   "sharepoint-list-update-notifier",
   "kusto-analytics-agent",
-  "meeting-coordinator",
+  "sales-analyser",
   "podcast-generation-agent",
   "outlook-triggered-workflow-agent",
   "calendar-manager-agent",
+  "meeting-coordinator",
 ] as const;
 
 export function launchRank(slug: string): number {
