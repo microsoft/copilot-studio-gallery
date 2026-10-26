@@ -1,0 +1,490 @@
+{
+  "name": "Accountant Document Intake & Q&A",
+  "description": "A workflow reads every invoice, spreadsheet, Word file or scanned PDF dropped in SharePoint and writes figures, reasoning and anomalies to Dataverse. A Q&A agent answers from that data through MCP, excluding duplicates and test rows from totals, and opens the source file only when needed.",
+  "tags": [
+    "finance",
+    "accounts-payable",
+    "document-extraction",
+    "dataverse",
+    "sharepoint",
+    "mcp",
+    "skills",
+    "human-in-the-loop"
+  ],
+  "category": "Finance",
+  "createdAt": "2026-10-25",
+  "updatedAt": "2026-10-25",
+  "featured": true,
+  "previewWorkflow": "{ec16f4a6-d161-c9ee-4774-e93a104070a9}",
+  "author": "Adriana Trujillo",
+  "authors": [
+    {
+      "name": "Adriana Trujillo",
+      "github": "adrianatruji"
+    }
+  ],
+  "uniqueName": "AccountantDocumentIntake",
+  "version": "1.0",
+  "publisher": "CDS Default Publisher",
+  "bundle": "bundles/accountant-document-intake.zip",
+  "agentCount": 1,
+  "workflowCount": 1,
+  "componentCount": 2,
+  "agents": [
+    {
+      "id": "Default_Accountant_QA_Assistant_1ac50a",
+      "schemaName": "Default_Accountant_QA_Assistant_1ac50a",
+      "name": "Accountant Q&A Assistant",
+      "model": "Sonnet46",
+      "instructions": "You are the Accountant Q&A Assistant: the accountant's single conversational interface to the figures extracted from their source documents (invoices, statements, spreadsheets, scanned PDFs, Word files).\n\n## Where the data lives\n- Data store: the Dataverse table named \"Accounting\". An automated workflow (not you) reads every new source document and writes one row per document. The column structure is owned by that workflow and differs between users, so you must never assume column names, types or choice values: discover the schema at runtime with the Dataverse tools, every conversation, before querying. The only fixed fact is the table name \"Accounting\".\n- Source documents: SharePoint site https://contoso.sharepoint.com/sites/AccountsIntake, library \"Shared Documents\", intake folder \"Monthly Docs\" (/sites/AccountsIntake/Shared Documents/Monthly Docs).\n\n## How to work\n1. Data store first, always. For any question about documents, invoices, vendors, amounts, dates, totals, statuses or extraction quality, use the query-accounting-data skill: discover the Accounting table schema, then query it.\n2. Open source files only when the stored data genuinely cannot answer: the figure or detail was never extracted, a stored value looks wrong or needs verifying, the row is partial or flagged as anomalous, documents must be compared or reconciled line by line, or the accountant explicitly asks to look at the original. Then use the ad-hoc-source-document-analysis skill. Use the data store rows (especially their source file name) to jump straight to the right file.\n3. Writes only on explicit request. Never create or update Accounting rows, and never create files or folders in SharePoint, unless the accountant explicitly asks. Use the write-back-changes skill, show exactly what will be written, and wait for a clear \"yes\" before calling the tool. You cannot delete anything; if asked to delete, explain that deletion is disabled for this assistant and must be done by the data owner.\n\n##",
+      "channels": [],
+      "toolCount": 4,
+      "skillCount": 3,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:Default_Accountant_QA_Assistant_1ac50a",
+        "name": "Accountant Q&A Assistant",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "Sonnet46",
+          "instructions": "You are the Accountant Q&A Assistant: the accountant's single conversational interface to the figures extracted from their source documents (invoices, statements, spreadsheets, scanned PDFs, Word files).\n\n## Where the data lives\n- Data store: the Dataverse table named \"Accounting\". An automated workflow (not you) reads every new source document and writes one row per document. The column structure is owned by that workflow and differs between users, so you must never assume column names, types or choice values: discover the schema at runtime with the Dataverse tools, every conversation, before querying. The only fixed fact is the table name \"Accounting\".\n- Source documents: SharePoint site https://contoso.sharepoint.com/sites/AccountsIntake, library \"Shared Documents\", intake folder \"Monthly Docs\" (/sites/AccountsIntake/Shared Documents/Monthly Docs).\n\n## How to work\n1. Data store first, always. For any question about documents, invoices, vendors, amounts, dates, totals, statuses or extraction quality, use the query-accounting-data skill: discover the Accounting table schema, then query it.\n2. Open source files only when the stored data genuinely cannot answer: the figure or detail was never extracted, a stored value looks wrong or needs verifying, the row is partial or flagged as anomalous, documents must be compared or reconciled line by line, or the accountant explicitly asks to look at the original. Then use the ad-hoc-source-document-analysis skill. Use the data store rows (especially their source file name) to jump straight to the right file.\n3. Writes only on explicit request. Never create or update Accounting rows, and never create files or folders in SharePoint, unless the accountant explicitly asks. Use the write-back-changes skill, show exactly what will be written, and wait for a clear \"yes\" before calling the tool. You cannot delete anything; if asked to delete, explain that deletion is disabled for this assistant and must be done by the data owner.\n\n##",
+          "channels": [],
+          "toolCount": 4,
+          "skillCount": 3,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:Default_Accountant_QA_Assistant_1ac50a.skill.ad-hoc-source-document-analysis_LVp",
+        "name": "ad-hoc-source-document-analysis",
+        "type": "skill",
+        "position": {
+          "x": 908,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "Default_Accountant_QA_Assistant_1ac50a.skill.ad-hoc-source-document-analysis_LVp",
+          "description": "Opens and analyses the original source documents in the SharePoint intake folder when the Accounting data store cannot fully answer: figures or details never extracted (line items, tax breakdown, terms, bank details, wording), verifying or challenging a stored figure, explaining a partial extraction or anomaly note, comparing or reconciling several documents, or when the accountant explicitly asks to look at the original. Handles native and scanned PDF, Word, Excel (multi-sheet) and CSV, cites page/sheet/section, and states honestly what could not be read. Use after checking the data store with query-accounting-data; read-only (saving results is handled by write-back-changes)."
+        }
+      },
+      {
+        "id": "skill:Default_Accountant_QA_Assistant_1ac50a.skill.query-accounting-data",
+        "name": "query-accounting-data",
+        "type": "skill",
+        "position": {
+          "x": 568,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "Default_Accountant_QA_Assistant_1ac50a.skill.query-accounting-data"
+        }
+      },
+      {
+        "id": "skill:Default_Accountant_QA_Assistant_1ac50a.skill.write-back-changes",
+        "name": "write-back-changes",
+        "type": "skill",
+        "position": {
+          "x": 228,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "Default_Accountant_QA_Assistant_1ac50a.skill.write-back-changes"
+        }
+      },
+      {
+        "id": "tool:Default_Accountant_QA_Assistant_1ac50a.tool.accounting-dataverse-write_8hQZ7Y",
+        "name": "Accounting data (Dataverse MCP) - create and update",
+        "type": "tool",
+        "position": {
+          "x": -111.99999999999997,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_Accountant_QA_Assistant_1ac50a.tool.accounting-dataverse-write_8hQZ7Y",
+          "operation": "InvokeMCP",
+          "description": "Write Dataverse MCP tools limited to creating a new row or updating an existing row in the Accounting table. Use only when the accountant has explicitly asked for the change and confirmed the exact values. Every call requires the user's approval. Deleting rows or changing table structure is not available."
+        }
+      },
+      {
+        "id": "tool:Default_Accountant_QA_Assistant_1ac50a.tool.accounting-dataverse-read_DhK6sx",
+        "name": "Accounting data (Dataverse MCP) - read",
+        "type": "tool",
+        "position": {
+          "x": -452,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_Accountant_QA_Assistant_1ac50a.tool.accounting-dataverse-read_DhK6sx",
+          "operation": "InvokeMCP",
+          "description": "Read-only Dataverse MCP tools for the Accounting table: search table metadata, describe the table schema at runtime, and run SELECT queries (filters, sorting, COUNT/SUM/MIN/MAX/AVG, GROUP BY). Use before answering any question about stored document figures, vendors, dates, amounts, statuses or workflow notes."
+        }
+      },
+      {
+        "id": "tool:Default_Accountant_QA_Assistant_1ac50a.tool.source-documents-sharepoint-read_VUOd8X",
+        "name": "Source documents (SharePoint MCP) - read",
+        "type": "tool",
+        "position": {
+          "x": -792,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_Accountant_QA_Assistant_1ac50a.tool.source-documents-sharepoint-read_VUOd8X",
+          "operation": "mcp_SharePointRemoteServer",
+          "description": "Read-only SharePoint MCP tools to locate and open the original source documents in the intake folder: resolve the site, library and folder, list folder contents, search files by name, get file metadata, and read file content (text, PDF, Word, Excel/CSV, images up to 5 MB)."
+        }
+      },
+      {
+        "id": "tool:Default_Accountant_QA_Assistant_1ac50a.tool.source-documents-sharepoint-save_wTS08x",
+        "name": "Source documents (SharePoint MCP) - save files",
+        "type": "tool",
+        "position": {
+          "x": -1132,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "Default_Accountant_QA_Assistant_1ac50a.tool.source-documents-sharepoint-save_wTS08x",
+          "operation": "mcp_SharePointRemoteServer",
+          "description": "SharePoint MCP tools limited to creating a new folder or saving a new file (text or binary, up to 5 MB). Use only when the accountant has explicitly asked to save an analysis and confirmed the file name and location. Every call requires the user's approval. Deleting, moving, renaming or sharing files is not available."
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:Default_Accountant_QA_Assistant_1ac50a-includes-Default_Accountant_QA_Assistant_1ac50a.skill.ad-hoc-source-document-analysis_LVp",
+        "source": "agent:Default_Accountant_QA_Assistant_1ac50a",
+        "target": "skill:Default_Accountant_QA_Assistant_1ac50a.skill.ad-hoc-source-document-analysis_LVp",
+        "label": "includes"
+      },
+      {
+        "id": "agent:Default_Accountant_QA_Assistant_1ac50a-includes-Default_Accountant_QA_Assistant_1ac50a.skill.query-accounting-data",
+        "source": "agent:Default_Accountant_QA_Assistant_1ac50a",
+        "target": "skill:Default_Accountant_QA_Assistant_1ac50a.skill.query-accounting-data",
+        "label": "includes"
+      },
+      {
+        "id": "agent:Default_Accountant_QA_Assistant_1ac50a-includes-Default_Accountant_QA_Assistant_1ac50a.skill.write-back-changes",
+        "source": "agent:Default_Accountant_QA_Assistant_1ac50a",
+        "target": "skill:Default_Accountant_QA_Assistant_1ac50a.skill.write-back-changes",
+        "label": "includes"
+      },
+      {
+        "id": "agent:Default_Accountant_QA_Assistant_1ac50a-uses-Default_Accountant_QA_Assistant_1ac50a.tool.accounting-dataverse-read_DhK6sx",
+        "source": "agent:Default_Accountant_QA_Assistant_1ac50a",
+        "target": "tool:Default_Accountant_QA_Assistant_1ac50a.tool.accounting-dataverse-read_DhK6sx",
+        "label": "uses"
+      },
+      {
+        "id": "agent:Default_Accountant_QA_Assistant_1ac50a-uses-Default_Accountant_QA_Assistant_1ac50a.tool.accounting-dataverse-write_8hQZ7Y",
+        "source": "agent:Default_Accountant_QA_Assistant_1ac50a",
+        "target": "tool:Default_Accountant_QA_Assistant_1ac50a.tool.accounting-dataverse-write_8hQZ7Y",
+        "label": "uses"
+      },
+      {
+        "id": "agent:Default_Accountant_QA_Assistant_1ac50a-uses-Default_Accountant_QA_Assistant_1ac50a.tool.source-documents-sharepoint-read_VUOd8X",
+        "source": "agent:Default_Accountant_QA_Assistant_1ac50a",
+        "target": "tool:Default_Accountant_QA_Assistant_1ac50a.tool.source-documents-sharepoint-read_VUOd8X",
+        "label": "uses"
+      },
+      {
+        "id": "agent:Default_Accountant_QA_Assistant_1ac50a-uses-Default_Accountant_QA_Assistant_1ac50a.tool.source-documents-sharepoint-save_wTS08x",
+        "source": "agent:Default_Accountant_QA_Assistant_1ac50a",
+        "target": "tool:Default_Accountant_QA_Assistant_1ac50a.tool.source-documents-sharepoint-save_wTS08x",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [
+    {
+      "id": "{ec16f4a6-d161-c9ee-4774-e93a104070a9}",
+      "name": "Document Extraction",
+      "trigger": "When a file is created (properties only)",
+      "nodeCount": 8,
+      "edgeCount": 7,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start",
+            "name": "When a file is created (properties only)",
+            "type": "start",
+            "position": {
+              "x": 100,
+              "y": 380.5
+            },
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When a file is created (properties only)",
+              "apiName": "shared_sharepointonline",
+              "operationName": "GetOnNewFileItems",
+              "operationType": "OpenApiConnection"
+            }
+          },
+          {
+            "id": "node-1",
+            "name": "Skip folders and transient Office lock files — not real do",
+            "type": "ifElse",
+            "position": {
+              "x": 478,
+              "y": 329
+            },
+            "details": {}
+          },
+          {
+            "id": "end-e1663dbd-7956-4220-b0eb-5f73bd6ab0f1",
+            "name": "End",
+            "type": "end",
+            "position": {
+              "x": 856,
+              "y": 300
+            },
+            "details": {
+              "runStatus": "Succeeded"
+            }
+          },
+          {
+            "id": "node-2",
+            "name": "Skip previously generated outputs — only source documents ",
+            "type": "ifElse",
+            "position": {
+              "x": 1422,
+              "y": 358
+            },
+            "details": {}
+          },
+          {
+            "id": "end-e4977453-c833-49cd-a58b-40b2c8e38e75",
+            "name": "End_2",
+            "type": "end",
+            "position": {
+              "x": 1800,
+              "y": 380.5
+            },
+            "details": {
+              "runStatus": "Succeeded"
+            }
+          },
+          {
+            "id": "node-3",
+            "name": "Create Accounting Extraction Row",
+            "type": "connector",
+            "position": {
+              "x": 1800,
+              "y": 473
+            },
+            "details": {
+              "displayName": "Create Accounting Extraction Row",
+              "apiName": "shared_commondataserviceforapps",
+              "operationName": "CreateRecord",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "entityName": "cr900_accountings",
+                "item/cr900_invoicenumber": "@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/invoiceNumber']",
+                "item/cr900_invoicedate": "@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/invoiceDate']",
+                "item/cr900_vendorname": "@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/vendorName']",
+                "item/cr900_amountdue": "@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/amountDue']",
+                "item/cr900_currency": "@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/currency']",
+                "item/cr900_extractionstatus": "@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/extractionStatus']",
+                "item/cr900_transformationnote": "@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/transformationNote']",
+                "item/cr900_outliersnote": "@body('agentExtract-afd3982c-a512-42b3-b685-c47205af8d14')?['structuredOutput/outliersNote']",
+                "item/cr900_sourcefilename": "@triggerOutputs()?['body/{FilenameWithExtension}']",
+                "item/cr900_ingestiontimestamp": "@utcNow()"
+              }
+            }
+          },
+          {
+            "id": "agentExtract-afd3982c-a512-42b3-b685-c47205af8d14",
+            "name": "Extract",
+            "type": "agentExtract",
+            "position": {
+              "x": 1139,
+              "y": 409.5
+            },
+            "details": {}
+          },
+          {
+            "id": "connector-423b5e4b-f0a3-4570-b9a1-e2248f88d815",
+            "name": "Get file content",
+            "type": "connector",
+            "position": {
+              "x": 856,
+              "y": 409.5
+            },
+            "details": {
+              "displayName": "SharePoint",
+              "apiName": "shared_sharepointonline",
+              "operationName": "GetFileContent",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "inferContentType": "true",
+                "dataset": "https://contoso.sharepoint.com/sites/AccountsIntake"
+              }
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-node-1",
+            "source": "start",
+            "target": "node-1"
+          },
+          {
+            "id": "edge-node-1-condition:0-end-e1663dbd-7956-4220-b0eb-5f73bd6ab0f1",
+            "source": "node-1",
+            "target": "end-e1663dbd-7956-4220-b0eb-5f73bd6ab0f1",
+            "sourceHandle": "condition:0"
+          },
+          {
+            "id": "edge-node-2-condition:0-end-e4977453-c833-49cd-a58b-40b2c8e38e75",
+            "source": "node-2",
+            "target": "end-e4977453-c833-49cd-a58b-40b2c8e38e75",
+            "sourceHandle": "condition:0"
+          },
+          {
+            "id": "edge-node-2-else-node-3",
+            "source": "node-2",
+            "target": "node-3",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-agentExtract-afd3982c-a512-42b3-b685-c47205af8d14-node-2",
+            "source": "agentExtract-afd3982c-a512-42b3-b685-c47205af8d14",
+            "target": "node-2"
+          },
+          {
+            "id": "edge-node-1-else-connector-423b5e4b-f0a3-4570-b9a1-e2248f88d815",
+            "source": "node-1",
+            "target": "connector-423b5e4b-f0a3-4570-b9a1-e2248f88d815",
+            "sourceHandle": "else"
+          },
+          {
+            "id": "edge-connector-423b5e4b-f0a3-4570-b9a1-e2248f88d815-agentExtract-afd3982c-a512-42b3-b685-c47205af8d14",
+            "source": "connector-423b5e4b-f0a3-4570-b9a1-e2248f88d815",
+            "target": "agentExtract-afd3982c-a512-42b3-b685-c47205af8d14"
+          }
+        ]
+      }
+    }
+  ],
+  "connectors": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 1367
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 1335
+    },
+    {
+      "path": "botcomponents/Default_Accountant_QA_Assistant_1ac50a.skill.ad-hoc-source-document-analysis_LVp/botcomponent.xml",
+      "category": "component",
+      "size": 1115
+    },
+    {
+      "path": "botcomponents/Default_Accountant_QA_Assistant_1ac50a.skill.ad-hoc-source-document-analysis_LVp/data",
+      "category": "component",
+      "size": 9364
+    },
+    {
+      "path": "botcomponents/Default_Accountant_QA_Assistant_1ac50a.skill.query-accounting-data/botcomponent.xml",
+      "category": "component",
+      "size": 376
+    },
+    {
+      "path": "botcomponents/Default_Accountant_QA_Assistant_1ac50a.skill.query-accounting-data/data",
+      "category": "component",
+      "size": 11754
+    },
+    {
+      "path": "botcomponents/Default_Accountant_QA_Assistant_1ac50a.skill.write-back-changes/botcomponent.xml",
+      "category": "component",
+      "size": 370
+    },
+    {
+      "path": "botcomponents/Default_Accountant_QA_Assistant_1ac50a.skill.write-back-changes/data",
+      "category": "component",
+      "size": 5029
+    },
+    {
+      "path": "botcomponents/Default_Accountant_QA_Assistant_1ac50a.tool.accounting-dataverse-read_DhK6sx/botcomponent.xml",
+      "category": "component",
+      "size": 743
+    },
+    {
+      "path": "botcomponents/Default_Accountant_QA_Assistant_1ac50a.tool.accounting-dataverse-read_DhK6sx/data",
+      "category": "component",
+      "size": 296
+    },
+    {
+      "path": "botcomponents/Default_Accountant_QA_Assistant_1ac50a.tool.accounting-dataverse-write_8hQZ7Y/botcomponent.xml",
+      "category": "component",
+      "size": 753
+    },
+    {
+      "path": "botcomponents/Default_Accountant_QA_Assistant_1ac50a.tool.accounting-dataverse-write_8hQZ7Y/data",
+      "category": "component",
+      "size": 293
+    },
+    {
+      "path": "botcomponents/Default_Accountant_QA_Assistant_1ac50a.tool.source-documents-sharepoint-read_VUOd8X/botcomponent.xml",
+      "category": "component",
+      "size": 715
+    },
+    {
+      "path": "botcomponents/Default_Accountant_QA_Assistant_1ac50a.tool.source-documents-sharepoint-read_VUOd8X/data",
+      "category": "component",
+      "size": 449
+    },
+    {
+      "path": "botcomponents/Default_Accountant_QA_Assistant_1ac50a.tool.source-documents-sharepoint-save_wTS08x/botcomponent.xml",
+      "category": "component",
+      "size": 767
+    },
+    {
+      "path": "botcomponents/Default_Accountant_QA_Assistant_1ac50a.tool.source-documents-sharepoint-save_wTS08x/data",
+      "category": "component",
+      "size": 325
+    },
+    {
+      "path": "bots/Default_Accountant_QA_Assistant_1ac50a/bot.xml",
+      "category": "bot",
+      "size": 383
+    },
+    {
+      "path": "bots/Default_Accountant_QA_Assistant_1ac50a/configuration.json",
+      "category": "bot",
+      "size": 4836
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 101067
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4211
+    },
+    {
+      "path": "Workflows/DocumentExtraction-EC16F4A6-D161-C9EE-4774-E93A104070A9.json",
+      "category": "workflow",
+      "size": 128379
+    }
+  ]
+}
