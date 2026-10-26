@@ -1,0 +1,42 @@
+kind: InlineAgentSkill
+content: |-
+  ---
+  name: write-back-changes
+  description: "Use only when the accountant explicitly asks to change something: create a new row or correct/update an existing row in the Accounting Dataverse table (for example after verifying a figure against its source document), or save an analysis, reconciliation or summary as a new file (and, if needed, a new folder) in SharePoint. Prepares the exact change, shows it for confirmation, then performs it and verifies the result. Never deletes, renames, moves or shares anything."
+  ---
+  <!-- bic:source=blank -->
+  # Write back changes (with confirmation)
+
+  Writes happen only when the accountant explicitly asks ("update the amount", "add a row for this", "save this to SharePoint"). An offer from you ("I can update it if you want") is not a request; wait for their answer. Each write tool call also triggers a platform approval prompt; your written confirmation step comes first, and neither replaces the other.
+
+  Tools: Dataverse MCP `create_record`, `update_record` (plus read tools `describe`, `read_query`); SharePoint MCP `createFolder`, `createSmallTextFile`, `createSmallBinaryFile` (plus read tools to check locations and names).
+  Not available by design: deleting rows, files, folders or tables; changing table structure; renaming, moving or sharing files. If asked, explain that these are disabled for this assistant and must be done by the data owner.
+
+  ## A. Update an existing Accounting row
+
+  1. Identify exactly one row: query it with `read_query` (schema discovered as in query-accounting-data) and get its primary key (the table's ID column from the schema). If more than one row matches, list them and ask which.
+  2. Validate the new values against the column types from the schema: number/money as plain numbers (no currency symbols or thousands separators), dates in ISO format, choice columns as their numeric value (show the label to the accountant), text within reasonable length. Only touch columns the accountant asked to change; never overwrite the workflow's notes unless asked. If they want the correction explained, propose appending a short dated remark to the relevant note column instead of replacing its content.
+  3. Show a confirmation table: column (display name) | current value | new value, plus the row's source file name. Ask: "Shall I apply this change?"
+  4. On a clear yes, call `update_record` with only the changed columns. Anything other than a clear yes means no change; adjust or stop.
+  5. Re-read the row and confirm what is now stored. If the call failed, report the error plainly and make no other attempt that changes data.
+
+  ## B. Create a new Accounting row
+
+  1. Confirm the accountant really wants a manual row (rows are normally created by the intake workflow; a manual row can duplicate one the workflow adds later). Check for an existing row with the same source file or document number first and mention it if found.
+  2. Map the provided values to columns by schema, apply the type rules above, and leave unknown columns empty rather than inventing values.
+  3. Show the full row to be created (display name | value) and ask for confirmation.
+  4. On a clear yes, call `create_record`, then read the new row back and report its key values.
+
+  ## C. Save an analysis to SharePoint
+
+  1. Content: use the analysis already produced in the conversation. Default format is a Markdown (.md) or CSV (.csv) text file, created with `createSmallTextFile`. Use `createSmallBinaryFile` only if you can genuinely produce valid binary content (for example a real .xlsx or .docx); never label text as a binary format. Include a header: title, date, the question answered, sources (file names and data store), and any readability caveats.
+  2. Location: do not save into the "Monthly Docs" intake folder, because the intake workflow would treat the file as a new source document. Default to a folder named "Accountant Analyses" at the root of the same library (site AccountsIntake, library "Shared Documents"), or another location the accountant names. Check whether it exists (`getFolderChildren` on the library root); create it with `createFolder` only if missing, as part of the same confirmation.
+  3. Name: descriptive and unique, e.g. `2026-10-24 Reconciliation Acme Q3.md`. Check that the target folder has no file with the same name; if it does, add a suffix rather than overwrite.
+  4. Confirm: show folder path, file name, format and a short preview (first lines). Ask: "Shall I save it?"
+  5. On a clear yes, create the folder (if needed) and the file, then report the saved file name and link from the response.
+
+  ## Always
+
+  - One confirmation covers only exactly what was shown. Any change to values, location or name needs a new confirmation.
+  - Never batch-update many rows from a single vague request. For several rows, show the full list of changes and confirm them together explicitly.
+  - Never fabricate success: report only what the tool response and the read-back show.
