@@ -1,0 +1,75 @@
+kind: InlineAgentSkill
+skillFolderName: ad-hoc-source-document-analysis
+content: |-
+  ---
+  name: ad-hoc-source-document-analysis
+  description: "Opens and analyses the original source documents in the SharePoint intake folder when the Accounting data store cannot fully answer: figures or details never extracted (line items, tax breakdown, terms, bank details, wording), verifying or challenging a stored figure, explaining a partial extraction or anomaly note, comparing or reconciling several documents, or when the accountant explicitly asks to look at the original. Handles native and scanned PDF, Word, Excel (multi-sheet) and CSV, cites page/sheet/section, and states honestly what could not be read. Use after checking the data store with query-accounting-data; read-only (saving results is handled by write-back-changes)."
+  ---
+
+  <!-- bic:source=generated -->
+  # Source document analysis
+
+  Use this skill when the Accounting data store (see query-accounting-data) does not fully answer the question and the original document has to be read. You are reading evidence, not guessing: every figure you give must be traceable to a specific file and location.
+
+  Tools (SharePoint MCP, read-only): `getFileOrFolderMetadataByUrl`, `getSiteByPath`, `listDocumentLibrariesInSite`, `getDefaultDocumentLibraryInSite`, `getFolderChildren`, `findFileOrFolder`, `getFileOrFolderMetadata`, `readSmallTextFile`, `readSmallBinaryFile`. Data store context comes from the Dataverse read tools (`describe`, `read_query`).
+
+  Intake location: site https://contoso.sharepoint.com/sites/AccountsIntake, library "Shared Documents" (often displayed as "Documents"), folder "Monthly Docs".
+
+  ## Step 1 - Pin down the target (ask only what you cannot infer)
+
+  You need three things: which document(s), which period (if no specific document), and what to find out. Fill them from, in order:
+  1. The current question and conversation (files, vendors, numbers, rows already discussed: "that invoice", "the partial ones").
+  2. The data store: run a quick `read_query` on the Accounting table (schema discovered as in query-accounting-data) to turn a vendor, invoice number, date range or status into concrete rows and their source file names. One matching row means you know the file.
+  3. Sensible defaults: "the latest" = most recent ingestion; "this month" = current calendar month (state it).
+
+  Ask the accountant only if, after this, the answer would depend on a guess. Ask once, in one message, with options:
+  - several candidate documents: list them (file name, vendor, date, amount) and ask which, or offer to analyse all if there are 5 or fewer;
+  - the target detail is unclear ("check this invoice" with no row flagged): offer the 2-3 most likely checks (verify total against stored amount, line items, tax breakdown).
+  Never ask for something the data store or the conversation already tells you.
+
+  ## Step 2 - Locate the file(s) efficiently
+
+  1. Resolve the intake folder once per conversation and reuse the IDs: call `getFileOrFolderMetadataByUrl` with `https://contoso.sharepoint.com/sites/AccountsIntake/Shared Documents/Monthly Docs` to get the folder ID and its document library (drive) ID. If that fails, fall back to `getSiteByPath` (hostname `contoso.sharepoint.com`, path `sites/AccountsIntake`), then `listDocumentLibrariesInSite` (pick "Documents"/"Shared Documents"), then `getFolderChildren` from the library root to find "Monthly Docs".
+  2. Known file name (from a data store row or the accountant): call `findFileOrFolder` with the file name and keep only results inside the AccountsIntake site, "Monthly Docs" folder. If the search index has not caught up with a new file, list the folder with `getFolderChildren` and match the name.
+  3. Unknown file name: search with `findFileOrFolder` using the vendor, invoice number or month as keywords, filtered to the intake folder; or list the folder. Note that `getFolderChildren` returns at most 20 items, so prefer targeted search over browsing a large folder.
+  4. Match names tolerant of case, spaces, underscores and extensions. If a stored file name has no exact match, show the closest candidates and ask; never silently substitute a different file.
+  5. If nothing matches, say which names and locations you checked. Do not answer from data store notes as if you had read the document.
+
+  ## Step 3 - Read the content (by format)
+
+  Check size and type with the metadata first. Files over 5 MB cannot be read through these tools: say so and give the accountant the file link.
+  - CSV, TXT, JSON, XML: `readSmallTextFile`. Detect the delimiter and header row; keep numbers as printed (watch decimal commas, thousands separators, negative numbers in parentheses, and leading zeros in document numbers).
+  - PDF (native or scanned), Word (.docx), Excel (.xlsx/.xls), images (.png/.jpg/.tif): `readSmallBinaryFile`, then interpret the returned document content.
+    - Native PDF and Word: read the text, tables, headers and footers; note page numbers (PDF) or section headings (Word).
+    - Scanned or image-based PDF and images: read visually. Treat low-confidence characters (stamps, handwriting, faint print, 1/7, 0/8, comma/period) as uncertain and say so; never "repair" an unreadable digit.
+    - Excel: identify every sheet first and report which sheet(s) you used. Look for totals rows, hidden assumptions (notes, footers), merged headers and multiple tables on one sheet. Distinguish values from labels; if a figure is a formula result you can only see the value.
+  - If the returned content cannot be interpreted (for example only an opaque encoded payload with no readable text), say plainly that this file type could not be read in this session, share the file name and link, and offer what the data store holds instead. Do not guess its contents.
+
+  ## Step 4 - Analyse
+
+  Pick the procedure that fits the ask:
+  - Extract a missing detail: find it, quote it, and give its location. If the document has several candidates (e.g. "total" before and after discount), show each with its label.
+  - Verify or challenge a stored figure: put the stored value (from the data store row) next to the value in the document, state "matches" or "differs by X <currency>", and explain the likely cause (tax included/excluded, discount, currency, credit note sign, OCR misread, wrong page). Bring in the row's processing/derivation and anomaly notes when they explain the difference.
+  - Explain a partial extraction or an anomaly note: read the relevant part of the document, then explain in plain terms what is missing, ambiguous or unusual and whether the note is borne out.
+  - Compare or reconcile several documents (e.g. invoice vs statement, invoice vs PO spreadsheet, month vs month): build a line-by-line or item-by-item table (item, doc A, doc B, difference), show totals per currency, and list unmatched items on each side. Check arithmetic yourself (line items vs subtotal, subtotal + tax vs total) and report any inconsistency in the document itself.
+  - Summarise a document: key parties, dates, amounts with currency, terms, and anything that looks unusual.
+  Keep amounts exact as printed; do not convert currencies or round. When you compute something (a difference, a sum of lines), label it as calculated.
+
+  ## Step 5 - Answer
+
+  1. The answer first (the value, match/mismatch, the reconciliation result).
+  2. Evidence: file name plus location for each figure (page n, sheet name + row/cell area, section heading, line item), with short quotes where wording matters.
+  3. Readability: say clearly if any part was illegible, cut off, low-confidence or unreadable, and what that means for the answer.
+  4. Relationship to the data store: whether the document confirms, adds to, or contradicts the stored row. If it contradicts it, say so neutrally and offer: "I can update the stored value if you want" (handled by write-back-changes, only on explicit request).
+  5. Offer to save the analysis as a file in SharePoint if it is substantial (handled by write-back-changes, only on explicit request).
+
+  If, while working, you realise the data store already answers the question, stop opening files and answer from the stored row.
+
+  ## Boundaries
+
+  Read-only: never create, rename, move, share or delete files here. Do not read documents outside the intake site unless the accountant explicitly points to another location they own. Never present an inference as something the document says.
+authoringSource: Generated
+mcs.metadata:
+  componentName: ad-hoc-source-document-analysis
+  description: "Opens and analyses the original source documents in the SharePoint intake folder when the Accounting data store cannot fully answer: figures or details never extracted (line items, tax breakdown, terms, bank details, wording), verifying or challenging a stored figure, explaining a partial extraction or anomaly note, comparing or reconciling several documents, or when the accountant explicitly asks to look at the original. Handles native and scanned PDF, Word, Excel (multi-sheet) and CSV, cites page/sheet/section, and states honestly what could not be read. Use after checking the data store with query-accounting-data; read-only (saving results is handled by write-back-changes)."
+  schemaName: Default_Accountant_QA_Assistant_1ac50a.skill.ad-hoc-source-document-analysis_LVp

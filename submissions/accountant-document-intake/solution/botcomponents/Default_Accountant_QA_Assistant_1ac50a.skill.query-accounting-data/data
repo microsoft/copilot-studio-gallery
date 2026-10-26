@@ -1,0 +1,95 @@
+kind: InlineAgentSkill
+skillFolderName: query-accounting-data
+content: |-
+  ---
+  name: query-accounting-data
+  description: "First step for any accountant question about documents, invoices, vendors, amounts, dates, totals, counts, statuses, extraction quality or workflow notes. Discovers the Accounting Dataverse table schema at runtime (no fixed columns), maps the question to the right columns, runs read-only SELECT queries (filter, sort, aggregate, group), excludes test data and duplicate copies and treats credit notes separately in calculations (always disclosing what was left out), and presents exact figures with any processing or anomaly notes. Read-only; does not open source files and does not write data."
+  ---
+  <!-- bic:source=blank -->
+  # Query the Accounting data store
+
+  The Accounting table is filled by an automated workflow: one row per source document. Its columns are defined by that workflow and differ between users. Never assume a column name, type or choice value. Discover them, then query.
+
+  Tools (Dataverse MCP, read-only): `search`, `describe`, `read_query`. On environments that still expose the older tool names, the equivalents are `list_tables`, `describe_table` and `fetch`; use whichever set is available.
+
+  ## Step 1 - Discover the schema (once per conversation)
+
+  1. Find the table: call `search` with the keyword "Accounting" (or `list_tables`) and pick the table whose display name is "Accounting". Note its logical (SQL) name, for example `<prefix>_accounting`. If several tables match, prefer the exact display name "Accounting"; if still ambiguous, ask the accountant which one in one short question.
+  2. Describe it: call `describe` (or `describe_table`) on that table. Keep for the rest of the conversation: logical column names, display names, data types, and, for choice/option-set columns, the value-to-label mapping and any companion label column (often the logical name followed by `name`).
+  3. Build a private column map by meaning, using display names, logical names, descriptions and types. Typical roles (any of them may be missing):
+     - document identity: source file name / document name / file path; document or invoice number
+     - counterparty: vendor / supplier / customer / issuer
+     - dates: document or invoice date, due date, period; ingestion or processing timestamp (the platform also adds `createdon` / `modifiedon`)
+     - money: amount / total / net / gross / tax / VAT / balance (money columns may also have a `_base` companion in the organisation's base currency; use the transaction value unless asked otherwise)
+     - currency: a currency code/text column or a currency lookup
+     - quality: extraction status / completeness / confidence
+     - notes: long-text columns explaining how figures were derived (transformation, processing, derivation, assumptions) and what looked unusual (outliers, anomalies, warnings, flags, issues)
+  4. Ignore platform system columns (owner, version number, import sequence, time zone, state/status reason, and similar) unless the question needs them. If the table has an active/inactive state column, include only active rows unless asked.
+  5. Re-run `describe` only if a query fails because a column is unknown (the workflow may have changed the schema).
+
+  Do not show the raw schema to the accountant unless asked. If they ask "what do you track?", list the business columns by display name.
+
+  ## Step 2 - Translate the question
+
+  - Map every business term to a mapped column. If a term maps to no column (for example "payment terms" when no such column exists), the store cannot answer that part: say so and hand over to the ad-hoc-source-document-analysis skill instead of guessing.
+  - If a term maps to two plausible columns (for example two date columns) and the choice changes the answer, pick the most natural one (document date for "invoices from March", ingestion time for "what came in this week") and state the choice in the answer; ask only when neither is clearly better.
+  - Resolve relative dates against today's date and state the absolute range used (e.g. "1 Jul 2026 - 30 Sep 2026").
+  - Vendor and name matching: use `LIKE '%term%'` for user-typed names. If several distinct names match ("Acme Ltd", "ACME Limited"), show them and either include all (saying so) or ask which one.
+
+  ## Step 3 - Query
+
+  Use `read_query` with Dataverse SQL SELECT statements against logical names.
+  - Push work to the server: filter with WHERE, sort with ORDER BY, and use COUNT, SUM, MIN, MAX, AVG with GROUP BY for totals and breakdowns, instead of pulling all rows and computing yourself.
+  - Always GROUP BY the currency column when summing money. Never add different currencies together.
+  - Limit row listings with `TOP` (start with 50). If the limit is reached, say the list is capped and offer to narrow or aggregate.
+  - For choice columns, filter on the numeric value from the schema and display the label.
+  - Treat NULL as "not extracted", never as zero. When it matters, report how many rows had no value (e.g. "3 invoices have no amount extracted").
+  - If a query errors, simplify it (remove functions or aliases, split it in two) and retry at most twice. If it still fails, say what you tried and what failed.
+  - Useful patterns: duplicates (`GROUP BY` vendor + document number `HAVING COUNT(*) > 1`); rows needing attention (status not full/complete, or anomaly note not empty); latest arrivals (`ORDER BY` ingestion timestamp `DESC`); range checks (`MIN`/`MAX` per vendor).
+
+  ## Step 3b - Clean the calculation set (totals, sums, counts, averages)
+
+  A raw `SUM` over every row is not a trustworthy figure: the table can contain test data, the same document ingested twice, and credit notes. Before reporting any calculated figure (total due, total per vendor/currency/period, counts of invoices, averages), build the calculation set deliberately. Apply these rules by default; skip them only when the accountant explicitly asks to include everything (e.g. "include all rows", "raw total", "count the duplicates too").
+
+  1. Pull the candidate rows, not only the aggregate: the row id, vendor, document number, document date, amount, currency, extraction status, source file name and all note columns, for every row that would fall into the calculation (use `TOP` 500; if more, aggregate per group and inspect only rows that are flagged, duplicated or carry notes).
+  2. Classify every candidate row into exactly one bucket:
+     - **Test data - exclude.** Only rows that are marked or clearly indicated as test, sample, seed, demo or dummy data: an explicit label in a note, file name, vendor, document number or a flag/status column (e.g. "test", "sample", "dummy", "seed", "placeholder record"), or a combination of clear signals such as generic placeholder file names (`file1.csv`), a status value that matches no defined choice label, and dates far outside the rest of the data set. Do not exclude a real-looking document just because it is unusual; an anomaly note such as "amount looks high" is not a test-data marker. If you only suspect test data, keep the row in, flag it, and offer to exclude it.
+     - **Duplicate - exclude the extra copies.** Rows that represent the same document as another row: same vendor and same document number (and normally the same amount and date), or a note/file name saying it is a duplicate, resent copy, reminder copy or "COPY". Keep exactly one: the original (not the one marked resent/copy), or else the earliest ingested. Count it once. If the amounts differ between the copies, do not pick one silently: keep the original, flag the difference and ask which is correct.
+     - **Credit note - treat separately.** Rows that are credit notes, refunds or credit memos: a document type or note saying so, a document number or file name that indicates it (e.g. "CN-", "credit note", "credit memo"), or a negative amount. A credit note is never an amount owed: never add it to a "total due" as a positive figure.
+     - **Included.** Everything else.
+  3. Compute from the buckets, per currency:
+     - **Total due** = sum of included rows (duplicates counted once, test data and credit notes left out).
+     - **Credits** = sum of credit-note values. Use the stored amount (as a negative). If the amount column is empty but a workflow note states the credit value explicitly, you may use it, labelled "taken from the workflow note, not from an amount column". If no value is available anywhere, report the credit note as "value not extracted" and do not invent one.
+     - **Net after credits** = total due minus credits, shown as a separate, clearly labelled line, and only for credits in the same currency. Note which invoice each credit note refers to when the data says so.
+     - Do the arithmetic carefully; re-add the included rows to verify the total (use code execution if available).
+  4. Always disclose the adjustments, every time a calculated figure is affected:
+     - After the headline figures, add a short "Not included in this calculation" section listing each excluded or separately treated row: vendor, document number, amount, currency, source file, and the reason (test data / duplicate of <original> / credit note).
+     - State the impact in numbers, e.g. "Including these would change the GBP total from £X to £Y" or "The resent copy of INV-123 (£Z) was counted once."
+     - Offer once, briefly, to recalculate including them.
+     - If nothing was excluded, say "No test data, duplicates or credit notes affected this figure."
+  5. If the accountant asks to include everything, recompute with all rows, label the result "raw total (includes test data, duplicates and credit notes as stored)", and still point out which rows would normally be excluded.
+
+  ## Step 4 - Present the answer
+
+  - Lead with the direct answer (the number, the list, yes/no), then the evidence.
+  - For any calculated figure, follow Step 3b: headline figures per currency, then the "Not included in this calculation" section with the impact. For row listings (e.g. "invoices dated in October"), show a duplicate only once and mark credit notes and test rows as such, rather than presenting them as ordinary invoices.
+  - Figures exactly as stored, with currency; never round or convert.
+  - For listings use a compact table with the business columns that matter for the question plus the source file name, so the accountant can trace each row.
+  - Notes: when processing/derivation notes or anomaly notes are present on the rows you report, and they bear on the question (or the row is partial or flagged), quote or summarise them under the relevant row. Use the column's display name (e.g. "Processing note:") rather than a fixed label.
+  - If the result rests on partial extractions (status not full, or missing values), say so explicitly.
+  - Distinguish stored data from interpretation: "Stored by the intake workflow: ..." versus your own reasoning.
+
+  ## When to hand over to source-document analysis
+
+  Recommend or start the ad-hoc-source-document-analysis skill, passing the relevant row(s) and their source file names, when:
+  - the needed figure or detail is not a column, or is empty on the relevant row;
+  - a row is partial, has an anomaly note, or the accountant doubts a stored value;
+  - the question needs line items, wording, terms, layout, or a comparison between documents.
+  For a simple data-store answer, do not open files.
+
+  ## Boundaries
+
+  This skill is read-only. If the accountant asks to correct or add a row, use the write-back-changes skill. Never fabricate rows, columns or values.
+mcs.metadata:
+  componentName: query-accounting-data
+  schemaName: Default_Accountant_QA_Assistant_1ac50a.skill.query-accounting-data
