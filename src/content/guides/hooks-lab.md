@@ -1,9 +1,9 @@
 ---
-title: Hooks Lab
+title: All You Can Hook
 slug: hooks-lab
 solution: HooksLab
 ---
-Learn Copilot Studio hooks by chatting with a working sample. Hooks Lab uses real
+Learn Copilot Studio hooks by chatting with a working sample. All You Can Hook uses real
 MSN Weather lookups and small, inspectable workflows to show what a hook can change
 before or after an action.
 
