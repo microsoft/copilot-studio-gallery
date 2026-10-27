@@ -2,7 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import { collectContributors } from "../lib/catalog";
 import { getPublishedSolutions } from "../lib/published";
-import { earnedHackathonBadges } from "../lib/hackathon";
+import { earnedContributorBadges } from "../lib/badges";
 import { withBase } from "../lib/url";
 
 const contributors = collectContributors(await getPublishedSolutions());
@@ -37,7 +37,7 @@ const MAX_SOLUTIONS = 8;
       {contributors.map((contributor) => {
         const shown = contributor.solutions.slice(0, MAX_SOLUTIONS);
         const extra = contributor.solutions.length - shown.length;
-        const badges = earnedHackathonBadges(contributor.solutions);
+        const badges = earnedContributorBadges(contributor.solutions);
         return (
           <li
             class="contributor-card product-card flex flex-col rounded-2xl border border-border bg-surface p-5"
@@ -56,7 +56,7 @@ const MAX_SOLUTIONS = 8;
                 {contributor.github && <a href={`https://github.com/${contributor.github}`} target="_blank" rel="noopener" class="mt-0.5 block truncate text-sm text-muted hover:text-accent">@{contributor.github}</a>}
               </div>
               {badges.length > 0 && (
-                <a href={withBase(`/contributors/${contributor.key}#contributor-badges`)} class="flex shrink-0 -space-x-2" aria-label={`${contributor.name}'s Build-a-thon badges`}>
+                <a href={withBase(`/contributors/${contributor.key}#contributor-badges`)} class="flex shrink-0 -space-x-2" aria-label={`${contributor.name}'s badges`}>
                   {badges.map(({ badge, solution }) => (
                     <img src={withBase(`/${badge.image}`)} alt={badge.title} title={`${badge.title} · ${solution.data.name}`} width="32" height="32" class="h-8 w-8 object-contain" loading="lazy" />
                   ))}

@@ -3,7 +3,7 @@ import SolutionCard from "../../components/SolutionCard.astro";
 import Layout from "../../layouts/Layout.astro";
 import { collectContributors, collectTags } from "../../lib/catalog";
 import { getPublishedSolutions } from "../../lib/published";
-import { earnedHackathonBadges, HACKATHON_EVENT } from "../../lib/hackathon";
+import { earnedContributorBadges } from "../../lib/badges";
 import { withBase } from "../../lib/url";
 
 export async function getStaticPaths() {
@@ -16,7 +16,7 @@ export async function getStaticPaths() {
 
 const { contributor } = Astro.props;
 const tags = collectTags(contributor.solutions);
-const badges = earnedHackathonBadges(contributor.solutions);
+const badges = earnedContributorBadges(contributor.solutions);
 ---
 
 <Layout
@@ -76,12 +76,12 @@ const badges = earnedHackathonBadges(contributor.solutions);
 
     {badges.length > 0 && (
       <section class="mt-9" aria-labelledby="contributor-badges">
-        <p class="text-xs font-semibold text-accent">{HACKATHON_EVENT}</p>
+        <p class="text-xs font-semibold text-accent">Community achievements</p>
         <h2 id="contributor-badges" class="mt-1 text-2xl font-semibold tracking-tight text-ink">Badges</h2>
-        <ul class="mt-5 flex flex-wrap gap-4" role="list">
+        <ul class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2" role="list">
           {badges.map(({ badge, solution }) => (
-            <li class="flex w-full max-w-[28rem] items-center gap-5 rounded-2xl border border-border bg-surface p-5 card-shadow">
-              <img src={withBase(`/${badge.image}`)} alt={badge.title} width="140" height="140" class="h-[140px] w-[140px] shrink-0 object-contain" />
+            <li class="flex items-center gap-4 rounded-2xl border border-border bg-surface p-4 sm:gap-5 sm:p-5 card-shadow">
+              <img src={withBase(`/${badge.image}`)} alt={badge.title} width="140" height="140" class="h-24 w-24 shrink-0 object-contain sm:h-[140px] sm:w-[140px]" />
               <div class="min-w-0">
                 <p class="font-semibold text-ink">{badge.title}</p>
                 <p class="mt-1 text-sm text-muted">{badge.meaning}</p>

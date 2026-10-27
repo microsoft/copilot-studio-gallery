@@ -88,6 +88,13 @@ solution at the Build-a-thon) or `winner`. Maintainers set it during review, so
 leave it out of your submission. Every credited author shows the badge on their
 contributor page and in the contributors directory.
 
+Every contributor automatically earns one **Copilot Studio Hatchling** badge
+when their first solution is published. It appears alongside any Build-a-thon
+awards on their profile and in the contributors directory; no metadata field is
+needed. The badge links to their earliest published solution by `createdAt`,
+with undated solutions after dated ones and ties resolved by name, then ID.
+Demo-tagged submissions are not published and do not earn badges.
+
 Solution identity, version, publisher, agents, workflows, and their components
 are derived from the exploded payload and cannot be overridden in metadata.
 Whether a solution appears under Agents or Workflows comes from what it
