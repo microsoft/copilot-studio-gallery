@@ -2,10 +2,12 @@
 import Layout from "../layouts/Layout.astro";
 import { collectContributors } from "../lib/catalog";
 import { getPublishedSolutions } from "../lib/published";
-import { earnedContributorBadges } from "../lib/badges";
+import { earnedContributorBadges, topHookSubmissionIds } from "../lib/badges";
 import { withBase } from "../lib/url";
 
-const contributors = collectContributors(await getPublishedSolutions());
+const publishedSolutions = await getPublishedSolutions();
+const contributors = collectContributors(publishedSolutions);
+const hookWinners = topHookSubmissionIds(publishedSolutions);
 const solutionTotal = contributors.reduce((total, contributor) => total + contributor.count, 0);
 const MAX_SOLUTIONS = 8;
 ---
@@ -37,7 +39,7 @@ const MAX_SOLUTIONS = 8;
       {contributors.map((contributor) => {
         const shown = contributor.solutions.slice(0, MAX_SOLUTIONS);
         const extra = contributor.solutions.length - shown.length;
-        const badges = earnedContributorBadges(contributor.solutions);
+        const badges = earnedContributorBadges(contributor.solutions, hookWinners);
         return (
           <li
             class="contributor-card product-card flex flex-col rounded-2xl border border-border bg-surface p-5"

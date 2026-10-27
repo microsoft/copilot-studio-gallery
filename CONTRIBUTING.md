@@ -95,6 +95,15 @@ needed. The badge links to their earliest published solution by `createdAt`,
 with undated solutions after dated ones and ties resolved by name, then ID.
 Demo-tagged submissions are not published and do not earn badges.
 
+**Hook, Line & Sinker** automatically recognizes the current three published
+solutions with the most hooks, including every solution tied at the third-place
+cutoff. Only solutions with at least one hook qualify. Every credited author
+receives a badge per qualifying solution, shown on their profile and in the
+contributors directory. Rankings recalculate when the site rebuilds, so this is
+not a permanent award. Hook counts come from distinct exported `AgentHook`
+components owned by agents in the solution, not component names, tags, tool
+filters, workflow steps, or the number of different hook event types.
+
 Solution identity, version, publisher, agents, workflows, and their components
 are derived from the exploded payload and cannot be overridden in metadata.
 Whether a solution appears under Agents or Workflows comes from what it

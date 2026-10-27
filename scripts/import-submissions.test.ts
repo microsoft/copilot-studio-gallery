@@ -43,6 +43,7 @@ test("imports metadata while retaining derived solution identity", async () => {
   assert.equal(record.bundle, "bundles/demo-agent.zip");
   assert.equal(record.category, "Customer service");
   assert.equal(record.componentCount, 1);
+  assert.equal(record.hookCount, 0);
   const support = record.agents.find((agent: { schemaName: string }) => agent.schemaName === "support_agent");
   const other = record.agents.find((agent: { schemaName: string }) => agent.schemaName === "other_agent");
   assert.deepEqual(support, {
@@ -88,6 +89,35 @@ test("imports metadata while retaining derived solution identity", async () => {
     mode: "delegate",
     tools: ["Search"],
   });
+});
+
+test("derives unique owned AgentHook counts without guessing from names or trusting metadata", async () => {
+  const submission = join(workspace, "submissions/demo-agent");
+  const metadataPath = join(submission, "metadata.json");
+  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  await writeFile(metadataPath, JSON.stringify({ ...metadata, hookCount: 999 }));
+  const addComponent = async (directory: string, schemaName: string, owner: string, kind: string, componentType = "9") => {
+    const root = join(submission, "solution/botcomponents", directory);
+    await mkdir(root, { recursive: true });
+    await writeFile(join(root, "botcomponent.xml"), `<botcomponent schemaname="${schemaName}">
+      ${componentType ? `<componenttype>${componentType}</componenttype>` : ""}
+      <name>Hook demo</name><parentbotid><schemaname>${owner}</schemaname></parentbotid>
+      </botcomponent>`);
+    await writeFile(join(root, "data"), `kind: ${kind}\nevent:\n  kind: PreToolHookEvent\n  filteredTools: [one, two]\n`);
+  };
+  await addComponent("first", "support_agent.hook.one", "support_agent", "AgentHook");
+  await addComponent("duplicate", "SUPPORT_AGENT.HOOK.ONE", "support_agent", "AgentHook");
+  await addComponent("second", "other_agent.hook.two", "other_agent", "AgentHook", "");
+  await addComponent("misleading", "support_agent.hook.not-a-hook", "support_agent", "TaskDialog");
+  await addComponent("orphan", "missing_agent.hook.orphan", "missing_agent", "AgentHook");
+  await addComponent("non-action", "support_agent.hook.topic", "support_agent", "AgentHook", "0");
+  await importSubmissions({ root: workspace });
+  const record = solutionSchema.parse(JSON.parse(await readFile(join(workspace, "src/content/solutions/demo-agent.json"), "utf8")));
+  assert.equal(record.hookCount, 2);
+  assert.deepEqual(record.agents.map((agent) => agent.toolCount), [1, 1]);
+  assert.equal(record.agentGraph.nodes.some((node) => node.type === "hook"), false);
+  assert.throws(() => solutionSchema.parse({ ...record, hookCount: -1 }));
+  assert.throws(() => solutionSchema.parse({ ...record, hookCount: 1.5 }));
 });
 
 test("selects a non-first hero workflow by ID or name and publishes its canonical ID", async () => {

@@ -156,6 +156,7 @@ export const solutionSchema = z.object({
   bundle: z.string(),
   agentCount: z.number().int().nonnegative(),
   workflowCount: z.number().int().nonnegative(),
+  hookCount: z.number().int().nonnegative(),
   componentCount: z.number().int().nonnegative(),
   agents: z.array(agentSchema),
   agentGraph: graphSchema,

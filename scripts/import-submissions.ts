@@ -37,7 +37,7 @@ interface SolutionFile {
 interface ComponentItem {
   id: string;
   name: string;
-  kind: "tool" | "skill" | "connected";
+  kind: "tool" | "skill" | "connected" | "hook";
   target?: string;
   owner?: string;
   schemaName?: string;
@@ -301,7 +301,7 @@ function inspectComponentValue(value: unknown, source: string): ComponentItem[] 
 }
 
 function componentOwner(value: string): string {
-  return value.match(/^(.+?)\.(?:tool|skill|component)(?:\.|$)/i)?.[1]?.toLowerCase() ?? value.toLowerCase();
+  return value.match(/^(.+?)\.(?:tool|skill|component|hook)(?:\.|$)/i)?.[1]?.toLowerCase() ?? value.toLowerCase();
 }
 
 async function componentItems(files: SolutionFile[]): Promise<ComponentItem[]> {
@@ -329,7 +329,8 @@ async function componentItems(files: SolutionFile[]): Promise<ComponentItem[]> {
         const parsedData = parseYaml(await readText(dataFile));
         data = record(parsedData) ?? {};
       }
-      if (!componentType) {
+      const dataKind = scalar(data, "kind", "$kind") ?? "";
+      if (!componentType && dataKind.toLowerCase() !== "agenthook") {
         const rootItems = inspectComponentValue(component, definition.path).map((item) => ({
           ...item,
           owner,
@@ -341,16 +342,17 @@ async function componentItems(files: SolutionFile[]): Promise<ComponentItem[]> {
         result.push(...rootItems, ...dataItems);
         continue;
       }
-      const dataKind = scalar(data, "kind", "$kind") ?? "";
       const combined = `${schemaName} ${dataKind}`.toLowerCase();
       const kind: ComponentItem["kind"] | undefined =
-        combined.includes("connectedagenttool") || combined.includes(".tool.connected-agent.")
-          ? "connected"
-          : combined.includes(".skill.") || combined.includes("inlineagentskill")
-            ? "skill"
-            : combined.includes(".tool.") || combined.includes("mcptool")
-              ? "tool"
-              : undefined;
+        dataKind.toLowerCase() === "agenthook"
+          ? "hook"
+          : combined.includes("connectedagenttool") || combined.includes(".tool.connected-agent.")
+            ? "connected"
+            : combined.includes(".skill.") || combined.includes("inlineagentskill")
+              ? "skill"
+              : combined.includes(".tool.") || combined.includes("mcptool")
+                ? "tool"
+                : undefined;
       if (!kind) continue;
 
       const rawName = scalar(component, "name") ?? schemaName;
@@ -575,12 +577,13 @@ function componentBelongsToAgent(component: ComponentItem, schemaName: string, d
   return owner === schemaName.toLowerCase() || owner === basename(directory).toLowerCase();
 }
 
-export async function inspectAgents(files: SolutionFile[]): Promise<{ agents: AgentPreview[]; graph: GraphData }> {
+export async function inspectAgents(files: SolutionFile[]): Promise<{ agents: AgentPreview[]; graph: GraphData; hookCount: number }> {
   const botDirectories = [...new Set(files.filter((file) => /^bots\/[^/]+\/bot\.xml$/i.test(file.path)).map((file) => dirname(file.path)))].sort();
   const components = await componentItems(files);
   const graphNodes: GraphNode[] = [];
   const graphEdges: GraphEdge[] = [];
   const agents: AgentPreview[] = [];
+  const hookIds = new Set<string>();
   for (const directory of botDirectories) {
     const bot = files.find((file) => file.path.toLowerCase() === `${directory}/bot.xml`.toLowerCase());
     if (!bot) continue;
@@ -606,6 +609,9 @@ export async function inspectAgents(files: SolutionFile[]): Promise<{ agents: Ag
       ...components.filter((component) => componentBelongsToAgent(component, schemaName, directory)),
     ];
     const normalized = normalizeAgentComponents(`agent:${id}`, componentData);
+    for (const component of componentData) {
+      if (component.kind === "hook") hookIds.add(component.id.toLowerCase());
+    }
     const model = configurationModel(config);
     const instructions = configurationInstructions(config);
     const channels = configurationChannels(config);
@@ -650,7 +656,7 @@ export async function inspectAgents(files: SolutionFile[]): Promise<{ agents: Ag
       graphEdges.push({ id: `agent:${id}-delegates-${connection.id}`, source: `agent:${id}`, target: targetId, label: "delegates" });
     }
   }
-  return { agents, graph: layoutAgentGraph([...new Map(graphNodes.map((node) => [node.id, node])).values()], graphEdges) };
+  return { agents, graph: layoutAgentGraph([...new Map(graphNodes.map((node) => [node.id, node])).values()], graphEdges), hookCount: hookIds.size };
 }
 
 function workflowMappings(customizations: unknown): Map<string, { id: string; name: string }> {
@@ -975,7 +981,7 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
   const solutionXml = parseXml(await readText(requiredFile(files, "solution.xml")));
   const customizationsXml = parseXml(await readText(requiredFile(files, "customizations.xml")));
   const derived = deriveSolutionFields(solutionXml, customizationsXml);
-  const [{ agents, graph }, workflows, connectors] = await Promise.all([
+  const [{ agents, graph, hookCount }, workflows, connectors] = await Promise.all([
     inspectAgents(files),
     inspectWorkflows(files, customizationsXml),
     inspectConnectors(files),
@@ -993,6 +999,7 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
     bundle: `bundles/${slug}.zip`,
     agentCount: agents.length,
     workflowCount: workflows.length,
+    hookCount,
     componentCount,
     agents,
     agentGraph: graph,
