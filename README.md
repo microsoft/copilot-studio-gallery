@@ -81,6 +81,10 @@ npm run preview
 `npm run seed:demos` recreates the 12 deterministic demo submissions used to
 develop and preview the gallery's category-led discovery experience.
 
+The scoped npm override for `@tailwindcss/typography` keeps its
+`postcss-selector-parser` dependency on patched 6.x releases. Remove it once
+Typography no longer pins the vulnerable `6.0.10` version.
+
 ### Solution discussions
 
 Solution detail pages include a **Rate & discuss** section, using the same
