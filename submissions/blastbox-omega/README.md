@@ -1,4 +1,4 @@
-# BlastBox Omega Store Operations
+# Store Operations
 
 BlastBox Omega is a retro-gaming store where agents and workflows share one
 MCP data layer. One import brings in the agents, workflows, skills, and MCP
