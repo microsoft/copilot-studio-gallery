@@ -81,6 +81,42 @@ npm run preview
 `npm run seed:demos` recreates the 12 deterministic demo submissions used to
 develop and preview the gallery's category-led discovery experience.
 
+### Solution discussions
+
+Solution detail pages include a **Rate & discuss** section, using the same
+GitHub Discussions / giscus approach as the CAT Skills Gallery. Each solution
+maps to a discussion by its stable submission slug, so changing its display name
+does not lose its conversation. Visitors sign in with GitHub to comment or react.
+
+Discussions must be enabled and [giscus](https://github.com/apps/giscus) must be
+installed for `microsoft/copilot-studio-gallery`. The shared public repository
+and category identifiers live in `src/lib/discussion-config.json`; they are not
+credentials. The **Announcements** category lets giscus create threads without
+opening thread creation to all visitors. Comments and reactions are public on
+GitHub. The thread is created on the first comment or reaction, not on page view.
+
+The embed uses our custom styles in `public/giscus/`, with light and dark
+palettes matching the gallery and synchronized with its theme toggle. Production
+theme URLs include the GitHub Pages base path. Local development sends the same
+CSS as a self-contained data URL through giscus's theme configuration after the
+widget is ready. This avoids browsers blocking an HTTPS iframe's stylesheet
+request to an HTTP localhost server; no public upload or CORS relaxation is
+needed. Local commenting is **live**, not simulated. Backlinks always point to
+the deployed gallery rather than localhost. Live reaction counts are not yet
+used for gallery sorting.
+
+The **Notify sample submitters** workflow runs on new discussion comments after
+the workflow is merged into `main`. It resolves the discussion slug against
+trusted generated solution metadata, then mentions all credited `authors[].github`
+handles on the first community comment. It ignores bots, author self-comments,
+unpublished demo samples, and unrelated categories or discussion titles. A
+bot-authored marker and per-discussion concurrency prevent duplicate notifications,
+including on reruns and when several comments arrive together. Author comments
+do not consume the notification: the first later visitor comment still triggers it.
+Samples without credited GitHub handles are logged and skipped. No PR submitter
+or merger is guessed from repository history, and no new token secret is needed:
+the workflow uses `GITHUB_TOKEN` with `contents: read` and `discussions: write`.
+
 ## Submit a solution
 
 Add one folder under [`submissions/`](submissions/) and open a pull request:

@@ -6,6 +6,7 @@ import AgentMatrix from "../../components/AgentMatrix.astro";
 import BuildingBlocks from "../../components/BuildingBlocks.astro";
 import MicrosoftBadge from "../../components/MicrosoftBadge.astro";
 import SolutionDownload from "../../components/SolutionDownload.astro";
+import SolutionDiscussion from "../../components/SolutionDiscussion.astro";
 import GraphCanvas from "../../components/graph/GraphCanvas";
 import WorkflowTable from "../../components/WorkflowTable.astro";
 import { agentProfiles, inventoryBlocks, sharedMcpServers, solutionInventory } from "../../lib/inventory";
@@ -56,6 +57,7 @@ const heroWorkflow = resolvePreviewWorkflow(data.workflows, data.previewWorkflow
           <AuthorCredit authors={data.authors} size="md" prefix="by" class="font-semibold text-ink" />
           <span>Version {data.version}</span>
           {updated && <span>Updated {updated}</span>}
+          <a href="#discussion" class="font-medium text-accent hover:underline">Rate &amp; discuss</a>
         </div>
         <div data-download-compact class="mt-5 xl:hidden">
           <SolutionDownload solution={data} idPrefix="compact-download" compact />
@@ -173,6 +175,7 @@ const heroWorkflow = resolvePreviewWorkflow(data.workflows, data.previewWorkflow
             </div>
           </div>
         </section>
+        <SolutionDiscussion slug={solution.id} />
       </div>
 
       <aside data-download-sidebar class="hidden xl:sticky xl:top-20 xl:block xl:self-start">

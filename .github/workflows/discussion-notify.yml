@@ -1,0 +1,124 @@
+name: Notify sample submitters
+
+on:
+  discussion_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  discussions: write
+
+concurrency:
+  group: sample-discussion-${{ github.event.discussion.number }}
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    if: github.event.comment.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted gallery metadata
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+          sparse-checkout: |
+            src/content/solutions
+            src/lib/discussion-config.json
+          sparse-checkout-cone-mode: false
+      - name: Mention submitters on the first community comment
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const fs = require("node:fs");
+            const path = require("node:path");
+            const config = JSON.parse(fs.readFileSync("src/lib/discussion-config.json", "utf8"));
+            const { discussion, comment } = context.payload;
+            if (comment.user.type === "Bot") {
+              core.info("Ignoring bot comment.");
+              return;
+            }
+            if (discussion.category.node_id !== config.categoryId) {
+              core.info("Not a gallery discussion category.");
+              return;
+            }
+            const slug = discussion.title;
+            if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 100) {
+              core.info("Discussion title is not a submission slug.");
+              return;
+            }
+            const file = path.join("src", "content", "solutions", `${slug}.json`);
+            if (!fs.existsSync(file)) {
+              core.info("No generated solution for this discussion.");
+              return;
+            }
+            const solution = JSON.parse(fs.readFileSync(file, "utf8"));
+            if (solution.tags.some((tag) => tag.toLowerCase() === "demo")) {
+              core.info("Demo submissions are not published.");
+              return;
+            }
+            const authors = new Map();
+            for (const author of solution.authors) {
+              if (!author.github) continue;
+              if (!/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(author.github)) {
+                throw new Error("Invalid GitHub handle in generated solution metadata.");
+              }
+              authors.set(author.github.toLowerCase(), author.github);
+            }
+            if (authors.size === 0) {
+              core.info("No credited GitHub handles to notify.");
+              return;
+            }
+            if (authors.has(comment.user.login.toLowerCase())) {
+              core.info("Ignoring an author's own comment.");
+              return;
+            }
+
+            const marker = `<!-- gallery-submitter-notified:${slug} -->`;
+            let after = null;
+            let discussionId;
+            do {
+              const { repository } = await github.graphql(
+                `query ($owner: String!, $name: String!, $number: Int!, $after: String) {
+                  repository(owner: $owner, name: $name) {
+                    discussion(number: $number) {
+                      id title category { id }
+                      comments(first: 100, after: $after) {
+                        nodes { body author { login } }
+                        pageInfo { hasNextPage endCursor }
+                      }
+                    }
+                  }
+                }`,
+                { owner: context.repo.owner, name: context.repo.repo, number: discussion.number, after },
+              );
+              const live = repository.discussion;
+              if (!live || live.title !== slug || live.category.id !== config.categoryId) {
+                core.info("Discussion was removed, renamed, or moved out of the gallery category.");
+                return;
+              }
+              discussionId = live.id;
+              if (live.comments.nodes.some((entry) =>
+                entry.author?.login === "github-actions[bot]" && entry.body.includes(marker))) {
+                core.info("Submitters have already been notified.");
+                return;
+              }
+              const next = live.comments.pageInfo.hasNextPage ? live.comments.pageInfo.endCursor : null;
+              if (live.comments.pageInfo.hasNextPage && (!next || next === after)) {
+                throw new Error("Missing or repeated discussion comment pagination cursor.");
+              }
+              after = next;
+            } while (after);
+
+            const mentions = [...authors.values()].map((login) => `@${login}`).join(" ");
+            const body = `${marker}\n\n${mentions} - your [sample](https://microsoft.github.io/copilot-studio-gallery/solutions/${slug}/) just received its first community comment. Thanks for sharing it! Take a look when you get a chance.`;
+            await github.graphql(
+              `mutation ($discussionId: ID!, $body: String!) {
+                addDiscussionComment(input: { discussionId: $discussionId, body: $body }) {
+                  comment { id }
+                }
+              }`,
+              { discussionId, body },
+            );
+            core.info(`Notified ${authors.size} credited submitter(s) for ${slug}.`);

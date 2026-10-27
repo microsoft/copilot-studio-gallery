@@ -1,0 +1,130 @@
+---
+import config from "../lib/discussion-config.json";
+import { withBase } from "../lib/url";
+
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+let lightTheme = new URL(withBase("/giscus/light.css"), Astro.site).href;
+let darkTheme = new URL(withBase("/giscus/dark.css"), Astro.site).href;
+if (import.meta.env.DEV) {
+  const { readFile } = await import("node:fs/promises");
+  const [base, light, dark] = await Promise.all(
+    ["base", "light", "dark"].map((name) => readFile(new URL(`../../public/giscus/${name}.css`, import.meta.url), "utf8")),
+  );
+  const inlineTheme = (palette: string) =>
+    `data:text/css;base64,${Buffer.from(`${base}\n${palette.replace('@import url("./base.css");', "")}`).toString("base64")}`;
+  lightTheme = inlineTheme(light);
+  darkTheme = inlineTheme(dark);
+}
+---
+
+<section id="discussion" aria-labelledby="discussion-heading" class="mt-10 scroll-mt-24 rounded-2xl border border-border bg-surface card-shadow">
+  <div class="flex flex-wrap items-start justify-between gap-4 border-b border-border p-5 sm:p-6">
+    <div>
+      <h2 id="discussion-heading" class="text-xl font-semibold tracking-tight text-ink">Rate &amp; discuss</h2>
+      <p class="mt-2 max-w-xl text-sm leading-relaxed text-muted">Found this solution useful? Give it a thumbs up, ask a question, or share what you built.</p>
+    </div>
+    <a href={`https://github.com/${config.repo}/discussions/categories/announcements`} target="_blank" rel="noopener" class="rounded-full border border-border bg-elevated px-3 py-1 text-xs font-medium text-muted hover:text-accent">GitHub Discussions <span aria-hidden="true">↗</span></a>
+  </div>
+  <div
+    data-discussion-embed
+    data-slug={slug}
+    data-repo={config.repo}
+    data-repo-id={config.repoId}
+    data-category={config.category}
+    data-category-id={config.categoryId}
+    data-light-theme={lightTheme}
+    data-dark-theme={darkTheme}
+    class="p-5 sm:p-6"
+  >
+    <p class="mb-5 text-xs leading-relaxed text-muted">Sign in with GitHub to join the conversation. Your comments and reactions are public.</p>
+    <p data-discussion-status role="status" class="text-sm text-muted">Loading discussion...</p>
+    <div class="giscus"></div>
+    <noscript><p class="mt-3 text-sm text-muted">Enable JavaScript to comment here, or visit GitHub Discussions using the link above.</p></noscript>
+  </div>
+</section>
+
+<script>
+  const embed = document.querySelector<HTMLElement>("[data-discussion-embed]");
+  if (embed) {
+    const status = embed.querySelector<HTMLElement>("[data-discussion-status]");
+    if (!status) throw new Error("Missing discussion loading status");
+    const { slug, repo, repoId, category, categoryId, lightTheme, darkTheme } = embed.dataset;
+    if (!slug || !repo || !repoId || !category || !categoryId || !lightTheme || !darkTheme) {
+      throw new Error("Missing giscus discussion configuration");
+    }
+
+    const theme = () => document.documentElement.dataset.theme === "dark" ? darkTheme : lightTheme;
+    let failed = false;
+    let ready = false;
+    let appliedTheme: string | undefined;
+    const syncTheme = () => {
+      const current = theme();
+      const frame = embed.querySelector<HTMLIFrameElement>("iframe.giscus-frame");
+      if (!ready || !frame?.contentWindow || appliedTheme === current) return;
+      frame.contentWindow.postMessage({ giscus: { setConfig: { theme: current } } }, "https://giscus.app");
+      appliedTheme = current;
+    };
+    const showError = (message: string) => {
+      status.hidden = false;
+      status.textContent = message;
+    };
+    const loadingTimeout = window.setTimeout(() => {
+      showError("The discussion is taking longer than expected to load. Check your connection or open GitHub Discussions above.");
+    }, 20_000);
+
+    window.addEventListener("message", (event: MessageEvent<unknown>) => {
+      const frame = embed.querySelector<HTMLIFrameElement>("iframe.giscus-frame");
+      if (event.origin !== "https://giscus.app" || event.source !== frame?.contentWindow) return;
+      const data = event.data;
+      if (!data || typeof data !== "object" || !("giscus" in data)) return;
+      const message = data.giscus;
+      if (!message || typeof message !== "object") return;
+      if (!ready && ("discussion" in message || "error" in message)) {
+        ready = true;
+        syncTheme();
+      }
+      if ("error" in message) {
+        window.clearTimeout(loadingTimeout);
+        const detail = typeof message.error === "string" ? message.error : "Unknown giscus error";
+        // giscus creates the thread only after its first comment or reaction.
+        if (detail === "Discussion not found") {
+          failed = false;
+          status.hidden = true;
+          return;
+        }
+        failed = true;
+        console.error("Gallery discussion failed to load:", detail);
+        showError("The discussion could not be loaded. Open GitHub Discussions above; maintainers can check the giscus installation and configuration.");
+      } else if ("discussion" in message || ("resizeHeight" in message && ready && !failed)) {
+        window.clearTimeout(loadingTimeout);
+        failed = false;
+        status.hidden = true;
+      }
+    });
+
+    new MutationObserver(syncTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+    const script = document.createElement("script");
+    script.src = "https://giscus.app/client.js";
+    script.async = true;
+    script.crossOrigin = "anonymous";
+    const attributes = {
+      repo, "repo-id": repoId, category, "category-id": categoryId,
+      mapping: "specific", term: slug, strict: "1",
+      "reactions-enabled": "1", "emit-metadata": "1",
+      "input-position": "bottom",
+      theme: theme().startsWith("data:") ? (document.documentElement.dataset.theme === "dark" ? "dark" : "light") : theme(),
+      lang: "en",
+    };
+    for (const [key, value] of Object.entries(attributes)) script.setAttribute(`data-${key}`, value);
+    script.addEventListener("error", () => {
+      window.clearTimeout(loadingTimeout);
+      showError("The discussion script could not be loaded. Check your connection or content blocker, or open GitHub Discussions above.");
+    });
+    embed.append(script);
+  }
+</script>
