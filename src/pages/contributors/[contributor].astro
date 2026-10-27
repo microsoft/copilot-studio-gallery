@@ -3,20 +3,22 @@ import SolutionCard from "../../components/SolutionCard.astro";
 import Layout from "../../layouts/Layout.astro";
 import { collectContributors, collectTags } from "../../lib/catalog";
 import { getPublishedSolutions } from "../../lib/published";
-import { earnedContributorBadges } from "../../lib/badges";
+import { earnedContributorBadges, topHookSubmissionIds } from "../../lib/badges";
 import { withBase } from "../../lib/url";
 
 export async function getStaticPaths() {
-  const contributors = collectContributors(await getPublishedSolutions());
+  const publishedSolutions = await getPublishedSolutions();
+  const contributors = collectContributors(publishedSolutions);
+  const hookWinnerIds = [...topHookSubmissionIds(publishedSolutions)];
   return contributors.map((contributor) => ({
     params: { contributor: contributor.key },
-    props: { contributor },
+    props: { contributor, hookWinnerIds },
   }));
 }
 
-const { contributor } = Astro.props;
+const { contributor, hookWinnerIds } = Astro.props;
 const tags = collectTags(contributor.solutions);
-const badges = earnedContributorBadges(contributor.solutions);
+const badges = earnedContributorBadges(contributor.solutions, new Set(hookWinnerIds));
 ---
 
 <Layout
