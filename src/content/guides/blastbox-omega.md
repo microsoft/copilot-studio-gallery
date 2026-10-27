@@ -1,5 +1,5 @@
 ---
-title: BlastBox Omega Store Operations
+title: Store Operations
 slug: blastbox-omega
 solution: BlastBoxOmega
 ---
