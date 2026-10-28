@@ -73,7 +73,7 @@ contributor page.
 `category` is the one fixed category that best matches who uses the solution
 and the business activity it supports: `Customer service`, `Sales & marketing`,
 `IT & security`, `Operations`, `Project & communications management`, `HR`, `Finance`,
-`Legal & compliance`, `Productivity & knowledge`, `Agent Building`, or `Other`. See
+`Legal & compliance`, `Productivity & knowledge`, `Agent Building`, `Governance`, or `Other`. See
 [Choose a category](submissions/README.md#choose-a-category) for who each one
 is for. Contributors can't add new values yet: use `Other` and suggest one in
 your pull request.
@@ -86,11 +86,11 @@ unless the solution was built by a Microsoft team.
 `hackathon` records a Copilot Studio Agents & Workflows Build-a-thon badge: `hacker` (built a
 solution at the Build-a-thon) or `winner`. Maintainers set it during review, so
 leave it out of your submission. Every credited author shows the badge on their
-contributor page and in the contributors directory.
+contributor page.
 
 Every contributor automatically earns one **Copilot Studio Hatchling** badge
 when their first solution is published. It appears alongside any Build-a-thon
-awards on their profile and in the contributors directory; no metadata field is
+awards on their profile; no metadata field is
 needed. The badge links to their earliest published solution by `createdAt`,
 with undated solutions after dated ones and ties resolved by name, then ID.
 Demo-tagged submissions are not published and do not earn badges.
@@ -98,8 +98,8 @@ Demo-tagged submissions are not published and do not earn badges.
 **Hook, Line & Sinker** automatically recognizes the current three published
 solutions with the most hooks, including every solution tied at the third-place
 cutoff. Only solutions with at least one hook qualify. Every credited author
-receives a badge per qualifying solution, shown on their profile and in the
-contributors directory. Rankings recalculate when the site rebuilds, so this is
+receives a badge per qualifying solution, shown on their profile.
+Rankings recalculate when the site rebuilds, so this is
 not a permanent award. Hook counts come from distinct exported `AgentHook`
 components owned by agents in the solution, not component names, tags, tool
 filters, workflow steps, or the number of different hook event types.

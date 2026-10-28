@@ -453,18 +453,20 @@ test("accepts a missing category but only one category from the fixed list", asy
   await importSubmissions({ root: workspace, check: true });
 });
 
-test("imports Agent Building into generated content and category discovery", async () => {
-  const metadataPath = join(workspace, "submissions/demo-agent/metadata.json");
-  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
-  await writeFile(metadataPath, JSON.stringify({ ...metadata, category: "Agent Building" }));
-  await importSubmissions({ root: workspace, check: true });
-  await importSubmissions({ root: workspace });
-  const record = solutionSchema.parse(JSON.parse(await readFile(join(workspace, "src/content/solutions/demo-agent.json"), "utf8")));
-  assert.equal(record.category, "Agent Building");
-  const categories = new Map(collectCategories([{ id: "demo-agent", collection: "solutions", data: record }]));
-  assert.equal(categories.get("Agent Building"), 1);
-  assert.equal(categories.get("Customer service"), 0);
-});
+for (const category of ["Agent Building", "Governance"] as const) {
+  test(`imports ${category} into generated content and category discovery`, async () => {
+    const metadataPath = join(workspace, "submissions/demo-agent/metadata.json");
+    const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+    await writeFile(metadataPath, JSON.stringify({ ...metadata, category }));
+    await importSubmissions({ root: workspace, check: true });
+    await importSubmissions({ root: workspace });
+    const record = solutionSchema.parse(JSON.parse(await readFile(join(workspace, "src/content/solutions/demo-agent.json"), "utf8")));
+    assert.equal(record.category, category);
+    const categories = new Map(collectCategories([{ id: "demo-agent", collection: "solutions", data: record }]));
+    assert.equal(categories.get(category), 1);
+    assert.equal(categories.get("Customer service"), 0);
+  });
+}
 
 test("rejects invalid metadata, unsafe slugs, and symlinks", async () => {
   await writeFile(join(workspace, "submissions/demo-agent/metadata.json"), "{}");

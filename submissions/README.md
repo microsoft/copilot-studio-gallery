@@ -52,13 +52,14 @@ technologies such as `retail`, `sharepoint`, or `mcp` belong in `tags`.
 | `Customer service` | Support and frontline teams helping customers | Case triage, store associate assistant |
 | `Sales & marketing` | Sellers and marketers | Lead qualification, account briefs, RFP responses, campaign content |
 | `IT & security` | IT, engineering, and security teams | Incident response, access reviews, telemetry analytics |
-| `Operations` | Teams running day-to-day processes and intake | Request routing, field dispatch, governance front doors |
+| `Operations` | Teams running day-to-day business processes and logistics | Request routing, field dispatch, fulfilment |
 | `Project & communications management` | Project leads and people coordinating work | Meeting coordination, status reports, stakeholder updates |
 | `HR` | HR teams, managers, and employees on people processes | Onboarding, welcome packets |
 | `Finance` | Finance and accounts payable teams | Invoice processing, exception handling |
 | `Legal & compliance` | Legal and compliance reviewers | Contract review, policy checks |
 | `Productivity & knowledge` | Individuals working with email, calendar, documents, and knowledge | Email summaries, calendar management, research answers |
 | `Agent Building` | Makers and developers learning to build and extend agents | Agent-building tutorials, hooks labs, reusable agent patterns |
+| `Governance` | CoE teams and platform owners managing agent adoption and oversight | Agent idea intake, reuse reviews, agent inventories, CoE approvals |
 | `Other` | None of the above fits | Mention the category you'd like in your pull request |
 
 ```json

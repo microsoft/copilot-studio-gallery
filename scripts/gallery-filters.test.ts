@@ -63,20 +63,22 @@ test("retains valid selections with no matches in the Microsoft gallery", () => 
   assert.ok(sameState(stateFromUrl(filterParams(carried, "newest"), labels), state));
 });
 
-test("discovers Agent Building before submissions exist and round-trips its filter", () => {
-  const categories = collectCategories([]);
-  assert.equal(new Map(categories).get("Agent Building"), 0);
-  const catalogLabels: FacetLabels = {
-    ...labels,
-    categories: new Map(categories.map(([category]) => [category, category])),
-  };
-  const state = stateFromUrl(new URLSearchParams("category=Agent%20Building"), catalogLabels);
-  assert.deepEqual([...state.categories], ["Agent Building"]);
-  assert.equal(matches({ ...microsoft, categories: ["Agent Building"] }, state), true);
-  assert.equal(matches(microsoft, state), false);
-  assert.equal(filterParams(state, "newest").get("category"), "Agent Building");
-  assert.ok(sameState(stateFromUrl(new URLSearchParams(filterParams(state, "newest").toString()), catalogLabels), state));
-});
+for (const category of ["Agent Building", "Governance"] as const) {
+  test(`discovers ${category} before submissions exist and round-trips its filter`, () => {
+    const categories = collectCategories([]);
+    assert.equal(new Map(categories).get(category), 0);
+    const catalogLabels: FacetLabels = {
+      ...labels,
+      categories: new Map(categories.map(([category]) => [category, category])),
+    };
+    const state = stateFromUrl(new URLSearchParams({ category }), catalogLabels);
+    assert.deepEqual([...state.categories], [category]);
+    assert.equal(matches({ ...microsoft, categories: [category] }, state), true);
+    assert.equal(matches(microsoft, state), false);
+    assert.equal(filterParams(state, "newest").get("category"), category);
+    assert.ok(sameState(stateFromUrl(new URLSearchParams(filterParams(state, "newest").toString()), catalogLabels), state));
+  });
+}
 
 test("ignores invalid values without dropping valid selections", () => {
   const state = stateFromUrl(new URLSearchParams({

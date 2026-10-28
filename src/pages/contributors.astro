@@ -2,12 +2,10 @@
 import Layout from "../layouts/Layout.astro";
 import { collectContributors } from "../lib/catalog";
 import { getPublishedSolutions } from "../lib/published";
-import { earnedContributorBadges, topHookSubmissionIds } from "../lib/badges";
 import { withBase } from "../lib/url";
 
 const publishedSolutions = await getPublishedSolutions();
 const contributors = collectContributors(publishedSolutions);
-const hookWinners = topHookSubmissionIds(publishedSolutions);
 const solutionTotal = contributors.reduce((total, contributor) => total + contributor.count, 0);
 const MAX_SOLUTIONS = 8;
 ---
@@ -39,7 +37,6 @@ const MAX_SOLUTIONS = 8;
       {contributors.map((contributor) => {
         const shown = contributor.solutions.slice(0, MAX_SOLUTIONS);
         const extra = contributor.solutions.length - shown.length;
-        const badges = earnedContributorBadges(contributor.solutions, hookWinners);
         return (
           <li
             class="contributor-card product-card flex flex-col rounded-2xl border border-border bg-surface p-5"
@@ -57,13 +54,6 @@ const MAX_SOLUTIONS = 8;
                 <a href={withBase(`/contributors/${contributor.key}`)} class="block truncate font-semibold text-ink hover:text-accent">{contributor.name}</a>
                 {contributor.github && <a href={`https://github.com/${contributor.github}`} target="_blank" rel="noopener" class="mt-0.5 block truncate text-sm text-muted hover:text-accent">@{contributor.github}</a>}
               </div>
-              {badges.length > 0 && (
-                <a href={withBase(`/contributors/${contributor.key}#contributor-badges`)} class="flex shrink-0 -space-x-2" aria-label={`${contributor.name}'s badges`}>
-                  {badges.map(({ badge, solution }) => (
-                    <img src={withBase(`/${badge.image}`)} alt={badge.title} title={`${badge.title} · ${solution.data.name}`} width="32" height="32" class="h-8 w-8 object-contain" loading="lazy" />
-                  ))}
-                </a>
-              )}
               <a href={withBase(`/contributors/${contributor.key}`)} class="shrink-0 text-right text-accent" aria-label={`View ${contributor.name}'s contributor profile`}>
                 <span class="block text-xl font-semibold">{contributor.count}</span>
                 <span class="block text-[11px] text-soft">solution{contributor.count === 1 ? "" : "s"}</span>

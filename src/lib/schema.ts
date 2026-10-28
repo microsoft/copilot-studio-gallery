@@ -12,6 +12,7 @@ export const CATEGORIES = [
   "Legal & compliance",
   "Productivity & knowledge",
   "Agent Building",
+  "Governance",
   // Catch-all until contributors can propose their own categories.
   "Other",
 ] as const;
