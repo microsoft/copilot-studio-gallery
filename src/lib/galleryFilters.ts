@@ -1,4 +1,29 @@
 import { containsEveryComponent, type SortMode, type SortableSolution } from "./discovery";
+import type { Category } from "./schema";
+
+export const GALLERY_CATEGORIES = [
+  "Sales", "Service", "Productivity", "Build", "Govern",
+  "HR", "Finance", "Legal", "IT", "Operations",
+] as const;
+
+const CATEGORY_FILTERS = {
+  "Customer service": "Service",
+  "Sales & marketing": "Sales",
+  "IT & security": "IT",
+  Operations: "Operations",
+  "Project & communications management": "Productivity",
+  HR: "HR",
+  Finance: "Finance",
+  "Legal & compliance": "Legal",
+  "Productivity & knowledge": "Productivity",
+  "Agent Building": "Build",
+  Governance: "Govern",
+  Other: undefined,
+} satisfies Record<Category, (typeof GALLERY_CATEGORIES)[number] | undefined>;
+
+export function galleryCategory(category: Category | undefined): string | undefined {
+  return category === undefined ? undefined : CATEGORY_FILTERS[category];
+}
 
 export type Facet = "categories" | "tags" | "authors" | "contains";
 export type SolutionType = "" | "agents" | "workflows";
@@ -64,6 +89,11 @@ export function stateFromUrl(params: URLSearchParams, labels: FacetLabels): Filt
   FACETS.forEach((facet) => {
     values(URL_PARAMS[facet])
       .map((value) => (facet === "authors" ? value.toLowerCase() : value))
+      .map((value) => {
+        if (facet !== "categories" || labels.categories.has(value)) return value;
+        // Keep links using the original submission category names working.
+        return Object.entries(CATEGORY_FILTERS).find(([category]) => category === value)?.[1] ?? value;
+      })
       .filter((value) => labels[facet].has(value))
       .forEach((value) => state[facet].add(value));
   });

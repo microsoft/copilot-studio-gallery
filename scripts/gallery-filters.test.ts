@@ -4,6 +4,7 @@ import { collectCategories } from "../src/lib/catalog";
 import { parseSortMode } from "../src/lib/discovery";
 import {
   cloneState, emptyState, filterParams, isFiltered, matches, sameState, stateFromUrl,
+  GALLERY_CATEGORIES, galleryCategory,
   type FacetLabels, type SolutionRecord,
 } from "../src/lib/galleryFilters";
 
@@ -28,6 +29,33 @@ const community: SolutionRecord = {
   authors: ["community"],
   tags: ["email", "automation", "community-only"],
 };
+
+test("offers ten short gallery categories and combines productivity functions", () => {
+  assert.deepEqual(GALLERY_CATEGORIES, [
+    "Sales", "Service", "Productivity", "Build", "Govern",
+    "HR", "Finance", "Legal", "IT", "Operations",
+  ]);
+  assert.equal(galleryCategory("Project & communications management"), "Productivity");
+  assert.equal(galleryCategory("Productivity & knowledge"), "Productivity");
+  assert.equal(galleryCategory("Customer service"), "Service");
+  assert.equal(galleryCategory("Governance"), "Govern");
+  assert.equal(galleryCategory("Other"), undefined);
+  assert.equal(galleryCategory(undefined), undefined);
+  assert.equal(matches({ ...microsoft, categories: [] }, emptyState()), true);
+});
+
+test("normalizes original category links into the short gallery filters", () => {
+  const shortLabels: FacetLabels = {
+    ...labels,
+    categories: new Map(GALLERY_CATEGORIES.map((category) => [category, category])),
+  };
+  const state = stateFromUrl(new URLSearchParams({
+    category: "Project & communications management,Productivity & knowledge,Agent Building,Governance,Other",
+  }), shortLabels);
+  assert.deepEqual([...state.categories], ["Productivity", "Build", "Govern"]);
+  assert.equal(matches({ ...microsoft, categories: ["Productivity"] }, state), true);
+  assert.ok(sameState(stateFromUrl(filterParams(state, "featured"), shortLabels), state));
+});
 
 test("round-trips search, type, every facet, and sorting through gallery URLs", () => {
   const params = new URLSearchParams({

@@ -1,6 +1,7 @@
 ---
 import SolutionCard from "./SolutionCard.astro";
-import { collectCategories, collectContributors, collectTags, compareSolutions } from "../lib/catalog";
+import { collectContributors, collectTags, compareSolutions } from "../lib/catalog";
+import { GALLERY_CATEGORIES, galleryCategory } from "../lib/galleryFilters";
 import { getPublishedSolutions } from "../lib/published";
 import { launchRank } from "../lib/launchOrder";
 import { COMING_SOON } from "../lib/comingSoon";
@@ -18,7 +19,8 @@ const microsoftOnly = scope === "microsoft";
 const MICROSOFT_ROW_SIZE = 3;
 const solutions = (await getPublishedSolutions()).sort(compareSolutions);
 const tags = collectTags(solutions);
-const categories = collectCategories(solutions);
+const categories = GALLERY_CATEGORIES;
+const primaryCategories = categories.slice(0, 5);
 const contributors = collectContributors(solutions);
 const microsoftSolutions = solutions.filter((solution) => solution.data.featured);
 const listedSolutions = microsoftOnly ? microsoftSolutions : solutions.filter((solution) => !solution.data.featured);
@@ -41,7 +43,7 @@ function filterAttributes(solution: (typeof solutions)[number]) {
     "data-name": data.name.toLowerCase(),
     "data-description": data.description.toLowerCase(),
     "data-tags": data.tags.join(",").toLowerCase(),
-    "data-categories": data.category,
+    "data-categories": galleryCategory(data.category),
     "data-types": solutionTypes(solution).join(","),
     "data-contains": containedComponents(inventories.get(solution.id)!).join(","),
     "data-author": data.authors.map(contributorKey).join(","),
@@ -77,8 +79,7 @@ function filterAttributes(solution: (typeof solutions)[number]) {
           Filters
           <span id="filters-count" hidden class="filter-count"></span>
         </button>
-        <div id="filter-options" class="filter-options" role="group" aria-label="Solution type and applied filters">
-          <div id="applied-filters" hidden class="applied-filters" role="group" aria-label="Applied filters"></div>
+        <div id="filter-options" class="filter-options" role="group" aria-label="Solution type, categories, and applied filters">
           <div class="fixed-options" role="radiogroup" aria-label="Solution type">
             {typeChoices.map((choice, index) => (
               <button type="button" role="radio" data-type-choice={choice.value} aria-checked={index === 0 ? "true" : "false"} tabindex={index === 0 ? "0" : "-1"} class="fixed-choice">
@@ -86,6 +87,14 @@ function filterAttributes(solution: (typeof solutions)[number]) {
               </button>
             ))}
           </div>
+          <div class="category-options" role="group" aria-label="Categories">
+            {primaryCategories.map((category) => (
+              <button type="button" data-category-choice={category} aria-pressed="false" class="fixed-choice">
+                {category}
+              </button>
+            ))}
+          </div>
+          <div id="applied-filters" hidden class="applied-filters" role="group" aria-label="Applied filters"></div>
         </div>
       </div>
     </div>
@@ -132,7 +141,7 @@ function filterAttributes(solution: (typeof solutions)[number]) {
         <fieldset class="filter-section">
           <legend>Categories <span data-selection-count="categories" class="text-sm font-normal text-muted"></span></legend>
           <div class="flex flex-wrap gap-2 p-1">
-            {categories.map(([category]) => (
+            {categories.map((category) => (
               <label class="option-label" data-facet-option="categories" data-value={category}>
                 <input type="checkbox" name="filter-categories" value={category} />
                 <span class="check-option">{category}<span data-facet-count="categories" data-value={category} class="facet-count"></span></span>
@@ -326,6 +335,7 @@ function filterAttributes(solution: (typeof solutions)[number]) {
   const filterOptions = required<HTMLElement>("#filter-options");
   const appliedFilters = required<HTMLElement>("#applied-filters");
   const typeButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-type-choice]"));
+  const categoryButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-category-choice]"));
   const dialog = required<HTMLDialogElement>("#filters-dialog");
   const dialogBody = required<HTMLElement>(".dialog-body", dialog);
   const closeButton = required<HTMLButtonElement>("[data-close-filters]", dialog);
@@ -450,10 +460,11 @@ function filterAttributes(solution: (typeof solutions)[number]) {
     if (shown < matched.length) loadObserver.observe(sentinel);
   }
 
-  function selectionChips(container: HTMLElement, state: FilterState, remove: (facet: Facet, value: string) => void): number {
+  function selectionChips(container: HTMLElement, state: FilterState, remove: (facet: Facet, value: string) => void, include: (facet: Facet, value: string) => boolean = () => true): number {
     container.replaceChildren();
     let total = 0;
     FACETS.forEach((facet) => state[facet].forEach((value) => {
+      if (!include(facet, value)) return;
       const label = labels[facet].get(value) ?? value;
       const chip = document.createElement("button");
       chip.type = "button";
@@ -496,7 +507,10 @@ function filterAttributes(solution: (typeof solutions)[number]) {
       button.setAttribute("aria-checked", String(selected));
       button.tabIndex = selected ? 0 : -1;
     });
-    const total = selectionChips(appliedFilters, applied, (facet, value) => {
+    categoryButtons.forEach((button) => {
+      button.setAttribute("aria-pressed", String(applied.categories.has(button.dataset.categoryChoice ?? "")));
+    });
+    const chipTotal = selectionChips(appliedFilters, applied, (facet, value) => {
       const chips = Array.from(appliedFilters.querySelectorAll<HTMLButtonElement>("button"));
       const index = chips.findIndex((chip) => chip.dataset.filterKey === `${facet}:${value}`);
       applied[facet].delete(value);
@@ -504,8 +518,9 @@ function filterAttributes(solution: (typeof solutions)[number]) {
       const remaining = appliedFilters.querySelectorAll<HTMLButtonElement>("button");
       const next = remaining[Math.min(index, remaining.length - 1)] ?? trigger;
       next.focus({ preventScroll: true });
-    });
-    appliedFilters.hidden = total === 0;
+    }, (facet, value) => facet !== "categories" || !categoryButtons.some((button) => button.dataset.categoryChoice === value));
+    const total = FACETS.reduce((sum, facet) => sum + applied[facet].size, 0);
+    appliedFilters.hidden = chipTotal === 0;
     triggerCount.hidden = total === 0;
     triggerCount.textContent = String(total);
     trigger.setAttribute("aria-label", total ? `Filters, ${total} active ${total === 1 ? "filter" : "filters"}` : "Filters");
@@ -646,6 +661,14 @@ function filterAttributes(solution: (typeof solutions)[number]) {
       next.click();
     });
   });
+  categoryButtons.forEach((button) => button.addEventListener("click", () => {
+    const category = button.dataset.categoryChoice!;
+    commitSearch();
+    if (applied.categories.has(category)) applied.categories.delete(category);
+    else applied.categories.add(category);
+    refresh();
+    scrollIntoFilterView(button);
+  }));
   filterOptions.addEventListener("focusin", (event) => {
     if (event.target instanceof HTMLButtonElement) scrollIntoFilterView(event.target);
   });

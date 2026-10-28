@@ -62,6 +62,14 @@ technologies such as `retail`, `sharepoint`, or `mcp` belong in `tags`.
 | `Governance` | CoE teams and platform owners managing agent adoption and oversight | Agent idea intake, reuse reviews, agent inventories, CoE approvals |
 | `Other` | None of the above fits | Mention the category you'd like in your pull request |
 
+The gallery uses shorter filter labels: Sales, Service, Productivity, Build,
+Govern, HR, Finance, Legal, IT, and Operations. Only the first five are fixed
+shortcuts in the top row; the remaining categories are available in Filters and
+appear as removable chips when selected. Both `Project & communications
+management` and `Productivity & knowledge` appear under Productivity. Keep using
+the exact metadata values above; `Other` and uncategorized solutions remain
+visible under All without a dedicated category filter.
+
 ```json
 "category": "Operations",
 ```
