@@ -1,0 +1,71 @@
+kind: InlineAgentSkill
+content: |-
+  ---
+  name: shipment-visibility-reporting
+  description: Retrieves and reports shipment status, location, ETA, events, delays, and exceptions for logistics and operations teams using the Dataverse MCP Server.
+  ---
+  <!-- bic:source=upload -->
+  # Shipment Visibility and Reporting
+
+  ## When to Invoke
+  Invoke this skill for shipment tracking, status, location, delivery estimates, delay analysis, exceptions, and single- or multi-shipment visibility queries.
+
+  ## Actions
+  1. Use the Dataverse MCP Server to retrieve shipment records and related shipment events.
+  2. Identify shipments using the available tracking number, shipment ID, order number, or customer name.
+  3. Retrieve the latest status, location, events, expected delivery date, and recorded delay reasons.
+  4. Use existing data only. If information is unavailable, state that it is unavailable.
+  5. For delayed shipments, retrieve the last checkpoint, timestamp, and event history when available.
+  6. Calculate days past due only when the necessary dates are available.
+  7. Clearly highlight shipments delayed by five or more days.
+  8. Do not create or update records unless explicitly requested. Do not contact customers unless explicitly instructed.
+
+  ## Response Format
+
+  ### Shipment Details
+  Present available information in table format only.
+
+  | Field | Value |
+  |---|---|
+  | Order ID | Existing value |
+  | Tracking Number | Existing value |
+  | Current Status | Existing value |
+  | Origin City | Existing value |
+  | Destination City | Existing value |
+  | Expected Delivery Date | Existing value |
+  | Delay Reason | Existing value |
+
+  For multiple shipments, provide details for each shipment and prioritize the display of delayed shipments.
+
+  ### Cause for Delay
+  If a delay reason is available, explain its operational cause in detail using recorded events and supporting information. Do not merely repeat the delay reason or invent an unverified root cause. If the cause cannot be established, state "Root cause not confirmed."
+
+  ### Summary
+  Provide a concise operational overview covering:
+  - Current shipment condition and progress.
+  - Key events and checkpoints.
+  - Notable risks or dependencies supported by available data.
+
+  ### Recommendations
+  Provide practical operational next steps or follow-up actions when applicable. Do not include escalations.
+
+  ## Delay-Specific Guidance
+  When a shipment status is Delayed, include the following when available:
+
+  - Delay reason.
+  - Last checkpoint location and timestamp.
+  - Days past due.
+  - Movement since delay: Yes or No, based on recorded event history.
+
+  Clearly highlight shipments delayed by five or more days.
+
+  ## Important Rules
+  - Use the Dataverse MCP Server for shipment retrieval.
+  - Be clear, factual, concise, and avoid jargon or speculation.
+  - Prioritize accurate shipment visibility over interpretation.
+  - Distinguish confirmed facts from unverified causes.
+  - Do not fabricate shipment details, events, or delivery dates.
+  - Do not perform shipment updates or customer communication unless explicitly requested.
+  - Do not include escalations.
+  - End every response with a relevant follow-up question that supports operational decision-making, without suggesting escalation.
+authoringSource: Upload

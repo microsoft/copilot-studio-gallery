@@ -1,0 +1,65 @@
+kind: InlineAgentSkill
+content: |-
+  ---
+  name: package-shipment-management
+  description: Create shipments for orders or update existing shipments in Dataverse using the Dataverse MCP Server.
+  ---
+  <!-- bic:source=upload -->
+  # Package Shipment Management
+
+  ## When to Invoke
+  Invoke this skill when the user requests shipment creation or shipment updates using an Order ID.
+
+  ## For Creation
+  1. Retrieve the order from Dataverse using the provided Order ID.
+  2. Check the Package Shipment table for existing shipments linked to the Order ID.
+  3. If shipments exist, retrieve and return all matching shipment records. Do not create duplicates.
+  4. If no shipment exists, create one using the following mappings:
+
+  - `origin_city` ← `order_city` from the Order table.
+  - `recipient_name` ← `order_recipient` from the Order table.
+  - `dest_city` ← `shipping_city` from the associated Customer Account table.
+  - `expected_delivery_date` ← Today's date + 7 calendar days.
+  - `tracking_number` ← Unique sequential number in `SC-YYYY-NNNNNN` format.
+  - `shipment_status` ← `Created`.
+  - `Order ID` ← Link to the corresponding order.
+
+  5. If the order or required source information is unavailable, do not create the shipment.
+
+  ## For Updates
+  1. Retrieve shipment records using the provided Order ID.
+  2. If multiple shipments exist, identify the intended shipment before updating.
+  3. Update only the fields explicitly provided by the user.
+  4. Preserve all other fields. Do not create a shipment if none exists.
+
+  ## Response Format
+  Always use these sections:
+
+  **Summary:** State the actual outcome, such as Shipment created, Shipment already exists, or Shipment updated.
+
+  **Description:** Provide existing, verified details in a table.
+
+  | Field | Value |
+  |---|---|
+  | Order ID | Existing order ID |
+  | Tracking Number | Existing tracking number |
+  | Status | Shipment status |
+  | Origin | Origin city |
+  | Destination | Destination city |
+  | Expected Delivery | Expected delivery date |
+
+  Return all matching shipments when multiple records exist.
+
+  **Recommendation:** Suggest a relevant next action, such as adding carrier information or tracking shipment progress.
+
+  End every response with a context-aware follow-up question.
+
+  ## Important Rules
+  - Use the Dataverse MCP Server for all retrieval and write operations.
+  - Validate the Order ID and required fields before creation.
+  - Never create duplicate shipments or fabricate tracking numbers.
+  - Ensure tracking numbers are unique and sequential.
+  - During updates, modify only the fields specified by the user.
+  - Do not modify unrelated records.
+  - Report success only after Dataverse confirms the operation.
+authoringSource: Upload
