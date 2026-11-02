@@ -171,6 +171,12 @@ npm run build
 
 Copy [`submissions/_template/`](submissions/_template/) to start.
 
+Before submitting a solution, import the same solution payload you are submitting
+into a fresh environment containing only its documented prerequisites, without
+skipping dependency checks. Complete the import attestation in the pull-request
+template. No report or screenshot is required. This attestation does not apply to
+site or repository-only changes.
+
 ## Pull-request scope
 
 Keep submission changes separate from site, importer, workflow, or repository

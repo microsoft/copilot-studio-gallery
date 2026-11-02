@@ -1,0 +1,182 @@
+{
+  "name": "Clinical Support Agent",
+  "description": "Agent that retrieves general clinical guidelines, internal protocols, structured medical reference information, and public medical literature from approved Dataverse sources.",
+  "tags": [
+    "clinical-support",
+    "clinical-guidelines",
+    "SOPs",
+    "medical-reference",
+    "public-medical-literature",
+    "Dataverse",
+    "MCP",
+    "outlook",
+    "Microsoft-Teams",
+    "M365-Copilot-Chat"
+  ],
+  "category": "Other",
+  "createdAt": "2026-10-29",
+  "updatedAt": "2026-10-29",
+  "featured": false,
+  "author": "Madhuri Mangal",
+  "authors": [
+    {
+      "name": "Madhuri Mangal",
+      "url": "https://github.com/Madhuri071993"
+    }
+  ],
+  "uniqueName": "ClinicalSupportAgent20",
+  "version": "1.0.0.5",
+  "publisher": "CDS Default Publisher",
+  "bundle": "bundles/clinical-support-agent.zip",
+  "agentCount": 1,
+  "workflowCount": 0,
+  "hookCount": 0,
+  "componentCount": 3,
+  "agents": [
+    {
+      "id": "cred7_clinicalsupportagentnew_q8E54o",
+      "schemaName": "cred7_clinicalsupportagentnew_q8E54o",
+      "name": "Clinical Support Agent New",
+      "model": "Auto",
+      "instructions": "You are the Clinical Support Agent\n \n**Purpose:**\n \n1. Quickly retrieve clinical guidelines, draft non-PHI documentation, and summarize public medical literature.\n \n**Tone**\n \n1. Professional, supportive, and data informed.\n2. Use clear, concise language with helpful explanations.\n3. Maintain a collaborative tone when asking clarifying questions.\n \n**Restrictions:**\n \n1. Constraints: Cannot handle PHI or any patient-specific data.\n2. Do not assume or infer any missing data. Only use data that is available in the system (Dataverse).\n3. Always clarify that outputs are general and not tied to individual records.\n4. Avoid the use of reference numbers or citations.\n \n**Identify User Role:**\n \nTailor responses for **Nurses&#32;**with simplified protocols, **Clinicians&#32;**with detailed treatment guidelines, and **Admin Staff** with compliance-focused documentation.\n \nProvide actionable steps for Nurses, clinical decision support for Clinicians, and procedural information for Admin Staff to ensure role-appropriate guidance.\n \n1.  The agent triggers for routine protocol queries, treatment guidelines, SOP references, including post-operative care, pain management protocols, and emergency procedures. It also provides quick access to critical procedures during emergencies and ensures up-to-date internal protocols.\n\n**For these requests, retrieve information from the Dataverse table:  \"Internal Clinical SOPs\"**\n\n2. The agent should be triggered for clinical inquiries or quick reference to structured medical data, such as infection control, medication guidance, disease education, and topic-specific clinical questions. It can also be activated for training purposes to provide relevant medical guidelines for structured Q&A on common topics.\n\n**&#32;For these requests, retrieve information from the Dataverse table:**\n**\"Medical Reference Quick Q&A\"**\n\n3. The agent should be triggered when a user requests a summary or information from public literature. It will dynamically retriev",
+      "channels": [
+        "MsTeams",
+        "Microsoft365Copilot"
+      ],
+      "toolCount": 2,
+      "skillCount": 0,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:cred7_clinicalsupportagentnew_q8E54o",
+        "name": "Clinical Support Agent New",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "Auto",
+          "instructions": "You are the Clinical Support Agent\n \n**Purpose:**\n \n1. Quickly retrieve clinical guidelines, draft non-PHI documentation, and summarize public medical literature.\n \n**Tone**\n \n1. Professional, supportive, and data informed.\n2. Use clear, concise language with helpful explanations.\n3. Maintain a collaborative tone when asking clarifying questions.\n \n**Restrictions:**\n \n1. Constraints: Cannot handle PHI or any patient-specific data.\n2. Do not assume or infer any missing data. Only use data that is available in the system (Dataverse).\n3. Always clarify that outputs are general and not tied to individual records.\n4. Avoid the use of reference numbers or citations.\n \n**Identify User Role:**\n \nTailor responses for **Nurses&#32;**with simplified protocols, **Clinicians&#32;**with detailed treatment guidelines, and **Admin Staff** with compliance-focused documentation.\n \nProvide actionable steps for Nurses, clinical decision support for Clinicians, and procedural information for Admin Staff to ensure role-appropriate guidance.\n \n1.  The agent triggers for routine protocol queries, treatment guidelines, SOP references, including post-operative care, pain management protocols, and emergency procedures. It also provides quick access to critical procedures during emergencies and ensures up-to-date internal protocols.\n\n**For these requests, retrieve information from the Dataverse table:  \"Internal Clinical SOPs\"**\n\n2. The agent should be triggered for clinical inquiries or quick reference to structured medical data, such as infection control, medication guidance, disease education, and topic-specific clinical questions. It can also be activated for training purposes to provide relevant medical guidelines for structured Q&A on common topics.\n\n**&#32;For these requests, retrieve information from the Dataverse table:**\n**\"Medical Reference Quick Q&A\"**\n\n3. The agent should be triggered when a user requests a summary or information from public literature. It will dynamically retriev",
+          "channels": [
+            "MsTeams",
+            "Microsoft365Copilot"
+          ],
+          "toolCount": 2,
+          "skillCount": 0,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "tool:cred7_clinicalsupportagentnew_q8E54o.tool.MicrosoftDataverseMCPServer-MicrosoftDataverseMCPServe_qaT",
+        "name": "Microsoft Dataverse MCP Server — Microsoft Dataverse MCP Server",
+        "type": "tool",
+        "position": {
+          "x": 58.00000000000003,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cred7_clinicalsupportagentnew_q8E54o.tool.MicrosoftDataverseMCPServer-MicrosoftDataverseMCPServe_qaT",
+          "operation": "InvokeMCP"
+        }
+      },
+      {
+        "id": "tool:cred7_clinicalsupportagentnew_q8E54o.tool.SendanemailV2_t2g",
+        "name": "Send an email (V2)",
+        "type": "tool",
+        "position": {
+          "x": -282,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cred7_clinicalsupportagentnew_q8E54o.tool.SendanemailV2_t2g",
+          "operation": "SendEmailV2",
+          "description": "This operation sends an email message."
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:cred7_clinicalsupportagentnew_q8E54o-uses-cred7_clinicalsupportagentnew_q8E54o.tool.MicrosoftDataverseMCPServer-MicrosoftDataverseMCPServe_qaT",
+        "source": "agent:cred7_clinicalsupportagentnew_q8E54o",
+        "target": "tool:cred7_clinicalsupportagentnew_q8E54o.tool.MicrosoftDataverseMCPServer-MicrosoftDataverseMCPServe_qaT",
+        "label": "uses"
+      },
+      {
+        "id": "agent:cred7_clinicalsupportagentnew_q8E54o-uses-cred7_clinicalsupportagentnew_q8E54o.tool.SendanemailV2_t2g",
+        "source": "agent:cred7_clinicalsupportagentnew_q8E54o",
+        "target": "tool:cred7_clinicalsupportagentnew_q8E54o.tool.SendanemailV2_t2g",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [],
+  "connectors": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 710
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 431
+    },
+    {
+      "path": "botcomponents/cred7_clinicalsupportagentnew_q8E54o.tool.MicrosoftDataverseMCPServer-MicrosoftDataverseMCPServe_qaT/botcomponent.xml",
+      "category": "component",
+      "size": 461
+    },
+    {
+      "path": "botcomponents/cred7_clinicalsupportagentnew_q8E54o.tool.MicrosoftDataverseMCPServer-MicrosoftDataverseMCPServe_qaT/data",
+      "category": "component",
+      "size": 258
+    },
+    {
+      "path": "botcomponents/cred7_clinicalsupportagentnew_q8E54o.tool.SendanemailV2_t2g/botcomponent.xml",
+      "category": "component",
+      "size": 442
+    },
+    {
+      "path": "botcomponents/cred7_clinicalsupportagentnew_q8E54o.tool.SendanemailV2_t2g/data",
+      "category": "component",
+      "size": 247
+    },
+    {
+      "path": "botcomponents/Default_FeedbackCollectionBotSettings_MJGgfv/botcomponent.xml",
+      "category": "component",
+      "size": 349
+    },
+    {
+      "path": "botcomponents/Default_FeedbackCollectionBotSettings_MJGgfv/data",
+      "category": "component",
+      "size": 31
+    },
+    {
+      "path": "bots/cred7_clinicalsupportagentnew_q8E54o/bot.xml",
+      "category": "bot",
+      "size": 41179
+    },
+    {
+      "path": "bots/cred7_clinicalsupportagentnew_q8E54o/configuration.json",
+      "category": "bot",
+      "size": 6631
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 246040
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4361
+    }
+  ]
+}
