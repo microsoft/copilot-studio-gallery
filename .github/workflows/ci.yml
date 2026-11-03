@@ -53,6 +53,22 @@ jobs:
       - name: Build site
         run: npm run build
 
+  app-setup-windows:
+    name: Verify PowerShell app installer on Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify setup command sequencing and failure handling
+        run: node --import tsx --test scripts/managed-app-install.test.ts scripts/managed-app-data.test.ts
+
   guard-scope:
     name: Guard pull request scope
     runs-on: ubuntu-latest

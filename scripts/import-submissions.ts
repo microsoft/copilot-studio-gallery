@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { readFile, readdir, lstat, mkdir, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,10 +16,15 @@ import {
   type GraphEdge,
   type GraphNode,
   type SolutionRecord,
+  type GalleryRecord,
   type SubmissionMetadata,
   type WorkflowPreview,
 } from "../src/lib/schema";
 import { resolvePreviewWorkflow } from "../src/lib/workflowMetadata";
+import { collectAppSource, inspectAppPackage } from "./managed-app-source";
+import { publicAssetPath } from "../src/lib/site";
+import { appInstallInputs } from "../src/lib/appInstall";
+import { buildSupportingFiles, rewriteSupportingLinks } from "./supporting-files";
 
 const MAX_FILE_BYTES = 2 * 1024 * 1024;
 const MAX_TOTAL_BYTES = 25 * 1024 * 1024;
@@ -47,9 +53,10 @@ interface ComponentItem {
 
 interface BuiltSubmission {
   slug: string;
-  record: SolutionRecord;
+  record: GalleryRecord;
   guide: string;
   bundle: Buffer;
+  assets?: Array<{ name: string; content: Buffer | string }>;
 }
 
 export interface ImportReport {
@@ -970,6 +977,10 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
     const description = error instanceof Error ? error.message : String(error);
     throw new Error(`invalid metadata.json: ${description}`);
   }
+  const supporting = await buildSupportingFiles(submissionPath, slug, metadata.supportingFiles);
+  if (metadata.submissionType === "managed-app") {
+    return buildManagedApp(submissionPath, slug, metadata, supporting);
+  }
   let files: SolutionFile[];
   try {
     const stat = await lstat(solutionRoot);
@@ -992,6 +1003,7 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
   const componentCount = rootComponentCount(solutionXml) ?? manifest.filter((file) => ["bot", "component", "workflow"].includes(file.category)).length;
   const record: SolutionRecord = {
     ...metadata,
+    submissionType: "solution",
     ...(previewWorkflow ? { previewWorkflow } : {}),
     uniqueName: derived.uniqueName,
     version: derived.version,
@@ -1006,6 +1018,7 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
     workflows,
     connectors,
     files: manifest,
+    supportingFiles: supporting.files,
   };
   const readmePath = join(submissionPath, "README.md");
   let body = `# ${metadata.name}\n\n${metadata.description}\n`;
@@ -1014,9 +1027,75 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
   } catch {
     // README is optional.
   }
-  const guideBody = body.trim().replace(/^#\s+.+?(?:\r?\n){1,2}/, "");
+  const guideBody = rewriteSupportingLinks(body.trim().replace(/^#\s+.+?(?:\r?\n){1,2}/, ""), supporting.links);
   const guide = matter.stringify(`${guideBody}\n`, { title: metadata.name, slug, solution: derived.uniqueName });
-  return { slug, record, guide, bundle: deterministicZip(files, solutionRoot) };
+  return { slug, record, guide, bundle: deterministicZip(files, solutionRoot), assets: supporting.assets };
+}
+
+async function buildManagedApp(submissionPath: string, slug: string, metadata: SubmissionMetadata, supporting: Awaited<ReturnType<typeof buildSupportingFiles>>): Promise<BuiltSubmission> {
+  if (!metadata.app) throw new Error("managed-app requires app setup metadata");
+  try {
+    await lstat(join(submissionPath, "solution"));
+    throw new Error("managed-app must not also contain a solution/ payload");
+  } catch (error) {
+    if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) throw error;
+  }
+  const appRoot = join(submissionPath, "app");
+  const { files } = await collectAppSource(appRoot);
+  const { version } = await inspectAppPackage(files);
+  const bundle = deterministicZip(files, appRoot);
+  const hash = createHash("sha256").update(bundle).digest("hex");
+  const assets: NonNullable<BuiltSubmission["assets"]> = [...supporting.assets];
+  const template = `github:microsoft/copilot-studio-gallery/submissions/${slug}/app#main`;
+  appInstallInputs(template, metadata.app);
+  const readme = matter(await readFile(join(submissionPath, "README.md"), "utf8")).content.trim();
+  if (!readme) throw new Error("managed-app requires a nonempty README.md describing the app and its data requirements");
+  if (readme.includes("**SETUP INCOMPLETE:**")) throw new Error("complete the preparation helper's unresolved connection setup before submitting");
+  const imagePattern = /(!\[[^\]]*\]\()(?:\.\/)?(screenshots\/[a-z0-9][a-z0-9-]*\.png)(\s*(?:"[^"]*")?\))/g;
+  const imagePaths = new Set([
+    ...(metadata.screenshot ? [metadata.screenshot.path] : []),
+    ...Array.from(readme.matchAll(imagePattern), (match) => match[2]!),
+  ]);
+  if (imagePaths.size > 5) throw new Error("managed-app supports at most five PNG screenshots");
+  const imageLinks = new Map<string, string>();
+  let screenshot: { path: string; alt: string } | undefined;
+  for (const imagePath of imagePaths) {
+    const directory = await lstat(join(submissionPath, "screenshots"));
+    const file = await lstat(join(submissionPath, imagePath));
+    if (!directory.isDirectory() || !file.isFile() || file.size > MAX_FILE_BYTES) {
+      throw new Error(`screenshot must be a PNG file, not a symlink, no larger than 2 MiB: ${imagePath}`);
+    }
+    const image = await readFile(join(submissionPath, imagePath));
+    if (image.length < 45
+      || image.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a"
+      || image.readUInt32BE(8) !== 13
+      || image.toString("ascii", 12, 16) !== "IHDR"
+      || image.subarray(-12).toString("hex") !== "0000000049454e44ae426082"
+      || image.readUInt32BE(16) > 4096 || image.readUInt32BE(20) > 4096
+      || image.readUInt32BE(16) === 0 || image.readUInt32BE(20) === 0) {
+      throw new Error("screenshot must be a PNG no larger than 2 MiB and 4096 x 4096");
+    }
+    const name = `${slug}-${createHash("sha256").update(image).digest("hex")}.png`;
+    const path = `bundles/${name}`;
+    imageLinks.set(imagePath, publicAssetPath(path));
+    if (metadata.screenshot?.path === imagePath) {
+      screenshot = { path, alt: metadata.screenshot.alt };
+    }
+    assets.push({ name, content: image });
+  }
+  const { app: _app, screenshot: _screenshot, previewWorkflow: _preview, ...common } = metadata;
+  const record: GalleryRecord = {
+    ...common, submissionType: "managed-app", version,
+    app: metadata.app, bundle: `bundles/${slug}-${hash}.zip`,
+    template,
+    ...(screenshot ? { screenshot } : {}),
+    files: files.map((file) => ({ path: file.path, size: file.size, category: "source" })),
+    supportingFiles: supporting.files,
+  };
+  const guideBody = readme.replace(/^#\s+.+?(?:\r?\n){1,2}/, "")
+    .replace(imagePattern, (_match, prefix: string, path: string, suffix: string) => `${prefix}${imageLinks.get(path)!}${suffix}`);
+  const guide = matter.stringify(`${rewriteSupportingLinks(guideBody, supporting.links)}\n`, { title: metadata.name, slug });
+  return { slug, record, guide, bundle, assets };
 }
 
 async function existingSlugs(directory: string, extension: string): Promise<string[]> {
@@ -1071,13 +1150,18 @@ export async function importSubmissions(options: { root?: string; check?: boolea
   for (const submission of built) {
     await writeIfChanged(join(solutionDir, `${submission.slug}.json`), `${JSON.stringify(submission.record, null, 2)}\n`);
     await writeIfChanged(join(guideDir, `${submission.slug}.md`), submission.guide);
-    await writeIfChanged(join(bundleDir, `${submission.slug}.zip`), submission.bundle);
+    await writeIfChanged(join(root, "public", submission.record.bundle), submission.bundle);
+    for (const asset of submission.assets ?? []) await writeIfChanged(join(bundleDir, asset.name), asset.content);
   }
   const expectedSlugs = new Set(built.map((item) => item.slug));
-  for (const [directory, extension] of [[solutionDir, ".json"], [guideDir, ".md"], [bundleDir, ".zip"]] as const) {
+  for (const [directory, extension] of [[solutionDir, ".json"], [guideDir, ".md"]] as const) {
     for (const slug of await existingSlugs(directory, extension)) {
       if (expectedSlugs.has(slug) || slug === ".gitkeep") continue;
       await rm(join(directory, `${slug}${extension}`));
+    }
+    const expectedBundles = new Set(built.flatMap((item) => [basename(item.record.bundle), ...(item.assets ?? []).map((asset) => asset.name)]));
+    for (const entry of await readdir(bundleDir, { withFileTypes: true })) {
+      if (entry.isFile() && /\.(?:zip|json|sh|ps1|mjs|png|csv|txt)$/.test(entry.name) && !expectedBundles.has(entry.name)) await rm(join(bundleDir, entry.name));
     }
   }
   if (Object.keys(errors).length > 0) throw new SubmissionImportError(errors);

@@ -1,15 +1,15 @@
 # CAT Agents & Workflows Gallery
 
-A community gallery for complete **Copilot Studio agent and workflow
-solutions**. Each entry is generated from an exploded Power Platform solution,
-so visitors can inspect its agent architecture and saved workflow canvases before
-downloading and importing it.
+A community gallery for **Copilot Studio apps, agents, and workflows**. Agent and
+workflow entries come from exploded Power Platform solutions; managed app entries
+come from portable source for a new platform-managed deployment. Visitors can
+explore architecture, source inventory, and setup before installing.
 
 The site uses Astro, Tailwind CSS, React Flow, and static GitHub Pages deployment.
 
 ## Features
 
-- Searchable gallery of complete solutions, filterable by agents or workflows,
+- Searchable gallery of complete submissions, filterable by apps, agents, or workflows,
   category, tag, contributor, and component types. The **Contains** filter requires
   every selected type: for example, MCP servers and Skills must both be present
   in the solution.
@@ -51,6 +51,14 @@ The site uses Astro, Tailwind CSS, React Flow, and static GitHub Pages deploymen
 - Contributor directory, individual contributor profiles, and JSON catalog endpoint.
 - Pull-request validation for metadata, solution structure, graph availability,
   unsafe filesystem entries, and generated output.
+- Managed app detail pages with connector/schema prerequisites, app source ZIPs,
+  and visible macOS Bash / Windows PowerShell setup commands. Two shared installers
+  offer missing prerequisites with consent, make the first-party CLI available
+  through npm, then sequence native creation/connection prompts,
+  dependency installation, pack, Git save/push, hosted build, and preview.
+  The CLI owns authentication and platform behavior; setup never publishes live.
+- A [Team Ideas Board](submissions/team-ideas-board/) SharePoint starter for learning
+  source customization and contribution. See [the full managed app guide](docs/managed-apps.md).
 
 ## Local development
 
@@ -122,6 +130,11 @@ or merger is guessed from repository history, and no new token secret is needed:
 the workflow uses `GITHUB_TOKEN` with `contents: read` and `discussions: write`.
 
 ## Submit a solution
+
+For an app created in Cowork or Copilot Studio, use the separate
+[managed app source contribution path](docs/managed-apps.md#contribute-an-app)
+and `npm run prepare:app`. Do not export it as a fake Power Platform solution.
+The existing solution path below is unchanged.
 
 Add one folder under [`submissions/`](submissions/) and open a pull request:
 

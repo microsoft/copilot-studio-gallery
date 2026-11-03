@@ -1,4 +1,27 @@
-# Contributing a solution
+# Contributing a sample
+
+Choose the payload that matches your sample:
+
+- **Managed app:** clone the platform-managed repository, prepare portable app
+  source with `npm run prepare:app`, and declare connector setup in metadata. Follow
+  [the complete managed app guide](docs/managed-apps.md) or start from
+  [Team Ideas Board](submissions/team-ideas-board/). A required README and
+  `submissionType: "managed-app"` distinguish it from a solution. Validate it in a
+  fresh managed app and complete the app-specific PR attestation.
+  Screenshots in the app README are strongly recommended; declare the primary
+  screenshot in metadata so it can also appear on the gallery detail page.
+  Keep the README focused on the app and its required data structures; installation
+  and CLI steps belong in the shared guide.
+
+Both submission types can include optional [supporting data files](submissions/README.md#supporting-files)
+in CSV, JSON, or plain-text format, published separately from their payload ZIP.
+- **Agents/workflows in a Power Platform solution:** follow the unchanged
+  exploded solution instructions below. Omitted `submissionType` means solution.
+
+Both use the same author/category/tag discovery and review process. Gallery
+ingestion never installs or executes submitted application dependencies.
+
+## Contributing a solution
 
 Contribute one complete Copilot Studio / Power Platform solution by adding an
 exploded solution folder to `submissions/` and opening a pull request.

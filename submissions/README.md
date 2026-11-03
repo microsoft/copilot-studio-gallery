@@ -1,6 +1,13 @@
-# Submit an exploded solution
+# Submit a sample
 
-Every gallery entry is one `submissions/<slug>/` folder containing:
+Managed apps use `submissionType: "managed-app"` and portable `app/` source,
+not an exploded `solution/`. See [the managed app contract and lifecycle](../docs/managed-apps.md)
+and [Team Ideas Board](team-ideas-board/). The solution instructions below still
+apply unchanged to existing and new solution submissions.
+
+## Submit an exploded solution
+
+Every solution entry is one `submissions/<slug>/` folder containing:
 
 ```text
 metadata.json
@@ -15,6 +22,38 @@ other normal solution assets.
 The importer derives the published agent and workflow previews and rebuilds a
 deterministic `<slug>.zip` whose archive root is the contents of `solution/`.
 Gallery sidecars are excluded.
+
+## Supporting files
+
+Both apps and solutions can offer optional data files separately from their
+install/source ZIP. Put them in `submissions/<slug>/supporting/` and declare only
+the files you want published in `metadata.json`:
+
+```json
+"supportingFiles": [
+  {"path": "supporting/sample-data.csv", "label": "Synthetic sample data"}
+]
+```
+
+Only UTF-8 **CSV, JSON, and plain text (.txt)** are accepted. Use lowercase
+letters, digits, and hyphens in filenames. At most five files, 512 KiB each,
+2 MiB total. Files must be nonempty; JSON must parse, and CSV must have unique,
+nonempty headers and a consistent column count. Use commas, not `sep=` delimiter
+directives. Header-only CSVs are allowed as empty data templates. Spreadsheet formulas are not
+allowed: cells must not begin with `=`, `+`, `-`, or `@`, including after
+whitespace. Scripts, HTML, SVG, archives, binaries, and symbolic links are not
+accepted as supporting files. These restrictions are not a security audit;
+review the data before importing it into another system.
+
+Use synthetic or properly redacted data, never private records or credentials.
+Files are never executed, installed, or imported automatically. Only declared
+files are published, as separate content-addressed downloads.
+
+Link a declared file in your README using an inline relative Markdown link:
+`[Download sample data (CSV)](supporting/sample-data.csv)`. The gallery rewrites
+that link to the published asset; GitHub keeps the original relative link.
+Explain any list/table schema separately: CSV imports do not guarantee the
+internal column names, data types, defaults, or required fields an app needs.
 
 ## Choose a hero workflow
 

@@ -23,7 +23,7 @@ const badges = earnedContributorBadges(contributor.solutions, new Set(hookWinner
 
 <Layout
   title={contributor.name}
-  description={`Copilot Studio agents and workflows shared by ${contributor.name}.`}
+  description={`Copilot Studio apps, agents, and workflows shared by ${contributor.name}.`}
 >
   <main class="mx-auto w-full max-w-gallery px-4 py-10 sm:px-6">
     <a href={withBase("/contributors")} class="inline-flex items-center gap-1.5 text-sm text-muted transition hover:text-accent">
@@ -56,10 +56,14 @@ const badges = earnedContributorBadges(contributor.solutions, new Set(hookWinner
           Filter in gallery
         </a>
       </div>
-      <dl class="grid gap-px border-t border-border bg-border sm:grid-cols-4">
+      <dl class="grid gap-px border-t border-border bg-border sm:grid-cols-5">
         <div class="bg-surface px-5 py-4">
-          <dt class="text-xs font-medium text-muted">Solutions</dt>
+          <dt class="text-xs font-medium text-muted">Submissions</dt>
           <dd class="mt-1 text-xl font-semibold text-ink">{contributor.count}</dd>
+        </div>
+        <div class="bg-surface px-5 py-4">
+          <dt class="text-xs font-medium text-muted">Apps</dt>
+          <dd class="mt-1 text-xl font-semibold text-ink">{contributor.apps}</dd>
         </div>
         <div class="bg-surface px-5 py-4">
           <dt class="text-xs font-medium text-muted">Agents</dt>
@@ -100,10 +104,10 @@ const badges = earnedContributorBadges(contributor.solutions, new Set(hookWinner
         <div>
           <p class="text-xs font-semibold text-accent">Shared with the community</p>
           <h2 id="contributor-solutions" class="mt-1 text-2xl font-semibold tracking-tight text-ink">
-            {contributor.count === 1 ? "Solution" : "Solutions"}
+            {contributor.count === 1 ? "Submission" : "Submissions"}
           </h2>
         </div>
-        <p class="text-sm text-muted">{contributor.count} published solution{contributor.count === 1 ? "" : "s"}</p>
+        <p class="text-sm text-muted">{contributor.count} published submission{contributor.count === 1 ? "" : "s"}</p>
       </div>
       <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {contributor.solutions.map((solution) => <SolutionCard solution={solution} />)}
