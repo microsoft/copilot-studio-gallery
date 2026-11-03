@@ -80,7 +80,7 @@ if (stage === "git diff --cached") process.exit(Number(process.env.TEST_DIFF ?? 
     const command = appInstallCommand({ installScript });
     const options = { cwd: root, env: { ...env, ...extra }, input: "Native list selection\n", encoding: "utf8" as const };
     return process.platform === "win32"
-      ? spawnSync("powershell.exe", ["-NoLogo", "-NoProfile", "-Command", command], options)
+      ? spawnSync("powershell.exe", ["-NoLogo", "-NoProfile", "-Command", `${command}; exit $LASTEXITCODE`], options)
       : spawnSync(command, { ...options, shell: true });
   };
   const calls = async (): Promise<{ tool: string; args: string[]; cwd: string; stdin?: string }[]> =>
