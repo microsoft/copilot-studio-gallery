@@ -195,7 +195,10 @@ the GitHub template path is derived from the slug.
 Before any sign-in or cloud creation, installers check the
 [Microsoft prerequisites](https://learn.microsoft.com/en-us/microsoft-365/managed-apps/developer/#prerequisites):
 Node.js >=24.11, npm, Git >=2.27, and Git Credential Manager.
-Compatible existing tools are reused. Missing tools are installed only after
+Compatible existing tools are reused. On macOS, setup also discovers an installed
+Homebrew `node@24` when an older Node shadows it in a new terminal; it adds the
+compatible version to this setup process's PATH without reinstalling it.
+Missing tools are installed only after
 confirmation, using Homebrew on macOS and WinGet on Windows. The macOS installer
 can run Homebrew's official installer, with separate confirmation, if Homebrew
 is missing. Apple Git is replaced **for this setup process** by Homebrew Git

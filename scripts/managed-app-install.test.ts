@@ -134,6 +134,23 @@ const workflow = (calls: Call[]) => {
   return start < 0 ? [] : calls.slice(start);
 };
 
+test("macos: a new terminal reuses installed Homebrew Node instead of offering installation again", { skip: process.platform === "win32" }, async () => {
+  const { root, run, calls } = await fixture("macos");
+  try {
+    const nodePrefix = join(root, "node");
+    await mkdir(join(nodePrefix, "bin"), { recursive: true });
+    for (const tool of ["node", "npm", "npx"]) {
+      const wrapper = await readFile(join(root, "bin", tool), "utf8");
+      await writeFile(join(nodePrefix, "bin", tool), tool === "node"
+        ? wrapper.replace("exec ", "TEST_NODE_VERSION=v24.22.1 exec ") : wrapper, { mode: 0o755 });
+    }
+    const result = run({ TEST_NODE_VERSION: "v22.23.4", TEST_NODE_PREFIX: nodePrefix, TEST_APPROVAL: "n" });
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.doesNotMatch(result.stdout, /Install Node/);
+    assert.ok(!(await calls()).some(call => ["brew", "winget"].includes(call.tool) && call.args[0] === "install"));
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
+
 test("macos: installing Node preserves an existing compatible Git and its credential manager", { skip: process.platform === "win32" }, async () => {
   const { root, run, calls } = await fixture("macos");
   try {
@@ -246,7 +263,7 @@ for (const platform of ["macos", "windows"] as const) {
         if ("TEST_APPROVAL" in extra) {
           assert.deepEqual(workflow(actual), []);
           assert.equal(configured, false);
-          assert.ok(!actual.some(call => ["brew", "winget"].includes(call.tool)));
+          assert.ok(!actual.some(call => call.tool === "winget" || (call.tool === "brew" && call.args[0] !== "--prefix")));
         } else assert.equal(configured, true);
       } finally { await rm(root, { recursive: true, force: true }); }
     }
