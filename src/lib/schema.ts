@@ -235,7 +235,6 @@ export const managedAppSchema = solutionBaseSchema.pick({
   submissionType: z.literal("managed-app"),
   app: appSetupSchema,
   template: z.string().regex(/^github:microsoft\/copilot-studio-gallery\/submissions\/[a-z0-9]+(?:-[a-z0-9]+)*\/app#main$/),
-  installScript: z.string().regex(/^bundles\/[a-z0-9]+(?:-[a-z0-9]+)*-[a-f0-9]{64}\.mjs$/),
   screenshot: z.object({ path: z.string(), alt: z.string() }).optional(),
 });
 

@@ -68,8 +68,7 @@ test("imports an app without fake solution graphs and builds deterministic conte
     assert.ok(!(await readdir(app)).includes("DO_NOT_EXECUTE"));
     assert.ok(record.bundle.endsWith(`-${createHash("sha256").update(zip).digest("hex")}.zip`));
     assert.equal(record.template, "github:microsoft/copilot-studio-gallery/submissions/ideas/app#main");
-    assert.match(record.installScript, /^bundles\/ideas-[a-f0-9]{64}\.mjs$/);
-    for (const field of ["installer", "windowsInstallScript", "installManifest"]) {
+    for (const field of ["installer", "installScript", "windowsInstallScript", "installManifest"]) {
       assert.equal(field in record, false);
     }
     for (const file of ["ideas.sh", "ideas.ps1", "ideas-obsolete.mjs", "ideas-obsolete-manifest.json"]) {
@@ -78,7 +77,7 @@ test("imports an app without fake solution graphs and builds deterministic conte
     await importSubmissions({ root });
     assert.deepEqual(await readFile(join(root, "public", record.bundle)), zip);
     assert.deepEqual((await readdir(join(root, "public/bundles"))).sort(),
-      [record.bundle.split("/").at(-1), record.installScript.split("/").at(-1)].sort());
+      [record.bundle.split("/").at(-1)]);
     await writeFile(join(app, "new.txt"), "new source");
     const changed = await imported(root);
     assert.notEqual(changed.bundle, record.bundle);

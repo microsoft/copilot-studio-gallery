@@ -23,7 +23,7 @@ import {
 import { resolvePreviewWorkflow } from "../src/lib/workflowMetadata";
 import { collectAppSource, inspectAppPackage } from "./managed-app-source";
 import { publicAssetPath } from "../src/lib/site";
-import { appInstallScript } from "../src/lib/appInstall";
+import { appInstallInputs } from "../src/lib/appInstall";
 import { buildSupportingFiles, rewriteSupportingLinks } from "./supporting-files";
 
 const MAX_FILE_BYTES = 2 * 1024 * 1024;
@@ -1047,9 +1047,7 @@ async function buildManagedApp(submissionPath: string, slug: string, metadata: S
   const hash = createHash("sha256").update(bundle).digest("hex");
   const assets: NonNullable<BuiltSubmission["assets"]> = [...supporting.assets];
   const template = `github:microsoft/copilot-studio-gallery/submissions/${slug}/app#main`;
-  const installer = appInstallScript(template, metadata.app);
-  const installName = `${slug}-${createHash("sha256").update(installer).digest("hex")}.mjs`;
-  assets.push({ name: installName, content: Buffer.from(installer) });
+  appInstallInputs(template, metadata.app);
   const readme = matter(await readFile(join(submissionPath, "README.md"), "utf8")).content.trim();
   if (!readme) throw new Error("managed-app requires a nonempty README.md describing the app and its data requirements");
   if (readme.includes("**SETUP INCOMPLETE:**")) throw new Error("complete the preparation helper's unresolved connection setup before submitting");
@@ -1089,7 +1087,7 @@ async function buildManagedApp(submissionPath: string, slug: string, metadata: S
   const record: GalleryRecord = {
     ...common, submissionType: "managed-app", version,
     app: metadata.app, bundle: `bundles/${slug}-${hash}.zip`,
-    template, installScript: `bundles/${installName}`,
+    template,
     ...(screenshot ? { screenshot } : {}),
     files: files.map((file) => ({ path: file.path, size: file.size, category: "source" })),
     supportingFiles: supporting.files,

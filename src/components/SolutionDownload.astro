@@ -1,7 +1,7 @@
 ---
 import { isManagedApp, type GalleryRecord } from "../lib/schema";
 import { withBase } from "../lib/url";
-import { appInstallCommand } from "../lib/appInstall";
+import { APP_INSTALLERS, appInstallCommand } from "../lib/appInstall";
 
 interface Props {
   solution: GalleryRecord;
@@ -11,11 +11,12 @@ interface Props {
 
 const { solution, idPrefix, compact = false } = Astro.props;
 const app = isManagedApp(solution) ? solution : undefined;
+const installPlatforms = ["macos", "windows"] as const;
 const acknowledgementId = `${idPrefix}-trust-ack`;
 const disclaimerId = `${idPrefix}-disclaimer`;
 const acknowledgementText = solution.featured
   ? "I understand this is an open-source sample from Microsoft."
-  : app ? "I'll review this community app and only install it if I trust the source."
+  : app ? "I'll review this community-provided app and only install it if I trust the source."
     : "I'll review this community-provided example and only import it if I trust the source.";
 ---
 
@@ -26,21 +27,22 @@ const acknowledgementText = solution.featured
       <span>{acknowledgementText}</span>
     </label>
     <p id={disclaimerId} class="mt-2 pl-[1.375rem] text-xs leading-relaxed text-muted">
-      {app ? "Provided as-is, without Microsoft Support. Installation runs code using your permissions and may incur charges." : <>
-        This {solution.featured ? "sample" : "community example"} is provided as-is and is not covered by Microsoft Support.
+      <>
+        This {solution.featured ? "sample" : app ? "community app" : "community example"} is provided as-is and is not covered by Microsoft Support.
         The underlying Copilot Studio and Power Platform products retain their standard support.{" "}
-        Importing can create or modify resources and use your connections and permissions.
-      </>}{" "}
+        {app ? "Installation runs code, can create or modify resources, uses your connections and permissions, and may incur charges."
+          : "Importing can create or modify resources and use your connections and permissions."}
+      </>{" "}
       <a href="https://github.com/microsoft/copilot-studio-gallery/blob/main/SUPPORT.md" target="_blank" rel="noopener" class="underline underline-offset-2 hover:text-ink">Support details</a>
     </p>
   </div>
   {app && (
     <div class="grid min-w-0 gap-3">
       <div data-install-commands class="min-w-0">
-        <h2 class="mb-2 text-sm font-semibold">Install app</h2>
-        <div data-install-command>
+        {installPlatforms.map((platform) => (
+        <div data-install-command class="mt-3">
           <div class="flex items-center justify-between gap-2">
-            <label for={`${idPrefix}-cli`} class="text-xs font-semibold">Setup command</label>
+            <label for={`${idPrefix}-${platform}`} class="text-xs font-semibold">{platform === "macos" ? "macOS · Bash" : "Windows · PowerShell"}</label>
             <button type="button" data-copy-install data-copy-label="Copy setup command" disabled aria-label="Copy setup command" title="Copy setup command" class="inline-flex min-h-8 shrink-0 items-center justify-center gap-1.5 rounded px-2 text-xs font-medium text-muted hover:bg-surface hover:text-ink disabled:cursor-not-allowed disabled:opacity-50">
               <svg data-copy-icon width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path></svg>
               <svg data-copy-check width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
@@ -48,13 +50,14 @@ const acknowledgementText = solution.featured
               <span data-copy-confirmation>Copied</span>
             </button>
           </div>
-          <textarea id={`${idPrefix}-cli`} data-install-value={appInstallCommand(app)} readonly disabled rows="4" placeholder="Check the box above to enable copying." class="mt-1 w-full resize-y rounded border border-border bg-surface p-2 font-mono text-xs disabled:cursor-not-allowed disabled:opacity-50"></textarea>
+          <textarea id={`${idPrefix}-${platform}`} data-install-value={appInstallCommand(app, platform)} readonly disabled rows="4" placeholder="Check the box above to enable copying." class="mt-1 w-full resize-y rounded border border-border bg-surface p-2 font-mono text-xs disabled:cursor-not-allowed disabled:opacity-50"></textarea>
           <p class="mt-2 text-xs text-muted">Paste into your terminal to start setup.</p>
+          <a href={`https://github.com/microsoft/copilot-studio-gallery/blob/main/public/${APP_INSTALLERS[platform]}`} target="_blank" rel="noopener" class="mt-2 inline-block text-xs text-accent underline underline-offset-2">Review installer</a>
           <p data-copy-status role="status" class="sr-only"></p>
         </div>
+        ))}
       </div>
-      <p class="text-xs leading-relaxed text-muted">Creates your app and opens a preview. Nothing is published or shared.</p>
-      <a href={withBase(`/${app.installScript}`)} target="_blank" rel="noopener" class="text-xs text-accent underline underline-offset-2">Review setup commands</a>
+      <p class="text-xs leading-relaxed text-muted">Installs missing prerequisites with your approval, then creates your app and opens a preview. Nothing is published or shared.</p>
       <a href="https://github.com/microsoft/copilot-studio-gallery/blob/main/docs/managed-apps.md#install-an-app" class="text-sm font-semibold text-accent">Setup guide &amp; requirements</a>
     </div>
   )}

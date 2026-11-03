@@ -52,8 +52,9 @@ The site uses Astro, Tailwind CSS, React Flow, and static GitHub Pages deploymen
 - Pull-request validation for metadata, solution structure, graph availability,
   unsafe filesystem entries, and generated output.
 - Managed app detail pages with connector/schema prerequisites, app source ZIPs,
-  and one cross-platform setup command. A small runner uses npm to make the
-  first-party CLI available, then sequences native creation/connection prompts,
+  and visible macOS Bash / Windows PowerShell setup commands. Two shared installers
+  offer missing prerequisites with consent, make the first-party CLI available
+  through npm, then sequence native creation/connection prompts,
   dependency installation, pack, Git save/push, hosted build, and preview.
   The CLI owns authentication and platform behavior; setup never publishes live.
 - A [Team Ideas Board](submissions/team-ideas-board/) SharePoint starter for learning

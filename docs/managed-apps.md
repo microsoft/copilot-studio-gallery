@@ -177,24 +177,43 @@ installer backend, extract credentials, or bypass TLS.
 
 ## Install an app
 
-Install the [Managed Apps prerequisites](https://learn.microsoft.com/en-us/microsoft-365/managed-apps/developer/#prerequisites)
-first: Node.js >=24.11, npm, Git >=2.27 with TLS 1.3 support, and a configured
-Git Credential Manager. Git for Windows may already include Credential Manager.
-The native CLI checks these Git prerequisites but does not install them.
-The gallery sequence downloads the npm CLI when needed; it does not install
-system tools or change your machine's Git credential configuration.
-
-The detail page provides one setup command for macOS, Linux, and Windows
-PowerShell. Check the trust acknowledgement to reveal the inline **Setup command**,
-then inspect it and choose **Copy**, or copy it manually. Unchecking the
+The detail page shows two command boxes: **macOS · Bash** and
+**Windows · PowerShell**. Check the trust acknowledgement, review the appropriate
+command, and choose its **Copy** control or copy it manually. Unchecking the
 acknowledgement clears and disables the command and source downloads again.
+Linux is not supported.
 
 Paste the command into a terminal in the folder where you want the new app.
-It uses Node to download a small, content-addressed setup module; **Review setup
-commands** shows exactly what it runs. The module only sequences ordinary
-native CLI, npm, and Git commands. There is no custom authentication, connector
-API, environment picker, source overlay, or archive installer to maintain.
-Native prompts keep their terminal input and output.
+Node is not required to start: Bash/curl or Windows PowerShell 5.1+ downloads
+the shared installer. **Review installer** opens its source. There are exactly
+two installers under `public/installers/`, not generated installers per app.
+The only submission-specific inputs are its slug and validated connector bindings;
+the GitHub template path is derived from the slug.
+
+Before any sign-in or cloud creation, installers check the
+[Microsoft prerequisites](https://learn.microsoft.com/en-us/microsoft-365/managed-apps/developer/#prerequisites):
+Node.js >=24.11, npm, Git >=2.27, and Git Credential Manager.
+Compatible existing tools are reused. Missing tools are installed only after
+confirmation, using Homebrew on macOS and WinGet on Windows. The macOS installer
+can run Homebrew's official installer, with separate confirmation, if Homebrew
+is missing. Apple Git is replaced **for this setup process** by Homebrew Git
+to support the managed repository's TLS 1.3 requirement; the Apple installation
+is not removed. Windows uses Git for Windows, which normally includes GCM,
+and offers the official GCM package separately only if GCM is missing.
+
+Package-manager installation, administrator approval, and corporate restrictions
+remain OS-owned. WinGet must already be available; if it is unavailable or
+installation is blocked, follow Microsoft's prerequisite links and retry.
+Cancelling stops setup. No execution-policy changes, TLS bypasses, forced
+installation, or removal of existing tool installations are performed.
+Installers update their process PATH, not the user's persistent PATH directly.
+Official package installers can make their normal system/user changes.
+If GCM is not configured, its native `configure` command requires separate
+confirmation because it updates Git credential-helper settings.
+
+After preflight, the installer only sequences ordinary native CLI, npm, and Git
+commands. There is no custom authentication, connector API, environment picker,
+source overlay, or archive installer. Native prompts retain terminal input/output.
 
 The sequence is: native sign-in and account status, native app creation from the
 GitHub template, each declared connection's native prompts, `npm install`,
@@ -223,8 +242,9 @@ your organization's policies.
 Setup executes dependency/build scripts and saves the connected source to the
 new platform-managed repository. It does not provision lists/tables, create an
 app registration, publish live, or share access. Prepare the documented data
-first. Git needs a configured commit identity and functioning Credential Manager;
-the runner does not change global Git settings.
+first. Git needs a configured commit identity and functioning Credential Manager.
+Setup does not change your Git author identity. GCM configuration changes are
+made only after the explicit confirmation described above.
 
 The equivalent manual steps are below, also useful for resuming after an error.
 Use your installed `ms`, or prefix each command with

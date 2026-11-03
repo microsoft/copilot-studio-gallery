@@ -45,8 +45,10 @@ Consult these guides before working on related tasks:
   `metadata.json` and optional `README.md` beside it.
   Managed apps instead use `app/`, a required README, and an npm lockfile; their
   source bundles and optional screenshots are content-addressed under
-  `public/bundles/`. A generated, cross-platform Node setup runner only sequences
-  native CLI/npm/Git commands. Creation uses native GitHub subfolder templates;
+  `public/bundles/`. Shared Bash (macOS) and PowerShell (Windows) installers under
+  `public/installers/` take validated submission inputs, offer prerequisite
+  installation with consent, then sequence native CLI/npm/Git commands.
+  Linux is not supported. Creation uses native GitHub subfolder templates;
   never add custom auth, environment discovery, source overlays, or live publication.
 - Modern workflow exports include their saved canvas under an
   `associatedData.graph` object inside each `Workflows/*.json`. It contains the
