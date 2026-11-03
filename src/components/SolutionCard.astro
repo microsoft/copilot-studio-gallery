@@ -1,7 +1,8 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import { inventoryBlocks, solutionInventory } from "../lib/inventory";
-import { solutionMakeup } from "../lib/schema";
+import { isManagedApp, submissionMakeup } from "../lib/schema";
+import { connectorDisplayName } from "../lib/workflowMetadata";
 import { withBase } from "../lib/url";
 import AuthorCredit from "./AuthorCredit.astro";
 import BuildingBlocks from "./BuildingBlocks.astro";
@@ -14,8 +15,11 @@ interface Props {
 const { solution } = Astro.props;
 const data = solution.data;
 const inventory = solutionInventory(data);
-const makeup = solutionMakeup(inventory.agents, inventory.workflows);
+const makeup = submissionMakeup(data);
 const isDemo = data.tags.includes("demo");
+const appConnectors = isManagedApp(data)
+  ? [...new Set(data.app.connectors.map((binding) => connectorDisplayName(binding.connector)))]
+  : [];
 ---
 
 <article class="product-card group relative flex h-full flex-col rounded-2xl border border-border bg-surface p-5">
@@ -27,11 +31,12 @@ const isDemo = data.tags.includes("demo");
   <h3 class="mt-2 text-[1.0625rem] font-semibold leading-snug tracking-[-0.01em] text-ink">{data.name}</h3>
   {data.category && <p class="mt-1 text-xs font-medium text-accent">{data.category}</p>}
   <p class="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-muted">{data.description}</p>
+  {appConnectors.length > 0 && <p class="mt-3 line-clamp-2 break-words text-xs text-muted" title={`Uses ${appConnectors.join(", ")}`}><span class="font-medium">Uses </span>{appConnectors.join(", ")}</p>}
   <div class="mt-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5 border-t border-border pt-4">
     <div class="relative z-20 inline-flex min-w-0 items-center gap-2 text-xs text-muted">
       <AuthorCredit authors={data.authors} />
       {isDemo && <span class="rounded border border-dashed border-border px-1.5 py-px text-[10px] font-medium text-soft">Demo</span>}
     </div>
-    <BuildingBlocks counts={inventoryBlocks(inventory)} />
+    {!isManagedApp(data) && <BuildingBlocks counts={inventoryBlocks(inventory)} />}
   </div>
 </article>

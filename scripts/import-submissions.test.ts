@@ -91,6 +91,26 @@ test("imports metadata while retaining derived solution identity", async () => {
   });
 });
 
+test("publishes supporting downloads for solutions without changing the solution ZIP", async () => {
+  await importSubmissions({ root: workspace });
+  const archive = await readFile(join(workspace, "public/bundles/demo-agent.zip"));
+  const submission = join(workspace, "submissions/demo-agent");
+  const metadataPath = join(submission, "metadata.json");
+  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  await mkdir(join(submission, "supporting"));
+  await writeFile(join(submission, "supporting/reference.json"), '{"synthetic":true}\n');
+  await writeFile(metadataPath, JSON.stringify({
+    ...metadata, supportingFiles: [{ path: "supporting/reference.json", label: "Synthetic reference data" }],
+  }));
+  await writeFile(join(submission, "README.md"), "# Sample\n\n[Reference](./supporting/reference.json)\n");
+  await importSubmissions({ root: workspace });
+  const record = solutionSchema.parse(JSON.parse(await readFile(join(workspace, "src/content/solutions/demo-agent.json"), "utf8")));
+  assert.equal(record.supportingFiles.length, 1);
+  assert.equal(await readFile(join(workspace, "public", record.supportingFiles[0].path), "utf8"), '{"synthetic":true}\n');
+  assert.deepEqual(await readFile(join(workspace, "public", record.bundle)), archive);
+  assert.ok((await readFile(join(workspace, "src/content/guides/demo-agent.md"), "utf8")).includes(`/copilot-studio-gallery/${record.supportingFiles[0].path}`));
+});
+
 test("derives unique owned AgentHook counts without guessing from names or trusting metadata", async () => {
   const submission = join(workspace, "submissions/demo-agent");
   const metadataPath = join(submission, "metadata.json");

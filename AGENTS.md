@@ -36,9 +36,18 @@ Consult these guides before working on related tasks:
 
 ## Important Notes
 
-- One gallery entry represents one complete exploded Power Platform solution.
+- One gallery entry represents either one complete exploded Power Platform solution
+  or one portable managed app (`submissionType: managed-app`, source under `app/`).
+  See `docs/managed-apps.md`. Never execute app code or install app dependencies
+  during ingestion. Use the native Managed Apps CLI for all supported lifecycle
+  operations; do not duplicate its connector/auth/environment workflows.
 - Each submission lives at `submissions/<slug>/solution/` with gallery-only
   `metadata.json` and optional `README.md` beside it.
+  Managed apps instead use `app/`, a required README, and an npm lockfile; their
+  source bundles and optional screenshots are content-addressed under
+  `public/bundles/`. A generated, cross-platform Node setup runner only sequences
+  native CLI/npm/Git commands. Creation uses native GitHub subfolder templates;
+  never add custom auth, environment discovery, source overlays, or live publication.
 - Modern workflow exports include their saved canvas under an
   `associatedData.graph` object inside each `Workflows/*.json`. It contains the
   nodes, edges, handles, and x/y positions needed for an accurate preview.
@@ -66,6 +75,6 @@ Consult these guides before working on related tasks:
   root; gallery sidecars are excluded. Downloads stay locked until the visitor
   acknowledges that community solutions should be reviewed and imported only
   from a trusted source.
-- Shared links use the official Copilot Studio mark and the gallery's five asset
+- Shared links use the official Copilot Studio mark and the gallery's six asset
   types in a dedicated 1200x630 social image. Keep Open Graph and X/Twitter
   metadata aligned when changing the site's sharing identity.

@@ -9,8 +9,10 @@ import SolutionDownload from "../../components/SolutionDownload.astro";
 import SolutionDiscussion from "../../components/SolutionDiscussion.astro";
 import GraphCanvas from "../../components/graph/GraphCanvas";
 import WorkflowTable from "../../components/WorkflowTable.astro";
+import ManagedAppDetail from "../../components/ManagedAppDetail.astro";
+import SupportingFiles from "../../components/SupportingFiles.astro";
 import { agentProfiles, inventoryBlocks, sharedMcpServers, solutionInventory } from "../../lib/inventory";
-import { solutionMakeup } from "../../lib/schema";
+import { isManagedApp, submissionMakeup } from "../../lib/schema";
 import AuthorCredit from "../../components/AuthorCredit.astro";
 import { withBase } from "../../lib/url";
 import { resolvePreviewWorkflow } from "../../lib/workflowMetadata";
@@ -31,15 +33,16 @@ const GuideContent = guide ? (await render(guide)).Content : null;
 const inventory = solutionInventory(data);
 const profiles = agentProfiles(data);
 const sharedMcp = sharedMcpServers(data);
-const makeup = solutionMakeup(inventory.agents, inventory.workflows);
+const makeup = submissionMakeup(data);
 const updated = data.updatedAt ?? data.createdAt;
 const categoryCounts = new Map<string, number>();
 for (const file of data.files) categoryCounts.set(file.category, (categoryCounts.get(file.category) ?? 0) + 1);
 const categories = [...categoryCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-const heroWorkflow = resolvePreviewWorkflow(data.workflows, data.previewWorkflow);
+const heroWorkflow = isManagedApp(data) ? undefined : resolvePreviewWorkflow(data.workflows, data.previewWorkflow);
 ---
 
 <Layout title={data.name} description={data.description}>
+  {isManagedApp(data) ? <ManagedAppDetail app={data} slug={solution.id}>{GuideContent && <GuideContent />}</ManagedAppDetail> : <>
   <div class="mx-auto w-full max-w-gallery px-4 py-6 sm:px-6 sm:py-8">
     <a href={withBase("/")} class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-accent">
       <span aria-hidden="true">←</span> Back to gallery
@@ -122,6 +125,7 @@ const heroWorkflow = resolvePreviewWorkflow(data.workflows, data.previewWorkflow
               </div>
             )
           }
+          <SupportingFiles files={data.supportingFiles} />
         </section>
 
         {inventory.agents > 0 && (
@@ -183,6 +187,7 @@ const heroWorkflow = resolvePreviewWorkflow(data.workflows, data.previewWorkflow
       </aside>
     </div>
   </div>
+  </>}
 </Layout>
 
 <script>
@@ -221,6 +226,7 @@ const heroWorkflow = resolvePreviewWorkflow(data.workflows, data.previewWorkflow
 
   function syncFromHash() {
     const hash = location.hash.slice(1);
+    if (hash === "discussion") return;
     if (hash.startsWith("agent-") && document.getElementById(hash)) showAgent(hash, false);
     else activate(hash || "overview", false);
   }
