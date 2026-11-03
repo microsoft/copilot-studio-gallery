@@ -177,12 +177,12 @@ installer backend, extract credentials, or bypass TLS.
 
 ## Install an app
 
-The detail page shows two command boxes: **macOS · Bash** and
-**Windows · PowerShell**. Check the trust acknowledgement, review the appropriate
-command, and choose its **Copy** control or copy it manually. Unchecking the
-acknowledgement clears and disables the commands again. The **Download app source
-ZIP** link beside the checkbox stays available so you can review the source before
-confirming trust.
+The detail page shows a **Download and install manually** source ZIP link below
+the support paragraph, followed by **Automated install** with two command boxes:
+**macOS · Bash** and **Windows · PowerShell**. Check the trust acknowledgement
+to enable the download and commands. For automated setup, review the appropriate
+command and choose its **Copy** control or copy it manually. Unchecking the
+acknowledgement disables the download and clears and disables the commands again.
 Linux is not supported.
 
 Paste the command into a terminal in the folder where you want the new app.
