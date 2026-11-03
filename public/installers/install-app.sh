@@ -66,8 +66,8 @@ gcm_ready() {
 }
 ensure_brew() {
   if ! command -v brew >/dev/null 2>&1; then
-    if [[ -x /opt/homebrew/bin/brew ]]; then export PATH="/opt/homebrew/bin:$PATH"
-    elif [[ -x /usr/local/bin/brew ]]; then export PATH="/usr/local/bin:$PATH"
+    if [[ -x /opt/homebrew/bin/brew ]]; then export PATH="$PATH:/opt/homebrew/bin"
+    elif [[ -x /usr/local/bin/brew ]]; then export PATH="$PATH:/usr/local/bin"
     else
       confirm "Missing prerequisites need Homebrew. Run the official Homebrew installer? It may request administrator approval."
       temporary_file=$(mktemp)
@@ -75,14 +75,14 @@ ensure_brew() {
       run /bin/bash "$temporary_file"
       rm -f -- "$temporary_file"
       temporary_file=""
-      if [[ -x /opt/homebrew/bin/brew ]]; then export PATH="/opt/homebrew/bin:$PATH"
-      elif [[ -x /usr/local/bin/brew ]]; then export PATH="/usr/local/bin:$PATH"
+      if [[ -x /opt/homebrew/bin/brew ]]; then export PATH="$PATH:/opt/homebrew/bin"
+      elif [[ -x /usr/local/bin/brew ]]; then export PATH="$PATH:/usr/local/bin"
       else fail "Homebrew was not found after installation. Follow its installation instructions and retry."; fi
     fi
   fi
   local prefix
   prefix=$(brew --prefix)
-  export PATH="$prefix/bin:$prefix/sbin:/usr/local/bin:$PATH"
+  export PATH="$PATH:$prefix/bin:$prefix/sbin:/usr/local/bin"
 }
 
 if ! node_ready; then
@@ -97,6 +97,8 @@ if ! git_ready; then
   confirm "Install Homebrew Git for the managed repository's TLS 1.3 requirement? Existing Git installations will not be removed."
   ensure_brew
   run brew install git
+  git_prefix=$(brew --prefix git)
+  export PATH="$git_prefix/bin:$PATH"
   hash -r
   git_ready || fail "A compatible Git >=2.27 is still unavailable."
 fi

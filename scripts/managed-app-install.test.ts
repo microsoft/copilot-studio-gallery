@@ -60,7 +60,10 @@ const missing = name => (process.env.TEST_MISSING || "").split(",").includes(nam
 if (stage === process.env.TEST_FAIL || name === process.env.TEST_FAIL) process.exit(19);
 if (tool === "uname") { console.log(process.env.TEST_OS || "Darwin"); process.exit(); }
 if (tool === "node") { if (missing("node")) process.exit(1); console.log(fs.existsSync(installed("node")) ? "v24.22.1" : process.env.TEST_NODE_VERSION || "v24.22.1"); process.exit(); }
-if (tool === "brew" && args[0] === "--prefix") { console.log(process.env.TEST_ROOT); process.exit(); }
+if (tool === "brew" && args[0] === "--prefix") {
+  console.log((args[1] === "node@24" ? process.env.TEST_NODE_PREFIX : args.length === 1 ? process.env.TEST_BREW_PREFIX : undefined) || process.env.TEST_ROOT);
+  process.exit();
+}
 if (tool === "brew" || tool === "winget") {
   const id = tool === "brew" ? args.at(-1) : args[args.indexOf("--id") + 1];
   const tools = { "node@24": ["node"], "git": ["git"], "git-credential-manager": ["gcm"],
@@ -130,6 +133,24 @@ const workflow = (calls: Call[]) => {
   const start = calls.findIndex(call => call.tool === "ms");
   return start < 0 ? [] : calls.slice(start);
 };
+
+test("macos: installing Node preserves an existing compatible Git and its credential manager", { skip: process.platform === "win32" }, async () => {
+  const { root, run, calls } = await fixture("macos");
+  try {
+    const brewPrefix = join(root, "homebrew");
+    const nodePrefix = join(root, "node");
+    await mkdir(join(brewPrefix, "bin"), { recursive: true });
+    await mkdir(join(nodePrefix, "bin"), { recursive: true });
+    await writeFile(join(brewPrefix, "bin", "git"), "#!/bin/sh\nexit 42\n", { mode: 0o755 });
+    for (const tool of ["node", "npm", "npx"]) {
+      await writeFile(join(nodePrefix, "bin", tool), await readFile(join(root, "bin", tool)), { mode: 0o755 });
+    }
+    const result = run({ TEST_MISSING: "node", TEST_BREW_PREFIX: brewPrefix, TEST_NODE_PREFIX: nodePrefix });
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    const installs = (await calls()).filter(call => call.tool === "brew" && call.args[0] === "install");
+    assert.deepEqual(installs.map(call => call.args), [["install", "node@24"]]);
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
 
 for (const platform of ["macos", "windows"] as const) {
   const skip = platform === "macos" ? process.platform === "win32" : !powershell;
