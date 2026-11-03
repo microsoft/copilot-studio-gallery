@@ -64,27 +64,36 @@ gcm_ready() {
     return 1
   fi
 }
+find_brew() {
+  if command -v brew >/dev/null 2>&1; then command -v brew
+  elif [[ -x /opt/homebrew/bin/brew ]]; then printf '%s\n' /opt/homebrew/bin/brew
+  elif [[ -x /usr/local/bin/brew ]]; then printf '%s\n' /usr/local/bin/brew
+  else return 1; fi
+}
 ensure_brew() {
-  if ! command -v brew >/dev/null 2>&1; then
-    if [[ -x /opt/homebrew/bin/brew ]]; then export PATH="$PATH:/opt/homebrew/bin"
-    elif [[ -x /usr/local/bin/brew ]]; then export PATH="$PATH:/usr/local/bin"
-    else
-      confirm "Missing prerequisites need Homebrew. Run the official Homebrew installer? It may request administrator approval."
-      temporary_file=$(mktemp)
-      run curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh -o "$temporary_file"
-      run /bin/bash "$temporary_file"
-      rm -f -- "$temporary_file"
-      temporary_file=""
-      if [[ -x /opt/homebrew/bin/brew ]]; then export PATH="$PATH:/opt/homebrew/bin"
-      elif [[ -x /usr/local/bin/brew ]]; then export PATH="$PATH:/usr/local/bin"
-      else fail "Homebrew was not found after installation. Follow its installation instructions and retry."; fi
-    fi
+  local brew_path prefix
+  if ! brew_path=$(find_brew); then
+    confirm "Missing prerequisites need Homebrew. Run the official Homebrew installer? It may request administrator approval."
+    temporary_file=$(mktemp)
+    run curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh -o "$temporary_file"
+    run /bin/bash "$temporary_file"
+    rm -f -- "$temporary_file"
+    temporary_file=""
+    brew_path=$(find_brew) || fail "Homebrew was not found after installation. Follow its installation instructions and retry."
   fi
-  local prefix
-  prefix=$(brew --prefix)
+  export PATH="$PATH:$(dirname "$brew_path")"
+  prefix=$("$brew_path" --prefix)
   export PATH="$PATH:$prefix/bin:$prefix/sbin:/usr/local/bin"
 }
 
+if ! node_ready && brew_path=$(find_brew); then
+  node_prefix=$("$brew_path" --prefix node@24)
+  if [[ -x "$node_prefix/bin/node" ]]; then
+    previous_path=$PATH
+    export PATH="$node_prefix/bin:$PATH"
+    if ! node_ready; then export PATH="$previous_path"; fi
+  fi
+fi
 if ! node_ready; then
   confirm "Install Node.js LTS and npm with Homebrew? Existing Node installations will not be removed."
   ensure_brew
