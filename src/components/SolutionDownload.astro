@@ -37,22 +37,25 @@ const acknowledgementText = solution.featured
   {app && (
     <div class="grid min-w-0 gap-3">
       <div data-install-commands class="min-w-0">
-        <h2 class="mb-2 text-sm font-semibold">Install app with the CLI</h2>
-          <div data-install-command data-install-platform="cli" class="mt-3">
-            <div class="flex items-center justify-between gap-2">
-              <label for={`${idPrefix}-cli`} class="text-xs font-semibold">macOS, Linux &amp; Windows</label>
-              <button type="button" data-copy-install data-copy-label="Copy app setup command" disabled aria-label="Copy app setup command" title="Copy app setup command" class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-muted hover:bg-surface hover:text-ink disabled:cursor-not-allowed disabled:opacity-50">
-                <svg data-copy-icon width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path></svg>
-                <svg data-copy-check width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
-              </button>
-            </div>
-            <textarea id={`${idPrefix}-cli`} data-install-value={appInstallCommand(app)} readonly disabled rows="4" placeholder="Check the box above to enable copying." class="mt-1 w-full resize-y rounded border border-border bg-surface p-2 font-mono text-xs disabled:cursor-not-allowed disabled:opacity-50" aria-label="Install app on macOS, Linux and Windows PowerShell"></textarea>
-            <p data-copy-status role="status" class="sr-only"></p>
+        <h2 class="mb-2 text-sm font-semibold">Install app</h2>
+        <div data-install-command>
+          <div class="flex items-center justify-between gap-2">
+            <label for={`${idPrefix}-cli`} class="text-xs font-semibold">Setup command</label>
+            <button type="button" data-copy-install data-copy-label="Copy setup command" disabled aria-label="Copy setup command" title="Copy setup command" class="inline-flex min-h-8 shrink-0 items-center justify-center gap-1.5 rounded px-2 text-xs font-medium text-muted hover:bg-surface hover:text-ink disabled:cursor-not-allowed disabled:opacity-50">
+              <svg data-copy-icon width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path></svg>
+              <svg data-copy-check width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+              <span data-copy-text>Copy</span>
+              <span data-copy-confirmation>Copied</span>
+            </button>
           </div>
+          <textarea id={`${idPrefix}-cli`} data-install-value={appInstallCommand(app)} readonly disabled rows="4" placeholder="Check the box above to enable copying." class="mt-1 w-full resize-y rounded border border-border bg-surface p-2 font-mono text-xs disabled:cursor-not-allowed disabled:opacity-50"></textarea>
+          <p class="mt-2 text-xs text-muted">Paste into your terminal to start setup.</p>
+          <p data-copy-status role="status" class="sr-only"></p>
+        </div>
       </div>
-      <p class="text-xs leading-relaxed text-muted">Requires Node.js 24.11+, Git, and Git Credential Manager. Runs native sign-in, creation and connection prompts, installs dependencies, saves source to the new managed repository, builds, and opens preview. Does not publish live or share access.</p>
+      <p class="text-xs leading-relaxed text-muted">Creates your app and opens a preview. Nothing is published or shared.</p>
       <a href={withBase(`/${app.installScript}`)} target="_blank" rel="noopener" class="text-xs text-accent underline underline-offset-2">Review setup commands</a>
-      <a href="https://github.com/microsoft/copilot-studio-gallery/blob/main/docs/managed-apps.md#install-an-app" class="text-sm font-semibold text-accent">CLI setup &amp; preview guide</a>
+      <a href="https://github.com/microsoft/copilot-studio-gallery/blob/main/docs/managed-apps.md#install-an-app" class="text-sm font-semibold text-accent">Setup guide &amp; requirements</a>
     </div>
   )}
   <a
@@ -82,10 +85,13 @@ const acknowledgementText = solution.featured
     user-select: none;
   }
   [data-copy-check],
-  [data-copied] [data-copy-icon] {
+  [data-copy-confirmation],
+  [data-copied] [data-copy-icon],
+  [data-copied] [data-copy-text] {
     display: none;
   }
-  [data-copied] [data-copy-check] {
+  [data-copied] [data-copy-check],
+  [data-copied] [data-copy-confirmation] {
     display: block;
   }
 </style>

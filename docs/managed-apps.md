@@ -177,9 +177,17 @@ installer backend, extract credentials, or bypass TLS.
 
 ## Install an app
 
+Install the [Managed Apps prerequisites](https://learn.microsoft.com/en-us/microsoft-365/managed-apps/developer/#prerequisites)
+first: Node.js >=24.11, npm, Git >=2.27 with TLS 1.3 support, and a configured
+Git Credential Manager. Git for Windows may already include Credential Manager.
+The native CLI checks these Git prerequisites but does not install them.
+The gallery sequence downloads the npm CLI when needed; it does not install
+system tools or change your machine's Git credential configuration.
+
 The detail page provides one setup command for macOS, Linux, and Windows
-PowerShell. Check the trust acknowledgement to enable copying and source
-downloads; unchecking clears and disables the command again.
+PowerShell. Check the trust acknowledgement to reveal the inline **Setup command**,
+then inspect it and choose **Copy**, or copy it manually. Unchecking the
+acknowledgement clears and disables the command and source downloads again.
 
 Paste the command into a terminal in the folder where you want the new app.
 It uses Node to download a small, content-addressed setup module; **Review setup
