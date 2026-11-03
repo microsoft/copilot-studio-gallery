@@ -1,7 +1,7 @@
 ---
 import { isManagedApp, type GalleryRecord } from "../lib/schema";
 import { withBase } from "../lib/url";
-import { APP_INSTALLERS, appInstallCommand } from "../lib/appInstall";
+import { appInstallCommand } from "../lib/appInstall";
 
 interface Props {
   solution: GalleryRecord;
@@ -22,10 +22,17 @@ const acknowledgementText = solution.featured
 
 <div data-solution-download role="group" aria-label={app ? "Install app" : "Download solution"} class:list={["grid gap-3 rounded-xl border border-border bg-elevated p-3.5", compact && !app && "sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-5"]}>
   <div class="min-w-0">
-    <label for={acknowledgementId} class="flex cursor-pointer items-start gap-2 text-xs font-medium leading-relaxed text-ink">
-      <input type="checkbox" id={acknowledgementId} data-trust-ack aria-describedby={disclaimerId} class="mt-0.5 h-3.5 w-3.5 shrink-0 cursor-pointer rounded border-border accent-accent" />
-      <span>{acknowledgementText}</span>
-    </label>
+    <div class="flex flex-wrap items-start gap-x-4 gap-y-2">
+      <label for={acknowledgementId} class="flex min-w-0 flex-1 basis-64 cursor-pointer items-start gap-2 text-xs font-medium leading-relaxed text-ink">
+        <input type="checkbox" id={acknowledgementId} data-trust-ack aria-describedby={disclaimerId} class="mt-0.5 h-3.5 w-3.5 shrink-0 cursor-pointer rounded border-border accent-accent" />
+        <span>{acknowledgementText}</span>
+      </label>
+      {app && (
+        <a href={withBase(`/${solution.bundle}`)} download class="w-fit text-sm font-semibold text-accent">
+          Download app source ZIP
+        </a>
+      )}
+    </div>
     <p id={disclaimerId} class="mt-2 pl-[1.375rem] text-xs leading-relaxed text-muted">
       <>
         This {solution.featured ? "sample" : app ? "community app" : "community example"} is provided as-is and is not covered by Microsoft Support.
@@ -52,7 +59,6 @@ const acknowledgementText = solution.featured
           </div>
           <textarea id={`${idPrefix}-${platform}`} data-install-value={appInstallCommand(app, platform)} readonly disabled rows="4" placeholder="Check the box above to enable copying." class="mt-1 w-full resize-y rounded border border-border bg-surface p-2 font-mono text-xs disabled:cursor-not-allowed disabled:opacity-50"></textarea>
           <p class="mt-2 text-xs text-muted">Paste into your terminal to start setup.</p>
-          <a href={`https://github.com/microsoft/copilot-studio-gallery/blob/main/public/${APP_INSTALLERS[platform]}`} target="_blank" rel="noopener" class="mt-2 inline-block text-xs text-accent underline underline-offset-2">Review installer</a>
           <p data-copy-status role="status" class="sr-only"></p>
         </div>
         ))}
@@ -61,7 +67,7 @@ const acknowledgementText = solution.featured
       <a href="https://github.com/microsoft/copilot-studio-gallery/blob/main/docs/managed-apps.md#install-an-app" class="text-sm font-semibold text-accent">Setup guide &amp; requirements</a>
     </div>
   )}
-  <a
+  {!app && <a
     data-download-gated
     data-download-url={withBase(`/${solution.bundle}`)}
     download
@@ -69,12 +75,12 @@ const acknowledgementText = solution.featured
     tabindex="-1"
     class:list={[
       "cursor-not-allowed opacity-50",
-      app ? "w-fit text-sm font-semibold text-accent" : "inline-flex min-h-11 items-center justify-center rounded-[0.625rem] bg-accent px-4 py-2.5 text-sm font-semibold text-accent-fg w-full self-center",
-      compact && !app && "sm:w-auto",
+      "inline-flex min-h-11 items-center justify-center rounded-[0.625rem] bg-accent px-4 py-2.5 text-sm font-semibold text-accent-fg w-full self-center",
+      compact && "sm:w-auto",
     ]}
   >
-    {app ? "Download app source ZIP" : "Download ZIP"}
-  </a>
+    Download ZIP
+  </a>}
 </div>
 
 <style>
@@ -104,7 +110,7 @@ const acknowledgementText = solution.featured
     const acknowledgement = root.querySelector<HTMLInputElement>("[data-trust-ack]");
     const downloads = [...root.querySelectorAll<HTMLAnchorElement>("[data-download-gated]")];
     const commands = [...root.querySelectorAll<HTMLTextAreaElement>("[data-install-value]")];
-    if (!acknowledgement || downloads.length === 0 || downloads.some((download) => !download.dataset.downloadUrl)) {
+    if (!acknowledgement || (downloads.length === 0 && commands.length === 0) || downloads.some((download) => !download.dataset.downloadUrl)) {
       throw new Error("Missing solution download acknowledgement or URL");
     }
     if (commands.some((command) => !command.dataset.installValue)) throw new Error("Missing app install command");

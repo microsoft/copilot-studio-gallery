@@ -180,13 +180,15 @@ installer backend, extract credentials, or bypass TLS.
 The detail page shows two command boxes: **macOS · Bash** and
 **Windows · PowerShell**. Check the trust acknowledgement, review the appropriate
 command, and choose its **Copy** control or copy it manually. Unchecking the
-acknowledgement clears and disables the command and source downloads again.
+acknowledgement clears and disables the commands again. The **Download app source
+ZIP** link beside the checkbox stays available so you can review the source before
+confirming trust.
 Linux is not supported.
 
 Paste the command into a terminal in the folder where you want the new app.
 Node is not required to start: Bash/curl or Windows PowerShell 5.1+ downloads
-the shared installer. **Review installer** opens its source. There are exactly
-two installers under `public/installers/`, not generated installers per app.
+the shared installer. Its URL is visible in the command. There are exactly two
+installers under `public/installers/`, not generated installers per app.
 The only submission-specific inputs are its slug and validated connector bindings;
 the GitHub template path is derived from the slug.
 
