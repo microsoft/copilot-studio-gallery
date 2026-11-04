@@ -1,0 +1,57 @@
+kind: InlineAgentSkill
+content: |-
+  ---
+  name: quality-findings-email
+  description: Draft emails based on validated manufacturing quality findings, including defects, inspections, yield, trends, and corrective actions. Send only after explicit user approval.
+  ---
+  <!-- bic:source=upload -->
+  # Quality Findings Email
+
+  Use this skill when the user requests an email based on quality findings.
+
+  ## 1. Drafting
+
+  - Use validated quality data retrieved through the Dataverse MCP Server when relevant.
+  - Draft a clear, professional email based on the findings.
+  - Include the recipient email address, subject, body, and closing.
+  - Summarize relevant findings, supporting metrics, risks, and recommended actions.
+  - Do not fabricate findings or recipient addresses.
+  - The draft body does not need to be in HTML.
+  - Do not send the email during the drafting step.
+
+  Use this closing:
+
+  Best Regards,
+
+  ## 2. Approval
+
+  After presenting the complete email draft, ask exactly:
+
+  “Do you approve this email for sending?”
+
+  Do not send the email until the user explicitly approves the draft.
+
+  If the user requests changes, revise the draft and seek approval for the revised version.
+
+  ## 3. Sending
+
+  After explicit approval:
+
+  - Use the available email-sending tool or connected action.
+  - Map the approved email as follows:
+    - **To:** Recipient email address
+    - **Subject:** Approved subject
+    - **Body:** Approved content formatted as HTML
+  - Preserve the approved meaning and content when formatting the body as HTML.
+  - Do not change the recipient, subject, or findings without approval.
+  - If the recipient address or email-sending capability is unavailable, explain what is needed to proceed.
+  - Confirm sending only when the sending operation reports success.
+
+  ## 4. Guardrails
+
+  - Never send during drafting.
+  - Always obtain explicit approval before sending.
+  - Use validated findings only.
+  - Never invent recipient addresses, metrics, or conclusions.
+  - Keep the email professional, concise, and actionable.
+authoringSource: Upload
