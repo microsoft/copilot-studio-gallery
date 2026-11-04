@@ -1,32 +1,87 @@
 # Contributing a sample
 
-Choose the payload that matches your sample:
+Share one complete sample per `submissions/<slug>/` folder. Choose its format,
+prepare the source, add gallery metadata and documentation, validate it, and
+open a pull request.
 
-- **Managed app:** clone the platform-managed repository, prepare portable app
-  source with `npm run prepare:app`, and declare connector setup in metadata. Follow
-  [the complete managed app guide](docs/managed-apps.md) or start from
-  [Team Ideas Board](submissions/team-ideas-board/). A required README and
-  `submissionType: "managed-app"` distinguish it from a solution. Validate it in a
-  fresh managed app and complete the app-specific PR attestation.
-  Screenshots in the app README are strongly recommended; declare the primary
-  screenshot in metadata so it can also appear on the gallery detail page.
-  Keep the README focused on the app and its required data structures; installation
-  and CLI steps belong in the shared guide.
+| Your sample | Source to submit | Preparation |
+| --- | --- | --- |
+| A managed app built with code, Cowork, or Copilot Studio | Portable source in `app/`, with `submissionType: "managed-app"` | [Contributing a managed app](#contributing-a-managed-app) |
+| Agents and/or workflows in a Power Platform solution | Complete exploded export in `solution/`; omit `submissionType` or use `"solution"` | [Contributing a solution](#contributing-a-solution) |
 
-Both submission types can include optional [supporting data files](submissions/README.md#supporting-files)
-in CSV, JSON, or plain-text format, published separately from their payload ZIP.
-- **Agents/workflows in a Power Platform solution:** follow the unchanged
-  exploded solution instructions below. Omitted `submissionType` means solution.
+Both formats use the same [gallery metadata](#shared-gallery-metadata),
+[local checks](#validate-locally), and [pull-request process](#open-a-pull-request).
+Each has its own fresh-environment test. Do not submit a ZIP, a deployed app's
+identity, or a mixture of `app/` and `solution/` in one entry.
 
-Both use the same author/category/tag discovery and review process. Gallery
-ingestion never installs or executes submitted application dependencies.
+## Start in the gallery repository
+
+Fork this repository, clone your fork, and create a contribution branch. From
+the gallery checkout, install its dependencies:
+
+```bash
+npm ci
+```
+
+The gallery requires Node >=22.12. App source export and testing also require
+the [managed app CLI prerequisites](docs/managed-apps.md#contribute-an-app),
+including Node >=24.11 and compatible Git/Git Credential Manager.
+
+Use a unique slug containing lowercase letters, numbers, and single hyphens.
+Prepare only the source format that matches your sample below.
+
+## Contributing a managed app
+
+1. Start with local app source built with code, or clone an existing app's
+   platform-managed repository using the native CLI. Keep this source outside
+   the gallery checkout. Follow the
+   [app source preparation instructions](docs/managed-apps.md#contribute-an-app);
+   play access alone does not grant source export/edit access.
+2. From the gallery checkout, review and prepare its portable source:
+
+   ```bash
+   npm run prepare:app -- /path/to/your-app-source my-app --dry-run
+   npm run prepare:app -- /path/to/your-app-source my-app
+   ```
+
+3. Replace the generated metadata and README placeholders. Keep
+   `submissionType: "managed-app"` and declare **every** required connector,
+   logical data source, table/schema, and setup instruction. Do not copy
+   original deployment bindings or credentials.
+4. Include the app's `package.json`, npm lockfile, and source license.
+   The supported build produces `dist/index.html`. Review all source files;
+   the preparation helper is not a secret scanner or a portability guarantee.
+5. Write the required README for visitors: purpose, usage, data requirements,
+   permissions, limitations, and customization. Screenshots are strongly
+   recommended; declare the primary PNG in metadata for the gallery preview.
+   Keep installation and CLI steps in the
+   [shared app guide](docs/managed-apps.md#install-an-app), not each app README.
+6. Run the [shared local checks](#validate-locally), then
+   [test in a fresh managed app](#test-in-a-fresh-environment) before opening
+   your pull request.
+
+```text
+submissions/<slug>/
+├── metadata.json          # required; submissionType: "managed-app"
+├── README.md              # required visitor overview
+├── app/                   # portable application source
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── LICENSE
+│   └── ...source files
+└── screenshots/           # optional PNGs
+```
+
+See the [complete app contract](docs/managed-apps.md#contribute-an-app) for
+connector and screenshot metadata, or [Team Ideas Board](submissions/team-ideas-board/)
+for a working example. Gallery ingestion never installs or executes app code.
 
 ## Contributing a solution
 
 Contribute one complete Copilot Studio / Power Platform solution by adding an
 exploded solution folder to `submissions/` and opening a pull request.
 
-## Export and unpack
+### Export and unpack
 
 1. Export the solution from Power Platform as an **unmanaged** solution.
 2. Unpack the exported ZIP with `pac solution unpack`, Power Platform CLI, or a
@@ -34,10 +89,11 @@ exploded solution folder to `submissions/` and opening a pull request.
 3. Copy the unpacked files into `submissions/<slug>/solution/`.
 4. Add the gallery sidecar files described below.
 
-Do not submit a ZIP. Keeping the payload exploded makes agents, workflows,
-connectors, and code reviewable in the pull request.
+Start from [`submissions/_template/`](submissions/_template/), replacing its
+placeholders. Keeping the payload exploded makes agents, workflows, connectors,
+and code reviewable in the pull request.
 
-## Submission layout
+### Submission layout
 
 ```text
 submissions/<slug>/
@@ -52,85 +108,16 @@ submissions/<slug>/
     └── ...other solution files
 ```
 
-The slug must use lowercase letters, numbers, and single hyphens.
+Set `previewWorkflow` whenever the solution contains workflows, and ensure each
+workflow includes its saved designer graph. See
+[Solution workflow previews](#solution-workflow-previews) below.
+Run the [shared local checks](#validate-locally), then
+[test in a fresh environment](#test-in-a-fresh-environment) before opening your
+pull request.
 
-### `metadata.json`
+### Solution workflow previews
 
-```json
-{
-  "name": "Customer Service Operations",
-  "previewWorkflow": "Triage incoming requests",
-  "description": "Agents and workflows for triage, policy review, and assisted resolution.",
-  "tags": ["customer-service", "triage", "human-in-the-loop"],
-  "category": "Customer service",
-  "author": "Your Name",
-  "authorUrl": "https://github.com/your-login",
-  "createdAt": "2026-08-12",
-  "updatedAt": "2026-08-12",
-  "featured": false
-}
-```
-
-Required fields: `name`, `description`, `tags`, and `author` (or `authors`).
-`previewWorkflow` is **mandatory for solutions containing one or more workflows**;
-omit it for agent-only solutions.
-Recommended: `category`. Optional fields: `authorUrl`, `authorGithub`,
-`createdAt`, `updatedAt`, and `featured`. `hackathon` is set by maintainers.
-
-To credit more than one person, replace `author`, `authorUrl`, and
-`authorGithub` with an `authors` list. Each entry needs a `name` and can add a
-`github` handle (used for the avatar and to group contributions on one
-contributor page) and a `url`:
-
-```json
-"authors": [
-  { "name": "Your Name", "github": "your-login" },
-  { "name": "Teammate Name", "github": "teammate-login" },
-  { "name": "Colleague Without GitHub" }
-]
-```
-
-Every listed person gets their own avatar on the solution and their own
-contributor page.
-
-`category` is the one fixed category that best matches who uses the solution
-and the business activity it supports: `Customer service`, `Sales & marketing`,
-`IT & security`, `Operations`, `Project & communications management`, `HR`, `Finance`,
-`Legal & compliance`, `Productivity & knowledge`, `Agent Building`, `Governance`, or `Other`. See
-[Choose a category](submissions/README.md#choose-a-category) for who each one
-is for. Contributors can't add new values yet: use `Other` and suggest one in
-your pull request.
-Use `tags` for anything more specific. Solutions
-without a category still appear in the gallery, but not under category filters.
-
-`featured: true` marks a solution as **Built by Microsoft**. Leave it `false`
-unless the solution was built by a Microsoft team.
-
-`hackathon` records a Copilot Studio Agents & Workflows Build-a-thon badge: `hacker` (built a
-solution at the Build-a-thon) or `winner`. Maintainers set it during review, so
-leave it out of your submission. Every credited author shows the badge on their
-contributor page.
-
-Every contributor automatically earns one **Copilot Studio Hatchling** badge
-when their first solution is published. It appears alongside any Build-a-thon
-awards on their profile; no metadata field is
-needed. The badge links to their earliest published solution by `createdAt`,
-with undated solutions after dated ones and ties resolved by name, then ID.
-Demo-tagged submissions are not published and do not earn badges.
-
-**Hook, Line & Sinker** automatically recognizes the current three published
-solutions with the most hooks, including every solution tied at the third-place
-cutoff. Only solutions with at least one hook qualify. Every credited author
-receives a badge per qualifying solution, shown on their profile.
-Rankings recalculate when the site rebuilds, so this is
-not a permanent award. Hook counts come from distinct exported `AgentHook`
-components owned by agents in the solution, not component names, tags, tool
-filters, workflow steps, or the number of different hook event types.
-
-Solution identity, version, publisher, agents, workflows, and their components
-are derived from the exploded payload and cannot be overridden in metadata.
-Whether a solution appears under Agents or Workflows comes from what it
-contains. Designer notes in workflow canvases are not shown in the gallery.
+These requirements apply only to solutions. Apps use screenshots instead.
 
 #### Choose the hero workflow
 
@@ -157,54 +144,164 @@ or the download. This is the only workflow canvas on the page. The Workflows
 tab lists every workflow's trigger, steps, connector services, and agent calls
 without changing the hero.
 
-### `README.md`
-
-The optional README is written for gallery visitors. Explain the scenario,
-agents, workflows, prerequisites, and import-time configuration. It becomes the
-Overview tab and is never included in the downloadable solution ZIP.
-
-## Workflow preview requirement
+#### Saved designer graph
 
 Each submitted `Workflows/*.json` must include the saved designer graph produced
 by the modern workflow designer. The importer reads the graph's nodes, edges,
 handles, and positions from the workflow JSON. A workflow without that graph
 fails validation.
 
+## Shared gallery metadata
+
+Both formats require `metadata.json` beside their source directory. Use these
+shared fields; apps also need the
+[app setup metadata](docs/managed-apps.md#contribute-an-app).
+
+```json
+{
+  "name": "Customer Service Operations",
+  "description": "Help service teams triage requests, review policies, and resolve cases.",
+  "tags": ["customer-service", "triage", "human-in-the-loop"],
+  "category": "Customer service",
+  "author": "Your Name",
+  "authorUrl": "https://github.com/your-login",
+  "createdAt": "2026-08-12",
+  "updatedAt": "2026-08-12",
+  "featured": false
+}
+```
+
+Required fields: `name`, `description`, `tags`, and `author` (or `authors`).
+Recommended: `category`. Optional fields: `authorUrl`, `authorGithub`,
+`createdAt`, `updatedAt`, and `featured`. `hackathon` is set by maintainers.
+
+To credit more than one person, replace `author`, `authorUrl`, and
+`authorGithub` with an `authors` list. Each entry needs a `name` and can add a
+`github` handle (used for the avatar and to group contributions on one
+contributor page) and a `url`:
+
+```json
+"authors": [
+  { "name": "Your Name", "github": "your-login" },
+  { "name": "Teammate Name", "github": "teammate-login" },
+  { "name": "Colleague Without GitHub" }
+]
+```
+
+Every listed person gets their own avatar on the sample and their own
+contributor page.
+
+`category` is the one fixed category that best matches who uses the sample
+and the business activity it supports: `Customer service`, `Sales & marketing`,
+`IT & security`, `Operations`, `Project & communications management`, `HR`, `Finance`,
+`Legal & compliance`, `Productivity & knowledge`, `Agent Building`, `Governance`, or `Other`. See
+[Choose a category](submissions/README.md#choose-a-category) for who each one
+is for. Contributors can't add new values yet: use `Other` and suggest one in
+your pull request.
+Use `tags` for anything more specific. Submissions
+without a category still appear in the gallery, but not under category filters.
+
+`featured: true` marks a sample as **Built by Microsoft**. Leave it `false`
+unless the sample was built by a Microsoft team.
+
+`hackathon` records a Copilot Studio Agents & Workflows Build-a-thon badge: `hacker` (built a
+solution at the Build-a-thon) or `winner`. Maintainers set it during review, so
+leave it out of your submission. Every credited author shows the badge on their
+contributor page.
+
+Every contributor automatically earns one **Copilot Studio Hatchling** badge
+when their first app or solution is published. It appears alongside any Build-a-thon
+awards on their profile; no metadata field is
+needed. The badge links to their earliest published submission by `createdAt`,
+with undated submissions after dated ones and ties resolved by name, then ID.
+Demo-tagged submissions are not published and do not earn badges.
+
+**Hook, Line & Sinker** automatically recognizes the current three published
+solutions with the most hooks, including every solution tied at the third-place
+cutoff. Only solutions with at least one hook qualify. Every credited author
+receives a badge per qualifying solution, shown on their profile.
+Rankings recalculate when the site rebuilds, so this is
+not a permanent award. Hook counts come from distinct exported `AgentHook`
+components owned by agents in the solution, not component names, tags, tool
+filters, workflow steps, or the number of different hook event types.
+
+Solution identity, version, publisher, agents, workflows, and their components
+are derived from the exploded payload and cannot be overridden in metadata.
+Whether a solution appears under Agents or Workflows comes from what it
+contains. Designer notes in workflow canvases are not shown in the gallery.
+App version comes from `app/package.json`; apps appear under Apps without
+requiring solution identity or agent/workflow graphs.
+
+## Write the visitor overview
+
+`README.md` becomes the Overview tab and stays outside the downloadable source
+or solution ZIP.
+
+| Format | README requirement | What to explain |
+| --- | --- | --- |
+| Managed app | Required; screenshots strongly recommended | Purpose, usage, exact data structures, permissions, limitations, and customization; use the shared guide for installation |
+| Solution | Optional, recommended | Scenario, agents/workflows, prerequisites, and import-time configuration |
+
+Both formats can offer optional [supporting data files](submissions/README.md#supporting-files)
+in CSV, JSON, or plain-text format. These are separate downloads, not included
+in the payload ZIP or imported automatically.
+
 ## Safety and privacy
 
 - Remove secrets, tokens, customer data, tenant-specific email addresses, and
   other sensitive content before submitting.
-- The repository never executes submitted solution code.
+- Gallery validation never executes submitted solution or app code or installs
+  app dependencies. Fresh-app testing is a separate, intentional execution step.
 - Symlinks, path escapes, oversized files, and oversized payloads are rejected.
 - The browser receives a compact normalized preview, not raw parameter schemas,
   icons, connection identifiers, or source blobs.
-- The downloadable ZIP contains the submitted `solution/` contents verbatim, so
-  review those files carefully.
+- Review the source under `app/` or `solution/` carefully: it is the payload
+  visitors receive, not just the normalized gallery preview.
 
 ## Validate locally
 
 ```bash
-npm install
-npm test
 npm run check:submissions
 npm run import:submissions
-npm run astro -- check
+npm test
+npm run check
 npm run build
 ```
 
-Copy [`submissions/_template/`](submissions/_template/) to start.
+Run these commands from the gallery checkout for **either** format. Fix every
+failure before submitting. Generated files under `src/content/solutions/`,
+`src/content/guides/`, and `public/bundles/` come from the importer; do not
+hand-edit them.
 
-Before submitting a solution, import the same solution payload you are submitting
-into a fresh environment containing only its documented prerequisites, without
-skipping dependency checks. Complete the import attestation in the pull-request
-template. No report or screenshot is required. This attestation does not apply to
-site or repository-only changes.
+## Test in a fresh environment
 
-## Pull-request scope
+Local gallery checks validate packaging and metadata, not whether the sample
+works for another user.
+
+| Format | Required test |
+| --- | --- |
+| Managed app | Create a fresh platform-managed app from the submitted source with only its documented prerequisites, regenerate native data-source clients, and verify authenticated preview and intended connector operations. Follow [Testing before publication](docs/managed-apps.md#testing-before-publication); a new submission's public `main` template is not available before merge. |
+| Solution | Import the same submitted solution payload into a fresh environment containing only its documented prerequisites, without skipping dependency checks. |
+
+Complete the matching attestation in the
+[pull-request template](.github/pull_request_template.md). For apps, also
+complete its source/privacy review checklist. No test report or screenshot is
+required. Fresh-environment attestations do not apply to site or repository-only
+changes.
+
+## Open a pull request
+
+Commit the submission source, metadata, and documentation on your fork's
+contribution branch, push it, and open a pull request to this repository's
+`main`. Describe the sample and its prerequisites, complete the attestation
+for its format, and mark the other format's section N/A. Check that CI passes
+and respond to review feedback before merge.
+
+### Pull-request scope
 
 Keep submission changes separate from site, importer, workflow, or repository
-configuration changes. CI rejects mixed-scope pull requests unless maintainers
-apply the `allow-mixed-changes` label.
+configuration changes. Submit these as separate pull requests; CI checks this
+separation.
 
 By contributing, you agree that the submitted content is shared under this
 repository's [MIT license](LICENSE).
