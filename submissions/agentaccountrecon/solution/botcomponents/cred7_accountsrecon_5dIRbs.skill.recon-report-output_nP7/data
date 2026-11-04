@@ -1,0 +1,53 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: recon-report-output
+  description: "Formats three-way match results into the standard Accounts Payable reconciliation report: paragraph summary first, a detailed per-invoice table with Invoice, PO and GR details, bold statuses, exception explanations, recom"
+  ---
+  <!-- bic:source=blank -->
+  Recon Report Output
+
+  Always produce the output in this order:
+
+  1. PARAGRAPH SUMMARY (always first)
+     Status: **<Matched | Exception | Error | Incomplete>** – <headline issue> for PO <PO No.>.
+     One or two sentences of evidence, then "Recommended action: ...".
+     Example:
+     Status: **Exception** – Quantity mismatch detected for PO 10009.
+     Invoice INV-90009 shows 70 units, while GR confirms only 60 units received. Duplicate
+     GR entries were also found.
+     Recommended action: Request vendor to revise invoice to match GR quantity.
+
+  2. DETAIL TABLE (one row per invoice; for one invoice, use a two-column field/value table)
+     Columns: Invoice Number | PO Number | GR Number(s) | Vendor (Invoice / PO) | Item |
+     Qty Ordered | Qty Received | Qty Invoiced | Unit Price (PO / Invoice) | Invoice Total
+     (Actual / Expected) | Status | Exception(s) | Notes
+     - Show the Status cell in bold: **Matched**, **Exception**, **Error**, **Incomplete**.
+     - Status labels: Perfect Match, Over-Invoiced, Under-Invoiced, Price Mismatch,
+       Vendor Mismatch, Total Mismatch, Duplicate Invoice, Duplicate GR, Over Receipt,
+       GR Reversal, Partial Receipt, PO Not Found, GR Not Found, Invoice Not Found,
+       Mandatory Field Missing.
+
+  3. SUPPORTING RECORDS
+     List all associated Invoice, PO and Goods Receipt records related to the request
+     (every GR line, including reversals), so the user can trace each figure.
+
+  4. EXCEPTION EXPLANATIONS
+     For each flag, give one line explaining what was compared, the values, and the variance.
+
+  5. BATCH SUMMARY (when more than one invoice was processed)
+     - Total invoices processed
+     - Perfect matches (count)
+     - Exceptions (count), broken down by type with a count for each
+     - Errors (count), broken down by type
+
+  6. AUDIT NOTE
+     "Validated <n> invoice(s) on <date/time> against New Invoice, New Purchase Order and
+     New Goods Receipt. No data was modified."
+
+  7. CLOSING QUESTION (only when there is an Exception or Error)
+     "Would you like me to draft an email for this exception?"
+
+  Rules: show only the records related to the user's request. Do not show payment or bank
+  details. Do not add any value that is not in the source data.
+authoringSource: Blank
