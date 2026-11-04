@@ -1,10 +1,12 @@
 # App submissions
 
-Apps created through Cowork or Copilot Studio's Copilot Managed Runtime can use
-**platform-managed Git repositories**. Share portable application source, not
+Managed apps can be built directly with code, through Cowork, or through Copilot
+Studio. Share portable application source compatible with Copilot Managed Runtime, not
 the contributor's deployed app, repository identity, or connection configuration.
 These app sources are **not Power Platform solution packages**. Existing gallery
 agent/workflow submissions continue to use exploded solutions.
+For the shared repository setup, metadata, validation, and pull-request process,
+start with the [contribution guide](../CONTRIBUTING.md).
 
 The standard first-party CLI flow does not require making your own Entra app
 registration, service principal, client secret, or access token. Tenant policies,
@@ -13,12 +15,24 @@ apply. Play access alone does not grant source export/edit access.
 
 ## Contribute an app
 
+Complete the [gallery repository setup](../CONTRIBUTING.md#start-in-the-gallery-repository)
+first. This section prepares local or exported app source; later sections cover
+testing and installation.
+
 Install the prerequisites in Microsoft's
 [Managed Apps developer guide](https://learn.microsoft.com/en-us/microsoft-365/managed-apps/developer/):
 Node >=24.11, npm, Git >=2.27 with a TLS-1.3-capable transport, and Git Credential
 Manager. Use the supported Git/GCM installation for your OS. Some Apple Git
 builds cannot negotiate the CLI's required TLS version; use a compatible Git
 installation, not certificate/TLS bypasses. The gallery itself still uses Node 22.
+
+For a code-first app, start with your local source directory and ensure it meets
+the package, build, and license requirements below. You do not need an existing
+deployed app to prepare a submission; fresh managed-app testing is still required.
+
+For an existing app in a **platform-managed Git repository**, export its source
+with the native CLI. From a working directory **outside the gallery checkout**,
+clone it into a new local directory:
 
 ```sh
 npx --yes --package=@microsoft/managed-apps-cli -- ms auth login
@@ -29,14 +43,17 @@ npx --yes --package=@microsoft/managed-apps-cli -- ms app clone ./my-app --app Y
 
 Use the native clone command for your app into a new local directory, following
 its help. Clone supports platform-managed repositories; do not extract browser
-tokens or substitute custom authentication. In the gallery checkout:
+tokens or substitute custom authentication.
+
+For either starting point, return to the **gallery checkout** and prepare the
+submission, pointing the helper at your local app source:
 
 ```sh
-npm run prepare:app -- /path/to/your-clone my-app --dry-run
-npm run prepare:app -- /path/to/your-clone my-app
+npm run prepare:app -- /path/to/your-app-source my-app --dry-run
+npm run prepare:app -- /path/to/your-app-source my-app
 ```
 
-The helper never modifies the clone, overwrites an existing submission, installs
+The helper never modifies the source directory, overwrites an existing submission, installs
 dependencies, signs in, or calls cloud services. It excludes Git history, local
 caches/build output, deployment/builder configuration, environment files, and
 common credential files. It reports original connections that need documentation.
@@ -138,19 +155,19 @@ purpose, screenshots, usage, app-specific data requirements and permissions,
 limitations, and customization. Include the exact list/table schema and how to
 create it, but keep installation, authentication, CLI, build, and deployment
 instructions in this shared guide rather than repeating them in each README.
-Omit `previewWorkflow`
-for apps. App version comes from `app/package.json`; no fake solution identity
-or empty agent/workflow graphs are necessary.
+App version comes from `app/package.json`.
 
 Optional CSV, JSON, and plain-text [supporting files](../submissions/README.md#supporting-files)
 can provide synthetic data or reference material. Declare them in metadata;
-they are separate downloads, never part of the app source ZIP or automatically
-imported automatically.
+they are separate downloads, never part of the app source ZIP or imported
+automatically.
 
-Validate submission structure with `npm run check:submissions`, then the gallery's
-documented checks. Ingestion never executes app code, installs its dependencies,
+Run the [shared local checks](../CONTRIBUTING.md#validate-locally), starting with
+`npm run check:submissions`. Ingestion never executes app code, installs its dependencies,
 or runs cloud operations. Separately test the app's source in a fresh managed
-app with only its documented prerequisites, then complete the app PR attestation.
+app with only its documented prerequisites as described below, then
+[open a pull request](../CONTRIBUTING.md#open-a-pull-request) and complete the
+managed app attestation.
 
 ## Testing before publication
 
@@ -177,9 +194,12 @@ installer backend, extract credentials, or bypass TLS.
 
 ## Install an app
 
-The detail page shows a **Download and install manually** source ZIP link below
-the support paragraph, followed by **Automated install** with two command boxes:
-**macOS · Bash** and **Windows · PowerShell**. Check the trust acknowledgement
+The detail page groups the trust acknowledgement and support notice above
+**Automated install**, with command boxes for **macOS · Bash** and
+**Windows · PowerShell**. They sit side by side when the panel has room and
+stack on phones and in the desktop sidebar. **Download and install manually**
+and **Manual setup guide & requirements** appear below the commands.
+Check the trust acknowledgement
 to enable the download and commands. For automated setup, review the appropriate
 command and choose its **Copy** control or copy it manually. Unchecking the
 acknowledgement disables the download and clears and disables the commands again.
