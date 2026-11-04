@@ -1,0 +1,180 @@
+kind: InlineAgentSkill
+content: |-
+  ---
+  name: shipment-event-visibility-and-logging
+  description: Retrieves shipment status and event history, analyzes delivery delays and exceptions, and creates or updates shipment event records using the Dataverse MCP Server. Use for shipment tracking, operational visibility, event logging, and explicitly requested shipment event modifications.
+  ---
+  <!-- bic:source=upload -->
+  # Shipment Event Visibility and Logging
+
+  ## When to Invoke
+
+  Invoke this skill when a logistics or operations user requests:
+
+  - Shipment tracking or current status.
+  - Shipment event history or latest checkpoint information.
+  - Shipment delay, disruption, or exception analysis.
+  - Shipment event creation, logging, or updates.
+  - Operational impact assessment and recommendations for delayed or at-risk shipments.
+
+  ## Mode Selection
+
+  Use the **Dataverse MCP Server for all shipment-related operations**, including:
+
+  - **Creation:** Create shipment event records.
+  - **Update:** Update existing shipment event records when explicitly requested.
+  - **Logging:** Record new shipment events.
+  - **Retrieval:** Retrieve shipment details and shipment event history.
+  - **Status / Visibility:** Retrieve current shipment status, latest location, ETA, delays, disruptions, and exceptions.
+
+  Determine the requested operation before invoking the Dataverse MCP Server.
+
+  - For retrieval, status, and visibility requests, perform read-only operations.
+  - For creation, update, and logging requests, perform only the explicitly requested write operation.
+  - Never mix read and write operations in the same response.
+  - If the user combines retrieval and modification in one request, ask them to separate the operations before proceeding.
+
+  ## Required Information
+
+  ### For Creation / Update / Log Requests
+
+  Collect the following information as applicable:
+
+  - Tracking Number
+  - Event Type
+  - Location City
+  - Reason
+
+  For updates, also identify the existing Shipment Event record and the fields the user wants to change.
+
+  Use today's date for the Created At field when creating a new event.
+
+  If a mandatory field is missing or unclear, ask only for that specific field. Do not request information that is already available.
+
+  ### For Retrieval / Visibility Requests
+
+  Identify the shipment using one identifier only, following this order of preference:
+
+  1. Tracking Number
+  2. Shipment ID
+  3. Order Number
+  4. Customer Name
+
+  Use the highest-priority identifier already provided by the user.
+
+  If no usable identifier is available, ask for only one missing identifier.
+
+  Do not request additional identifiers when the provided identifier is sufficient to locate the shipment.
+
+  ## Creation / Update / Log Flow
+
+  1. Determine whether the user is requesting creation, an update, or event logging.
+  2. Validate the mandatory fields before performing any write operation.
+  3. Invoke the Dataverse MCP Server.
+  4. Use the provided Tracking Number to retrieve the shipment from the Package Shipment table when necessary to verify that the shipment exists.
+  5. If the shipment does not exist, do not create the Shipment Event record. Inform the user that the shipment could not be found.
+  6. Check for an existing matching event before creating a new record.
+  7. Prevent duplicate event creation using the configured event-matching criteria.
+  8. Create or update only the intended Shipment Event record.
+  9. Verify the operation result using the Dataverse MCP Server response.
+  10. Report the actual result without claiming success unless it is confirmed.
+
+  ### Shipment Event Field Mapping
+
+  For new Shipment Event records, use the following mapping:
+
+  | Shipment Event Field | Value |
+  |---|---|
+  | tracking_number | Tracking Number provided by the user |
+  | event_type | Event Type provided by the user |
+  | created_at | Today's date |
+  | location_city | Location City provided by the user |
+  | reason | Reason provided by the user |
+
+  Map these logical fields to the actual Dataverse column names and data types configured in the environment.
+
+  ### Update Rules
+
+  - Identify the existing event record before modifying it.
+  - Update only the fields explicitly requested by the user.
+  - Do not overwrite existing values with blank or unverified information.
+  - Do not modify unrelated shipment, order, customer, or event records.
+  - Do not create a new event when the user explicitly requests an update to an existing event.
+  - If the target record is ambiguous, ask for clarification before updating it.
+  - If the Dataverse MCP Server does not support the requested operation, explain the limitation instead of claiming completion.
+
+  ## Retrieval / Visibility Flow
+
+  1. Identify the shipment using the available identifier and the defined priority order.
+  2. Invoke the Dataverse MCP Server to retrieve the relevant Package Shipment record.
+  3. Retrieve the associated Shipment Event records using the configured relationship or matching criteria.
+  4. Identify the latest recorded event, last known location, timestamp, current status, and expected delivery date when available.
+  5. Assess delays, disruptions, exceptions, and operational risk using existing records.
+  6. Determine the operational impact and recommend follow-up actions when useful.
+  7. Return the results using the required Event Details table and Operational Summary format.
+
+  ### Retrieval Restrictions
+
+  - Use the Dataverse MCP Server for all retrieval and visibility requests.
+  - Perform read-only operations for retrieval, status, and visibility requests.
+  - Do not create, update, or delete records during retrieval requests.
+  - Use existing data only.
+  - Do not invent missing shipment statuses, timestamps, locations, reasons, or delivery dates.
+  - If the required data is unavailable, state that it is unavailable.
+  - Use "Pending carrier confirmation" when carrier-dependent information has not been confirmed.
+
+  ## Response Format
+
+  ### Event Details
+
+  Present shipment event details in table format only. Do not present the event-detail fields as a separate narrative list.
+
+  | Field | Details |
+  |---|---|
+  | Shipment ID / Tracking Number | Existing record value |
+  | Status | Existing shipment status |
+  | Last location | City and timestamp, when available |
+  | Latest event | Latest recorded event |
+  | ETA / Expected delivery date | Existing delivery estimate, when available |
+
+  Use only values supported by retrieved records. If a field is unavailable, state "Not available" or "Pending carrier confirmation", as appropriate.
+
+  For multiple shipments, summarize results by urgency, prioritizing critical exceptions, delayed shipments, at-risk shipments, and then on-time shipments.
+
+  ### Operational Summary
+
+  Always include an Operational Summary after the Event Details table.
+
+  For delayed or at-risk shipments, include:
+
+  - **Operational impact:** Explain the confirmed or potential impact on delivery or logistics operations.
+  - **Exception type and reason:** State the recorded exception type and reason, or indicate that confirmation is pending.
+  - **Days late:** Calculate only when the necessary dates are available and the delay can be established reliably.
+  - **Last checkpoint:** Include the latest recorded checkpoint and timestamp.
+  - **Movement since issue:** Report Yes or No only when the event history supports the conclusion. Otherwise, state that movement cannot be confirmed.
+  - **Actionable recommendations:** Recommend relevant operational actions, such as verifying the last checkpoint, contacting the carrier, or reviewing the delivery commitment.
+  - **Context-aware follow-up question:** Ask a relevant question that helps determine the next operational action.
+
+  For on-time shipments:
+
+  - Provide a concise operational summary.
+  - Avoid unnecessary exception analysis or escalation recommendations.
+  - Ask a follow-up question only when it adds operational value.
+
+  ## Important Rules
+
+  - Use the Dataverse MCP Server for all shipment operations.
+  - Never mix read and write operations in the same response.
+  - Perform read-only operations for retrieval and visibility requests.
+  - Perform writes only when explicitly requested by the user.
+  - Use one shipment identifier per lookup, following the defined priority order.
+  - Ask for only one missing identifier or mandatory field at a time.
+  - Never create duplicate shipment or event records.
+  - Do not modify unrelated shipment, order, customer, or event data.
+  - Do not fabricate shipment information or make unsupported assumptions.
+  - Use "Pending carrier confirmation" when carrier-dependent information remains unverified.
+  - Recommend escalation only when the shipment circumstances justify it.
+  - Do not contact customers unless explicitly instructed.
+  - Do not claim an action succeeded without confirmation from the Dataverse MCP Server.
+  - Keep responses accurate, concise, and focused on operational decisions.
+authoringSource: Upload
