@@ -1,0 +1,54 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: hardship-withdrawal-guide
+  description: Use when the user asks about a hardship withdrawal, whether their situation qualifies, how much they can take, what to certify or document, or how a hardship withdrawal is taxed. Do NOT use for the separate SECURE 2.0 emergency, domestic abuse, birth or adoption, or disaster distributions, which the early-withdrawal-exceptions skill covers.
+  ---
+  # Hardship Withdrawal Guide
+
+  Help the user decide whether a hardship withdrawal fits their need, how much to request, and what it will really cost. A hardship withdrawal is permanent. It cannot be repaid to the plan.
+
+  ## Procedure
+
+  1. **Check the plan.** From plan-rules, confirm hardship withdrawals are offered and note the eligible sources, the self-certification rule, whether a loan must be taken first, and the fee.
+  2. **Match the reason.** Ask for the category of need only, not private details. It must be one of these IRS safe-harbor reasons:
+
+  | Reason | What counts | Common reasons that do not count |
+  | --- | --- | --- |
+  | Medical expenses | Medical care for the employee, spouse, dependents, or primary beneficiary | Elective cosmetic procedures |
+  | Buying a principal residence | Costs directly related to purchasing their main home | Ongoing mortgage payments, a second home |
+  | Education | Tuition, related fees, and room and board for the next 12 months of post-secondary education for the employee, spouse, children, dependents, or primary beneficiary | Past-due student loans |
+  | Preventing eviction or foreclosure | Payments needed to stop eviction from, or foreclosure on, their principal residence | Amounts beyond what is needed to stop the eviction or foreclosure, or a second home |
+  | Funeral expenses | Burial or funeral costs for the employee's parent, spouse, child, dependent, or primary beneficiary | Funerals for other relatives or friends |
+  | Home repair after a casualty | Repairing sudden damage to their principal residence, such as fire, storm, or flood | Routine maintenance, upgrades |
+  | Federally declared disaster | Expenses and losses, including lost income, from a FEMA-declared disaster when their home or main workplace is in an area FEMA designated for individual assistance | Disasters without a FEMA individual assistance designation |
+
+     If the need is not on the list (for example credit card debt, a car purchase, or back taxes), say a hardship withdrawal is not available for it. Then check whether a loan or an emergency personal expense distribution could help.
+  3. **Check other money in the plan first.** IRS rules require the user to take any other withdrawal currently available from the employer's plans first, such as a rollover-source or age 59½ withdrawal listed in plan-rules. If plan-rules requires a loan first, say so.
+  4. **Size the request.** The amount cannot exceed the need. It can include the federal and state income taxes and penalties reasonably expected on the withdrawal. Use the withdrawal-tax-estimator skill to calculate a grossed-up amount.
+  5. **Explain the self-certification.** When the plan accepts self-certification, the user confirms in writing that:
+     - the need is one of the reasons above,
+     - the amount does not exceed the need, and
+     - they have no other reasonably available cash or liquid assets to meet it.
+
+     They should keep supporting documents in case the plan or the IRS asks.
+  6. **Explain taxes.** Pre-tax money is taxed as ordinary income. A 10% additional federal tax applies if they are under 59½, unless an exception applies (for example, medical expenses above 7.5% of AGI). Federal withholding defaults to 10% because hardship withdrawals cannot be rolled over. The user can choose a different rate on Form W-4R, and many people need more than 10% withheld. For a Roth source, the earnings share of a non-qualified withdrawal is taxable.
+  7. **Compare with a loan.** Show the key difference in one line each: a loan is repaid and not taxed, while a hardship withdrawal is permanent and taxed. If the user can afford loan payments and is eligible, mention the loan as an alternative and offer to run the loan-estimator.
+  8. **Next step.** Point them to the recordkeeper portal to apply, with plan-rules processing details. Offer the benefits-request-handoff skill if they have questions only the benefits team can answer.
+
+  ## Example
+
+  User: "My landlord sent an eviction notice. I need $6,000 by the end of the month. Can I take a hardship withdrawal?"
+
+  - Reason: preventing eviction from a principal residence is a safe-harbor reason.
+  - Other money first: if they have rollover money in the plan, they must withdraw that first.
+  - Amount: they can request $6,000 plus expected taxes. Offer to calculate the grossed-up amount.
+  - Speed: mention plan-rules processing time so they can plan around the deadline.
+  - Alternative: if the plan's loan is processed as fast and they can afford the payments, a loan avoids taxes.
+
+  ## Edge cases
+
+  - Since 2020, plans cannot stop contributions after a hardship withdrawal, and federal rules no longer require a loan first. A plan can still require a loan first, so check plan-rules. Some older guidance online describes the old 6-month suspension.
+  - A spouse's or dependent's medical bills qualify. A housemate's do not, unless that person is the user's primary beneficiary under the plan.
+  - Tuition qualifies only for the next 12 months. Paying off past education debt does not.
+  - Disaster losses may also qualify for a qualified disaster recovery distribution, which has better tax treatment. Check the early-withdrawal-exceptions skill first.
