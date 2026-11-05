@@ -1,0 +1,155 @@
+{
+  "trigger": {
+    "metadata": {
+      "associatedData": {
+        "graph": {
+          "name": "Audit agent DLP and security compliance",
+          "nodes": [
+            {
+              "id": "node-1",
+              "name": "When agent is submitted for publication",
+              "type": "start",
+              "position": {
+                "x": 0,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "When agent is submitted for publication",
+                  "operationType": "trigger"
+                }
+              }
+            },
+            {
+              "id": "node-2",
+              "name": "Extract connectors and endpoints",
+              "type": "agent",
+              "position": {
+                "x": 260,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "Extract connectors and endpoints",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-3",
+              "name": "Evaluate DLP policy boundaries",
+              "type": "connector",
+              "position": {
+                "x": 520,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "Evaluate DLP policy boundaries",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-4",
+              "name": "Are all endpoints DLP compliant?",
+              "type": "ifElse",
+              "position": {
+                "x": 780,
+                "y": 90
+              },
+              "data": {
+                "config": {
+                  "displayName": "Are all endpoints DLP compliant?",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-5",
+              "name": "Scan prompts for injection & PII leakage",
+              "type": "agent",
+              "position": {
+                "x": 1040,
+                "y": -70
+              },
+              "data": {
+                "config": {
+                  "displayName": "Scan prompts for injection & PII leakage",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-6",
+              "name": "Block publication & notify security admin",
+              "type": "connector",
+              "position": {
+                "x": 1040,
+                "y": 180
+              },
+              "data": {
+                "config": {
+                  "displayName": "Block publication & notify security admin",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-7",
+              "name": "Log compliance certificate in Dataverse",
+              "type": "end",
+              "position": {
+                "x": 1320,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "Log compliance certificate in Dataverse",
+                  "operationType": "end"
+                }
+              }
+            }
+          ],
+          "edges": [
+            {
+              "id": "edge-1",
+              "source": "node-1",
+              "target": "node-2"
+            },
+            {
+              "id": "edge-2",
+              "source": "node-2",
+              "target": "node-3"
+            },
+            {
+              "id": "edge-3",
+              "source": "node-3",
+              "target": "node-4"
+            },
+            {
+              "id": "edge-4",
+              "source": "node-4",
+              "target": "node-5"
+            },
+            {
+              "id": "edge-5",
+              "source": "node-4",
+              "target": "node-6"
+            },
+            {
+              "id": "edge-6",
+              "source": "node-5",
+              "target": "node-7"
+            },
+            {
+              "id": "edge-7",
+              "source": "node-6",
+              "target": "node-7"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
