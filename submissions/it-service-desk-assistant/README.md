@@ -8,6 +8,8 @@ Frontline IT support teams spend over 40% of their time collecting basic diagnos
 
 The **IT Service Desk Assistant** provides 24/7 autonomous first-contact support across Microsoft Teams, Microsoft 365 Copilot, and web portals. When an employee reports an issue, the agent classifies the request using standard ITIL categories, searches enterprise knowledge bases, executes guided troubleshooting steps, and—if the issue requires human escalation—packages a complete, structured incident hand-off with urgency ratings and diagnostic logs.
 
+[Download sample IT incident catalog (CSV)](supporting/sample-it-incidents.csv)
+
 ## Key Capabilities
 
 - **Intelligent Classification & Intent Detection**: Automatically identifies category and urgency across *Access & Identity*, *Network & Connectivity*, *Software & Licensing*, and *Hardware & Endpoints*.
@@ -19,6 +21,15 @@ The **IT Service Desk Assistant** provides 24/7 autonomous first-contact support
   - Gathers reproduction steps, error codes, device OS, and impact severity (P1 Critical through P4 Low).
   - Formats an engineer-ready escalation payload for Dataverse, ServiceNow, Jira Service Management, or Zendesk.
 - **Enterprise Safety & Privacy**: Redacts personal passwords, tokens, and credentials from chat history and incident summaries.
+
+## Agent Skills & Tools
+
+The agent includes dedicated inline skills and tools:
+- **`identity-access-resolver` (Skill)**: Automated playbooks for account lockout recovery, password resets, and MFA re-registration.
+- **`vpn-network-diagnostics` (Skill)**: Step-by-step guidance for VPN tunnel drops, gateway checks, and DNS resolution issues.
+- **`incident-escalation-formatter` (Skill)**: Structures troubleshooting history and system errors into prioritized P1–P4 escalation records.
+- **`ITKnowledgeBaseMCP` (Tool)**: Connects to enterprise knowledge bases and standard operating procedures (SOPs).
+- **`DispatchITSMTicket` (Tool)**: Dispatches verified incident records directly into ITSM service queues.
 
 ## How It Works
 
