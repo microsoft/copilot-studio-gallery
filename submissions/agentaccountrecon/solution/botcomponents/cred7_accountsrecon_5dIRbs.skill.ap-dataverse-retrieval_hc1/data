@@ -1,0 +1,39 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: ap-dataverse-retrieval
+  description: Retrieves the Invoice, Purchase Order and Goods Receipt records needed for a three-way match from the Dataverse tables New Invoice, New Purchase Order and New Goods Receipt. Use it whenever the user names an invoice number, PO number, GR number or vendor, or asks to validate a batch of invoices.
+  ---
+  <!-- bic:source=blank -->
+  Ap Dataverse Retrieval
+
+  Purpose: collect complete, exact source data for validation. Do not validate here.
+
+  Steps:
+  1. Identify the user's input type:
+     - Invoice Number (for example INV-90009): go to step 2.
+     - PO Number: fetch all invoices for that PO from New Invoice, then run step 2 for each.
+     - Vendor name: fetch all invoices for that vendor from New Invoice, then run step 2 for each.
+     - "All", "batch" or a date range: fetch the matching invoices from New Invoice, then run
+       step 2 for each.
+     - If none of these is clear, ask: "Which invoice number, PO number or vendor should I
+       validate?"
+  2. For each invoice:
+     a. New Invoice: get every row where Invoice Number = the input. Keep ALL rows. More
+        than one row means a possible duplicate invoice.
+     b. Read the PO Number from the invoice. New Purchase Order: get the rows were
+        PO Number = Invoice. PO Number.
+     c. New Goods Receipt: get ALL rows where GR.PO Number = Invoice. PO Number, including
+        reversed and returned GRs.
+     d. New Invoice: get all other invoices for the same PO Number. This supports duplicate
+        and cumulative over-invoicing checks.
+  3. Return the raw records grouped as Invoice(s), PO, GR list and Related invoices, with
+     every field from the field map. Mark any field that is empty as MISSING. Never fill it.
+  4. If a lookup returns no rows, record "not found" for that table and continue, so the
+     validation skill can classify the result as an Error.
+
+  Rules:
+  - Use exact-match filters. Never use fuzzy matching on Invoice Number or PO Number.
+  - Do not guess, compute or default any value.
+  - Return only the records related to the user's request.
+authoringSource: Blank
