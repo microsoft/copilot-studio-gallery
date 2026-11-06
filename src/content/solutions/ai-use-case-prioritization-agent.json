@@ -1,0 +1,944 @@
+{
+  "submissionType": "solution",
+  "name": "AI Use Case Prioritization Agent",
+  "description": "Copilot Studio agent that captures, assesses, prioritizes and routes AI agent use cases against approved rubrics, records them in Dataverse after user confirmation, and returns a downloadable HTML assessment report.",
+  "tags": [
+    "use-case-prioritization",
+    "assessment",
+    "responsible-ai",
+    "dataverse",
+    "governance",
+    "human-in-the-loop"
+  ],
+  "category": "Project & communications management",
+  "createdAt": "2026-11-03",
+  "updatedAt": "2026-11-03",
+  "featured": true,
+  "supportingFiles": [],
+  "author": "Alicja Gilderdale",
+  "authors": [
+    {
+      "name": "Alicja Gilderdale",
+      "url": "https://github.com/alicja-gilderdale"
+    }
+  ],
+  "uniqueName": "AIUseCaseSolutionv3",
+  "version": "1.0.0.2",
+  "publisher": "CAD Builder PM",
+  "bundle": "bundles/ai-use-case-prioritization-agent.zip",
+  "agentCount": 1,
+  "workflowCount": 0,
+  "hookCount": 0,
+  "componentCount": 2,
+  "agents": [
+    {
+      "id": "cadpbm_c",
+      "schemaName": "cadpbm_c",
+      "name": "☘ AI Use Case Analyst",
+      "model": "Sonnet5",
+      "instructions": "You are a friendly AI Use Case Assessment guide.\n\nYour job is to help users capture, strengthen, assess, confirm, record, and report AI use cases.\n\nTone and behavior:\n- Be supportive, clear, and benefits-oriented.\n- Ask one question at a time.\n- Never bundle questions.\n- Show progress after each answered question using: Progress: 35%\n- Format progress using Markdown only:\n  - \\*\\*Guided completion · Question 1 of 3\\*\\*\n  - \\*\\*Progress: 80%\\*\\*\n  - Then a divider line before the question in a new line: \n────────────────────\n- The step label, progress line, and divider must each be on separate lines.\n- Insert a blank line after the progress line and after the divider.\n- Never combine the step label, progress, and divider on one line.\n- Required layout:\n  \\*\\*Guided completion · Question 1 of 3\\*\\*\n  \\*\\*Progress: 80%\\*\\*\n\n  ────────────────────\n\n  \\*\\*Question text\\*\\*\n- Never re-ask information already provided or materially equivalent information.\n- If the user disengages mid-flow, resume by briefly saying where they were and offer Continue or Restart.\n\nWelcome message:\n- Do not use a generic greeting like \"Hello! I'm AI Use Case Analyst. How can I help you today?\"\n- Use a warmer, more distinctive welcome that explains what the agent can do and gives clear starting paths.\n- Keep it concise and user-friendly.\n- Suggested welcome:\n  \"☘️ Welcome — I’m your AI Use Case Analyst. I can turn an early idea, a rough document, or a full solution brief into a structured AI use case assessment with gaps, scoring, Dataverse recording, and a downloadable HTML report.\n\n  To get started, choose one:\n  Options: Upload files for quick gap assessment | Guide me from scratch | Continue an existing use case\"\n- Use Markdown formatting for the welcome. Do not use raw HTML cards.\n\nProgress/update notes:\n- When giving short progress updates while working, make them user-friendly and visually distinct.\n- Progress updates must make it clear that the agent is actively working, not just narrat",
+      "channels": [
+        "MsTeams",
+        "Microsoft365Copilot"
+      ],
+      "toolCount": 1,
+      "skillCount": 8,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:cadpbm_c",
+        "name": "☘ AI Use Case Analyst",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "Sonnet5",
+          "instructions": "You are a friendly AI Use Case Assessment guide.\n\nYour job is to help users capture, strengthen, assess, confirm, record, and report AI use cases.\n\nTone and behavior:\n- Be supportive, clear, and benefits-oriented.\n- Ask one question at a time.\n- Never bundle questions.\n- Show progress after each answered question using: Progress: 35%\n- Format progress using Markdown only:\n  - \\*\\*Guided completion · Question 1 of 3\\*\\*\n  - \\*\\*Progress: 80%\\*\\*\n  - Then a divider line before the question in a new line: \n────────────────────\n- The step label, progress line, and divider must each be on separate lines.\n- Insert a blank line after the progress line and after the divider.\n- Never combine the step label, progress, and divider on one line.\n- Required layout:\n  \\*\\*Guided completion · Question 1 of 3\\*\\*\n  \\*\\*Progress: 80%\\*\\*\n\n  ────────────────────\n\n  \\*\\*Question text\\*\\*\n- Never re-ask information already provided or materially equivalent information.\n- If the user disengages mid-flow, resume by briefly saying where they were and offer Continue or Restart.\n\nWelcome message:\n- Do not use a generic greeting like \"Hello! I'm AI Use Case Analyst. How can I help you today?\"\n- Use a warmer, more distinctive welcome that explains what the agent can do and gives clear starting paths.\n- Keep it concise and user-friendly.\n- Suggested welcome:\n  \"☘️ Welcome — I’m your AI Use Case Analyst. I can turn an early idea, a rough document, or a full solution brief into a structured AI use case assessment with gaps, scoring, Dataverse recording, and a downloadable HTML report.\n\n  To get started, choose one:\n  Options: Upload files for quick gap assessment | Guide me from scratch | Continue an existing use case\"\n- Use Markdown formatting for the welcome. Do not use raw HTML cards.\n\nProgress/update notes:\n- When giving short progress updates while working, make them user-friendly and visually distinct.\n- Progress updates must make it clear that the agent is actively working, not just narrat",
+          "channels": [
+            "MsTeams",
+            "Microsoft365Copilot"
+          ],
+          "toolCount": 1,
+          "skillCount": 8,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:cadpbm_c.skill.category-subcategory-resolver_IwY",
+        "name": "category-subcategory-resolver",
+        "type": "skill",
+        "position": {
+          "x": 1248,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cadpbm_c.skill.category-subcategory-resolver_IwY",
+          "description": "Resolve category and subcategory from configured knowledge."
+        }
+      },
+      {
+        "id": "skill:cadpbm_c.skill.confirmation-final-qa_t40",
+        "name": "confirmation-final-qa",
+        "type": "skill",
+        "position": {
+          "x": 908,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cadpbm_c.skill.confirmation-final-qa_t40",
+          "description": "Create confirmation summary and final quality checks."
+        }
+      },
+      {
+        "id": "skill:cadpbm_c.skill.dataverse-mcp-save_2HZ",
+        "name": "dataverse-mcp-save",
+        "type": "skill",
+        "position": {
+          "x": 568,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cadpbm_c.skill.dataverse-mcp-save_2HZ",
+          "description": "Save use case and assessment records with Dataverse MCP."
+        }
+      },
+      {
+        "id": "skill:cadpbm_c.skill.file-usecase-extraction_zxX",
+        "name": "file-usecase-extraction",
+        "type": "skill",
+        "position": {
+          "x": 228,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cadpbm_c.skill.file-usecase-extraction_zxX",
+          "description": "Extract candidate AI use cases from uploaded files or pasted text."
+        }
+      },
+      {
+        "id": "skill:cadpbm_c.skill.html-report-generation_Ur",
+        "name": "html-report-generation",
+        "type": "skill",
+        "position": {
+          "x": -111.99999999999997,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cadpbm_c.skill.html-report-generation_Ur-",
+          "description": "Generate and return a downloadable HTML assessment report."
+        }
+      },
+      {
+        "id": "skill:cadpbm_c.skill.required-fields-progress_epD",
+        "name": "required-fields-progress",
+        "type": "skill",
+        "position": {
+          "x": -452,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cadpbm_c.skill.required-fields-progress_epD",
+          "description": "Manage required field intake and progress tracking."
+        }
+      },
+      {
+        "id": "skill:cadpbm_c.skill.rubric-scoring_2qn",
+        "name": "rubric-scoring",
+        "type": "skill",
+        "position": {
+          "x": -792,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cadpbm_c.skill.rubric-scoring_2qn",
+          "description": "Score the use case using configured rubric knowledge."
+        }
+      },
+      {
+        "id": "skill:cadpbm_c.skill.usecase-strengthening-gaps_G_u",
+        "name": "usecase-strengthening-gaps",
+        "type": "skill",
+        "position": {
+          "x": -1132,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cadpbm_c.skill.usecase-strengthening-gaps_G_u",
+          "description": "Run gap assessment and scoring readiness checks."
+        }
+      },
+      {
+        "id": "tool:cadpbm_c.tool.MicrosoftDataverse-MicrosoftDataverseMCPServer_MVq",
+        "name": "Microsoft Dataverse — Microsoft Dataverse MCP Server",
+        "type": "tool",
+        "position": {
+          "x": -1472,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cadpbm_c.tool.MicrosoftDataverse-MicrosoftDataverseMCPServer_MVq",
+          "operation": "InvokeMCP"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:cadpbm_c-includes-cadpbm_c.skill.category-subcategory-resolver_IwY",
+        "source": "agent:cadpbm_c",
+        "target": "skill:cadpbm_c.skill.category-subcategory-resolver_IwY",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cadpbm_c-includes-cadpbm_c.skill.confirmation-final-qa_t40",
+        "source": "agent:cadpbm_c",
+        "target": "skill:cadpbm_c.skill.confirmation-final-qa_t40",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cadpbm_c-includes-cadpbm_c.skill.dataverse-mcp-save_2HZ",
+        "source": "agent:cadpbm_c",
+        "target": "skill:cadpbm_c.skill.dataverse-mcp-save_2HZ",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cadpbm_c-includes-cadpbm_c.skill.file-usecase-extraction_zxX",
+        "source": "agent:cadpbm_c",
+        "target": "skill:cadpbm_c.skill.file-usecase-extraction_zxX",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cadpbm_c-includes-cadpbm_c.skill.html-report-generation_Ur",
+        "source": "agent:cadpbm_c",
+        "target": "skill:cadpbm_c.skill.html-report-generation_Ur",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cadpbm_c-includes-cadpbm_c.skill.required-fields-progress_epD",
+        "source": "agent:cadpbm_c",
+        "target": "skill:cadpbm_c.skill.required-fields-progress_epD",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cadpbm_c-includes-cadpbm_c.skill.rubric-scoring_2qn",
+        "source": "agent:cadpbm_c",
+        "target": "skill:cadpbm_c.skill.rubric-scoring_2qn",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cadpbm_c-includes-cadpbm_c.skill.usecase-strengthening-gaps_G_u",
+        "source": "agent:cadpbm_c",
+        "target": "skill:cadpbm_c.skill.usecase-strengthening-gaps_G_u",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cadpbm_c-uses-cadpbm_c.tool.MicrosoftDataverse-MicrosoftDataverseMCPServer_MVq",
+        "source": "agent:cadpbm_c",
+        "target": "tool:cadpbm_c.tool.MicrosoftDataverse-MicrosoftDataverseMCPServer_MVq",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [],
+  "connectors": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 7041
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 419
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.agenticusecaseassessmentrubricv2docx_pxn5v/botcomponent.xml",
+      "category": "component",
+      "size": 960
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.agenticusecaseassessmentrubricv2docx_pxn5v/filedata/Agentic%20Use%20Case%20Assessment%20Rubric%20v2.docx",
+      "category": "component",
+      "size": 103373
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.guidanceforusecasecategoriesandsubcatego_6Co1S/botcomponent.xml",
+      "category": "component",
+      "size": 1048
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.guidanceforusecasecategoriesandsubcatego_6Co1S/filedata/Guidance_Categories_SubCategories.docx",
+      "category": "component",
+      "size": 377375
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.skillmd_5PBMs/botcomponent.xml",
+      "category": "component",
+      "size": 479
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.skillmd_5PBMs/filedata/SKILL.md",
+      "category": "component",
+      "size": 4251
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.skillmd_CFmEi/botcomponent.xml",
+      "category": "component",
+      "size": 489
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.skillmd_CFmEi/filedata/SKILL.md",
+      "category": "component",
+      "size": 6206
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.skillmd_JSVyA/botcomponent.xml",
+      "category": "component",
+      "size": 494
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.skillmd_JSVyA/filedata/SKILL.md",
+      "category": "component",
+      "size": 2514
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.skillmd_nP3xP/botcomponent.xml",
+      "category": "component",
+      "size": 487
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.skillmd_nP3xP/filedata/SKILL.md",
+      "category": "component",
+      "size": 8285
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.skillmd_Sn9xR/botcomponent.xml",
+      "category": "component",
+      "size": 483
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.skillmd_Sn9xR/filedata/SKILL.md",
+      "category": "component",
+      "size": 3862
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.skillmd_VAzE0/botcomponent.xml",
+      "category": "component",
+      "size": 488
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.skillmd_VAzE0/filedata/SKILL.md",
+      "category": "component",
+      "size": 2335
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.skillmd_XRKoT/botcomponent.xml",
+      "category": "component",
+      "size": 486
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.skillmd_XRKoT/filedata/SKILL.md",
+      "category": "component",
+      "size": 3214
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.skillmd_zrh1G/botcomponent.xml",
+      "category": "component",
+      "size": 491
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.skillmd_zrh1G/filedata/SKILL.md",
+      "category": "component",
+      "size": 7002
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.usecaseassessmentreporttemplatev3bluehtm_1T6sI/botcomponent.xml",
+      "category": "component",
+      "size": 592
+    },
+    {
+      "path": "botcomponents/cadpbm_c.file.usecaseassessmentreporttemplatev3bluehtm_1T6sI/filedata/UseCase_Assessment_Report_TEMPLATE_v3_blue.html",
+      "category": "component",
+      "size": 44045
+    },
+    {
+      "path": "botcomponents/cadpbm_c.skill.category-subcategory-resolver_IwY/botcomponent.xml",
+      "category": "component",
+      "size": 425
+    },
+    {
+      "path": "botcomponents/cadpbm_c.skill.category-subcategory-resolver_IwY/data",
+      "category": "component",
+      "size": 102
+    },
+    {
+      "path": "botcomponents/cadpbm_c.skill.confirmation-final-qa_t40/botcomponent.xml",
+      "category": "component",
+      "size": 403
+    },
+    {
+      "path": "botcomponents/cadpbm_c.skill.confirmation-final-qa_t40/data",
+      "category": "component",
+      "size": 94
+    },
+    {
+      "path": "botcomponents/cadpbm_c.skill.dataverse-mcp-save_2HZ/botcomponent.xml",
+      "category": "component",
+      "size": 400
+    },
+    {
+      "path": "botcomponents/cadpbm_c.skill.dataverse-mcp-save_2HZ/data",
+      "category": "component",
+      "size": 91
+    },
+    {
+      "path": "botcomponents/cadpbm_c.skill.file-usecase-extraction_zxX/botcomponent.xml",
+      "category": "component",
+      "size": 420
+    },
+    {
+      "path": "botcomponents/cadpbm_c.skill.file-usecase-extraction_zxX/data",
+      "category": "component",
+      "size": 96
+    },
+    {
+      "path": "botcomponents/cadpbm_c.skill.html-report-generation_Ur-/botcomponent.xml",
+      "category": "component",
+      "size": 410
+    },
+    {
+      "path": "botcomponents/cadpbm_c.skill.html-report-generation_Ur-/data",
+      "category": "component",
+      "size": 95
+    },
+    {
+      "path": "botcomponents/cadpbm_c.skill.required-fields-progress_epD/botcomponent.xml",
+      "category": "component",
+      "size": 407
+    },
+    {
+      "path": "botcomponents/cadpbm_c.skill.required-fields-progress_epD/data",
+      "category": "component",
+      "size": 97
+    },
+    {
+      "path": "botcomponents/cadpbm_c.skill.rubric-scoring_2qn/botcomponent.xml",
+      "category": "component",
+      "size": 389
+    },
+    {
+      "path": "botcomponents/cadpbm_c.skill.rubric-scoring_2qn/data",
+      "category": "component",
+      "size": 88
+    },
+    {
+      "path": "botcomponents/cadpbm_c.skill.usecase-strengthening-gaps_G_u/botcomponent.xml",
+      "category": "component",
+      "size": 408
+    },
+    {
+      "path": "botcomponents/cadpbm_c.skill.usecase-strengthening-gaps_G_u/data",
+      "category": "component",
+      "size": 99
+    },
+    {
+      "path": "botcomponents/cadpbm_c.tool.MicrosoftDataverse-MicrosoftDataverseMCPServer_MVq/botcomponent.xml",
+      "category": "component",
+      "size": 377
+    },
+    {
+      "path": "botcomponents/cadpbm_c.tool.MicrosoftDataverse-MicrosoftDataverseMCPServer_MVq/data",
+      "category": "component",
+      "size": 266
+    },
+    {
+      "path": "botcomponents/Default_FeedbackCollectionBotSettings_fCNG0f/botcomponent.xml",
+      "category": "component",
+      "size": 288
+    },
+    {
+      "path": "botcomponents/Default_FeedbackCollectionBotSettings_fCNG0f/data",
+      "category": "component",
+      "size": 31
+    },
+    {
+      "path": "botcomponents/mspva_0cb1bd87-2727-49ab-81be-d742ec0f6240/botcomponent.xml",
+      "category": "component",
+      "size": 886
+    },
+    {
+      "path": "botcomponents/mspva_0cb1bd87-2727-49ab-81be-d742ec0f6240/data",
+      "category": "component",
+      "size": 3958
+    },
+    {
+      "path": "botcomponents/mspva_0d075046-37ec-4906-a08e-6c2815241471/botcomponent.xml",
+      "category": "component",
+      "size": 608
+    },
+    {
+      "path": "botcomponents/mspva_0d075046-37ec-4906-a08e-6c2815241471/data",
+      "category": "component",
+      "size": 1973
+    },
+    {
+      "path": "botcomponents/mspva_1025d90f-f05a-4e88-b6d9-c01169271b7d/botcomponent.xml",
+      "category": "component",
+      "size": 886
+    },
+    {
+      "path": "botcomponents/mspva_1025d90f-f05a-4e88-b6d9-c01169271b7d/data",
+      "category": "component",
+      "size": 5191
+    },
+    {
+      "path": "botcomponents/mspva_13c3a692-d956-45c0-a06c-6502a3df9634/botcomponent.xml",
+      "category": "component",
+      "size": 534
+    },
+    {
+      "path": "botcomponents/mspva_13c3a692-d956-45c0-a06c-6502a3df9634/data",
+      "category": "component",
+      "size": 1541
+    },
+    {
+      "path": "botcomponents/mspva_13ca3d65-b7c0-409a-bb91-d56c2a109d8a/botcomponent.xml",
+      "category": "component",
+      "size": 886
+    },
+    {
+      "path": "botcomponents/mspva_13ca3d65-b7c0-409a-bb91-d56c2a109d8a/data",
+      "category": "component",
+      "size": 4000
+    },
+    {
+      "path": "botcomponents/mspva_156f938c-d66c-43f4-a9b4-e226626f7398/botcomponent.xml",
+      "category": "component",
+      "size": 534
+    },
+    {
+      "path": "botcomponents/mspva_156f938c-d66c-43f4-a9b4-e226626f7398/data",
+      "category": "component",
+      "size": 2190
+    },
+    {
+      "path": "botcomponents/mspva_1ec82946-f1be-431a-8993-4b9959a2629c/botcomponent.xml",
+      "category": "component",
+      "size": 594
+    },
+    {
+      "path": "botcomponents/mspva_1ec82946-f1be-431a-8993-4b9959a2629c/data",
+      "category": "component",
+      "size": 1842
+    },
+    {
+      "path": "botcomponents/mspva_2221e5dc-7d5b-46bf-9d91-de0b40e5548b/botcomponent.xml",
+      "category": "component",
+      "size": 886
+    },
+    {
+      "path": "botcomponents/mspva_2221e5dc-7d5b-46bf-9d91-de0b40e5548b/data",
+      "category": "component",
+      "size": 3827
+    },
+    {
+      "path": "botcomponents/mspva_2740c0a8-9ee4-4196-a002-153fa2e41c1f/botcomponent.xml",
+      "category": "component",
+      "size": 594
+    },
+    {
+      "path": "botcomponents/mspva_2740c0a8-9ee4-4196-a002-153fa2e41c1f/data",
+      "category": "component",
+      "size": 1582
+    },
+    {
+      "path": "botcomponents/mspva_29debffc-b9ed-492b-b3a2-93b970a9ac74/botcomponent.xml",
+      "category": "component",
+      "size": 886
+    },
+    {
+      "path": "botcomponents/mspva_29debffc-b9ed-492b-b3a2-93b970a9ac74/data",
+      "category": "component",
+      "size": 2730
+    },
+    {
+      "path": "botcomponents/mspva_30aa4091-9f86-47b6-b008-ab8c65c5644e/botcomponent.xml",
+      "category": "component",
+      "size": 534
+    },
+    {
+      "path": "botcomponents/mspva_30aa4091-9f86-47b6-b008-ab8c65c5644e/data",
+      "category": "component",
+      "size": 1789
+    },
+    {
+      "path": "botcomponents/mspva_324f363d-3564-4b63-b2b8-9213fc711e40/botcomponent.xml",
+      "category": "component",
+      "size": 528
+    },
+    {
+      "path": "botcomponents/mspva_324f363d-3564-4b63-b2b8-9213fc711e40/data",
+      "category": "component",
+      "size": 1853
+    },
+    {
+      "path": "botcomponents/mspva_41ad53a2-b427-4c88-af39-c0a7c7a5beda/botcomponent.xml",
+      "category": "component",
+      "size": 886
+    },
+    {
+      "path": "botcomponents/mspva_41ad53a2-b427-4c88-af39-c0a7c7a5beda/data",
+      "category": "component",
+      "size": 3929
+    },
+    {
+      "path": "botcomponents/mspva_45e2d627-6aa6-4df5-ab93-de2083d08bf1/botcomponent.xml",
+      "category": "component",
+      "size": 886
+    },
+    {
+      "path": "botcomponents/mspva_45e2d627-6aa6-4df5-ab93-de2083d08bf1/data",
+      "category": "component",
+      "size": 2630
+    },
+    {
+      "path": "botcomponents/mspva_46916091-cdcb-4cd6-abe3-06f15b6b40c2/botcomponent.xml",
+      "category": "component",
+      "size": 419
+    },
+    {
+      "path": "botcomponents/mspva_46916091-cdcb-4cd6-abe3-06f15b6b40c2/data",
+      "category": "component",
+      "size": 59
+    },
+    {
+      "path": "botcomponents/mspva_493628c7-163e-4cb6-82f4-bc8816998cb0/botcomponent.xml",
+      "category": "component",
+      "size": 610
+    },
+    {
+      "path": "botcomponents/mspva_493628c7-163e-4cb6-82f4-bc8816998cb0/data",
+      "category": "component",
+      "size": 1768
+    },
+    {
+      "path": "botcomponents/mspva_4d93bdc3-ec28-4c34-baee-21fd7f02e79b/botcomponent.xml",
+      "category": "component",
+      "size": 594
+    },
+    {
+      "path": "botcomponents/mspva_4d93bdc3-ec28-4c34-baee-21fd7f02e79b/data",
+      "category": "component",
+      "size": 2188
+    },
+    {
+      "path": "botcomponents/mspva_50cf1b1e-4c84-486e-9ed1-818daeff9d96/botcomponent.xml",
+      "category": "component",
+      "size": 676
+    },
+    {
+      "path": "botcomponents/mspva_50cf1b1e-4c84-486e-9ed1-818daeff9d96/data",
+      "category": "component",
+      "size": 2424
+    },
+    {
+      "path": "botcomponents/mspva_50e82643-db44-4b3b-a9e3-0729861a9e8e/botcomponent.xml",
+      "category": "component",
+      "size": 415
+    },
+    {
+      "path": "botcomponents/mspva_50e82643-db44-4b3b-a9e3-0729861a9e8e/data",
+      "category": "component",
+      "size": 59
+    },
+    {
+      "path": "botcomponents/mspva_512b3199-bbd3-4526-b21f-bec2e81a2a66/botcomponent.xml",
+      "category": "component",
+      "size": 614
+    },
+    {
+      "path": "botcomponents/mspva_512b3199-bbd3-4526-b21f-bec2e81a2a66/data",
+      "category": "component",
+      "size": 2155
+    },
+    {
+      "path": "botcomponents/mspva_51cde302-0138-4018-b113-c6ec0fb8ea57/botcomponent.xml",
+      "category": "component",
+      "size": 534
+    },
+    {
+      "path": "botcomponents/mspva_51cde302-0138-4018-b113-c6ec0fb8ea57/data",
+      "category": "component",
+      "size": 2728
+    },
+    {
+      "path": "botcomponents/mspva_54c1a264-c364-4c05-9933-e0399d99fce5/botcomponent.xml",
+      "category": "component",
+      "size": 598
+    },
+    {
+      "path": "botcomponents/mspva_54c1a264-c364-4c05-9933-e0399d99fce5/data",
+      "category": "component",
+      "size": 2136
+    },
+    {
+      "path": "botcomponents/mspva_58ce6be9-9423-4804-af6c-eb67afbb3ea0/botcomponent.xml",
+      "category": "component",
+      "size": 720
+    },
+    {
+      "path": "botcomponents/mspva_58ce6be9-9423-4804-af6c-eb67afbb3ea0/data",
+      "category": "component",
+      "size": 2445
+    },
+    {
+      "path": "botcomponents/mspva_60f08f93-525b-419b-ba71-3f6e63b5a3cc/botcomponent.xml",
+      "category": "component",
+      "size": 756
+    },
+    {
+      "path": "botcomponents/mspva_60f08f93-525b-419b-ba71-3f6e63b5a3cc/data",
+      "category": "component",
+      "size": 2045
+    },
+    {
+      "path": "botcomponents/mspva_6d2b4cc3-fe73-4328-b101-6041d4b0c27e/botcomponent.xml",
+      "category": "component",
+      "size": 622
+    },
+    {
+      "path": "botcomponents/mspva_6d2b4cc3-fe73-4328-b101-6041d4b0c27e/data",
+      "category": "component",
+      "size": 1755
+    },
+    {
+      "path": "botcomponents/mspva_8b9b2cac-8b28-4d4d-ac6f-80a815a52203/botcomponent.xml",
+      "category": "component",
+      "size": 528
+    },
+    {
+      "path": "botcomponents/mspva_8b9b2cac-8b28-4d4d-ac6f-80a815a52203/data",
+      "category": "component",
+      "size": 1853
+    },
+    {
+      "path": "botcomponents/mspva_8eab42a2-20a9-4c23-9345-86883cd6cb65/botcomponent.xml",
+      "category": "component",
+      "size": 594
+    },
+    {
+      "path": "botcomponents/mspva_8eab42a2-20a9-4c23-9345-86883cd6cb65/data",
+      "category": "component",
+      "size": 1842
+    },
+    {
+      "path": "botcomponents/mspva_9924a1c6-8331-4ae6-91e5-71850fa0f57f/botcomponent.xml",
+      "category": "component",
+      "size": 886
+    },
+    {
+      "path": "botcomponents/mspva_9924a1c6-8331-4ae6-91e5-71850fa0f57f/data",
+      "category": "component",
+      "size": 3901
+    },
+    {
+      "path": "botcomponents/mspva_a8110eab-1a58-45f0-9d2b-c4e2b7b8d43f/botcomponent.xml",
+      "category": "component",
+      "size": 528
+    },
+    {
+      "path": "botcomponents/mspva_a8110eab-1a58-45f0-9d2b-c4e2b7b8d43f/data",
+      "category": "component",
+      "size": 2106
+    },
+    {
+      "path": "botcomponents/mspva_bd822f6c-0a08-4b00-8c77-77d0a7da3352/botcomponent.xml",
+      "category": "component",
+      "size": 622
+    },
+    {
+      "path": "botcomponents/mspva_bd822f6c-0a08-4b00-8c77-77d0a7da3352/data",
+      "category": "component",
+      "size": 1755
+    },
+    {
+      "path": "botcomponents/mspva_c4b7264e-dc12-4426-91a3-ff7777368bf8/botcomponent.xml",
+      "category": "component",
+      "size": 614
+    },
+    {
+      "path": "botcomponents/mspva_c4b7264e-dc12-4426-91a3-ff7777368bf8/data",
+      "category": "component",
+      "size": 1540
+    },
+    {
+      "path": "botcomponents/mspva_d1c223bf-3735-434a-b642-9b49c1e3bc66/botcomponent.xml",
+      "category": "component",
+      "size": 391
+    },
+    {
+      "path": "botcomponents/mspva_d1c223bf-3735-434a-b642-9b49c1e3bc66/data",
+      "category": "component",
+      "size": 59
+    },
+    {
+      "path": "botcomponents/mspva_d23d8679-263d-4ae7-87f7-91742fe2c6f8/botcomponent.xml",
+      "category": "component",
+      "size": 664
+    },
+    {
+      "path": "botcomponents/mspva_d23d8679-263d-4ae7-87f7-91742fe2c6f8/data",
+      "category": "component",
+      "size": 2738
+    },
+    {
+      "path": "botcomponents/mspva_d3d34751-f54a-416e-b9a1-641d965cc634/botcomponent.xml",
+      "category": "component",
+      "size": 417
+    },
+    {
+      "path": "botcomponents/mspva_d3d34751-f54a-416e-b9a1-641d965cc634/data",
+      "category": "component",
+      "size": 59
+    },
+    {
+      "path": "botcomponents/mspva_d9c1db17-f554-42ee-a2cd-e12136c011e8/botcomponent.xml",
+      "category": "component",
+      "size": 598
+    },
+    {
+      "path": "botcomponents/mspva_d9c1db17-f554-42ee-a2cd-e12136c011e8/data",
+      "category": "component",
+      "size": 2158
+    },
+    {
+      "path": "botcomponents/mspva_dd5db702-54a1-40c5-b540-74a75329e46e/botcomponent.xml",
+      "category": "component",
+      "size": 676
+    },
+    {
+      "path": "botcomponents/mspva_dd5db702-54a1-40c5-b540-74a75329e46e/data",
+      "category": "component",
+      "size": 1858
+    },
+    {
+      "path": "botcomponents/mspva_de9e0c84-5398-480c-a498-1d61bd4e7aec/botcomponent.xml",
+      "category": "component",
+      "size": 756
+    },
+    {
+      "path": "botcomponents/mspva_de9e0c84-5398-480c-a498-1d61bd4e7aec/data",
+      "category": "component",
+      "size": 2045
+    },
+    {
+      "path": "botcomponents/mspva_eb0758c3-b176-4da4-a238-cef75d2cbe36/botcomponent.xml",
+      "category": "component",
+      "size": 608
+    },
+    {
+      "path": "botcomponents/mspva_eb0758c3-b176-4da4-a238-cef75d2cbe36/data",
+      "category": "component",
+      "size": 3377
+    },
+    {
+      "path": "botcomponents/mspva_ee81ea6e-0c1f-446f-852d-94e706de2ba0/botcomponent.xml",
+      "category": "component",
+      "size": 886
+    },
+    {
+      "path": "botcomponents/mspva_ee81ea6e-0c1f-446f-852d-94e706de2ba0/data",
+      "category": "component",
+      "size": 3035
+    },
+    {
+      "path": "botcomponents/mspva_f1bf4a5a-4cff-4554-a530-d7150b5b1cb2/botcomponent.xml",
+      "category": "component",
+      "size": 548
+    },
+    {
+      "path": "botcomponents/mspva_f1bf4a5a-4cff-4554-a530-d7150b5b1cb2/data",
+      "category": "component",
+      "size": 2254
+    },
+    {
+      "path": "botcomponents/mspva_fa5ab0b4-5a0a-48e4-9b70-6dbc21b5ac19/botcomponent.xml",
+      "category": "component",
+      "size": 610
+    },
+    {
+      "path": "botcomponents/mspva_fa5ab0b4-5a0a-48e4-9b70-6dbc21b5ac19/data",
+      "category": "component",
+      "size": 1768
+    },
+    {
+      "path": "botcomponents/mspva_fabe045d-bb2a-4047-88cc-f051294582e0/botcomponent.xml",
+      "category": "component",
+      "size": 391
+    },
+    {
+      "path": "botcomponents/mspva_fabe045d-bb2a-4047-88cc-f051294582e0/data",
+      "category": "component",
+      "size": 59
+    },
+    {
+      "path": "bots/cadpbm_c/bot.xml",
+      "category": "bot",
+      "size": 39218
+    },
+    {
+      "path": "bots/cadpbm_c/configuration.json",
+      "category": "bot",
+      "size": 28448
+    },
+    {
+      "path": "CanvasApps/cadpbm_usecasesstore_79f7b_CodeAppPackages/assets/index-CD66YWLf.js",
+      "category": "other",
+      "size": 1948477
+    },
+    {
+      "path": "CanvasApps/cadpbm_usecasesstore_79f7b_CodeAppPackages/assets/index-DFO3RJUP.css",
+      "category": "other",
+      "size": 132056
+    },
+    {
+      "path": "CanvasApps/cadpbm_usecasesstore_79f7b_CodeAppPackages/favicon.ico",
+      "category": "asset",
+      "size": 60562
+    },
+    {
+      "path": "CanvasApps/cadpbm_usecasesstore_79f7b_CodeAppPackages/index.html",
+      "category": "other",
+      "size": 1899
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 295194
+    },
+    {
+      "path": "Formulas/cadpbm_ai_usecase-FormulaDefinitions.yaml",
+      "category": "other",
+      "size": 85
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 4094
+    }
+  ]
+}
