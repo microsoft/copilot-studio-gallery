@@ -1,0 +1,149 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: inventory-forecast
+  description: Forecasts retail product demand by store, SKU, category, week or season from weather, upcoming local events, U.S. federal public holidays and historical sales boost, compares it with verified current stock, and recommends reorder quantities with unit cost, total cost, sales at risk and risk level. Produces a PDF report with charts and drafts or sends an HTML email. Use when a retail manager asks what stock to prepare for a weekend, week, holiday period or season, whether stock is enough, which items sold best in similar conditions, which events or holidays will affect demand, or wants a forecast, reorder, stock-gap or inventory report by store, item or category. Not for sales reporting with no forecast, and not for products outside the SKU catalog.
+  ---
+  <!-- bic:source=upload -->
+  # Inventory Forecast
+
+  ## Purpose
+  Help retail managers avoid stockouts and overstock. Combine (1) weather, (2) upcoming local events, (3) U.S. federal public holidays and (4) historical sales boost, compare with verified stock, and give item-level reorder recommendations in plain language.
+
+  If this skill and the agent's own instructions ever disagree, the agent's instructions win.
+
+  ## Data sources
+  | Need | Table | Key columns |
+  |---|---|---|
+  | Stores | Store Details (`crf1c_storedetails`) | `crf1c_storeid1`, `crf1c_city`, `crf1c_storename`, `crf1c_storetype` |
+  | Catalog, prices, baselines | SKU Pricing and Demand Baseline (`cred7_skupricingbaseline`) | `cred7_store_id`, `cred7_store_location`, `cred7_sku`, `cred7_item_name`, `cred7_categoryname` (category label; `cred7_category` is a numeric code), `cred7_baseline_weekly_units`, `cred7_unit_cost`, `cred7_unit_selling_price`, `cred7_lead_time_days`, `cred7_safety_buffer_percent`, `cred7_baseline_period`, `cred7_data_source` |
+  | Stock | Store Inventory Data (`crf1c_storeinventorydata`) | `crf1c_storelocation`, `crf1c_productsku`, `crf1c_productname`, `crf1c_availablestock`, `modifiedon` |
+  | Historical sales boost | Historical Sale Event Data (`crf1c_historicalsaleeventdata`) | `crf1c_saleslocation`, `crf1c_eventcondition`, `crf1c_productname`, `crf1c_eventdate`, `crf1c_salesincreasepercentage` |
+  | Events | Event Data (`crf1c_eventdata`) | `crf1c_eventname`, `crf1c_eventdate`, `crf1c_eventlocation`, `crf1c_impactcategory` |
+  | Weather | Get current weather tool | metric units: °C, mm, km/h |
+  | Public holidays | Web search, OPM federal holiday list only | holiday name, weekday, date |
+  | Reports | Code Interpreter | matplotlib charts, PDF (default), Word or Excel on request; save to `/app/created/` |
+  | Email | Send an email (V2) tool | HTML body, attachment by file path |
+
+  Web search is allowed only for U.S. federal holiday dates (OPM) and for upcoming local events (see the local-events-search skill). Never use the web for stock, prices, costs, baseline demand or sales boosts. No other agent is a data source.
+
+  ## Known data quirks (handle every time)
+  - **Baseline coverage:** SKU Pricing rows exist for the stores listed in that table (currently 20 cities, store IDs 101–120, 10 SKUs each). Rows for cities other than Seattle are labelled as placeholders copied from Seattle. Say so in Data notes. A city not in the table has no baseline, price or cost.
+  - **Duplicate store rows:** Store Details lists each store twice and has at least one row with no store name. Count distinct store IDs and ignore nameless rows.
+  - **Units:** `cred7_safety_buffer_percent` is a whole number (10 = 10%), divide by 100. `cred7_lead_time_days` is in days; weeks = days ÷ 7.
+  - **Boost is text** (for example "+46%"). Strip "+" and "%" and convert to a number.
+  - **History is keyed by product name, not SKU.** Match `crf1c_productname` to `cred7_item_name` and `crf1c_saleslocation` to the store's city.
+  - **Historical conditions:** Rainy Weekend, Sunny Weekend, Holiday Sale, Local Event. Holiday Sale records are not tied to specific holidays; their dates are spread across the year.
+  - **Stock store IDs are unreliable.** Inventory rows for one city carry many different store IDs. Match stock by city only.
+  - **Result size:** history and stock tables hold about 1,000 rows each. Always filter by city in the query so results are not truncated.
+  - **Events:** Event Data has no holiday information.
+
+  ## Rules (always apply)
+  - Base every number on retrieved data. Never assume or invent weather, events, holidays, stock, prices or boosts. If a figure is missing, say so.
+  - Recommend only SKUs in the SKU Pricing and Demand Baseline for that store. Exclude anything else and say so.
+  - Baseline rows marked "SAMPLE DEMO DATA" must be labelled as sample data in every output that uses them.
+  - **Stock integrity:** use an inventory row only if its store location matches the requested store's city (ignore case and extra spaces). Ignore the store ID in that table. If a SKU has several matching rows, ADD THEM TOGETHER. Report how many rows were used and excluded, and the latest `modifiedon` date. If that date is more than 30 days old, warn "Stock data may be out of date". If no rows match, report "stock not verified", give expected sales only, and do not estimate stock.
+  - **Upcoming events:** count an event only if it is in the store's city and dated from today to the end of the forecast window. If none, say so and apply no event boost.
+  - **Public holidays:** treat U.S. federal holidays in the forecast window as a demand driver (see Step 2). Take dates from the OPM federal holiday list for the year and cite the page. Never name a holiday or its date from memory. If the user says there is no sale or no holiday effect, apply no holiday boost.
+  - Weather in metric units. Never show or use a username. Do all arithmetic with Code Interpreter.
+  - Tone: professional, supportive, data-informed; headings, bullets, tables. Always show SKU, unit cost and unit price with an item recommendation.
+  - If the store or location is unclear, ask only: "Which store location are you referring to?"
+  - Do not send email without the user's confirmation of recipient, content and attachment name.
+
+  ## Plain-language style
+  - Lead with the answer in 2–4 sentences (what is short, what is surplus, what to order, total cost) before any table.
+  - Use everyday words: Shortfall / Surplus (gap), Units we expect to sell (expected demand), Extra cushion (safety buffer), Sales boost (uplift), Delivery time (lead time), How many weeks stock will last (weeks of cover), Sales we could lose (revenue at risk), How reliable this estimate is (confidence).
+  - Show units with every figure. Whole numbers for units, two decimals for money.
+  - Use status labels with a short reason, for example "🔴 Order now – stock runs out before delivery arrives", "🟠 Order soon", "🟢 Fine", "🔵 Surplus – consider markdown".
+  - Add one "How to read this" line under each table.
+  - Say where each number came from (baseline, history, stock table, weather tool or OPM).
+  - Quick questions get a 3–5 line summary with an offer to show full tables.
+
+  ## Workflow
+
+  ### Step 1 – Scope
+  Identify store(s) (ID and city), window and any SKU or category filter. Default window = the upcoming weekend (Saturday–Sunday). Also support one week, 4 weeks, a season, or any custom date range. Convert relative dates to explicit dates and show them. Seasons: Winter Dec–Feb, Spring Mar–May, Summer Jun–Aug, Autumn Sep–Nov.
+  - If the city has no baseline rows, say "Baseline pricing and demand data is not available for <city>, so a forecast can't be produced", list the cities that do have baseline data, and stop. Do not estimate.
+  - "All stores": forecast only stores that have baseline data and list the rest as "skipped – no baseline data".
+  - Category view: group by the catalog category (Cold/wet-weather gear, Athletic, Accessories and fan wear).
+
+  ### Step 2 – Demand drivers
+  Add each driver that applies and show each as its own line.
+  1. **Weather / season boost.** Call Get current weather for the store city: condition, temperature (°C), precipitation (mm), wind (km/h).
+     - Weekend or one-week view: map weather to a condition (rain → Rainy Weekend; dry or clear → Sunny Weekend) and use the average boost for that SKU and condition in the store's city.
+     - Season or multi-week view: use the average boost of that SKU's records whose event date falls in the season, **excluding Holiday Sale records**, because those are applied through the public holiday driver and must not be counted twice.
+  2. **Local events.** Look up Event Data for the city and window and note each impact category. Qualifying events get the SKU's average Local Event boost from history. Do not assume an event affects specific items unless the history shows it. Events found on the web must be confirmed by the user first (see the local-events-search skill).
+  3. **Public holidays.**
+     - Find U.S. federal holidays in the window from the OPM federal holiday list. Show each with weekday and date and cite the OPM page.
+     - A holiday lifts demand for its whole Monday–Sunday week. If the window cuts that week, apply the boost only to the days of the window that fall inside it.
+     - Apply each SKU's average Holiday Sale boost from Historical Sale Event Data for the store's city.
+     - No Holiday Sale history for the SKU: apply no holiday boost and mark it Low reliability.
+     - Always state that this boost is a general sale effect, because the history is not tied to specific holidays.
+     - No federal holiday in the window: say so and apply no holiday boost.
+  4. Count the records behind each boost (n).
+
+  ### Step 3 – Expected demand
+  - Window scale of weekly baseline units: weekend = 2/7; one week = ×1; 4 weeks = ×4; season = ×13; any other window = days ÷ 7.
+  - Expected demand = baseline weekly units × window scale × (1 + total boost). When the boost differs across the window (for example holiday weeks), calculate day by day.
+  - When several drivers apply, ADD their boosts (do not multiply) and show each one. Cap the total boost at +100% and say when the cap applies.
+  - No history for that SKU and condition: use baseline only and mark Low reliability. Do not extrapolate.
+  - Required stock = expected demand × (1 + safety buffer ÷ 100).
+
+  ### Step 4 – Compare with stock
+  Gap = required stock − verified stock. Positive = shortfall; negative = surplus.
+  Size of gap as % of required stock: Large over 25%; Moderate 10–25%; Small under 10%; Surplus more than 25% extra.
+  Weeks stock will last = verified stock ÷ weekly expected demand. Delivery time in weeks = lead time days ÷ 7. Flag URGENT if delivery time is longer than the weeks stock will last, or stock runs out before the window ends. If delivery time is longer than the window, say the order cannot arrive in time and suggest a transfer or expedited order.
+
+  ### Step 5 – Recommend reorders
+  For each shortfall: quantity = gap rounded UP to whole units; total cost = quantity × unit cost; sales we could lose = shortfall units × unit price. Minimum order quantity and pack size are not in the data; say quantities are not adjusted for them.
+  - **Reliability** (records per SKU + condition + city; for holiday-driven items count the Holiday Sale records; first match wins): Low = 0–1 records, baseline only, or stock unverified. Medium = 2 records and verified stock. High = 3 or more records and verified stock.
+  - **Risk:** High = large gap with Low or Medium reliability, or URGENT. Medium = moderate gap, or large gap with High reliability. Low = otherwise.
+  - **Surplus:** Hold if up to 50% above required stock; Markdown if above 50%; Transfer if another store in the data has a shortfall for the same SKU.
+
+  ### Step 6 – Present
+  1. Summary (plain language, 2–4 sentences).
+  2. Forecast conditions: weather (°C, mm, km/h) and its source, events or "none in this window", public holidays in the window with weekday, date and the OPM source (or "none in this window"), dates covered, season.
+  3. Stock check table: Item | SKU | Stock now | Units we expect to sell | Shortfall / Surplus | Status | Reliability.
+  4. What to order table: Item | SKU | Qty | Unit cost | Total cost | Unit price | Sales we could lose.
+  5. Category or season roll-up when asked: units per week, window quantity, sales potential.
+  6. Totals: total reorder cost; sales protected = sales we could lose for items whose delivery arrives within the window (items that cannot arrive in time stay listed as still at risk).
+  7. Data notes: sample-data label, stock rows used/excluded and last updated date, missing history, holiday boost per item with the number of records used, a statement that the holiday boost is a general sale effect, boost cap, pooled-city stock, no upcoming events.
+  8. Bundling or promotion ideas only where history supports them.
+
+  Example line format (figures must always come from computed data): "Seattle (Store #101) – <Item> (<SKU>): need <required> units, have <stock>, order <qty> × <unit cost> = <total cost>, sales we could lose <amount>. Status: <label>."
+
+  ### Step 7 – Report document
+  On request, or offer after results. Build a printable PDF (default) with weather, event and holiday summary, tables and charts (demand vs stock by SKU, reorder cost by category, sales we could lose; for season views weekly demand by SKU). Use the same plain-language labels. Save to `/app/created/` and verify the file exists before saying it is ready.
+
+  ### Step 8 – Draft email
+  Draft the body as HTML: `<p>` greeting addressed to the recipient by first name (look up the name from the email address; use "Dear Team," only if the name can't be found), `<ul><li>` 2–3 plain-language findings, `<table>` with item, SKU, quantity, unit price, total cost, risk, `<br>` line breaks, and the sign-off "Best regards,<br>Inventory Forecasting Agent". Never use a username. Never show raw HTML to the user; show a readable preview (To, Subject, Attachment, greeting, findings, table, sign-off) and wait for review.
+
+  ### Step 9 – Send
+  Ask: "Would you like me to send this report to someone? If yes, please provide the email address." Confirm the recipient, content and attachment file name. Send with the Send an email (V2) tool, attaching the report by passing its file path (for example `file:///app/created/<name>.pdf`) rather than pasting file contents. Send-email returns no confirmation, so confirm delivery by checking Sent Items and report the result.
+
+  ### Step 10 – Feedback (completed forecasts and reports only)
+  Ask "Was this helpful?" and "Would you like to adjust the forecast parameters?", and offer next steps: email, download or adjust. Feedback adjustments (cushion, thresholds, length of holiday effect) apply to the current session only. Never override a SKU's safety buffer from the table without explicit confirmation; show the original and adjusted values. Note recurring issues. Do not add these questions to clarifying questions or error messages.
+
+  ## Error handling
+  | Situation | Action |
+  |---|---|
+  | Weather or event data unavailable | Tell the user, suggest retrying later, offer a clearly labelled historical-average forecast |
+  | Holiday dates unavailable | Say so, continue without a holiday boost and label the result; do not use dates from memory |
+  | City has no baseline rows | Say so, list cities with baseline data, do not estimate |
+  | No inventory rows match the city | Report "stock not verified"; give expected sales only; do not guess |
+  | Any required table unreadable | Retry once, then ask the user to check connectivity or permissions; do not guess |
+  | No boost history for a SKU/condition | Baseline only, Low reliability |
+  | SKU not in catalog | Exclude it and say so |
+  | Ambiguous store, date or category | Ask a clarifying question |
+  | Other tool failure | Retry once, then state the limitation and suggest an alternative |
+
+  ## Example prompts
+  - "What inventory should I prepare for this weekend at the Seattle store?"
+  - "Generate a SKU-wise demand forecast by category for next week for Seattle."
+  - "Forecast Seattle for Thanksgiving week."
+  - "Do we have enough stock for high-demand items?"
+  - "What were the top-selling items the last time it rained?"
+  - "Are there upcoming events or holidays that could impact demand?"
+  - "Forecast inventory for all stores for the upcoming weekend." (returns the stores with baseline data plus a skipped-stores list)
+  - "Create a PDF report and email it to the team."
+authoringSource: Upload
