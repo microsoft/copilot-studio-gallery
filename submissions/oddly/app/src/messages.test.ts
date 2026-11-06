@@ -1,7 +1,16 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { safeUrl, transcript } from "./messages";
+import { initialsForName, safeUrl, transcript } from "./messages";
 import { demoAnswer, recipes } from "./demo";
+
+test("derives user initials from the first and last profile names without inventing an identity", () => {
+  assert.equal(initialsForName("Avery Lane"), "AL");
+  assert.equal(initialsForName("  avery   middle  lane  "), "AL");
+  assert.equal(initialsForName("Prince"), "P");
+  assert.equal(initialsForName("Élodie García"), "ÉG");
+  assert.equal(initialsForName(""), "");
+  assert.equal(initialsForName(" \t\n "), "");
+});
 
 test("only allows HTTP(S) links", () => {
   assert.equal(safeUrl("https://example.com/path"), "https://example.com/path");

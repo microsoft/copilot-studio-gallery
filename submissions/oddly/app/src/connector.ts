@@ -1,17 +1,27 @@
+import { createDataClient } from "@microsoft/managed-apps-common/dataClient";
+import type { DataSourcesInfo } from "@microsoft/managed-apps-common/dataClient";
 import type { CopilotConnector } from "./client";
+import { nativeHost } from "./runtime";
 
-// Recipients generate this client by binding their own native connector. An unbound checkout still builds.
-const modules = import.meta.glob<Record<string, unknown>>(
-  "../generated/services/MicrosoftCopilotStudioService.ts", { eager: true },
+// Keep native binding metadata untouched. An unbound checkout still builds.
+const modules = import.meta.glob<{ default: DataSourcesInfo }>(
+  "../generated/dataSources.ts", { eager: true },
 );
 
-function isConnector(value: unknown): value is CopilotConnector {
-  return (typeof value === "function" || (value !== null && typeof value === "object"))
-    && "ExecuteCopilotAsyncV2" in value && typeof value.ExecuteCopilotAsyncV2 === "function";
-}
-
 export function loadConnector(): CopilotConnector {
-  const connectors = Object.values(modules).flatMap(module => Object.values(module).filter(isConnector));
-  if (connectors.length !== 1) throw new Error("The native Copilot Studio connector is not configured. Add microsoftcopilotstudio in action mode with the Managed Apps CLI, then restart or rebuild. Open the authenticated Local Play or hosted player, not bare localhost.");
-  return connectors[0];
+  const sources = Object.values(modules).map(module => module.default);
+  if (sources.length !== 1 || !sources[0].agentnode?.apis.InvokeAgent) throw new Error("The native Agent Node connector is not configured. Add shared_agentnode in action mode with the Managed Apps CLI, then restart or rebuild. The generated dataSources metadata must expose InvokeAgent. Open the authenticated Local Play or hosted player, not bare localhost.");
+  const dataSourcesInfo = sources[0];
+  return {
+    InvokeAgent(body, conversationId, environmentId, signal) {
+      const client = createDataClient({ host: nativeHost(signal), dataSourcesInfo });
+      return client.executeAsync({
+        connectorOperation: {
+          tableName: "agentnode",
+          operationName: "InvokeAgent",
+          parameters: { body, "x-ms-conversation-id": conversationId, environmentId },
+        },
+      });
+    },
+  };
 }
