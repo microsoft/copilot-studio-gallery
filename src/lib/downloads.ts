@@ -1,4 +1,5 @@
 import { z } from "astro/zod";
+import { downloadCountsSchema, type DownloadCounts } from "./download-counts";
 
 export const DOWNLOAD_REPOSITORY = "microsoft/copilot-studio-gallery";
 export const DOWNLOAD_BRANCH = "download-stats";
@@ -61,6 +62,17 @@ export const submissionDownloadSchema = z.object({
 export type DownloadAsset = z.infer<typeof downloadAssetSchema>;
 export type DownloadSnapshot = z.infer<typeof downloadSnapshotSchema>;
 export type SubmissionDownload = z.infer<typeof submissionDownloadSchema>;
+
+export function projectDownloadCounts(snapshot: DownloadSnapshot): DownloadCounts {
+  const validated = downloadSnapshotSchema.parse(snapshot);
+  const totals = new Map<string, number>();
+  for (const asset of validated.assets) totals.set(asset.slug, (totals.get(asset.slug) ?? 0) + asset.count);
+  return downloadCountsSchema.parse({
+    schemaVersion: 1,
+    collectedAt: validated.collectedAt,
+    submissions: [...totals].sort(([a], [b]) => a.localeCompare(b)).map(([slug, count]) => ({ slug, count })),
+  });
+}
 
 export function submissionDownload(
   snapshot: DownloadSnapshot,

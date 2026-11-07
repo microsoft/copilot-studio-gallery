@@ -5,9 +5,10 @@ import { fileURLToPath } from "node:url";
 import { setTimeout as sleep } from "node:timers/promises";
 import { z } from "astro/zod";
 import {
-  DOWNLOAD_BRANCH, DOWNLOAD_REPOSITORY, downloadSnapshotSchema, releaseDownloadUrl,
+  DOWNLOAD_BRANCH, DOWNLOAD_REPOSITORY, downloadSnapshotSchema, projectDownloadCounts, releaseDownloadUrl,
   type DownloadAsset, type DownloadSnapshot,
 } from "../src/lib/downloads";
+import { DOWNLOAD_COUNTS_FILE } from "../src/lib/download-counts";
 import { gallerySchema } from "../src/lib/schema";
 import { isDemo } from "../src/lib/discovery";
 
@@ -155,12 +156,16 @@ export async function loadSnapshot(github: GitHub): Promise<{ snapshot: Download
 
 export async function saveSnapshot(github: GitHub, snapshot: DownloadSnapshot, head?: string): Promise<void> {
   const content = `${JSON.stringify(downloadSnapshotSchema.parse(snapshot), null, 2)}\n`;
+  const counts = `${JSON.stringify(projectDownloadCounts(snapshot))}\n`;
   const base = head
     ? z.object({ tree: z.object({ sha: z.string() }) }).parse(await github.request(`/git/commits/${head}`)).tree.sha
     : undefined;
   const tree = z.object({ sha: z.string() }).parse(await github.request("/git/trees", "POST", {
     ...(base ? { base_tree: base } : {}),
-    tree: [{ path: "downloads.json", mode: "100644", type: "blob", content }],
+    tree: [
+      { path: "downloads.json", mode: "100644", type: "blob", content },
+      { path: DOWNLOAD_COUNTS_FILE, mode: "100644", type: "blob", content: counts },
+    ],
   }));
   const commit = z.object({ sha: z.string() }).parse(await github.request("/git/commits", "POST", {
     message: "chore: snapshot release ZIP downloads\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>",

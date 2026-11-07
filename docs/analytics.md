@@ -216,15 +216,25 @@ and checks IDs, names, URLs, size, digests when present, and nondecreasing count
 Missing/changed assets and API failures fail the job; they do not become zero.
 The previous snapshot and deployed site remain unchanged.
 
-`.github/workflows/download-stats.yml` refreshes the snapshot daily or on manual
-dispatch, then explicitly dispatches the Pages workflow. This explicit dispatch
-is necessary because bot pushes with `GITHUB_TOKEN` do not trigger ordinary
-push workflows. Data writes are serialized across workflows and use
+The same atomic Git tree/commit also publishes `download-counts.json`, a compact
+version-1 snapshot containing only `collectedAt` and a sorted `submissions` array
+of public slugs and lifetime counts. Both the first main deployment and subsequent
+publication/collection runs write both files together; existing registries gain
+the compact file on the next successful run. Raw asset/release IDs, hashes, URLs,
+and source details are not part of the browser payload.
+
+`.github/workflows/download-stats.yml` refreshes both snapshots daily or on manual
+dispatch, **without dispatching a Pages deployment**. Bot pushes with
+`GITHUB_TOKEN` do not trigger ordinary push workflows, and no rebuild is needed:
+detail pages fetch the compact snapshot from
+`https://raw.githubusercontent.com/microsoft/copilot-studio-gallery/download-stats/download-counts.json`.
+Ordinary main deployments still publish new ZIP assets and rebuild the gallery.
+Data writes are serialized across workflows and use
 non-force updates to avoid losing concurrent edits. Main's reviewed-PR rules
 are not changed.
 
 Use the existing workflow token: trusted publication/collection jobs need
-`contents: write`, and the refresh dispatcher also needs `actions: write`.
+`contents: write`; the daily collector does not need `actions: write`.
 No new secret, Clarity token, backend, or custom authentication is required.
 Repository/organization policies must permit those workflow permissions and
 the creation/update of `download-stats`; failures require maintainer resolution,
@@ -248,8 +258,22 @@ snapshot locally, supply its file path:
 GALLERY_DOWNLOAD_DATA=/path/to/downloads.json GALLERY_REQUIRE_RELEASES=true npm run build
 ```
 
-Measured zero is displayed as zero. Every count retains its original snapshot
-date in its tooltip and screen-reader text; collection failures never mark old data fresh. Shared installer scripts,
+Measured zero is displayed as zero. The shared detail metric refreshes once per
+rendered page, including Astro client navigation, using a credential-free request
+with a ten-second timeout. It validates the complete compact payload (version,
+unique valid slugs, safe nonnegative integer totals, allowlisted fields, and UTC
+timestamps) before using a submission's total. Snapshots older than three days
+(allowing missed daily collections), future-dated snapshots, missing submissions,
+older timestamps, decreased totals, and conflicting totals at the same timestamp
+are rejected. HTTP/network/parse/validation failures are logged to the browser
+console without breaking the page or changing links.
+
+The initial count, tooltip, and accessible timestamp remain untouched on refresh
+failure or with JavaScript disabled; old metrics are never presented as fresh.
+A successful refresh updates the count, tooltip, and screen-reader time together.
+`solutions.json` remains build-time metadata, not a live count endpoint. Pages
+without a measured build-time count do not invent one from the compact file.
+Shared installer scripts,
 supporting files, and screenshots stay on Pages. Managed-app creation still
 uses the native GitHub-subfolder template on `main`, not the release ZIP, so
 install-script copies and native app creations are not included in these totals.
@@ -271,5 +295,8 @@ on the next run instead of blindly repeated after uncertain failure.
 The first trusted main deployment bootstraps the data branch and release assets.
 The collector deliberately fails before this registry exists. After merge,
 verify publication, the actual browser attachment download, the data-branch
-snapshot, and a manually dispatched refresh. No live gallery releases or
+snapshots, and a manually dispatched collector refresh without a Pages rebuild.
+Verify that a detail page updates its count/as-of time while retaining its validated
+download link, and that blocked or invalid snapshot responses preserve the build-time metric.
+No live gallery releases or
 production download totals were created during local implementation.

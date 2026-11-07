@@ -13,7 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      actions: write
     concurrency:
       group: release-download-data
       cancel-in-progress: false
@@ -33,7 +32,3 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: node --import tsx scripts/release-downloads.ts collect "$RUNNER_TEMP/gallery-downloads.json"
-      - name: Rebuild public submission metadata
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh workflow run deploy.yml --ref main
