@@ -13,17 +13,18 @@ Managed Runtime** handling authentication. **No app registration, no WebChat,
 and no custom sign-in flow.**
 
 The Agent Node approach may be replaced by the formal **Microsoft Copilot Studio
-connector** once it supports Oddly's agent harness through the public Managed
-Runtime tooling. The Managed Runtime plugin provides
+connector** once it supports **Microsoft Copilot Harness agents in Copilot
+Studio** through the public Managed Runtime tooling. The Managed Runtime plugin
+provides
 [`/add-mcscopilot`](https://github.com/microsoft/Copilot-Managed-Runtime/blob/main/plugins/copilot-managed-runtime/skills/add-mcscopilot/SKILL.md),
 which binds that connector using
 `ms app add data-source --connector microsoftcopilotstudio --as action`.
 This is not a drop-in replacement for this sample today.
 
 [microsoft/Copilot-Managed-Runtime#16](https://github.com/microsoft/Copilot-Managed-Runtime/issues/16)
-tracks the missing `ExecuteCopilotAsyncV2OnAgenticRuntime` operation for agents
-powered by the GitHub Copilot harness. The issue is closed; a maintainer explains
-that the operation is internal and not publicly available, so the CLI does not
+tracks the missing `ExecuteCopilotAsyncV2OnAgenticRuntime` operation needed to
+invoke Microsoft Copilot Harness agents in Copilot Studio. The issue is closed;
+a maintainer explains that the operation is internal and not publicly available, so the CLI does not
 generate it. The generated `ExecuteCopilotAsyncV2` (**Execute Agent and wait**)
 is not equivalent for these agents. No availability date is confirmed.
 
