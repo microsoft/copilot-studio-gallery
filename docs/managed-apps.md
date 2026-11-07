@@ -205,6 +205,11 @@ command and choose its **Copy** control or copy it manually. Unchecking the
 acknowledgement disables the download and clears and disables the commands again.
 Linux is not supported.
 
+Detail-page **ZIP downloads** count the manual source ZIP's GitHub Release
+downloads across tracked versions, not command copies or automated installs.
+The shared installers remain on Pages and native app creation reads the GitHub
+template separately. See [Gallery analytics](analytics.md#release-backed-zip-counts).
+
 Paste the command into a terminal in the folder where you want the new app.
 Node is not required to start: Bash/curl or Windows PowerShell 5.1+ downloads
 the shared installer. Its URL is visible in the command. There are exactly two

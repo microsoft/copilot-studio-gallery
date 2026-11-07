@@ -1,0 +1,14 @@
+---
+import type { SubmissionDownload } from "../lib/downloads";
+
+interface Props { download?: SubmissionDownload }
+const { download } = Astro.props;
+---
+
+{download && <span class="inline-flex flex-wrap items-baseline gap-x-2 gap-y-1">
+  <span title={`GitHub Release ZIP downloads across all tracked versions since ${download.trackedSince.slice(0, 10)}. Includes direct downloads, repeats, and automation; not installations.`}>
+    {download.count.toLocaleString("en-US")} ZIP {download.count === 1 ? "download" : "downloads"}
+  </span>
+  <span class="sr-only">GitHub Release ZIP downloads across tracked versions, including direct downloads, repeats, and automation; not installations. Tracking began {download.trackedSince.slice(0, 10)}.</span>
+  <span class="text-xs text-muted">as of <time datetime={download.asOf} title={download.asOf}>{download.asOf.slice(0, 10)}</time></span>
+</span>}

@@ -1001,6 +1001,7 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
   const previewWorkflow = resolvePreviewWorkflow(workflows, metadata.previewWorkflow)?.id;
   const manifest = filesManifest(files);
   const componentCount = rootComponentCount(solutionXml) ?? manifest.filter((file) => ["bot", "component", "workflow"].includes(file.category)).length;
+  const bundle = deterministicZip(files, solutionRoot);
   const record: SolutionRecord = {
     ...metadata,
     submissionType: "solution",
@@ -1009,6 +1010,7 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
     version: derived.version,
     ...(derived.publisher ? { publisher: derived.publisher } : {}),
     bundle: `bundles/${slug}.zip`,
+    bundleSha256: createHash("sha256").update(bundle).digest("hex"),
     agentCount: agents.length,
     workflowCount: workflows.length,
     hookCount,
@@ -1029,7 +1031,7 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
   }
   const guideBody = rewriteSupportingLinks(body.trim().replace(/^#\s+.+?(?:\r?\n){1,2}/, ""), supporting.links);
   const guide = matter.stringify(`${guideBody}\n`, { title: metadata.name, slug, solution: derived.uniqueName });
-  return { slug, record, guide, bundle: deterministicZip(files, solutionRoot), assets: supporting.assets };
+  return { slug, record, guide, bundle, assets: supporting.assets };
 }
 
 async function buildManagedApp(submissionPath: string, slug: string, metadata: SubmissionMetadata, supporting: Awaited<ReturnType<typeof buildSupportingFiles>>): Promise<BuiltSubmission> {
@@ -1087,6 +1089,7 @@ async function buildManagedApp(submissionPath: string, slug: string, metadata: S
   const record: GalleryRecord = {
     ...common, submissionType: "managed-app", version,
     app: metadata.app, bundle: `bundles/${slug}-${hash}.zip`,
+    bundleSha256: hash,
     template,
     ...(screenshot ? { screenshot } : {}),
     files: files.map((file) => ({ path: file.path, size: file.size, category: "source" })),

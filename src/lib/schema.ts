@@ -1,4 +1,5 @@
 import { z } from "astro/zod";
+import { submissionDownloadSchema } from "./downloads";
 
 // Fixed discovery categories: authored in metadata.json (one per solution) and validated here.
 export const CATEGORIES = [
@@ -207,6 +208,8 @@ const solutionBaseSchema = z.object({
   version: z.string(),
   publisher: z.string().optional(),
   bundle: z.string(),
+  bundleSha256: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  download: submissionDownloadSchema.optional(),
   agentCount: z.number().int().nonnegative(),
   workflowCount: z.number().int().nonnegative(),
   hookCount: z.number().int().nonnegative(),
@@ -230,7 +233,7 @@ export const solutionSchema = solutionBaseSchema.refine((solution) => solution.w
 export const managedAppSchema = solutionBaseSchema.pick({
   name: true, description: true, tags: true, category: true, author: true,
   authors: true, createdAt: true, updatedAt: true, featured: true,
-  hackathon: true, version: true, bundle: true, files: true, supportingFiles: true,
+  hackathon: true, version: true, bundle: true, bundleSha256: true, download: true, files: true, supportingFiles: true,
 }).extend({
   submissionType: z.literal("managed-app"),
   app: appSetupSchema,
