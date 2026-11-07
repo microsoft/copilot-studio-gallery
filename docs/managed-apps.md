@@ -205,7 +205,7 @@ command and choose its **Copy** control or copy it manually. Unchecking the
 acknowledgement disables the download and clears and disables the commands again.
 Linux is not supported.
 
-Detail-page **ZIP downloads** count the manual source ZIP's GitHub Release
+Detail-page **downloads** count the manual source ZIP's GitHub Release
 downloads across tracked versions, not command copies or automated installs.
 The shared installers remain on Pages and native app creation reads the GitHub
 template separately. See [Gallery analytics](analytics.md#release-backed-zip-counts).

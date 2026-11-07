@@ -184,7 +184,9 @@ published in workflow logs or artifacts.
 The gallery collects ZIP counts through the
 [GitHub release-asset API](https://docs.github.com/en/rest/releases/assets#get-a-release-asset),
 not the Clarity export API. Counts are displayed **only on submission detail
-pages**, for both solutions and managed apps, with an as-of date. Gallery cards
+pages**, for both solutions and managed apps, labeled **downloads** with a compact
+icon. The tooltip and screen-reader text include the as-of timestamp and clarify
+that these count ZIP requests, not installations. Gallery cards
 and default ordering are unchanged. `solutions.json` includes the same optional
 `download` metadata (`url`, `count`, `asOf`, `trackedSince`, and `source`).
 
@@ -246,8 +248,8 @@ snapshot locally, supply its file path:
 GALLERY_DOWNLOAD_DATA=/path/to/downloads.json GALLERY_REQUIRE_RELEASES=true npm run build
 ```
 
-Measured zero is displayed as zero. Every count carries its original snapshot
-date; collection failures never mark old data fresh. Shared installer scripts,
+Measured zero is displayed as zero. Every count retains its original snapshot
+date in its tooltip and screen-reader text; collection failures never mark old data fresh. Shared installer scripts,
 supporting files, and screenshots stay on Pages. Managed-app creation still
 uses the native GitHub-subfolder template on `main`, not the release ZIP, so
 install-script copies and native app creations are not included in these totals.

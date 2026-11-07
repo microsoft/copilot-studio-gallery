@@ -305,6 +305,10 @@ test("download counts are wired only into submission detail pages, not gallery c
   assert.match(count, /download &&/);
   assert.match(count, /ZIP/);
   assert.match(count, /datetime=\{download.asOf\}/);
+  assert.match(count, /whitespace-nowrap/);
+  assert.match(count, /title=\{explanation\}/);
+  assert.ok(!count.includes('} ZIP {'));
+  assert.ok(!count.includes('class="text-xs text-muted">as of'));
   assert.match(download, /solution.download\?\.url \?\? withBase/);
   assert.match(json, /download: solution.data.download/);
 });
