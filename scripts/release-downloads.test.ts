@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import test from "node:test";
 import { parse } from "yaml";
 import {
-  downloadSnapshotSchema, releaseDownloadUrl, submissionDownload, type DownloadAsset,
+  downloadSnapshotSchema, projectDownloadCounts, releaseDownloadUrl, submissionDownload, type DownloadAsset,
 } from "../src/lib/downloads";
 import { GitHub, GitHubError, collectDownloads, loadSnapshot, publishBundles, readBundles, saveSnapshot } from "./release-downloads";
 
@@ -220,7 +220,11 @@ test("snapshot writes are non-force commits on the data branch and surface concu
   const { github, calls } = client((path, init) => {
     if (path.startsWith("/git/commits/")) return { tree: { sha } };
     if (path === "/git/trees") {
-      assert.equal(JSON.parse(String(init.body)).tree[0].path, "downloads.json");
+      const body = JSON.parse(String(init.body));
+      assert.equal(body.base_tree, sha);
+      const tree = body.tree;
+      assert.deepEqual(tree.map((file: { path: string }) => file.path), ["downloads.json", "download-counts.json"]);
+      assert.deepEqual(JSON.parse(tree[1].content), projectDownloadCounts(snapshot()));
       return { sha };
     }
     if (path === "/git/commits") {
@@ -232,6 +236,39 @@ test("snapshot writes are non-force commits on the data branch and surface concu
   });
   await assert.rejects(saveSnapshot(github, snapshot(), sha), GitHubError);
   assert.equal(calls.at(-1)?.path, "/git/refs/heads/download-stats");
+});
+
+test("bootstrap publishes registry and compact totals atomically in one root commit", async () => {
+  const { github, calls } = client((path, init) => {
+    const body = JSON.parse(String(init.body));
+    if (path === "/git/trees") {
+      assert.equal(body.base_tree, undefined);
+      assert.equal(body.tree.length, 2);
+      assert.deepEqual(JSON.parse(body.tree[0].content), snapshot());
+      assert.deepEqual(JSON.parse(body.tree[1].content), projectDownloadCounts(snapshot()));
+      return { sha };
+    }
+    if (path === "/git/commits") {
+      assert.deepEqual(body.parents, []);
+      return { sha };
+    }
+    assert.deepEqual(body, { ref: "refs/heads/download-stats", sha });
+    return {};
+  });
+  await saveSnapshot(github, snapshot());
+  assert.deepEqual(calls.map(({ path }) => path), ["/git/trees", "/git/commits", "/git/refs"]);
+});
+
+test("compact projection aggregates all versions, is deterministic and omits registry details", () => {
+  const oldHash = "b".repeat(64);
+  const old = { ...entry, hash: oldHash, assetId: 11, url: releaseDownloadUrl("sample", oldHash, tag), count: 7 };
+  const another = { ...entry, slug: "another", assetId: 12, url: releaseDownloadUrl("another", hash, tag), count: 0 };
+  const data = { ...snapshot(), assets: [entry, old, another] };
+  const expected = { schemaVersion: 1, collectedAt: date, submissions: [{ slug: "another", count: 0 }, { slug: "sample", count: 10 }] };
+  assert.deepEqual(projectDownloadCounts(data), expected);
+  assert.deepEqual(projectDownloadCounts({ ...data, assets: [...data.assets].reverse() }), expected);
+  assert.deepEqual(projectDownloadCounts({ ...data, assets: [] }).submissions, []);
+  assert.throws(() => projectDownloadCounts({ ...data, assets: [{ ...entry, count: Number.MAX_SAFE_INTEGER }, old] }));
 });
 
 test("read retries honor bounded rate limits and never expose token values in errors", async () => {
@@ -275,21 +312,24 @@ test("the bundle inventory excludes demos and validates actual ZIP bytes", async
   }
 });
 
-test("workflow sequencing isolates PRs, serializes data writes and explicitly refreshes Pages", async () => {
+test("workflow sequencing isolates PRs, serializes data writes and collects without dispatching Pages", async () => {
   const deploy = parse(await readFile(".github/workflows/deploy.yml", "utf8"));
   const stats = parse(await readFile(".github/workflows/download-stats.yml", "utf8"));
   const ci = await readFile(".github/workflows/ci.yml", "utf8");
   assert.equal(deploy.concurrency["cancel-in-progress"], false);
   assert.deepEqual(deploy.jobs.build.concurrency, stats.jobs.collect.concurrency);
   assert.equal(deploy.jobs.build.permissions.contents, "write");
-  assert.equal(stats.jobs.collect.permissions.actions, "write");
+  assert.equal(stats.jobs.collect.permissions.actions, undefined);
+  assert.equal(stats.permissions.actions, undefined);
   const steps = deploy.jobs.build.steps;
   const publishing = steps.findIndex((step: { run?: string }) => step.run?.includes("release-downloads.ts publish"));
   const build = steps.findIndex((step: { run?: string }) => step.run === "npm run build");
   assert.ok(publishing > steps.findIndex((step: { run?: string }) => step.run === "npm run check"));
   assert.ok(build > publishing);
   assert.equal(steps[build].env.GALLERY_REQUIRE_RELEASES, "true");
-  assert.equal(stats.jobs.collect.steps.at(-1).run, "gh workflow run deploy.yml --ref main");
+  assert.match(stats.jobs.collect.steps.at(-1).run, /release-downloads.ts collect/);
+  assert.ok(!JSON.stringify(stats).includes("gh workflow run"));
+  assert.ok(!JSON.stringify(stats).includes("dispatches"));
   assert.ok(!ci.includes("release-downloads"));
 });
 
@@ -303,7 +343,7 @@ test("download counts are wired only into submission detail pages, not gallery c
   assert.match(app, /<DownloadCount download=\{app.download\}/);
   assert.ok(!card.includes("DownloadCount"));
   assert.match(count, /download &&/);
-  assert.match(count, /ZIP/);
+  assert.match(count, /downloadCountExplanation/);
   assert.match(count, /datetime=\{download.asOf\}/);
   assert.match(count, /whitespace-nowrap/);
   assert.match(count, /title=\{explanation\}/);

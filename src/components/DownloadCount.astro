@@ -1,19 +1,26 @@
 ---
 import type { SubmissionDownload } from "../lib/downloads";
+import { downloadCountExplanation } from "../lib/download-counts";
 
-interface Props { download?: SubmissionDownload }
-const { download } = Astro.props;
+interface Props { download?: SubmissionDownload; slug: string }
+const { download, slug } = Astro.props;
 const explanation = download
-  ? `GitHub Release ZIP downloads across tracked versions since ${download.trackedSince.slice(0, 10)}. Last counted ${download.asOf}. Includes direct downloads, repeats, and automation; not installations.`
+  ? downloadCountExplanation(download.trackedSince, download.asOf)
   : undefined;
 ---
 
-{download && <span class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap" title={explanation}>
+{download && <span data-download-count data-slug={slug} data-count={download.count} data-as-of={download.asOf} data-tracked-since={download.trackedSince} class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap" title={explanation}>
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <path d="M12 3v12m-5-5 5 5 5-5M5 16v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" />
   </svg>
-  <span>
+  <span data-count-label>
     {download.count.toLocaleString("en-US")} {download.count === 1 ? "download" : "downloads"}
   </span>
-  <span class="sr-only">{explanation} As of <time datetime={download.asOf}>{download.asOf}</time>.</span>
+  <span class="sr-only"><span data-count-explanation>{explanation}</span> As of <time datetime={download.asOf}>{download.asOf}</time>.</span>
 </span>}
+
+<script>
+  import { refreshDownloadCounts } from "../lib/download-count-client";
+  void refreshDownloadCounts(document);
+  document.addEventListener("astro:page-load", () => { void refreshDownloadCounts(document); });
+</script>
