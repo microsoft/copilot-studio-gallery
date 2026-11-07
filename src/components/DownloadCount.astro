@@ -1,0 +1,19 @@
+---
+import type { SubmissionDownload } from "../lib/downloads";
+
+interface Props { download?: SubmissionDownload }
+const { download } = Astro.props;
+const explanation = download
+  ? `GitHub Release ZIP downloads across tracked versions since ${download.trackedSince.slice(0, 10)}. Last counted ${download.asOf}. Includes direct downloads, repeats, and automation; not installations.`
+  : undefined;
+---
+
+{download && <span class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap" title={explanation}>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M12 3v12m-5-5 5 5 5-5M5 16v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" />
+  </svg>
+  <span>
+    {download.count.toLocaleString("en-US")} {download.count === 1 ? "download" : "downloads"}
+  </span>
+  <span class="sr-only">{explanation} As of <time datetime={download.asOf}>{download.asOf}</time>.</span>
+</span>}

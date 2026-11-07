@@ -232,6 +232,11 @@ contains. Designer notes in workflow canvases are not shown in the gallery.
 App version comes from `app/package.json`; apps appear under Apps without
 requiring solution identity or agent/workflow graphs.
 
+ZIP hashes and public download counts are generated, not contributor-authored
+metadata. Release-asset counts are collected on the bot-owned `download-stats`
+branch and joined into submission detail pages when the site builds. Do not add
+or edit counters in `metadata.json`; see [Gallery analytics](docs/analytics.md#release-backed-zip-counts).
+
 ## Write the visitor overview
 
 `README.md` becomes the Overview tab and stays outside the downloadable source
