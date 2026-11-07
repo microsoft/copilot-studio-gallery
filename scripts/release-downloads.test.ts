@@ -26,6 +26,10 @@ const apiAsset = {
   id: entry.assetId, name: `sample-${hash}.zip`, state: "uploaded", size: bytes.length,
   browser_download_url: entry.url, digest: `sha256:${hash}`, download_count: 5,
 };
+const draftAsset = {
+  ...apiAsset,
+  browser_download_url: `https://github.com/microsoft/copilot-studio-gallery/releases/download/untagged-temporary/${apiAsset.name}`,
+};
 const snapshot = () => downloadSnapshotSchema.parse({ schemaVersion: 1, collectedAt: date, assets: [entry] });
 
 type Handler = (path: string, init: RequestInit) => unknown | Response;
@@ -72,6 +76,7 @@ test("unchanged ZIP versions do not call GitHub or create releases", async () =>
 });
 
 test("publisher uploads into a draft, verifies hash, then publishes without changing latest", async () => {
+  let published = false;
   const { github, calls } = client((path, init) => {
     if (path.startsWith("/releases?")) return [];
     if (path === "/releases" && init.method === "POST") {
@@ -79,15 +84,16 @@ test("publisher uploads into a draft, verifies hash, then publishes without chan
       assert.equal(JSON.parse(String(init.body)).target_commitish, sha);
       return { ...release, draft: true, published_at: null };
     }
-    if (path === "/releases/1/assets?per_page=100&page=1") return [];
+    if (path === "/releases/1/assets?per_page=100&page=1") return published ? [apiAsset] : [];
     if (path.startsWith("/releases/1/assets?name=")) {
       assert.equal(init.method, "POST");
       assert.ok(init.body instanceof Uint8Array);
       assert.deepEqual(Buffer.from(init.body), bytes);
-      return apiAsset;
+      return draftAsset;
     }
     if (path === "/releases/1" && init.method === "PATCH") {
       assert.deepEqual(JSON.parse(String(init.body)), { draft: false, make_latest: "false" });
+      published = true;
       return release;
     }
     throw new Error(`Unexpected call: ${path}`);
@@ -95,6 +101,8 @@ test("publisher uploads into a draft, verifies hash, then publishes without chan
   const result = await publishBundles(github, { ...snapshot(), assets: [] }, [bundle], sha);
   assert.equal(result[0]?.assetId, 10);
   assert.equal(result[0]?.count, 0);
+  assert.equal(result[0]?.url, apiAsset.browser_download_url);
+  assert.equal(calls.at(-1)?.path, "/releases/1/assets?per_page=100&page=1");
   assert.equal(calls.filter((call) => call.init.method === "POST").length, 2);
 });
 
@@ -105,25 +113,127 @@ test("publisher recovers an already published batch without mutating it", async 
   assert.ok(calls.every((call) => call.init.method === "GET"));
 });
 
+test("publisher resumes verified draft assets and registers only reread public metadata", async () => {
+  let published = false;
+  const { github, calls } = client((path, init) => {
+    if (path.startsWith("/releases?")) return [{ ...release, draft: true, published_at: null }];
+    if (path.startsWith("/releases/1/assets?")) return [published ? apiAsset : draftAsset];
+    if (path === "/releases/1" && init.method === "PATCH") {
+      published = true;
+      return release;
+    }
+    throw new Error(`Unexpected call: ${path}`);
+  });
+  const original = { ...snapshot(), assets: [] };
+  const result = await publishBundles(github, original, [bundle], sha);
+  assert.deepEqual(result, [{ ...entry, count: 0 }]);
+  assert.deepEqual(original.assets, []);
+  assert.deepEqual(calls.map(({ init }) => init.method), ["GET", "GET", "PATCH", "GET"]);
+  assert.doesNotThrow(() => downloadSnapshotSchema.parse({ ...original, assets: result }));
+});
+
+test("publisher rejects wrong final URLs for new and already published assets", async () => {
+  for (const url of [
+    draftAsset.browser_download_url,
+    entry.url.replace(tag, "another-tag"),
+    entry.url.replace("github.com", "example.com"),
+    `${entry.url}?download=1`,
+  ]) {
+    for (const draft of [true, false]) {
+      let published = !draft;
+      const { github, calls } = client((path, init) => {
+        if (path.startsWith("/releases?")) return [{ ...release, draft, published_at: draft ? null : release.published_at }];
+        if (path.startsWith("/releases/1/assets?")) return [published ? { ...apiAsset, browser_download_url: url } : draftAsset];
+        if (path === "/releases/1" && init.method === "PATCH") {
+          published = true;
+          return release;
+        }
+        throw new Error(`Unexpected call: ${path}`);
+      });
+      await assert.rejects(publishBundles(github, { ...snapshot(), assets: [] }, [bundle], sha), /Unexpected ZIP download URL/);
+      assert.equal(calls.filter(({ init }) => init.method !== "GET").length, draft ? 1 : 0);
+    }
+  }
+});
+
+test("publisher rejects missing, duplicate, replaced or changed assets after publication", async () => {
+  for (const assets of [
+    [], [apiAsset, apiAsset], [{ ...apiAsset, id: 11 }],
+    [{ ...apiAsset, name: "unexpected.zip" }],
+    [{ ...apiAsset, state: "starter" }], [{ ...apiAsset, size: bytes.length + 1 }],
+    [{ ...apiAsset, digest: `sha256:${"f".repeat(64)}` }],
+    [apiAsset, { ...apiAsset, id: 11, name: "unexpected.zip" }],
+  ]) {
+    let published = false;
+    const original = { ...snapshot(), assets: [] };
+    const { github, calls } = client((path, init) => {
+      if (path.startsWith("/releases?")) return [{ ...release, draft: true, published_at: null }];
+      if (path.startsWith("/releases/1/assets?")) return published ? assets : [draftAsset];
+      if (path === "/releases/1" && init.method === "PATCH") {
+        published = true;
+        return release;
+      }
+      throw new Error(`Unexpected call: ${path}`);
+    });
+    await assert.rejects(publishBundles(github, original, [bundle], sha), /missing or changed|Unexpected asset|identity or size|digest mismatch/);
+    assert.deepEqual(original.assets, []);
+    assert.deepEqual(calls.map(({ init }) => init.method), ["GET", "GET", "PATCH", "GET"]);
+  }
+});
+
+test("publisher rejects failed publication, changed release identity and unavailable public metadata", async () => {
+  for (const response of [
+    { ...release, draft: true, published_at: null },
+    { ...release, published_at: null },
+    { ...release, id: 2 },
+    { ...release, tag_name: "another-tag" },
+    new Response("", { status: 503 }),
+    release,
+  ]) {
+    let published = false;
+    const { github, calls } = client((path, init) => {
+      if (path.startsWith("/releases?")) return [{ ...release, draft: true, published_at: null }];
+      if (path.startsWith("/releases/1/assets?")) return published ? new Response("", { status: 404 }) : [draftAsset];
+      if (path === "/releases/1" && init.method === "PATCH") {
+        published = true;
+        return response;
+      }
+      throw new Error(`Unexpected call: ${path}`);
+    });
+    await assert.rejects(publishBundles(github, { ...snapshot(), assets: [] }, [bundle], sha), /not published|identity changed|GitHub request failed/);
+    assert.equal(calls.filter(({ init }) => init.method === "PATCH").length, 1);
+    assert.ok(calls.every(({ path }) => !path.startsWith("/git/")));
+  }
+});
+
 test("publisher splits 1,001 new versions at the exact 1,000-asset release limit", async () => {
   let releases = 0;
   let assetId = 0;
   const uploads = new Map<number, number>();
+  const assets = new Map<number, Array<typeof apiAsset>>();
+  const published = new Set<number>();
   const { github } = client((path, init) => {
     if (path.startsWith("/releases?")) return [];
     if (path === "/releases" && init.method === "POST") {
       releases++;
       return { ...release, id: releases, tag_name: JSON.parse(String(init.body)).tag_name, draft: true, published_at: null };
     }
-    if (path.includes("per_page=")) return [];
     const releaseId = Number(path.split("/")[2]);
     const batchTag = `gallery-bundles-${sha}-${releaseId}`;
+    if (path.includes("per_page=")) {
+      const page = Number(new URL(`https://example.com${path}`).searchParams.get("page"));
+      return published.has(releaseId) ? assets.get(releaseId)!.slice((page - 1) * 100, page * 100) : [];
+    }
     if (path.includes("?name=")) {
       const name = new URL(`https://example.com${path}`).searchParams.get("name")!;
       uploads.set(releaseId, (uploads.get(releaseId) ?? 0) + 1);
-      return { ...apiAsset, id: ++assetId, name,
+      const asset = { ...apiAsset, id: ++assetId, name,
         browser_download_url: `https://github.com/microsoft/copilot-studio-gallery/releases/download/${batchTag}/${name}` };
+      assets.set(releaseId, [...(assets.get(releaseId) ?? []), asset]);
+      return { ...asset, browser_download_url: `https://github.com/microsoft/copilot-studio-gallery/releases/download/untagged-temporary/${name}` };
     }
+    assert.equal(init.method, "PATCH");
+    published.add(releaseId);
     return { ...release, id: releaseId, tag_name: batchTag };
   });
   const bundles = Array.from({ length: 1001 }, (_, index) => ({ ...bundle, slug: `sample-${index}` }));
@@ -144,6 +254,50 @@ test("digest mismatch fails before release publication; uncertain writes are not
   assert.equal(failing.calls.length, 1);
 });
 
+test("invalid draft ZIP identity, size or digest prevents publication", async () => {
+  for (const asset of [
+    { ...draftAsset, state: "starter", size: 1 },
+    { ...draftAsset, size: bytes.length + 1 },
+    { ...draftAsset, digest: `sha256:${"f".repeat(64)}` },
+  ]) {
+    const { github, calls } = client((path) => {
+      if (path.startsWith("/releases?")) return [{ ...release, draft: true, published_at: null }];
+      if (path.startsWith("/releases/1/assets?")) return [asset];
+      throw new Error(`Unexpected call: ${path}`);
+    });
+    await assert.rejects(publishBundles(github, { ...snapshot(), assets: [] }, [bundle], sha), /identity or size|digest mismatch/);
+    assert.ok(calls.every(({ init }) => init.method === "GET"));
+  }
+});
+
+test("absent digests require matching downloaded bytes both before and after publication", async () => {
+  for (const corruptAt of ["neither", "draft", "published"]) {
+    let published = false;
+    const { github, calls } = client((path, init) => {
+      if (path.startsWith("/releases?")) return [{ ...release, draft: true, published_at: null }];
+      if (path.startsWith("/releases/1/assets?")) return [{ ...(published ? apiAsset : draftAsset), digest: null }];
+      if (path === "/releases/assets/10") {
+        const corrupt = corruptAt === (published ? "published" : "draft");
+        return new Response(new Uint8Array(corrupt ? Buffer.from("corrupted ZIP fixture") : bytes));
+      }
+      if (path === "/releases/1" && init.method === "PATCH") {
+        assert.equal(calls.filter(({ path }) => path === "/releases/assets/10").length, 1);
+        published = true;
+        return release;
+      }
+      throw new Error(`Unexpected call: ${path}`);
+    });
+    if (corruptAt === "neither") {
+      const result = await publishBundles(github, { ...snapshot(), assets: [] }, [bundle], sha);
+      assert.equal(result[0]?.url, entry.url);
+    } else {
+      await assert.rejects(publishBundles(github, { ...snapshot(), assets: [] }, [bundle], sha), /digest mismatch/);
+    }
+    assert.equal(published, corruptAt !== "draft");
+    assert.equal(calls.filter(({ path }) => path === "/releases/assets/10").length, corruptAt === "draft" ? 1 : 2);
+  }
+});
+
 test("missing digest is verified through a tokenless approved CDN redirect", async () => {
   const { github, calls } = client((path, init) => {
     if (path.startsWith("/releases?")) return [release];
@@ -162,19 +316,23 @@ test("missing digest is verified through a tokenless approved CDN redirect", asy
 });
 
 test("failed zero-byte staging assets can be repaired only inside a draft", async () => {
+  let published = false;
   const { github, calls } = client((path, init) => {
     if (path.startsWith("/releases?")) return [{ ...release, draft: true, published_at: null }];
-    if (path === "/releases/1/assets?per_page=100&page=1") return [{ ...apiAsset, state: "starter", size: 0 }];
+    if (path === "/releases/1/assets?per_page=100&page=1") return published ? [apiAsset] : [{ ...draftAsset, state: "starter", size: 0 }];
     if (init.method === "DELETE") return new Response(null, { status: 204 });
-    if (init.method === "POST") return apiAsset;
-    if (init.method === "PATCH") return release;
+    if (init.method === "POST") return draftAsset;
+    if (init.method === "PATCH") {
+      published = true;
+      return release;
+    }
     throw new Error(path);
   });
   await publishBundles(github, { ...snapshot(), assets: [] }, [bundle], sha);
   assert.equal(calls.filter((call) => call.init.method === "DELETE").length, 1);
-  const published = client((path) => path.startsWith("/releases?") ? [release] : [{ ...apiAsset, state: "starter", size: 0 }]);
-  await assert.rejects(publishBundles(published.github, { ...snapshot(), assets: [] }, [bundle], sha), /identity or size/);
-  assert.ok(published.calls.every((call) => call.init.method === "GET"));
+  const publishedClient = client((path) => path.startsWith("/releases?") ? [release] : [{ ...apiAsset, state: "starter", size: 0 }]);
+  await assert.rejects(publishBundles(publishedClient.github, { ...snapshot(), assets: [] }, [bundle], sha), /identity or size/);
+  assert.ok(publishedClient.calls.every((call) => call.init.method === "GET"));
 });
 
 test("collector paginates assets and preserves older version counters", async () => {

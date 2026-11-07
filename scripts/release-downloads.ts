@@ -218,13 +218,25 @@ export async function publishBundles(github: GitHub, snapshot: DownloadSnapshot,
         asset = assetSchema.parse(await github.request(`/releases/${release.id}/assets?name=${encodeURIComponent(name)}`, "POST", undefined, bundle.bytes));
       }
       await verifyAsset(github, asset, bundle);
-      if (asset.browser_download_url !== releaseDownloadUrl(bundle.slug, bundle.hash, tag)) throw new Error(`Unexpected ZIP download URL: ${name}`);
       verified.push(asset);
     }
-    if (release.draft) release = releaseSchema.parse(await github.request(`/releases/${release.id}`, "PATCH", { draft: false, make_latest: "false" }));
+    const wasDraft = release.draft;
+    const releaseId = release.id;
+    if (wasDraft) release = releaseSchema.parse(await github.request(`/releases/${releaseId}`, "PATCH", { draft: false, make_latest: "false" }));
+    if (release.id !== releaseId || release.tag_name !== tag) throw new Error(`Published release identity changed: ${tag}`);
     if (release.draft || !release.published_at) throw new Error(`Release was not published: ${tag}`);
+    // Draft URLs use a temporary untagged identifier; only fresh public metadata can enter the registry.
+    const publishedAssets = wasDraft ? await github.list(`/releases/${releaseId}/assets`, assetSchema) : verified;
+    if (publishedAssets.some((asset) => !expected.has(asset.name))) throw new Error(`Unexpected asset in gallery release: ${tag}`);
     for (const [index, bundle] of batch.entries()) {
-      const asset = verified[index]!;
+      const name = `${bundle.slug}-${bundle.hash}.zip`;
+      const matches = publishedAssets.filter((asset) => asset.name === name);
+      const asset = matches[0];
+      if (matches.length !== 1 || !asset || asset.id !== verified[index]!.id) {
+        throw new Error(`Published release ZIP is missing or changed: ${name}`);
+      }
+      if (wasDraft) await verifyAsset(github, asset, bundle);
+      if (asset.browser_download_url !== releaseDownloadUrl(bundle.slug, bundle.hash, tag)) throw new Error(`Unexpected ZIP download URL: ${name}`);
       registered.push({
         slug: bundle.slug, hash: bundle.hash, assetId: asset.id, releaseId: release.id, tag,
         url: asset.browser_download_url, size: asset.size, publishedAt: release.published_at, count: 0,

@@ -208,6 +208,12 @@ published without becoming the repository's latest release. Published batches
 are never extended or clobbered, so immutable-release enforcement is compatible.
 The publisher can resume an interrupted draft or reconcile an already published
 batch. It repairs only a known zero-byte `starter` asset inside a draft.
+Draft ZIP identities, sizes, and SHA-256 digests (or downloaded bytes when a
+digest is absent) are verified before publication. GitHub's temporary
+`untagged-...` draft URLs are never registered: after publication the publisher
+rereads asset metadata, rechecks identities and contents, and requires canonical
+final-tag URLs before writing either snapshot. Missing or changed assets fail
+explicitly rather than substituting constructed URLs.
 
 The bot-owned `download-stats` branch stores `downloads.json`: a versioned asset
 registry and the last complete count snapshot. Older versions remain registered
