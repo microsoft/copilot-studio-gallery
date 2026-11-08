@@ -32,6 +32,7 @@ export async function refreshDownloadCounts(document: Document, fetcher: typeof 
       time.textContent = updated.asOf;
       element.dataset.count = String(updated.count);
       element.dataset.asOf = updated.asOf;
+      element.hidden = updated.count === 0;
     }
   } catch (error: unknown) {
     console.error("Gallery download counts failed to refresh; preserving the rendered snapshot:", error instanceof Error ? error.message : String(error));

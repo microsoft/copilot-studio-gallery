@@ -264,8 +264,12 @@ snapshot locally, supply its file path:
 GALLERY_DOWNLOAD_DATA=/path/to/downloads.json GALLERY_REQUIRE_RELEASES=true npm run build
 ```
 
-Measured zero is displayed as zero. The shared detail metric refreshes once per
-rendered page, including Astro client navigation, using a credential-free request
+Solution detail pages hide measured-zero counters, retaining a hidden DOM mount
+so a later positive total can appear without a Pages rebuild. Managed-app detail
+pages omit the counter entirely, regardless of count; their tracking metadata,
+release ZIP links, and native install flows are unchanged.
+The solution detail metric refreshes once per rendered page, including Astro
+client navigation, using a credential-free request
 with a ten-second timeout. It validates the complete compact payload (version,
 unique valid slugs, safe nonnegative integer totals, allowlisted fields, and UTC
 timestamps) before using a submission's total. Snapshots older than three days
@@ -274,9 +278,10 @@ older timestamps, decreased totals, and conflicting totals at the same timestamp
 are rejected. HTTP/network/parse/validation failures are logged to the browser
 console without breaking the page or changing links.
 
-The initial count, tooltip, and accessible timestamp remain untouched on refresh
+The initial count, visibility, tooltip, and accessible timestamp remain untouched on refresh
 failure or with JavaScript disabled; old metrics are never presented as fresh.
-A successful refresh updates the count, tooltip, and screen-reader time together.
+A successful refresh updates the count, tooltip, and screen-reader time together,
+showing the metric only when the accepted total is positive.
 `solutions.json` remains build-time metadata, not a live count endpoint. Pages
 without a measured build-time count do not invent one from the compact file.
 Shared installer scripts,

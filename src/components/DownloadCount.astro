@@ -9,7 +9,7 @@ const explanation = download
   : undefined;
 ---
 
-{download && <span data-download-count data-slug={slug} data-count={download.count} data-as-of={download.asOf} data-tracked-since={download.trackedSince} class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap" title={explanation}>
+{download && <span data-download-count data-slug={slug} data-count={download.count} data-as-of={download.asOf} data-tracked-since={download.trackedSince} hidden={download.count === 0} class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap" title={explanation}>
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <path d="M12 3v12m-5-5 5 5 5-5M5 16v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" />
   </svg>
@@ -18,6 +18,12 @@ const explanation = download
   </span>
   <span class="sr-only"><span data-count-explanation>{explanation}</span> As of <time datetime={download.asOf}>{download.asOf}</time>.</span>
 </span>}
+
+<style>
+  [data-download-count][hidden] {
+    display: none !important;
+  }
+</style>
 
 <script>
   import { refreshDownloadCounts } from "../lib/download-count-client";

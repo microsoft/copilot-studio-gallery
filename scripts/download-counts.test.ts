@@ -3,6 +3,10 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
 import ts from "typescript";
+import { transform } from "@astrojs/compiler-rs";
+import { experimental_AstroContainer } from "astro/container";
+import * as runtime from "astro/compiler-runtime";
+import type { AstroComponentFactory } from "astro/runtime/server/index.js";
 import * as counts from "../src/lib/download-counts";
 
 const now = Date.now();
@@ -44,6 +48,7 @@ test("refresh accepts newer nondecreasing totals, including measured zero, but r
 });
 
 class Metric {
+  hidden = false;
   dataset = { slug: "sample", count: "3", asOf, trackedSince };
   title = counts.downloadCountExplanation(trackedSince, asOf);
   isConnected = true;
@@ -56,8 +61,11 @@ class Metric {
   }
 }
 
-function fixture(result: unknown | Response = snapshot()) {
+function fixture(result: unknown | Response = snapshot(), count = 3) {
   let elements = [new Metric()];
+  elements[0]!.dataset.count = String(count);
+  elements[0]!.label.textContent = `${count.toLocaleString("en-US")} ${count === 1 ? "download" : "downloads"}`;
+  elements[0]!.hidden = count === 0;
   const errors: unknown[][] = [];
   const calls: { url: string; options: RequestInit }[] = [];
   const exports: { refreshDownloadCounts?: (document: object) => Promise<void> } = {};
@@ -102,20 +110,59 @@ test("browser refresh updates count, tooltip and accessible time with a credenti
   assert.ok(f.calls[0]?.options.signal);
 });
 
-test("HTTP, network, malformed, stale, older, missing and decreased snapshots preserve every rendered field and log failures", async () => {
-  for (const result of [
-    new Response("", { status: 404 }), new Error("Network blocked"),
-    new Response("{"), {}, snapshot(2), snapshot(5, trackedSince),
-    snapshot(5, new Date(now - counts.DOWNLOAD_COUNTS_MAX_AGE_MS - 1).toISOString()),
-    { ...snapshot(), submissions: [] },
-  ]) {
-    const f = fixture(result);
-    const original = JSON.stringify(f.metric);
+test("zero totals stay hidden until an accepted positive refresh, preserving compact formatting", async () => {
+  for (const count of [0, 1, 1234]) {
+    const f = fixture(snapshot(count), 0);
+    assert.equal(f.metric.hidden, true);
     await f.run();
-    assert.equal(JSON.stringify(f.metric), original);
-    assert.equal(f.errors.length, 1);
-    assert.match(String(f.errors[0]?.[0]), /preserving the rendered snapshot/);
+    assert.equal(f.metric.hidden, count === 0);
+    assert.equal(f.metric.label.textContent, `${count.toLocaleString("en-US")} ${count === 1 ? "download" : "downloads"}`);
+    assert.equal(f.errors.length, 0);
   }
+});
+
+test("HTTP, network, malformed, stale, older, missing and decreased snapshots preserve every rendered field and log failures", async () => {
+  for (const count of [0, 3]) {
+    for (const result of [
+      new Response("", { status: 404 }), new Error("Network blocked"),
+      new Response("{"), {}, snapshot(count - 1), snapshot(5, trackedSince),
+      snapshot(5, new Date(now - counts.DOWNLOAD_COUNTS_MAX_AGE_MS - 1).toISOString()),
+      { ...snapshot(), submissions: [] },
+    ]) {
+      const f = fixture(result, count);
+      const original = JSON.stringify(f.metric);
+      await f.run();
+      assert.equal(JSON.stringify(f.metric), original);
+      assert.equal(f.errors.length, 1);
+      assert.match(String(f.errors[0]?.[0]), /preserving the rendered snapshot/);
+    }
+  }
+});
+
+test("server rendering retains a hidden zero mount and omits hidden for positive counts", async () => {
+  const source = readFileSync("src/components/DownloadCount.astro", "utf8");
+  const compiled = transform(source, {
+    filename: "src/components/DownloadCount.astro", internalURL: "astro/compiler-runtime",
+    resolvePath: (specifier) => specifier,
+  });
+  const exports: { default?: AstroComponentFactory } = {};
+  runInNewContext(ts.transpileModule(compiled.code, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText, {
+    exports, require: (name: string) => name === "astro/compiler-runtime" ? runtime : counts,
+  });
+  assert.ok(exports.default);
+  const container = await experimental_AstroContainer.create();
+  for (const count of [0, 1, 1234]) {
+    const html = await container.renderToString(exports.default, {
+      props: { slug: "sample", download: { count, asOf, trackedSince } },
+    });
+    assert.match(html, /<span data-download-count/);
+    assert.equal(/<span data-download-count[^>]*\shidden(?:[ >])/.test(html), count === 0);
+    assert.ok(html.includes(`${count.toLocaleString("en-US")} ${count === 1 ? "download" : "downloads"}`));
+  }
+  const unmeasured = await container.renderToString(exports.default, { props: { slug: "sample" } });
+  assert.ok(!unmeasured.includes("data-download-count"));
 });
 
 test("initial and Astro navigation events initialize each rendered metric once, including new detail pages", async () => {

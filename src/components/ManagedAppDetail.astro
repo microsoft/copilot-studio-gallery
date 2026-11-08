@@ -2,7 +2,6 @@
 import type { ManagedAppRecord } from "../lib/schema";
 import { withBase } from "../lib/url";
 import SolutionDownload from "./SolutionDownload.astro";
-import DownloadCount from "./DownloadCount.astro";
 import AuthorCredit from "./AuthorCredit.astro";
 import MicrosoftBadge from "./MicrosoftBadge.astro";
 import SolutionDiscussion from "./SolutionDiscussion.astro";
@@ -25,7 +24,6 @@ const { app, slug } = Astro.props;
       <div class="mt-5 flex flex-wrap items-center gap-4 text-sm text-muted">
         <AuthorCredit authors={app.authors} prefix="by" />
         <span>Version {app.version}</span>
-        <DownloadCount download={app.download} slug={slug} />
         {(app.updatedAt ?? app.createdAt) && <span>Updated {app.updatedAt ?? app.createdAt}</span>}
         <a href="#discussion" class="font-medium text-accent hover:underline">Rate &amp; discuss</a>
       </div>
