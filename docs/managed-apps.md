@@ -205,13 +205,13 @@ command and choose its **Copy** control or copy it manually. Unchecking the
 acknowledgement disables the download and clears and disables the commands again.
 Linux is not supported.
 
-Detail-page **downloads** count the manual source ZIP's GitHub Release
-downloads across tracked versions, not command copies or automated installs.
+Managed-app detail pages do not display a download counter. The public download
+data still tracks the manual source ZIP's GitHub Release downloads across tracked
+versions, not command copies or automated installs.
 The shared installers remain on Pages and native app creation reads the GitHub
 template separately. See [Gallery analytics](analytics.md#release-backed-zip-counts).
-Counts refresh from a compact public snapshot without rebuilding Pages; unavailable
-or rejected snapshots retain the original count and as-of time. This refresh does
-not alter the source ZIP link or the native template/installer flow.
+The data refreshes without rebuilding Pages and does not alter the source ZIP
+link or the native template/installer flow.
 
 Paste the command into a terminal in the folder where you want the new app.
 Node is not required to start: Bash/curl or Windows PowerShell 5.1+ downloads

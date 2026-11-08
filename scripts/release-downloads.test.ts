@@ -491,14 +491,16 @@ test("workflow sequencing isolates PRs, serializes data writes and collects with
   assert.ok(!ci.includes("release-downloads"));
 });
 
-test("download counts are wired only into submission detail pages, not gallery cards", async () => {
+test("download counts are wired only into solution detail pages, not managed apps or gallery cards", async () => {
   const [solution, app, card, count, download, json] = await Promise.all([
     readFile("src/pages/solutions/[slug].astro", "utf8"), readFile("src/components/ManagedAppDetail.astro", "utf8"),
     readFile("src/components/SolutionCard.astro", "utf8"), readFile("src/components/DownloadCount.astro", "utf8"),
     readFile("src/components/SolutionDownload.astro", "utf8"), readFile("src/pages/solutions.json.ts", "utf8"),
   ]);
   assert.match(solution, /<DownloadCount download=\{data.download\}/);
-  assert.match(app, /<DownloadCount download=\{app.download\}/);
+  assert.ok(!app.includes("DownloadCount"));
+  assert.ok(!app.includes("data-download-count"));
+  assert.match(app, /<SolutionDownload solution=\{app\}/);
   assert.ok(!card.includes("DownloadCount"));
   assert.match(count, /download &&/);
   assert.match(count, /downloadCountExplanation/);
