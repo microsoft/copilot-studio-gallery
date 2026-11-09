@@ -1,76 +1,222 @@
 ---
-import type { SolutionRecord } from "../lib/schema";
+import { isManagedApp, type GalleryRecord } from "../lib/schema";
 import { withBase } from "../lib/url";
+import { appInstallCommand } from "../lib/appInstall";
 
 interface Props {
-  solution: Pick<SolutionRecord, "bundle" | "featured">;
+  solution: GalleryRecord;
   idPrefix: string;
   compact?: boolean;
 }
 
 const { solution, idPrefix, compact = false } = Astro.props;
+const app = isManagedApp(solution) ? solution : undefined;
+const installPlatforms = ["macos", "windows"] as const;
 const acknowledgementId = `${idPrefix}-trust-ack`;
 const disclaimerId = `${idPrefix}-disclaimer`;
 const acknowledgementText = solution.featured
   ? "I understand this is an open-source sample from Microsoft."
-  : "I'll review this community-provided example and only import it if I trust the source.";
+  : `I'll review this community-provided example and only ${app ? "install" : "import"} it if I trust the source.`;
+const downloadUrl = solution.download?.url ?? withBase(`/${solution.bundle}`);
 ---
 
-<div data-solution-download role="group" aria-label="Download solution" class:list={["grid gap-3 rounded-xl border border-border bg-elevated p-3.5", compact && "sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-5"]}>
+<div data-solution-download data-submission-type={app ? "managed-app" : "solution"} data-download-surface={idPrefix} role="group" aria-label={app ? "Install app" : "Download solution"} class:list={["grid rounded-xl border border-border bg-elevated p-3.5", app ? "app-install-panel gap-4" : "gap-3", compact && !app && "sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-5"]}>
   <div class="min-w-0">
     <label for={acknowledgementId} class="flex cursor-pointer items-start gap-2 text-xs font-medium leading-relaxed text-ink">
       <input type="checkbox" id={acknowledgementId} data-trust-ack aria-describedby={disclaimerId} class="mt-0.5 h-3.5 w-3.5 shrink-0 cursor-pointer rounded border-border accent-accent" />
       <span>{acknowledgementText}</span>
     </label>
-    <p id={disclaimerId} class="mt-2 pl-[1.375rem] text-xs leading-relaxed text-muted">
-      This {solution.featured ? "sample" : "community example"} is provided as-is and is not covered by Microsoft Support.
-      The underlying Copilot Studio and Power Platform products retain their standard support.{" "}
-      Importing can create or modify resources and use your connections and permissions.{" "}
+    <p id={disclaimerId} class:list={["mt-2 text-xs leading-relaxed text-muted", !app && "pl-[1.375rem]"]}>
+      <>
+        This {solution.featured ? "sample" : app ? "community app" : "community example"} is provided as-is and is not covered by Microsoft Support.
+        The underlying Copilot Studio and Power Platform products retain their standard support.{" "}
+        {app ? "This app acts with your connections and permissions and can run code, create or modify resources, and incur charges."
+          : "Importing can create or modify resources and use your connections and permissions."}
+      </>{" "}
       <a href="https://github.com/microsoft/copilot-studio-gallery/blob/main/SUPPORT.md" target="_blank" rel="noopener" class="underline underline-offset-2 hover:text-ink">Support details</a>
     </p>
   </div>
-  <a
+  {app && (
+    <div data-install-commands class="min-w-0 border-t border-border pt-4">
+      <h2 class="text-sm font-semibold">Automated install</h2>
+      <div class="install-platforms mt-3 grid gap-4">
+        {installPlatforms.map((platform) => (
+        <div data-install-command data-install-platform={platform} class="min-w-0">
+          <div class="flex items-center justify-between gap-2">
+            <label for={`${idPrefix}-${platform}`} class="text-xs font-semibold">{platform === "macos" ? "macOS · Bash" : "Windows · PowerShell"}</label>
+            <button type="button" data-copy-install data-copy-label="Copy setup command" disabled aria-label="Copy setup command" title="Copy setup command" class="inline-flex min-h-8 shrink-0 items-center justify-center gap-1.5 rounded px-2 text-xs font-medium text-muted hover:bg-surface hover:text-ink disabled:cursor-not-allowed disabled:opacity-50">
+              <svg data-copy-icon width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path></svg>
+              <svg data-copy-check width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+              <span data-copy-text>Copy</span>
+              <span data-copy-confirmation>Copied</span>
+            </button>
+          </div>
+          <textarea id={`${idPrefix}-${platform}`} data-install-value={appInstallCommand(app, platform)} readonly disabled rows="3" placeholder="Check the box above to enable copying." class="mt-1 block w-full resize-y rounded border border-border bg-surface p-2 font-mono text-xs disabled:cursor-not-allowed disabled:opacity-50"></textarea>
+          <p data-copy-status role="status" class="sr-only"></p>
+        </div>
+        ))}
+      </div>
+      <div class="manual-install-links mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-4">
+        <a data-download-gated data-download-url={downloadUrl} download aria-disabled="true" tabindex="-1" class="text-xs font-medium text-accent underline underline-offset-2 cursor-not-allowed opacity-50">
+          Download and install manually
+        </a>
+        <a href="https://github.com/microsoft/copilot-studio-gallery/blob/main/docs/managed-apps.md#install-an-app" class="text-xs font-medium text-accent underline underline-offset-2">Manual setup guide &amp; requirements</a>
+      </div>
+    </div>
+  )}
+  {!app && <a
     data-download-gated
-    data-download-url={withBase(`/${solution.bundle}`)}
+    data-download-url={downloadUrl}
     download
     aria-disabled="true"
     tabindex="-1"
     class:list={[
-      "inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-[0.625rem] bg-accent px-4 py-2.5 text-sm font-semibold text-accent-fg opacity-50",
-      "w-full self-center",
+      "cursor-not-allowed opacity-50",
+      "inline-flex min-h-11 items-center justify-center rounded-[0.625rem] bg-accent px-4 py-2.5 text-sm font-semibold text-accent-fg w-full self-center",
       compact && "sm:w-auto",
     ]}
   >
     Download ZIP
-  </a>
+  </a>}
 </div>
 
+<style>
+  .app-install-panel {
+    container-type: inline-size;
+  }
+  @container (min-width: 36rem) {
+    .install-platforms {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  [data-copy-install] {
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1rem;
+  }
+  [data-install-command] textarea {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+  [data-install-command] textarea:disabled {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  [data-copy-check],
+  [data-copy-confirmation],
+  [data-copied] [data-copy-icon],
+  [data-copied] [data-copy-text] {
+    display: none;
+  }
+  [data-copied] [data-copy-check],
+  [data-copied] [data-copy-confirmation] {
+    display: block;
+  }
+</style>
+
 <script>
+  import { galleryRoute, trackGalleryEvent, type GalleryContext, type GalleryEvent } from "../lib/analytics";
+
   document.querySelectorAll<HTMLElement>("[data-solution-download]").forEach((root) => {
+    const context: GalleryContext = {
+      ...galleryRoute(window.location.pathname, import.meta.env.BASE_URL),
+      submission_type: root.dataset.submissionType === "managed-app" ? "managed-app" : "solution",
+      download_surface: root.dataset.downloadSurface,
+    };
+    const track = (event: GalleryEvent, extra: GalleryContext = {}) => {
+      if (import.meta.env.PROD) trackGalleryEvent(event, { ...context, ...extra });
+    };
     const acknowledgement = root.querySelector<HTMLInputElement>("[data-trust-ack]");
-    const download = root.querySelector<HTMLAnchorElement>("[data-download-gated]");
-    if (!acknowledgement || !download || !download.dataset.downloadUrl) {
+    const downloads = [...root.querySelectorAll<HTMLAnchorElement>("[data-download-gated]")];
+    const commands = [...root.querySelectorAll<HTMLTextAreaElement>("[data-install-value]")];
+    if (!acknowledgement || downloads.length === 0 || downloads.some((download) => !download.dataset.downloadUrl)) {
       throw new Error("Missing solution download acknowledgement or URL");
     }
-    const url = download.dataset.downloadUrl;
-
+    if (commands.some((command) => !command.dataset.installValue)) throw new Error("Missing app install command");
+    const copyControls = [...root.querySelectorAll<HTMLButtonElement>("[data-copy-install]")].map((button) => {
+      const command = button.closest("[data-install-command]");
+      const input = command?.querySelector<HTMLTextAreaElement>("textarea");
+      const status = command?.querySelector<HTMLElement>("[data-copy-status]");
+      const label = button.dataset.copyLabel;
+      if (!input || !status || !label) throw new Error("Missing app install command or copy control");
+      const platform = command?.getAttribute("data-install-platform");
+      if (platform !== "macos" && platform !== "windows") throw new Error("Missing app install platform");
+      return { button, input, status, label, platform } as const;
+    });
+    const copyTimers = new Map<HTMLButtonElement, number>();
+    const resetCopy = ({ button, status, label }: (typeof copyControls)[number]) => {
+      window.clearTimeout(copyTimers.get(button));
+      copyTimers.delete(button);
+      button.removeAttribute("data-copied");
+      button.setAttribute("aria-label", label);
+      button.title = label;
+      status.className = "sr-only";
+      status.textContent = "";
+    };
     const syncDownload = () => {
       const enabled = acknowledgement.checked;
+      downloads.forEach((download) => {
       download.classList.toggle("cursor-not-allowed", !enabled);
       download.classList.toggle("opacity-50", !enabled);
-      download.classList.toggle("hover:bg-accent-hover", enabled);
+      download.classList.toggle("hover:bg-accent-hover", enabled && !root.querySelector("[data-install-commands]"));
       download.setAttribute("aria-disabled", String(!enabled));
       download.tabIndex = enabled ? 0 : -1;
-      if (enabled) download.href = url;
+      if (enabled) download.href = download.dataset.downloadUrl!;
       else download.removeAttribute("href");
+      });
+      copyControls.forEach((control) => {
+        control.button.disabled = !enabled;
+        if (!enabled) resetCopy(control);
+      });
+      commands.forEach((command) => {
+        command.disabled = !enabled;
+        command.value = enabled ? command.dataset.installValue! : "";
+      });
     };
 
-    download.addEventListener("click", (event) => {
-      if (acknowledgement.checked) return;
+    downloads.forEach((download) => download.addEventListener("click", (event) => {
+      if (acknowledgement.checked) {
+        if (!event.defaultPrevented) track("download_requested");
+        return;
+      }
       event.preventDefault();
       acknowledgement.focus();
+    }));
+    copyControls.forEach((control) => {
+      const { button, input, status } = control;
+      button.addEventListener("click", async () => {
+        if (!acknowledgement.checked) {
+          acknowledgement.focus();
+          return;
+        }
+        const installContext: GalleryContext = { install_platform: control.platform };
+        track("install_script_copy_clicked", installContext);
+        resetCopy(control);
+        try {
+          await navigator.clipboard.writeText(input.value);
+          track("install_script_copied", installContext);
+          if (!acknowledgement.checked) return;
+          button.setAttribute("data-copied", "");
+          button.setAttribute("aria-label", "Copied");
+          button.title = "Copied";
+          status.textContent = "Copied";
+          copyTimers.set(button, window.setTimeout(() => resetCopy(control), 2000));
+        } catch {
+          track("install_script_copy_failed", installContext);
+          if (!acknowledgement.checked) return;
+          input.focus();
+          input.select();
+          status.className = "mt-1 text-xs text-muted";
+          status.textContent = "Clipboard unavailable. Copy the selected command manually.";
+        }
+      });
     });
-    acknowledgement.addEventListener("change", syncDownload);
+    acknowledgement.addEventListener("change", () => {
+      if (acknowledgement.checked) track("trust_acknowledged");
+      syncDownload();
+    });
+    window.addEventListener("pageshow", syncDownload);
     syncDownload();
   });
 </script>

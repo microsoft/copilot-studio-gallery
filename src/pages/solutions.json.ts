@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { compareSolutions } from "../lib/catalog";
 import { getPublishedSolutions } from "../lib/published";
 import { solutionInventory } from "../lib/inventory";
-import { solutionMakeup } from "../lib/schema";
+import { submissionMakeup } from "../lib/schema";
 
 export const GET: APIRoute = async () => {
   const solutions = (await getPublishedSolutions()).sort(compareSolutions);
@@ -17,7 +17,10 @@ export const GET: APIRoute = async () => {
       author: solution.data.author,
       authors: solution.data.authors,
       version: solution.data.version,
-      makeup: solutionMakeup(inventory.agents, inventory.workflows),
+      download: solution.data.download,
+      submissionType: solution.data.submissionType,
+      makeup: submissionMakeup(solution.data),
+      appCount: inventory.apps ?? 0,
       agentCount: inventory.agents,
       workflowCount: inventory.workflows,
       componentCount: inventory.components,

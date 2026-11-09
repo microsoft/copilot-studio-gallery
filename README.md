@@ -1,15 +1,15 @@
 # CAT Agents & Workflows Gallery
 
-A community gallery for complete **Copilot Studio agent and workflow
-solutions**. Each entry is generated from an exploded Power Platform solution,
-so visitors can inspect its agent architecture and saved workflow canvases before
-downloading and importing it.
+A community gallery for **Copilot Studio apps, agents, and workflows**. Agent and
+workflow entries come from exploded Power Platform solutions; managed app entries
+come from portable source for a new platform-managed deployment. Visitors can
+explore architecture, source inventory, and setup before installing.
 
 The site uses Astro, Tailwind CSS, React Flow, and static GitHub Pages deployment.
 
 ## Features
 
-- Searchable gallery of complete solutions, filterable by agents or workflows,
+- Searchable gallery of complete submissions, filterable by apps, agents, or workflows,
   category, tag, contributor, and component types. The **Contains** filter requires
   every selected type: for example, MCP servers and Skills must both be present
   in the solution.
@@ -51,6 +51,14 @@ The site uses Astro, Tailwind CSS, React Flow, and static GitHub Pages deploymen
 - Contributor directory, individual contributor profiles, and JSON catalog endpoint.
 - Pull-request validation for metadata, solution structure, graph availability,
   unsafe filesystem entries, and generated output.
+- Managed app detail pages with connector/schema prerequisites, app source ZIPs,
+  and visible macOS Bash / Windows PowerShell setup commands. Two shared installers
+  offer missing prerequisites with consent, make the first-party CLI available
+  through npm, then sequence native creation/connection prompts,
+  dependency installation, pack, Git save/push, hosted build, and preview.
+  The CLI owns authentication and platform behavior; setup never publishes live.
+- A [Team Ideas Board](submissions/team-ideas-board/) SharePoint starter for learning
+  source customization and contribution. See [the full managed app guide](docs/managed-apps.md).
 
 ## Local development
 
@@ -121,25 +129,18 @@ Samples without credited GitHub handles are logged and skipped. No PR submitter
 or merger is guessed from repository history, and no new token secret is needed:
 the workflow uses `GITHUB_TOKEN` with `contents: read` and `discussions: write`.
 
-## Submit a solution
+## Submit a sample
 
-Add one folder under [`submissions/`](submissions/) and open a pull request:
+Share one complete sample under `submissions/<slug>/`:
 
-```text
-submissions/<slug>/
-├── metadata.json
-├── README.md
-└── solution/
-    ├── solution.xml
-    ├── customizations.xml
-    ├── Workflows/
-    ├── bots/
-    └── ...
-```
+| Sample | Source format | Contribution path |
+| --- | --- | --- |
+| Managed app | Portable source in `app/`, required README, and `submissionType: "managed-app"` | [Prepare an app](CONTRIBUTING.md#contributing-a-managed-app) with the native CLI and `npm run prepare:app` |
+| Agents and/or workflows | Complete exploded Power Platform export in `solution/`, not a ZIP | [Prepare a solution](CONTRIBUTING.md#contributing-a-solution) |
 
-Submit the solution **exploded**, not as a ZIP. The gallery validates and
-rebuilds the installable ZIP. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full
-contract.
+Both use gallery metadata, shared validation, a fresh-environment test for their
+format, and a pull request. Start with the
+[contribution guide](CONTRIBUTING.md) for the end-to-end process.
 
 ## Deployment
 
@@ -150,6 +151,28 @@ Merges to `main` deploy the static site to:
 
 Production builds load Microsoft Clarity project `z2dufgqwq5` on every page
 through the shared layout. Local development does not load Clarity.
+
+### Browser dependency notices
+
+The client build automatically generates `dist/third-party-notices.txt` from
+bundled dependencies, including dependency styles. The footer links to this file
+under the configured site base. The file includes installed package versions and
+the full license and accompanying notice texts; it is deployed with the site,
+not added to submitted solution or managed-app downloads.
+
+Generation uses Vite's license inventory and preserves additional license,
+NOTICE, copyright, and author files from the installed packages. A missing or
+empty license file fails the build with the package name: check the upstream
+package's published license files and resolve the packaging issue before
+releasing. Do not substitute an SPDX label or silently skip the package.
+
+In development, the same URL generates notices through an in-memory browser
+build of the installed React/graph entries and discovered client dependencies.
+This development inventory may be broader than the optimized production bundle;
+it never relies on an earlier `dist/` build. Production inventories exclude
+dependencies used only by the importer or build tooling. Notice generation does
+not install or execute submitted app dependencies and does not replace required
+license review or registration.
 
 ## License
 

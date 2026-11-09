@@ -1,11 +1,11 @@
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
-import { solutionSchema } from "./lib/schema";
+import { gallerySchema } from "./lib/schema";
 
 const solutions = defineCollection({
   loader: glob({ pattern: "**/*.json", base: "./src/content/solutions" }),
-  schema: solutionSchema,
+  schema: gallerySchema,
 });
 
 const guides = defineCollection({

@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { readFile, readdir, lstat, mkdir, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,10 +16,17 @@ import {
   type GraphEdge,
   type GraphNode,
   type SolutionRecord,
+  type GalleryRecord,
   type SubmissionMetadata,
   type WorkflowPreview,
 } from "../src/lib/schema";
 import { resolvePreviewWorkflow } from "../src/lib/workflowMetadata";
+import { collectAppSource, inspectAppPackage } from "./managed-app-source";
+import { publicAssetPath } from "../src/lib/site";
+import { appInstallInputs } from "../src/lib/appInstall";
+import { buildSupportingFiles, rewriteSupportingLinks } from "./supporting-files";
+import { GRAPH_ONLY_FIXTURES } from "./workflow-fixtures";
+import { isDemo } from "../src/lib/discovery";
 
 const MAX_FILE_BYTES = 2 * 1024 * 1024;
 const MAX_TOTAL_BYTES = 25 * 1024 * 1024;
@@ -47,9 +55,10 @@ interface ComponentItem {
 
 interface BuiltSubmission {
   slug: string;
-  record: SolutionRecord;
+  record: GalleryRecord;
   guide: string;
   bundle: Buffer;
+  assets?: Array<{ name: string; content: Buffer | string }>;
 }
 
 export interface ImportReport {
@@ -656,19 +665,39 @@ export async function inspectAgents(files: SolutionFile[]): Promise<{ agents: Ag
       graphEdges.push({ id: `agent:${id}-delegates-${connection.id}`, source: `agent:${id}`, target: targetId, label: "delegates" });
     }
   }
+  const owners = new Set([...agents.map((agent) => agent.schemaName.toLowerCase()), ...botDirectories.map((directory) => basename(directory).toLowerCase())]);
+  for (const file of files.filter((file) => /^botcomponents\/[^/]+\/botcomponent\.xml$/i.test(file.path))) {
+    const parsed = record(parseXml(await readText(file)));
+    const component = parsed ? record(field(parsed, "botcomponent")) : undefined;
+    const parent = component ? record(field(component, "parentbotid")) : undefined;
+    const owner = parent ? scalar(parent, "schemaname", "@schemaname") : undefined;
+    if (owner && !owners.has(owner.toLowerCase())) {
+      throw new Error(`${file.path}: parentbotid refers to missing local bot ${owner}`);
+    }
+  }
   return { agents, graph: layoutAgentGraph([...new Map(graphNodes.map((node) => [node.id, node])).values()], graphEdges), hookCount: hookIds.size };
 }
 
 function workflowMappings(customizations: unknown): Map<string, { id: string; name: string }> {
   const mappings = new Map<string, { id: string; name: string }>();
+  const ids = new Set<string>();
   const visit = (value: unknown): void => {
     if (Array.isArray(value)) return value.forEach(visit);
     const item = record(value);
     if (!item) return;
     const jsonFileName = scalar(item, "JsonFileName");
     const name = scalar(item, "Name");
-    const id = scalar(item, "WorkflowId") ?? name;
-    if (jsonFileName && name && id) mappings.set(basename(jsonFileName).toLowerCase(), { id, name });
+    const id = scalar(item, "WorkflowId");
+    if (jsonFileName !== undefined) {
+      if (!name?.trim() || !id?.trim()) throw new Error(`workflow ${jsonFileName} is missing Name or WorkflowId`);
+      const path = jsonFileName.replaceAll("\\", "/").replace(/^\//, "");
+      if (!/^(?:Workflows\/)?[^/]+\.json$/i.test(path)) throw new Error(`unsafe workflow JsonFileName: ${jsonFileName}`);
+      const key = basename(path).toLowerCase();
+      if (mappings.has(key)) throw new Error(`duplicate workflow file mapping: ${jsonFileName}`);
+      if (ids.has(id.toLowerCase())) throw new Error(`duplicate WorkflowId: ${id}`);
+      mappings.set(key, { id, name });
+      ids.add(id.toLowerCase());
+    }
     Object.values(item).forEach(visit);
   };
   visit(customizations);
@@ -807,7 +836,14 @@ function safeWorkflowDetails(node: UnknownRecord, type: string): Record<string, 
 const WORKFLOW_ANNOTATION_TYPES = new Set(["canvasNote"]);
 
 export function normalizeWorkflowGraph(graph: UnknownRecord): GraphData {
-  const rawNodes = array(graph.nodes).map(record).filter((node): node is UnknownRecord => Boolean(node));
+  if (!Array.isArray(graph.nodes) || !Array.isArray(graph.edges)) throw new Error("workflow graph must contain nodes and edges arrays");
+  const rawNodes = graph.nodes.map((value) => {
+    const node = record(value);
+    if (!node || !scalar(node, "id", "nodeId")?.trim()) throw new Error("workflow graph node is missing an id");
+    return node;
+  });
+  const allIds = new Set(rawNodes.map((node) => safeId(scalar(node, "id", "nodeId")!, "")));
+  if (allIds.size !== rawNodes.length) throw new Error("workflow graph contains duplicate node ids");
   const savedSizes = new Map<string, { width: number; height: number }>();
   const nodes = rawNodes.map((node, index): GraphNode => {
     const id = safeId(scalar(node, "id", "nodeId") ?? `node-${index + 1}`, `node-${index + 1}`);
@@ -856,40 +892,113 @@ export function normalizeWorkflowGraph(graph: UnknownRecord): GraphData {
   };
   nodes.forEach(visit);
   const knownIds = new Set(nodes.map((node) => node.id));
-  const edges = array(graph.edges).map(record).filter((edge): edge is UnknownRecord => Boolean(edge)).flatMap((edge, index): GraphEdge[] => {
+  const edgeIds = new Set<string>();
+  const edges = graph.edges.flatMap((value, index): GraphEdge[] => {
+    const edge = record(value);
+    if (!edge) throw new Error(`workflow graph edge ${index} is not an object`);
     const source = safeId(scalar(edge, "source") ?? "", "");
     const target = safeId(scalar(edge, "target") ?? "", "");
-    if (!source || !target || !knownIds.has(source) || !knownIds.has(target)) return [];
+    if (!source || !target || !allIds.has(source) || !allIds.has(target)) {
+      throw new Error(`workflow graph edge ${index} refers to a missing source or target`);
+    }
+    const id = safeId(scalar(edge, "id") ?? `${source}-${target}-${index}`, `edge-${index}`);
+    if (edgeIds.has(id)) throw new Error(`workflow graph contains duplicate edge ids: ${id}`);
+    edgeIds.add(id);
+    if (!knownIds.has(source) || !knownIds.has(target)) return [];
     const sourceHandle = scalar(edge, "sourceHandle");
     const targetHandle = scalar(edge, "targetHandle");
-    return [{ id: safeId(scalar(edge, "id") ?? `${source}-${target}-${index}`, `edge-${index}`), source, target, ...(sourceHandle ? { sourceHandle } : {}), ...(targetHandle ? { targetHandle } : {}) }];
+    return [{ id, source, target, ...(sourceHandle ? { sourceHandle } : {}), ...(targetHandle ? { targetHandle } : {}) }];
   });
   return { nodes: ordered, edges };
 }
 
-export async function inspectWorkflows(files: SolutionFile[], customizations: unknown): Promise<WorkflowPreview[]> {
+export function validateWorkflowDefinition(value: unknown): void {
+  const root = record(value);
+  const properties = root ? record(root.properties) : undefined;
+  const definition = record(properties?.definition ?? root?.definition);
+  if (!definition) throw new Error("missing executable workflow definition; a saved preview graph alone is not a workflow");
+  const triggers = record(definition.triggers);
+  const actions = record(definition.actions);
+  if (!triggers || Object.keys(triggers).length === 0) throw new Error("workflow definition must contain executable triggers");
+  if (!actions || Object.keys(actions).length === 0) throw new Error("workflow definition must contain executable actions");
+  for (const [name, value] of Object.entries(triggers)) {
+    const trigger = record(value);
+    if (!trigger || typeof trigger.type !== "string" || !trigger.type.trim()) throw new Error(`workflow trigger ${name} is missing type`);
+  }
+  const validateActions = (value: unknown, path: string): void => {
+    const entries = record(value);
+    if (!entries) throw new Error(`${path} must be an action object`);
+    for (const [name, value] of Object.entries(entries)) {
+      const action = record(value);
+      if (!action || typeof action.type !== "string" || !action.type.trim()) throw new Error(`${path}.${name} is missing action type`);
+      if (action.runAfter !== undefined) {
+        const after = record(action.runAfter);
+        if (!after || Object.keys(after).some((dependency) => dependency === name || !Object.hasOwn(entries, dependency))) {
+          throw new Error(`${path}.${name} has a missing or invalid runAfter reference`);
+        }
+      }
+      if (action.actions !== undefined) validateActions(action.actions, `${path}.${name}.actions`);
+      if (action.else !== undefined) {
+        const otherwise = record(action.else);
+        if (!otherwise) throw new Error(`${path}.${name}.else must be an object`);
+        if (otherwise.actions !== undefined) validateActions(otherwise.actions, `${path}.${name}.else.actions`);
+      }
+      if (action.cases !== undefined) {
+        const cases = record(action.cases);
+        if (!cases) throw new Error(`${path}.${name}.cases must be an object`);
+        for (const [key, branch] of Object.entries(cases)) {
+          validateActions(record(branch)?.actions, `${path}.${name}.cases.${key}.actions`);
+        }
+      }
+      if (action.default !== undefined) {
+        validateActions(record(action.default)?.actions, `${path}.${name}.default.actions`);
+      }
+    }
+  };
+  validateActions(actions, "workflow actions");
+}
+
+export async function inspectWorkflows(
+  files: SolutionFile[],
+  customizations: unknown,
+  fixtureSlug?: string,
+): Promise<WorkflowPreview[]> {
   const mappings = workflowMappings(customizations);
   const workflowFiles = files.filter((file) => /^workflows\/[^/]+\.json$/i.test(file.path));
+  const filenames = new Set<string>();
+  for (const file of workflowFiles) {
+    const key = basename(file.path).toLowerCase();
+    if (filenames.has(key)) throw new Error(`ambiguous workflow filename: ${file.path}`);
+    filenames.add(key);
+    if (!mappings.has(key)) throw new Error(`${file.path}: missing workflow mapping in customizations.xml`);
+  }
+  for (const key of mappings.keys()) {
+    if (!filenames.has(key)) throw new Error(`customizations.xml refers to missing workflow file: ${key}`);
+  }
   const workflows: WorkflowPreview[] = [];
   for (const file of workflowFiles) {
+    const text = await readText(file);
     let parsed: unknown;
     try {
-      parsed = JSON.parse(await readText(file));
+      parsed = JSON.parse(text);
     } catch (error) {
       throw new Error(`cannot parse workflow ${file.path}: ${error instanceof Error ? error.message : String(error)}`);
     }
     let saved: UnknownRecord;
+    let graph: GraphData;
     try {
+      const fixtureHash = fixtureSlug ? GRAPH_ONLY_FIXTURES[`${fixtureSlug}/${file.path}`] : undefined;
+      if (!fixtureHash || createHash("sha256").update(text).digest("hex") !== fixtureHash) validateWorkflowDefinition(parsed);
       saved = extractSavedGraph(parsed);
+      graph = normalizeWorkflowGraph(saved);
     } catch (error) {
       throw new Error(`${file.path}: ${error instanceof Error ? error.message : String(error)}`);
     }
-    const graph = normalizeWorkflowGraph(saved);
-    const mapping = mappings.get(basename(file.path).toLowerCase());
+    const mapping = mappings.get(basename(file.path).toLowerCase())!;
     const starting = graph.nodes.find((node) => !graph.edges.some((edge) => edge.target === node.id) || /trigger|start/i.test(node.type));
     workflows.push({
-      id: mapping?.id ?? safeId(basename(file.path, ".json"), `workflow-${workflows.length + 1}`),
-      name: mapping?.name ?? String(saved.name),
+      id: mapping.id,
+      name: mapping.name,
       ...(starting ? { trigger: starting.name } : {}),
       nodeCount: graph.nodes.length,
       edgeCount: graph.edges.length,
@@ -970,6 +1079,10 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
     const description = error instanceof Error ? error.message : String(error);
     throw new Error(`invalid metadata.json: ${description}`);
   }
+  const supporting = await buildSupportingFiles(submissionPath, slug, metadata.supportingFiles);
+  if (metadata.submissionType === "managed-app") {
+    return buildManagedApp(submissionPath, slug, metadata, supporting);
+  }
   let files: SolutionFile[];
   try {
     const stat = await lstat(solutionRoot);
@@ -983,20 +1096,23 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
   const derived = deriveSolutionFields(solutionXml, customizationsXml);
   const [{ agents, graph, hookCount }, workflows, connectors] = await Promise.all([
     inspectAgents(files),
-    inspectWorkflows(files, customizationsXml),
+    inspectWorkflows(files, customizationsXml, isDemo(metadata.tags) ? slug : undefined),
     inspectConnectors(files),
   ]);
   if (agents.length === 0 && workflows.length === 0) throw new Error("solution must contain at least one agent or workflow");
   const previewWorkflow = resolvePreviewWorkflow(workflows, metadata.previewWorkflow)?.id;
   const manifest = filesManifest(files);
   const componentCount = rootComponentCount(solutionXml) ?? manifest.filter((file) => ["bot", "component", "workflow"].includes(file.category)).length;
+  const bundle = deterministicZip(files, solutionRoot);
   const record: SolutionRecord = {
     ...metadata,
+    submissionType: "solution",
     ...(previewWorkflow ? { previewWorkflow } : {}),
     uniqueName: derived.uniqueName,
     version: derived.version,
     ...(derived.publisher ? { publisher: derived.publisher } : {}),
     bundle: `bundles/${slug}.zip`,
+    bundleSha256: createHash("sha256").update(bundle).digest("hex"),
     agentCount: agents.length,
     workflowCount: workflows.length,
     hookCount,
@@ -1006,6 +1122,7 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
     workflows,
     connectors,
     files: manifest,
+    supportingFiles: supporting.files,
   };
   const readmePath = join(submissionPath, "README.md");
   let body = `# ${metadata.name}\n\n${metadata.description}\n`;
@@ -1014,9 +1131,76 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
   } catch {
     // README is optional.
   }
-  const guideBody = body.trim().replace(/^#\s+.+?(?:\r?\n){1,2}/, "");
+  const guideBody = rewriteSupportingLinks(body.trim().replace(/^#\s+.+?(?:\r?\n){1,2}/, ""), supporting.links);
   const guide = matter.stringify(`${guideBody}\n`, { title: metadata.name, slug, solution: derived.uniqueName });
-  return { slug, record, guide, bundle: deterministicZip(files, solutionRoot) };
+  return { slug, record, guide, bundle, assets: supporting.assets };
+}
+
+async function buildManagedApp(submissionPath: string, slug: string, metadata: SubmissionMetadata, supporting: Awaited<ReturnType<typeof buildSupportingFiles>>): Promise<BuiltSubmission> {
+  if (!metadata.app) throw new Error("managed-app requires app setup metadata");
+  try {
+    await lstat(join(submissionPath, "solution"));
+    throw new Error("managed-app must not also contain a solution/ payload");
+  } catch (error) {
+    if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) throw error;
+  }
+  const appRoot = join(submissionPath, "app");
+  const { files } = await collectAppSource(appRoot);
+  const { version } = await inspectAppPackage(files);
+  const bundle = deterministicZip(files, appRoot);
+  const hash = createHash("sha256").update(bundle).digest("hex");
+  const assets: NonNullable<BuiltSubmission["assets"]> = [...supporting.assets];
+  const template = `github:microsoft/copilot-studio-gallery/submissions/${slug}/app#main`;
+  appInstallInputs(template, metadata.app);
+  const readme = matter(await readFile(join(submissionPath, "README.md"), "utf8")).content.trim();
+  if (!readme) throw new Error("managed-app requires a nonempty README.md describing the app and its data requirements");
+  if (readme.includes("**SETUP INCOMPLETE:**")) throw new Error("complete the preparation helper's unresolved connection setup before submitting");
+  const imagePattern = /(!\[[^\]]*\]\()(?:\.\/)?(screenshots\/[a-z0-9][a-z0-9-]*\.png)(\s*(?:"[^"]*")?\))/g;
+  const imagePaths = new Set([
+    ...(metadata.screenshot ? [metadata.screenshot.path] : []),
+    ...Array.from(readme.matchAll(imagePattern), (match) => match[2]!),
+  ]);
+  if (imagePaths.size > 5) throw new Error("managed-app supports at most five PNG screenshots");
+  const imageLinks = new Map<string, string>();
+  let screenshot: { path: string; alt: string } | undefined;
+  for (const imagePath of imagePaths) {
+    const directory = await lstat(join(submissionPath, "screenshots"));
+    const file = await lstat(join(submissionPath, imagePath));
+    if (!directory.isDirectory() || !file.isFile() || file.size > MAX_FILE_BYTES) {
+      throw new Error(`screenshot must be a PNG file, not a symlink, no larger than 2 MiB: ${imagePath}`);
+    }
+    const image = await readFile(join(submissionPath, imagePath));
+    if (image.length < 45
+      || image.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a"
+      || image.readUInt32BE(8) !== 13
+      || image.toString("ascii", 12, 16) !== "IHDR"
+      || image.subarray(-12).toString("hex") !== "0000000049454e44ae426082"
+      || image.readUInt32BE(16) > 4096 || image.readUInt32BE(20) > 4096
+      || image.readUInt32BE(16) === 0 || image.readUInt32BE(20) === 0) {
+      throw new Error("screenshot must be a PNG no larger than 2 MiB and 4096 x 4096");
+    }
+    const name = `${slug}-${createHash("sha256").update(image).digest("hex")}.png`;
+    const path = `bundles/${name}`;
+    imageLinks.set(imagePath, publicAssetPath(path));
+    if (metadata.screenshot?.path === imagePath) {
+      screenshot = { path, alt: metadata.screenshot.alt };
+    }
+    assets.push({ name, content: image });
+  }
+  const { app: _app, screenshot: _screenshot, previewWorkflow: _preview, ...common } = metadata;
+  const record: GalleryRecord = {
+    ...common, submissionType: "managed-app", version,
+    app: metadata.app, bundle: `bundles/${slug}-${hash}.zip`,
+    bundleSha256: hash,
+    template,
+    ...(screenshot ? { screenshot } : {}),
+    files: files.map((file) => ({ path: file.path, size: file.size, category: "source" })),
+    supportingFiles: supporting.files,
+  };
+  const guideBody = readme.replace(/^#\s+.+?(?:\r?\n){1,2}/, "")
+    .replace(imagePattern, (_match, prefix: string, path: string, suffix: string) => `${prefix}${imageLinks.get(path)!}${suffix}`);
+  const guide = matter.stringify(`${rewriteSupportingLinks(guideBody, supporting.links)}\n`, { title: metadata.name, slug });
+  return { slug, record, guide, bundle, assets };
 }
 
 async function existingSlugs(directory: string, extension: string): Promise<string[]> {
@@ -1071,13 +1255,18 @@ export async function importSubmissions(options: { root?: string; check?: boolea
   for (const submission of built) {
     await writeIfChanged(join(solutionDir, `${submission.slug}.json`), `${JSON.stringify(submission.record, null, 2)}\n`);
     await writeIfChanged(join(guideDir, `${submission.slug}.md`), submission.guide);
-    await writeIfChanged(join(bundleDir, `${submission.slug}.zip`), submission.bundle);
+    await writeIfChanged(join(root, "public", submission.record.bundle), submission.bundle);
+    for (const asset of submission.assets ?? []) await writeIfChanged(join(bundleDir, asset.name), asset.content);
   }
   const expectedSlugs = new Set(built.map((item) => item.slug));
-  for (const [directory, extension] of [[solutionDir, ".json"], [guideDir, ".md"], [bundleDir, ".zip"]] as const) {
+  for (const [directory, extension] of [[solutionDir, ".json"], [guideDir, ".md"]] as const) {
     for (const slug of await existingSlugs(directory, extension)) {
       if (expectedSlugs.has(slug) || slug === ".gitkeep") continue;
       await rm(join(directory, `${slug}${extension}`));
+    }
+    const expectedBundles = new Set(built.flatMap((item) => [basename(item.record.bundle), ...(item.assets ?? []).map((asset) => asset.name)]));
+    for (const entry of await readdir(bundleDir, { withFileTypes: true })) {
+      if (entry.isFile() && /\.(?:zip|json|sh|ps1|mjs|png|csv|txt)$/.test(entry.name) && !expectedBundles.has(entry.name)) await rm(join(bundleDir, entry.name));
     }
   }
   if (Object.keys(errors).length > 0) throw new SubmissionImportError(errors);

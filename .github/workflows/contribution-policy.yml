@@ -1,0 +1,61 @@
+name: Contribution policy
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
+
+concurrency:
+  group: contribution-policy-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  guard-scope:
+    name: Evaluate contribution policy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mark required head status pending
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh api --method POST "repos/$REPO/statuses/$HEAD_SHA" \
+            -f state=pending -f context='Guard pull request scope' \
+            -f description='Checking contribution scope and metadata' -f target_url="$RUN_URL"
+      - name: Checkout trusted base revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install trusted dependencies
+        run: npm ci
+      - name: Check contribution scope and metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node --import tsx scripts/contribution-policy.ts
+      - name: Publish required head status
+        if: ${{ always() && !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          JOB_STATUS: ${{ job.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          STATE=failure
+          if [ "$JOB_STATUS" = success ]; then STATE=success; fi
+          gh api --method POST "repos/$REPO/statuses/$HEAD_SHA" \
+            -f state="$STATE" -f context='Guard pull request scope' \
+            -f description='Contribution scope and metadata policy' -f target_url="$RUN_URL"
