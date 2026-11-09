@@ -1,5 +1,5 @@
 import { isMcpNode } from "./graphVisuals";
-import type { AgentPreview, ConnectorPreview, GraphNode, SolutionRecord, WorkflowPreview } from "./schema";
+import type { AgentPreview, ConnectorPreview, GraphNode, ManagedAppRecord, SolutionRecord, WorkflowPreview } from "./schema";
 
 export type ComponentKind = "tool" | "mcp" | "skill";
 
@@ -27,6 +27,7 @@ export interface AgentProfile {
 }
 
 export interface SolutionInventory {
+  apps?: number;
   agents: number;
   workflows: number;
   tools: number;
@@ -50,12 +51,13 @@ export function agentAnchor(schemaName: string): string {
   return `agent-${schemaName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 }
 
-export type BlockKind = "workflow" | "agent" | ComponentKind;
+export type BlockKind = "app" | "workflow" | "agent" | ComponentKind;
 export type BlockCounts = Partial<Record<BlockKind, number>>;
 
-export const BLOCK_KINDS: BlockKind[] = ["workflow", "agent", "mcp", "tool", "skill"];
+export const BLOCK_KINDS: BlockKind[] = ["app", "workflow", "agent", "mcp", "tool", "skill"];
 
 export const BLOCK_LABELS: Record<BlockKind, [string, string]> = {
+  app: ["app", "apps"],
   workflow: ["workflow", "workflows"],
   agent: ["agent", "agents"],
   ...Object.fromEntries(Object.entries(COMPONENT_LABELS).map(([kind, labels]) => [kind, labels.inline])) as Record<ComponentKind, [string, string]>,
@@ -63,6 +65,7 @@ export const BLOCK_LABELS: Record<BlockKind, [string, string]> = {
 
 export function inventoryBlocks(inventory: SolutionInventory): BlockCounts {
   return {
+    ...(inventory.apps ? { app: inventory.apps } : {}),
     workflow: inventory.workflows,
     agent: inventory.agents,
     mcp: inventory.mcpServers,
@@ -123,7 +126,9 @@ function mcpKey(name: string): string {
 }
 
 /** One profile per solution agent, built from the agent graph so every count on the page shares a source. */
-export function agentProfiles({ agents, agentGraph }: AgentSource): AgentProfile[] {
+export function agentProfiles(data: AgentSource | ManagedAppRecord): AgentProfile[] {
+  if ("app" in data) return [];
+  const { agents, agentGraph } = data;
   const nodes = new Map(agentGraph.nodes.map((node) => [node.id, node]));
   const schemaById = new Map(agents.map((agent) => [`agent:${agent.id}`, agent.schemaName]));
   const profiles = agents.map((agent: AgentPreview) => {
@@ -165,14 +170,16 @@ export function agentProfiles({ agents, agentGraph }: AgentSource): AgentProfile
 }
 
 /** MCP servers packaged with the solution that no agent attaches directly, for example servers shared by agents and workflows. */
-export function sharedMcpServers(data: AgentSource & ConnectorSource): ConnectorPreview[] {
+export function sharedMcpServers(data: (AgentSource & ConnectorSource) | ManagedAppRecord): ConnectorPreview[] {
+  if ("app" in data) return [];
   const attached = new Set(
     agentProfiles(data).flatMap((profile) => profile.components.filter((component) => component.kind === "mcp").map((component) => mcpKey(component.name))),
   );
   return (data.connectors ?? []).filter((connector) => connector.mcp && !attached.has(mcpKey(connector.name)));
 }
 
-export function solutionInventory(data: AgentSource & ConnectorSource & Pick<SolutionRecord, "workflows">): SolutionInventory {
+export function solutionInventory(data: (AgentSource & ConnectorSource & Pick<SolutionRecord, "workflows">) | ManagedAppRecord): SolutionInventory {
+  if ("app" in data) return { apps: 1, agents: 0, workflows: 0, tools: 0, mcpServers: 0, skills: 0, components: 0 };
   const totals = agentProfiles(data).reduce(
     (sum, profile) => ({
       tools: sum.tools + profile.counts.tool,

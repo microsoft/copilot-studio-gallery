@@ -14,10 +14,12 @@ import {
   extractSavedGraph,
   importSubmissions,
   inspectConnectors,
+  inspectWorkflows,
   layoutAgentGraph,
   normalizeAgentComponents,
   normalizeWorkflowGraph,
   parseXml,
+  validateWorkflowDefinition,
 } from "./import-submissions";
 
 const fixture = join(process.cwd(), "scripts/fixtures/reduced-solution");
@@ -91,11 +93,33 @@ test("imports metadata while retaining derived solution identity", async () => {
   });
 });
 
+test("publishes supporting downloads for solutions without changing the solution ZIP", async () => {
+  await importSubmissions({ root: workspace });
+  const archive = await readFile(join(workspace, "public/bundles/demo-agent.zip"));
+  const submission = join(workspace, "submissions/demo-agent");
+  const metadataPath = join(submission, "metadata.json");
+  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  await mkdir(join(submission, "supporting"));
+  await writeFile(join(submission, "supporting/reference.json"), '{"synthetic":true}\n');
+  await writeFile(metadataPath, JSON.stringify({
+    ...metadata, supportingFiles: [{ path: "supporting/reference.json", label: "Synthetic reference data" }],
+  }));
+  await writeFile(join(submission, "README.md"), "# Sample\n\n[Reference](./supporting/reference.json)\n");
+  await importSubmissions({ root: workspace });
+  const record = solutionSchema.parse(JSON.parse(await readFile(join(workspace, "src/content/solutions/demo-agent.json"), "utf8")));
+  assert.equal(record.supportingFiles.length, 1);
+  assert.equal(await readFile(join(workspace, "public", record.supportingFiles[0].path), "utf8"), '{"synthetic":true}\n');
+  assert.deepEqual(await readFile(join(workspace, "public", record.bundle)), archive);
+  assert.ok((await readFile(join(workspace, "src/content/guides/demo-agent.md"), "utf8")).includes(`/copilot-studio-gallery/${record.supportingFiles[0].path}`));
+});
+
 test("derives unique owned AgentHook counts without guessing from names or trusting metadata", async () => {
   const submission = join(workspace, "submissions/demo-agent");
   const metadataPath = join(submission, "metadata.json");
   const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
   await writeFile(metadataPath, JSON.stringify({ ...metadata, hookCount: 999 }));
+  await assert.rejects(() => importSubmissions({ root: workspace, check: true }), /hookCount/);
+  await writeFile(metadataPath, JSON.stringify(metadata));
   const addComponent = async (directory: string, schemaName: string, owner: string, kind: string, componentType = "9") => {
     const root = join(submission, "solution/botcomponents", directory);
     await mkdir(root, { recursive: true });
@@ -109,7 +133,6 @@ test("derives unique owned AgentHook counts without guessing from names or trust
   await addComponent("duplicate", "SUPPORT_AGENT.HOOK.ONE", "support_agent", "AgentHook");
   await addComponent("second", "other_agent.hook.two", "other_agent", "AgentHook", "");
   await addComponent("misleading", "support_agent.hook.not-a-hook", "support_agent", "TaskDialog");
-  await addComponent("orphan", "missing_agent.hook.orphan", "missing_agent", "AgentHook");
   await addComponent("non-action", "support_agent.hook.topic", "support_agent", "AgentHook", "0");
   await importSubmissions({ root: workspace });
   const record = solutionSchema.parse(JSON.parse(await readFile(join(workspace, "src/content/solutions/demo-agent.json"), "utf8")));
@@ -118,6 +141,8 @@ test("derives unique owned AgentHook counts without guessing from names or trust
   assert.equal(record.agentGraph.nodes.some((node) => node.type === "hook"), false);
   assert.throws(() => solutionSchema.parse({ ...record, hookCount: -1 }));
   assert.throws(() => solutionSchema.parse({ ...record, hookCount: 1.5 }));
+  await addComponent("orphan", "missing_agent.hook.orphan", "missing_agent", "AgentHook");
+  await assert.rejects(() => importSubmissions({ root: workspace, check: true }), /parentbotid refers to missing local bot missing_agent/);
 });
 
 test("selects a non-first hero workflow by ID or name and publishes its canonical ID", async () => {
@@ -201,6 +226,7 @@ test("keeps agent-only submissions valid but rejects a workflow selection on the
   delete metadata.previewWorkflow;
   await writeFile(metadataPath, JSON.stringify(metadata));
   await rm(join(workspace, "submissions/demo-agent/solution/Workflows/branched.json"));
+  await writeFile(join(workspace, "submissions/demo-agent/solution/customizations.xml"), "<ImportExportXml />");
   await importSubmissions({ root: workspace, check: true });
   await importSubmissions({ root: workspace });
   const record = JSON.parse(await readFile(join(workspace, "src/content/solutions/demo-agent.json"), "utf8"));
@@ -337,6 +363,92 @@ test("extracts one saved graph and retains unknown workflow node types", () => {
 
 test("rejects a workflow without exactly one saved graph", () => {
   assert.throws(() => extractSavedGraph({ name: "no graph", nodes: [] }), /exactly one saved designer graph/);
+});
+
+test("validates executable definitions, including nested local runAfter references", () => {
+  const valid = {
+    triggers: { manual: { type: "Request" } },
+    actions: {
+      first: { type: "Compose", inputs: "sample" },
+      branch: {
+        type: "If", runAfter: { first: ["Succeeded"] },
+        actions: { inner: { type: "Compose", runAfter: {} } },
+        else: { actions: {} },
+      },
+    },
+  };
+  validateWorkflowDefinition({ properties: { definition: valid } });
+  validateWorkflowDefinition({ definition: valid });
+  for (const [definition, message] of [
+    [{}, /triggers/],
+    [{ triggers: valid.triggers }, /actions/],
+    [{ triggers: { manual: {} }, actions: valid.actions }, /trigger manual.*type/],
+    [{ triggers: valid.triggers, actions: { bad: {} } }, /missing action type/],
+    [{ triggers: valid.triggers, actions: { bad: { type: "Compose", runAfter: { missing: ["Succeeded"] } } } }, /runAfter/],
+    [{ triggers: valid.triggers, actions: { bad: { type: "Compose", runAfter: { bad: ["Succeeded"] } } } }, /runAfter/],
+    [{ triggers: valid.triggers, actions: { scope: { type: "Scope", actions: { inner: { type: "Compose", runAfter: { outer: ["Succeeded"] } } } } } }, /runAfter/],
+  ] as const) {
+    assert.throws(() => validateWorkflowDefinition({ definition }), message);
+  }
+  assert.throws(() => validateWorkflowDefinition({ trigger: { metadata: { associatedData: {} } } }), /saved preview graph alone/);
+});
+
+test("rejects graph-only contributions even when they claim the demo tag", async () => {
+  const path = join(workspace, "submissions/demo-agent/solution/Workflows/branched.json");
+  const { definition: _definition, ...graphOnly } = JSON.parse(await readFile(path, "utf8"));
+  await writeFile(path, JSON.stringify(graphOnly));
+  const metadataPath = join(workspace, "submissions/demo-agent/metadata.json");
+  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  await writeFile(metadataPath, JSON.stringify({ ...metadata, tags: [...metadata.tags, "demo"] }));
+  await assert.rejects(() => importSubmissions({ root: workspace, check: true }), /branched.json: missing executable workflow definition/);
+});
+
+test("graph-only fixture exemptions require exact path, content, and demo designation", async () => {
+  const source = join(process.cwd(), "submissions/sales-account-brief");
+  const target = join(workspace, "submissions/sales-account-brief");
+  await cp(source, target, { recursive: true });
+  await importSubmissions({ root: workspace, check: true });
+  const metadataPath = join(target, "metadata.json");
+  const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  await writeFile(metadataPath, JSON.stringify({ ...metadata, tags: metadata.tags.filter((tag: string) => tag !== "demo") }));
+  await assert.rejects(() => importSubmissions({ root: workspace, check: true }), /saved preview graph alone/);
+  await writeFile(metadataPath, JSON.stringify(metadata));
+  const workflow = join(target, "solution/Workflows/workflow.json");
+  await writeFile(workflow, `${await readFile(workflow, "utf8")}\n`);
+  await assert.rejects(() => importSubmissions({ root: workspace, check: true }), /saved preview graph alone/);
+  await rm(target, { recursive: true });
+  await cp(source, join(workspace, "submissions/copied-demo"), { recursive: true });
+  await assert.rejects(() => importSubmissions({ root: workspace, check: true }), /saved preview graph alone/);
+});
+
+test("rejects missing, duplicate, ambiguous, and unsafe local workflow mappings", async () => {
+  const path = join(workspace, "submissions/demo-agent/solution/Workflows/branched.json");
+  const files = [{ absolutePath: path, path: "Workflows/branched.json", size: (await readFile(path)).length }];
+  const mapping = "<Workflow><Name>Workflow</Name><JsonFileName>branched.json</JsonFileName><WorkflowId>id-one</WorkflowId></Workflow>";
+  const xml = (value: string) => parseXml(`<ImportExportXml><Workflows>${value}</Workflows></ImportExportXml>`);
+  assert.equal((await inspectWorkflows(files, xml(mapping))).length, 1);
+  for (const filename of ["/Workflows/branched.json", "Workflows\\branched.json"]) {
+    assert.equal((await inspectWorkflows(files, xml(mapping.replace("branched.json", filename)))).length, 1);
+  }
+  await assert.rejects(() => inspectWorkflows(files, xml("")), /missing workflow mapping/);
+  await assert.rejects(() => inspectWorkflows([], xml(mapping)), /missing workflow file/);
+  await assert.rejects(() => inspectWorkflows(files, xml(mapping + mapping)), /duplicate workflow file mapping/);
+  await assert.rejects(() => inspectWorkflows(files, xml(mapping + mapping.replace("branched.json", "second.json"))), /duplicate WorkflowId/);
+  await assert.rejects(() => inspectWorkflows([...files, { ...files[0], path: "Workflows/BRANCHED.json" }], xml(mapping)), /ambiguous workflow filename/);
+  for (const filename of ["../branched.json", "/elsewhere/branched.json", "Workflows/../branched.json"]) {
+    await assert.rejects(() => inspectWorkflows(files, xml(mapping.replace("branched.json", filename))), /unsafe workflow/);
+  }
+});
+
+test("rejects malformed graph identities and dangling edges instead of hiding them", () => {
+  const nodes = [{ id: "a" }, { id: "b" }];
+  assert.throws(() => normalizeWorkflowGraph({ nodes: [{}], edges: [] }), /missing an id/);
+  assert.throws(() => normalizeWorkflowGraph({ nodes: [null], edges: [] }), /missing an id/);
+  assert.throws(() => normalizeWorkflowGraph({ nodes, edges: [{ source: "a", target: "missing" }] }), /missing source or target/);
+  assert.throws(() => normalizeWorkflowGraph({ nodes, edges: [null] }), /not an object/);
+  assert.throws(() => normalizeWorkflowGraph({ nodes, edges: [
+    { id: "same", source: "a", target: "b" }, { id: "same", source: "b", target: "a" },
+  ] }), /duplicate edge ids/);
 });
 
 test("preserves saved loop containers and relative child positions, ordering parents first", () => {

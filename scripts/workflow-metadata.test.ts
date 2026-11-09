@@ -3,7 +3,7 @@ import test from "node:test";
 import { normalizeWorkflowGraph } from "./import-submissions";
 import { graphVisualKind } from "../src/lib/graphVisuals";
 import { workflowAgentCalls, type AgentProfile } from "../src/lib/inventory";
-import { connectorName, resolvePreviewWorkflow, triggerType, workflowConnectorNames, workflowMetadataNotice, workflowNodeMetadata, workflowTriggerType } from "../src/lib/workflowMetadata";
+import { connectorDisplayName, connectorName, resolvePreviewWorkflow, triggerType, workflowConnectorNames, workflowMetadataNotice, workflowNodeMetadata, workflowTriggerType } from "../src/lib/workflowMetadata";
 import type { GraphNode, WorkflowPreview } from "../src/lib/schema";
 
 function node(type: string, config: Record<string, unknown>, name = "Submitted step title"): GraphNode {
@@ -12,6 +12,13 @@ function node(type: string, config: Record<string, unknown>, name = "Submitted s
     edges: [],
   }).nodes[0]!;
 }
+
+test("shares friendly connector labels across app cards, details, and workflows without guessing unknown names", () => {
+  assert.equal(connectorDisplayName("shared_sharepointonline"), "SharePoint");
+  assert.equal(connectorDisplayName("SHARED_SHAREPOINTONLINE"), "SharePoint");
+  assert.equal(connectorDisplayName("shared_commondataserviceforapps"), "Microsoft Dataverse");
+  assert.equal(connectorDisplayName("shared_vendor"), "shared_vendor");
+});
 
 test("requires an explicit hero for both single-workflow and multi-workflow solutions", () => {
   const workflows: WorkflowPreview[] = [

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="shortcut icon" href="./favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>App Builder</title>
+    
+    
+  
+<script>
+(function injectAssetsWithQuery() {
+  const query = window.location.search;
+
+  const basePath = window.location.pathname.replace(/\/[^/]*$/, '/');
+  const appendQuery = (url) => {
+    if (!query || !url || url.includes('?') || url.startsWith('http')) return url;
+    const fullUrl = url.startsWith('/') ? basePath + url.slice(1) : basePath + url;
+    const parsed = new URL(fullUrl, window.location.origin);
+    parsed.search = query;
+    return parsed.toString();
+  };
+
+  // Inject JS
+  const script = document.createElement('script');
+  script.type = 'module';
+  script.src = appendQuery('./assets/index-CD66YWLf.js');
+  document.head.appendChild(script);
+
+  // Inject CSS
+  
+  const style = document.createElement('link');
+  style.rel = 'stylesheet';
+  style.href = appendQuery('./assets/index-DFO3RJUP.css');
+  document.head.appendChild(style);
+  
+
+  // Patch image.src
+  const originalImageSrc = Object.getOwnPropertyDescriptor(Image.prototype, 'src');
+  if (originalImageSrc && originalImageSrc.set) {
+    Object.defineProperty(Image.prototype, 'src', {
+      set(value) {
+        const newVal = appendQuery(value);
+        originalImageSrc.set.call(this, newVal);
+      },
+    });
+  }
+
+  // Patch fetch
+  const originalFetch = window.fetch;
+  window.fetch = function(input, init) {
+    if (typeof input === 'string') {
+      input = appendQuery(input);
+    } else if (input instanceof Request) {
+      input = new Request(appendQuery(input.url), input);
+    }
+    return originalFetch(input, init);
+  };
+})();
+</script>
+</head>
+  <body>
+    <script>history.replaceState({}, '', '/');</script>
+    <div id="root"></div>
+  </body>
+</html>

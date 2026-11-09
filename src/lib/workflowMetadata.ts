@@ -26,6 +26,11 @@ const CONNECTOR_NAMES: Record<string, string> = {
   shared_approvals: "Approvals",
   shared_advancedapprovals: "Human review",
 };
+
+export function connectorDisplayName(id: string): string {
+  return CONNECTOR_NAMES[id.toLowerCase()] ?? id;
+}
+
 const EMAIL_APIS = new Set(["shared_office365", "shared_outlook", "shared_gmail"]);
 const EMAIL_OPERATIONS = new Set([
   "onnewemail", "onnewemailv2", "onnewemailv3",
@@ -55,7 +60,7 @@ export function connectorName(node: GraphNode): string | undefined {
   const api = apiName(node);
   return detail(node, "connectorDisplayName")
     ?? detail(node, "apiDisplayName")
-    ?? (api ? CONNECTOR_NAMES[api.toLowerCase()] ?? api : undefined);
+    ?? (api ? connectorDisplayName(api) : undefined);
 }
 
 export function triggerType(node: GraphNode): string | undefined {

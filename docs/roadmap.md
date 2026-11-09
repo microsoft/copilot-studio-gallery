@@ -7,9 +7,11 @@ previews, deterministic downloads, and pull-request validation.
 
 - **Ratings and discussion** — GitHub Discussions-backed reactions, comments,
   and a top-rated sort.
-- **Download telemetry** — privacy-reviewed download counts and a most-downloaded
-  sort.
-- **Site analytics** — explicit analytics configuration and consent review.
+- **Download ranking** — a most-downloaded sort remains deferred. Submission
+  detail pages support timestamped GitHub Release ZIP counts; Clarity separately
+  tracks download intent and install-command copies. See [Gallery analytics](analytics.md).
+- **Site analytics** — analytics consent review. The existing Clarity integration
+  has explicit smart events and documented conversion funnels.
 - **Contributor automation** — badges, first-submission recognition, and bot
   comments that mention the submitted solution's author.
 - **Graph reconstruction** — best-effort workflow layout for older exports that
