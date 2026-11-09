@@ -1,0 +1,1948 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "RFP Factory Tools",
+    "version": "1.0",
+    "contact": {
+      "name": "RFP Factory solution team"
+    },
+    "description": "Deterministic operations for the RFP Response Factory (ADR-0013, ADR-0016, ADR-0017)."
+  },
+  "host": "@environmentVariables(\"hrs_RfpToolsBaseUrl\")",
+  "basePath": "/api",
+  "schemes": [
+    "https"
+  ],
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "in": "query",
+      "name": "code"
+    }
+  },
+  "security": [
+    {
+      "api_key": []
+    }
+  ],
+  "x-ms-connector-metadata": [
+    {
+      "propertyName": "Website",
+      "propertyValue": "https://learn.microsoft.com/power-platform/"
+    },
+    {
+      "propertyName": "Privacy policy",
+      "propertyValue": "https://privacy.microsoft.com/"
+    },
+    {
+      "propertyName": "Categories",
+      "propertyValue": "Productivity"
+    }
+  ],
+  "paths": {
+    "/normalize-document": {
+      "post": {
+        "operationId": "NormalizeDocument",
+        "summary": "Normalize a document into ordered blocks and the instructions text (stage 1)",
+        "description": "Normalize a document into ordered blocks and the instructions text (stage 1). See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/extract-requirements": {
+      "post": {
+        "operationId": "ExtractRequirements",
+        "summary": "Extract and identify table requirements, with gate G2 (stage 2)",
+        "description": "Extract and identify table requirements, with gate G2 (stage 2). See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/requirement-candidates": {
+      "post": {
+        "operationId": "RequirementCandidates",
+        "summary": "Candidate sentences of a prose document for the identify prompt (stage 2)",
+        "description": "Candidate sentences of a prose document for the identify prompt (stage 2). See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/resolve-requirements": {
+      "post": {
+        "operationId": "ResolveRequirements",
+        "summary": "Stage 2: requirements from the identify passes, with IDs and gate G2",
+        "description": "Stage 2: requirements from the identify passes, with IDs and gate G2. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/ocr-crop": {
+      "post": {
+        "operationId": "OcrCrop",
+        "summary": "Card-sized page-image crop around a block, for OCR verification",
+        "description": "Card-sized page-image crop around a block, for OCR verification. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/addendum-items": {
+      "post": {
+        "operationId": "AddendumItems",
+        "summary": "Stage 3: addendum text, item labels and locations for the interpret prompt",
+        "description": "Stage 3: addendum text, item labels and locations for the interpret prompt. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/apply-addendum": {
+      "post": {
+        "operationId": "ApplyAddendum",
+        "summary": "Stage 3: verified addendum changes as requirement, flag and RFP writes",
+        "description": "Stage 3: verified addendum changes as requirement, flag and RFP writes. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/match-rules": {
+      "post": {
+        "operationId": "MatchRules",
+        "summary": "Candidate policy rules and threshold evidence per requirement (stage 6)",
+        "description": "Candidate policy rules and threshold evidence per requirement (stage 6). See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/answer-candidates": {
+      "post": {
+        "operationId": "AnswerCandidates",
+        "summary": "Approved answer candidates per requirement (stage 5)",
+        "description": "Approved answer candidates per requirement (stage 5). See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/annotate-answers": {
+      "post": {
+        "operationId": "AnnotateAnswers",
+        "summary": "Stale, conflict, retired and draft annotations for selected answers (stage 5)",
+        "description": "Stale, conflict, retired and draft annotations for selected answers (stage 5). See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/check-certifications": {
+      "post": {
+        "operationId": "CheckCertifications",
+        "summary": "Certificate validity on the submission date (stage 6)",
+        "description": "Certificate validity on the submission date (stage 6). See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/derive-compliance": {
+      "post": {
+        "operationId": "DeriveCompliance",
+        "summary": "Compliance value per requirement from the precedence table (stage 6)",
+        "description": "Compliance value per requirement from the precedence table (stage 6). See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/route-sme": {
+      "post": {
+        "operationId": "RouteSme",
+        "summary": "SME for each gap requirement (stage 7)",
+        "description": "SME for each gap requirement (stage 7). See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/derive-approval-level": {
+      "post": {
+        "operationId": "DeriveApprovalLevel",
+        "summary": "Approval level from value band and flag severities (stage 9)",
+        "description": "Approval level from value band and flag severities (stage 9). See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/count-words": {
+      "post": {
+        "operationId": "CountWords",
+        "summary": "Word counts under the buyer's counting rule",
+        "description": "Word counts under the buyer's counting rule. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/map-response-codes": {
+      "post": {
+        "operationId": "MapResponseCodes",
+        "summary": "Buyer response codes allowed for each compliance value",
+        "description": "Buyer response codes allowed for each compliance value. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/fill-template": {
+      "post": {
+        "operationId": "FillTemplate",
+        "summary": "Fill a Word template in place",
+        "description": "Fill a Word template in place. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/split-sections": {
+      "post": {
+        "operationId": "SplitSections",
+        "summary": "Split a proposal into governed narrative and excluded components",
+        "description": "Split a proposal into governed narrative and excluded components. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/fill-compliance-matrix": {
+      "post": {
+        "operationId": "FillComplianceMatrix",
+        "summary": "Fill the Excel compliance matrix template cell by cell",
+        "description": "Fill the Excel compliance matrix template cell by cell. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/count-pages": {
+      "post": {
+        "operationId": "CountPages",
+        "summary": "Page count of a PDF (stage 8)",
+        "description": "Page count of a PDF (stage 8). See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/check-gates": {
+      "post": {
+        "operationId": "CheckGates",
+        "summary": "Evaluate gates G4, G5 and G6",
+        "description": "Evaluate gates G4, G5 and G6. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/company-content": {
+      "post": {
+        "operationId": "CompanyContent",
+        "summary": "Text of the approved company documents and the respondent scope statement",
+        "description": "Text of the approved company documents and the respondent scope statement. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/template-headings": {
+      "post": {
+        "operationId": "TemplateHeadings",
+        "summary": "Heading 1 titles of a Word template",
+        "description": "Heading 1 titles of a Word template. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/match-opportunity": {
+      "post": {
+        "operationId": "MatchOpportunity",
+        "summary": "The opportunity an inbound file belongs to, by RFP number",
+        "description": "The opportunity an inbound file belongs to, by RFP number. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/certifications-mentioned": {
+      "post": {
+        "operationId": "CertificationsMentioned",
+        "summary": "Register certificates each requirement names, valid on the submission date",
+        "description": "Register certificates each requirement names, valid on the submission date. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/render-card": {
+      "post": {
+        "operationId": "RenderCard",
+        "summary": "Fill an Adaptive Card template's ${...} bindings",
+        "description": "Fill an Adaptive Card template's ${...} bindings. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/assemble-package": {
+      "post": {
+        "operationId": "AssemblePackage",
+        "summary": "Stage 8: governed narrative, excluded components and compliance matrix",
+        "description": "Stage 8: governed narrative, excluded components and compliance matrix. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/check-items": {
+      "post": {
+        "operationId": "CheckItems",
+        "summary": "Validate a batch output: every expected ID once, allowed values only",
+        "description": "Validate a batch output: every expected ID once, allowed values only. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-block-rows": {
+      "post": {
+        "operationId": "StageBlockRows",
+        "summary": "Stage 1: hrs_documentblock rows from normalized blocks",
+        "description": "Stage 1: hrs_documentblock rows from normalized blocks. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-rfp-facts": {
+      "post": {
+        "operationId": "StageRfpFacts",
+        "summary": "Stage 1: hrs_rfp columns from the facts prompt",
+        "description": "Stage 1: hrs_rfp columns from the facts prompt. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-taxonomy": {
+      "post": {
+        "operationId": "StageTaxonomy",
+        "summary": "Stage 2: taxonomy text for the classification prompt",
+        "description": "Stage 2: taxonomy text for the classification prompt. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-requirement-rows": {
+      "post": {
+        "operationId": "StageRequirementRows",
+        "summary": "Stage 2: hrs_requirement rows from extraction and classification",
+        "description": "Stage 2: hrs_requirement rows from extraction and classification. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-ocr-flags": {
+      "post": {
+        "operationId": "StageOcrFlags",
+        "summary": "Stage 2: OCR-LOW-CONFIDENCE flags for requirements read below the threshold",
+        "description": "Stage 2: OCR-LOW-CONFIDENCE flags for requirements read below the threshold. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-added-flags": {
+      "post": {
+        "operationId": "StageAddedFlags",
+        "summary": "Stage 3: ADDENDUM-CHANGE flags for requirements an addendum added",
+        "description": "Stage 3: ADDENDUM-CHANGE flags for requirements an addendum added. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-prompt-requirements": {
+      "post": {
+        "operationId": "StagePromptRequirements",
+        "summary": "Requirement rows as compact prompt JSON",
+        "description": "Requirement rows as compact prompt JSON. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/orchestrator-run-status": {
+      "post": {
+        "operationId": "OrchestratorRunStatus",
+        "summary": "RFP Orchestrator: an RFP's stage, waits and recent run log",
+        "description": "RFP Orchestrator: an RFP's stage, waits and recent run log. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/orchestrator-explain-flags": {
+      "post": {
+        "operationId": "OrchestratorExplainFlags",
+        "summary": "RFP Orchestrator: the flags on one requirement and why",
+        "description": "RFP Orchestrator: the flags on one requirement and why. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/orchestrator-explain-answer": {
+      "post": {
+        "operationId": "OrchestratorExplainAnswer",
+        "summary": "RFP Orchestrator: a requirement's compliance, answer ID and response",
+        "description": "RFP Orchestrator: a requirement's compliance, answer ID and response. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/orchestrator-rerun-check": {
+      "post": {
+        "operationId": "OrchestratorRerunCheck",
+        "summary": "RFP Orchestrator: whether a stage may be rerun now",
+        "description": "RFP Orchestrator: whether a stage may be rerun now. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-classify-batches": {
+      "post": {
+        "operationId": "StageClassifyBatches",
+        "summary": "Stage 2: classification prompt inputs in batches",
+        "description": "Stage 2: classification prompt inputs in batches. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-relation-batches": {
+      "post": {
+        "operationId": "StageRelationBatches",
+        "summary": "Stage 4: relations prompt inputs, grouped and batched above the pilot size",
+        "description": "Stage 4: relations prompt inputs, grouped and batched above the pilot size. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-relation-updates": {
+      "post": {
+        "operationId": "StageRelationUpdates",
+        "summary": "Stage 4: requirement updates and flags from the relations prompt",
+        "description": "Stage 4: requirement updates and flags from the relations prompt. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-shortlist-items": {
+      "post": {
+        "operationId": "StageShortlistItems",
+        "summary": "Stage 5: approved question index and requirements for the shortlist prompt",
+        "description": "Stage 5: approved question index and requirements for the shortlist prompt. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-selection-items": {
+      "post": {
+        "operationId": "StageSelectionItems",
+        "summary": "Stage 5: approved candidates per requirement for the selection prompt",
+        "description": "Stage 5: approved candidates per requirement for the selection prompt. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-resolve-selections": {
+      "post": {
+        "operationId": "StageResolveSelections",
+        "summary": "Stage 5: validated selections to responses, library flags and gaps",
+        "description": "Stage 5: validated selections to responses, library flags and gaps. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-rule-screen-items": {
+      "post": {
+        "operationId": "StageRuleScreenItems",
+        "summary": "Stage 6: rule register and requirements for the screen prompt",
+        "description": "Stage 6: rule register and requirements for the screen prompt. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-adjudication-items": {
+      "post": {
+        "operationId": "StageAdjudicationItems",
+        "summary": "Stage 6: candidate rule hits with threshold evidence",
+        "description": "Stage 6: candidate rule hits with threshold evidence. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-resolve-policy": {
+      "post": {
+        "operationId": "StageResolvePolicy",
+        "summary": "Stage 6: policy flags, compliance and drafting items",
+        "description": "Stage 6: policy flags, compliance and drafting items. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-resolve-drafts": {
+      "post": {
+        "operationId": "StageResolveDrafts",
+        "summary": "Stage 6: validated drafts to response updates",
+        "description": "Stage 6: validated drafts to response updates. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-gap-rows": {
+      "post": {
+        "operationId": "StageGapRows",
+        "summary": "Stage 7: routed hrs_gap rows",
+        "description": "Stage 7: routed hrs_gap rows. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-clarification-items": {
+      "post": {
+        "operationId": "StageClarificationItems",
+        "summary": "Stage 7: items for the clarification prompt",
+        "description": "Stage 7: items for the clarification prompt. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-resolve-clarifications": {
+      "post": {
+        "operationId": "StageResolveClarifications",
+        "summary": "Stage 7: clarification rows and letter rows",
+        "description": "Stage 7: clarification rows and letter rows. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-section-inputs": {
+      "post": {
+        "operationId": "StageSectionInputs",
+        "summary": "Stage 8: inputs for each narrative section prompt",
+        "description": "Stage 8: inputs for each narrative section prompt. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-package-requirements": {
+      "post": {
+        "operationId": "StagePackageRequirements",
+        "summary": "Stage 8: requirement rows for package assembly",
+        "description": "Stage 8: requirement rows for package assembly. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-approval-summary": {
+      "post": {
+        "operationId": "StageApprovalSummary",
+        "summary": "Stage 9: counts and exceptions for the approval card",
+        "description": "Stage 9: counts and exceptions for the approval card. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stage-gate-inputs": {
+      "post": {
+        "operationId": "StageGateInputs",
+        "summary": "Stage 8: inputs for gates G5 and G6",
+        "description": "Stage 8: inputs for gates G5 and G6. See tools/service/function_app.py.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    }
+  }
+}
