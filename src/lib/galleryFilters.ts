@@ -26,7 +26,7 @@ export function galleryCategory(category: Category | undefined): string | undefi
 }
 
 export type Facet = "categories" | "tags" | "authors" | "contains";
-export type SolutionType = "" | "agents" | "workflows";
+export type SolutionType = "" | "apps" | "agents" | "workflows";
 
 export interface FilterState {
   query: string;
@@ -49,7 +49,7 @@ export interface SolutionRecord extends SortableSolution {
 export type FacetLabels = Record<Facet, ReadonlyMap<string, string>>;
 
 export const FACETS: Facet[] = ["contains", "categories", "tags", "authors"];
-export const TYPES: SolutionType[] = ["agents", "workflows"];
+export const TYPES: SolutionType[] = ["apps", "agents", "workflows"];
 // Categories and contributors are alternatives; tags and component types narrow.
 export const MATCH_ANY = new Set<Facet>(["categories", "authors"]);
 const URL_PARAMS: Record<Facet, string> = { categories: "category", tags: "tag", authors: "author", contains: "contains" };

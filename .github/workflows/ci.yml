@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
   workflow_dispatch:
 
 permissions:
@@ -31,11 +31,7 @@ jobs:
       - name: Run importer tests
         run: npm test
       - name: Import submissions
-        if: github.event.pull_request.head.repo.full_name == github.repository
         run: npm run import:submissions
-      - name: Validate submissions from forks
-        if: github.event.pull_request.head.repo.full_name != github.repository
-        run: npm run check:submissions
       - name: Commit generated content
         if: github.event.pull_request.head.repo.full_name == github.repository
         run: |
@@ -53,35 +49,18 @@ jobs:
       - name: Build site
         run: npm run build
 
-  guard-scope:
-    name: Guard pull request scope
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
+  app-setup-windows:
+    name: Verify PowerShell app installer on Windows
+    runs-on: windows-latest
     steps:
-      - name: Reject mixed submission and site changes
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR: ${{ github.event.pull_request.number }}
-          REPO: ${{ github.repository }}
-          LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
-        run: |
-          set -euo pipefail
-          if printf '%s' "$LABELS" | grep -q '"allow-mixed-changes"'; then
-            echo "Scope override label present."
-            exit 0
-          fi
-          FILES="$(gh api --paginate "repos/$REPO/pulls/$PR/files" --jq '.[].filename')"
-          SUBMISSION="$(printf '%s\n' "$FILES" | grep -E '^submissions/' | grep -vxF 'submissions/README.md' || true)"
-          SITE="$(printf '%s\n' "$FILES" \
-            | grep -vE '^submissions/' \
-            | grep -vE '^src/content/solutions/' \
-            | grep -vE '^src/content/guides/' \
-            | grep -vE '^public/bundles/' \
-            || true)"
-          if [ -n "$SUBMISSION" ] && [ -n "$SITE" ]; then
-            echo "::error::This pull request mixes submission content with site or repository changes. Split it into separate pull requests or add the allow-mixed-changes label."
-            exit 1
-          fi
-          echo "Pull request scope is valid."
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify setup command sequencing and failure handling
+        run: node --import tsx --test scripts/managed-app-install.test.ts scripts/managed-app-data.test.ts

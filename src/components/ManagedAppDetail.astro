@@ -1,0 +1,81 @@
+---
+import type { ManagedAppRecord } from "../lib/schema";
+import { withBase } from "../lib/url";
+import SolutionDownload from "./SolutionDownload.astro";
+import AuthorCredit from "./AuthorCredit.astro";
+import MicrosoftBadge from "./MicrosoftBadge.astro";
+import SolutionDiscussion from "./SolutionDiscussion.astro";
+import AppComponents from "./AppComponents.astro";
+import SupportingFiles from "./SupportingFiles.astro";
+
+interface Props { app: ManagedAppRecord; slug: string }
+const { app, slug } = Astro.props;
+---
+
+<div class="mx-auto w-full max-w-gallery px-4 py-6 sm:px-6 sm:py-8">
+  <a href={withBase("/")} class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-accent">
+    <span aria-hidden="true">←</span> Back to gallery
+  </a>
+  <section class="mt-5 overflow-hidden rounded-2xl border border-border bg-surface card-shadow">
+    <div class="p-6 sm:p-8">
+      <div class="flex items-center justify-between gap-3"><p class="text-sm font-semibold text-accent">App</p>{app.featured && <MicrosoftBadge />}</div>
+      <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{app.name}</h1>
+      <p class="mt-4 max-w-3xl text-lg leading-relaxed text-muted">{app.description}</p>
+      <div class="mt-5 flex flex-wrap items-center gap-4 text-sm text-muted">
+        <AuthorCredit authors={app.authors} prefix="by" />
+        <span>Version {app.version}</span>
+        {(app.updatedAt ?? app.createdAt) && <span>Updated {app.updatedAt ?? app.createdAt}</span>}
+        <a href="#discussion" class="font-medium text-accent hover:underline">Rate &amp; discuss</a>
+      </div>
+      <div data-download-compact class="mt-5 xl:hidden">
+        <SolutionDownload solution={app} idPrefix="app-compact-install" compact />
+      </div>
+    </div>
+    {app.screenshot ? <figure class="border-t border-border"><img src={withBase(`/${app.screenshot.path}`)} alt={app.screenshot.alt} width="1440" height="900" class="w-full object-contain" /><figcaption class="border-t border-border px-6 py-3 text-xs text-muted">{app.screenshot.alt}</figcaption></figure> :
+      <div class="studio-canvas border-t border-border p-8"><p class="text-sm text-muted">Portable application source for Copilot Managed Runtime.</p></div>}
+    <div class="flex flex-wrap items-center gap-2 border-t border-border px-6 py-4 sm:px-8">
+      {app.category && <a class="rounded-full border border-accent/40 bg-accent-soft px-3 py-1 text-sm font-medium text-accent hover:border-accent" href={withBase(`/?category=${encodeURIComponent(app.category)}`)}>{app.category}</a>}
+      {app.tags.map((tag) => <a class="rounded-full border border-border px-3 py-1 text-sm text-muted hover:text-ink" href={withBase(`/tags/${encodeURIComponent(tag)}`)}>{tag}</a>)}
+    </div>
+  </section>
+  <div class="mt-6 flex flex-col gap-6 xl:grid xl:grid-cols-[minmax(0,1fr)_18rem]">
+    <div class="min-w-0">
+      <div class="overflow-x-auto border-b border-border">
+        <div id="detail-tabs" class="flex min-w-max gap-1" role="tablist" aria-label="App sections">
+          <button type="button" role="tab" aria-selected="true" aria-controls="panel-overview" data-tab="overview" class="detail-tab border-b-2 border-accent px-4 py-3 text-sm font-semibold text-accent">Overview</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="panel-components" data-tab="components" class="detail-tab border-b-2 border-border px-4 py-3 text-sm font-semibold text-muted hover:text-ink">Components</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="panel-files" data-tab="files" class="detail-tab border-b-2 border-border px-4 py-3 text-sm font-semibold text-muted hover:text-ink">Files <span class="ml-1 text-xs text-soft">{app.files.length}</span></button>
+        </div>
+      </div>
+      <section id="panel-overview" role="tabpanel" data-panel="overview" class="pt-7">
+        <article class="prose max-w-none prose-headings:tracking-tight"><slot /></article>
+        <SupportingFiles files={app.supportingFiles} />
+      </section>
+      <section id="panel-components" role="tabpanel" data-panel="components" class="hidden pt-7">
+        <h2 class="mb-4 text-xl font-semibold">Required connectors</h2>
+        <AppComponents connectors={app.app.connectors} />
+      </section>
+      <section id="panel-files" role="tabpanel" data-panel="files" class="hidden pt-7">
+        <a class="mb-4 inline-block text-sm font-semibold text-accent" href={`https://github.com/microsoft/copilot-studio-gallery/tree/main/submissions/${slug}`}>View submission source on GitHub</a>
+        <div class="overflow-x-auto rounded-xl border border-border">
+          <table class="w-full text-left text-sm" aria-label="App source files">
+            <thead class="bg-elevated text-xs text-muted">
+              <tr><th scope="col" class="px-3 py-2 font-semibold">Path</th><th scope="col" class="px-3 py-2 font-semibold">Type</th><th scope="col" class="px-3 py-2 text-right font-semibold">Size</th></tr>
+            </thead>
+            <tbody>
+              {app.files.map((file) => (
+                <tr class="border-t border-border">
+                  <td class="max-w-0 break-all px-3 py-2 font-mono text-xs text-ink">{file.path}</td>
+                  <td class="px-3 py-2 text-muted">{file.category}</td>
+                  <td class="whitespace-nowrap px-3 py-2 text-right text-muted">{file.size.toLocaleString("en-US")} B</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <SolutionDiscussion slug={slug} submissionLabel="app" />
+    </div>
+    <aside data-download-sidebar class="hidden xl:sticky xl:top-20 xl:block xl:self-start"><SolutionDownload solution={app} idPrefix="app-install" /></aside>
+  </div>
+</div>
