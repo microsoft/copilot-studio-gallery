@@ -44,6 +44,12 @@ The `solution/` directory must contain `solution.xml` and `customizations.xml`.
 It may include agents, workflows, connectors, connection references, code, and
 other normal solution assets.
 
+Submit complete workflow exports, not just saved canvas graphs. Each workflow
+needs its executable definition, typed triggers/actions, and an unambiguous
+`customizations.xml` mapping to its file and workflow identity. CI rejects
+missing local files/owners and malformed graph references. Passing these
+structural checks is not proof of successful import or runtime behavior.
+
 The importer derives the published agent and workflow previews and rebuilds a
 deterministic `<slug>.zip` whose archive root is the contents of `solution/`.
 Gallery sidecars are excluded.
@@ -109,6 +115,12 @@ app or solution under one of the gallery's category filters. Pick **one** value 
 this fixed list (spelling and capitalization must match exactly). New values
 can't be added in a submission yet. If none fits, use `Other` and suggest a
 new category in your pull request.
+
+Maintainer changes to the category vocabulary, metadata contract, or recognition
+fields require the `allow-metadata-changes` PR label. Layout, behavior, tooling,
+and CI changes require the separate `allow-site-changes` label; PRs affecting
+both need both. Neither label bypasses content validation or builds. See
+[Pull-request scope](../CONTRIBUTING.md#pull-request-scope) for exact boundaries.
 
 Choose by **who uses the sample and which business activity it supports**,
 not by the technology it uses or the industry it serves. Industries and
