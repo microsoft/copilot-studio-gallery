@@ -367,6 +367,28 @@ functional usefulness, or security approval. Contributors remain responsible
 for fresh-environment testing; Copilot and maintainers review claims, permissions,
 dependencies, and limitations.
 
+### Minimal content review
+
+The [Copilot review instructions](.github/instructions/submission-review.instructions.md)
+limit solution content review to changed agent/workflow definitions, including
+their instructions, skills, hooks, and tool bindings. README and metadata provide
+context; reviewers do not audit the entire exploded solution or its attachments.
+This is not a full-payload secret scan or a review of managed app implementations.
+
+Describe the submission as a sample, not production-ready. For healthcare,
+financial, legal, or other high-stakes use, include a visitor-facing disclaimer
+that outputs are illustrative, may be incorrect, are not professional advice,
+and require qualified human review before real-world use. An absent README
+does not waive these disclosures; put them in the visitor-facing overview.
+
+The remaining review bar is no embedded secrets/private data in reviewed
+definitions, disclosed consequential actions and data destinations with
+appropriate safeguards, honest capability claims, and documented essential
+prerequisites. Copilot should report concrete evidence, not style preferences
+or speculative concerns. Maintainers retain the publication decision.
+
+### Policy activation
+
 The trusted policy workflow activates once present on the default branch.
 When first introducing or changing that policy, maintainers must review the
 bootstrap PR directly; a PR cannot activate its own new trusted policy.
