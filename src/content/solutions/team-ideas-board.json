@@ -1,0 +1,149 @@
+{
+  "submissionType": "managed-app",
+  "name": "Team Ideas Board",
+  "description": "Turn team suggestions into next steps: capture ideas, search a shared board, and move promising improvements from New to Exploring to Planned. A clean SharePoint-backed app starter.",
+  "tags": [
+    "managed-app",
+    "sharepoint",
+    "starter",
+    "collaboration"
+  ],
+  "category": "Productivity & knowledge",
+  "createdAt": "2026-11-03",
+  "featured": true,
+  "supportingFiles": [
+    {
+      "label": "Blank data template",
+      "filename": "team-ideas-empty.csv",
+      "path": "bundles/team-ideas-board-99f8596366048b941859ad7242db76ecdd72303abc8e7b353ad5550c2eacf444-team-ideas-empty.csv",
+      "size": 30
+    },
+    {
+      "label": "Synthetic sample ideas",
+      "filename": "team-ideas.csv",
+      "path": "bundles/team-ideas-board-d53b392f524e82c8399d4a4563331a69f5da41d8e323d329283fc72b7f608acd-team-ideas.csv",
+      "size": 616
+    }
+  ],
+  "author": "adilei",
+  "authors": [
+    {
+      "name": "adilei",
+      "github": "adilei"
+    }
+  ],
+  "version": "1.0.0",
+  "app": {
+    "prerequisites": [
+      "Access to Copilot Managed Runtime app creation in an eligible environment; tenant licensing and connector policies apply.",
+      "An existing SharePoint list named Team Ideas or team-ideas, with the displayed column names and types below. CSV-created internal names are resolved from the native schema.",
+      "Read, create, and edit permission on that list. No custom app registration is required for the standard connection flow.",
+      "Install on macOS with Bash or on Windows with PowerShell 5.1+. The shared installer checks Node >=24.11, npm, Git, and Git Credential Manager, and offers to install missing prerequisites with your approval. Linux installation is not supported."
+    ],
+    "connectors": [
+      {
+        "connector": "shared_sharepointonline",
+        "mode": "table",
+        "dataSource": "teamideas",
+        "table": "Team Ideas",
+        "instructions": "Create a list named Team Ideas or team-ideas first. In the native CLI, choose your SharePoint connection, the site where you created the list (called a dataset), and the list itself. Keep the displayed column names and types below; the app resolves their native internal names during its build. This app reads up to 200 ideas and supports creating ideas and changing their status.",
+        "columns": [
+          {
+            "name": "Title",
+            "type": "Single line of text",
+            "description": "Required. The built-in Title column; keep its internal name."
+          },
+          {
+            "name": "Details",
+            "type": "Multiple lines of text",
+            "description": "Plain text; optional. Keep the display name Details."
+          },
+          {
+            "name": "Status",
+            "type": "Single line of text",
+            "description": "Required. Default: New. App values: New, Exploring, Planned."
+          },
+          {
+            "name": "Priority",
+            "type": "Single line of text",
+            "description": "Required. Default: Medium. App values: Low, Medium, High."
+          }
+        ]
+      }
+    ]
+  },
+  "bundle": "bundles/team-ideas-board-0c9f216737ce122ae5b37c369bc74904fa74af4fee0c167e5387192b5e7d59f6.zip",
+  "bundleSha256": "0c9f216737ce122ae5b37c369bc74904fa74af4fee0c167e5387192b5e7d59f6",
+  "template": "github:microsoft/copilot-studio-gallery/submissions/team-ideas-board/app#main",
+  "screenshot": {
+    "path": "bundles/team-ideas-board-4d3e2a84b6b66b2a861f753522de70d87d3f3f779f29d783fb960e1a9c9caadf.png",
+    "alt": "Illustrative Team Ideas Board with six synthetic ideas grouped by status; not a live data connection."
+  },
+  "files": [
+    {
+      "path": ".gitignore",
+      "size": 65,
+      "category": "source"
+    },
+    {
+      "path": "index.html",
+      "size": 353,
+      "category": "source"
+    },
+    {
+      "path": "LICENSE",
+      "size": 1078,
+      "category": "source"
+    },
+    {
+      "path": "package-lock.json",
+      "size": 24982,
+      "category": "source"
+    },
+    {
+      "path": "package.json",
+      "size": 716,
+      "category": "source"
+    },
+    {
+      "path": "src/App.tsx",
+      "size": 9158,
+      "category": "source"
+    },
+    {
+      "path": "src/ideaFields.json",
+      "size": 109,
+      "category": "source"
+    },
+    {
+      "path": "src/ideas.ts",
+      "size": 3052,
+      "category": "source"
+    },
+    {
+      "path": "src/ideaSchema.ts",
+      "size": 2821,
+      "category": "source"
+    },
+    {
+      "path": "src/main.tsx",
+      "size": 218,
+      "category": "source"
+    },
+    {
+      "path": "src/style.css",
+      "size": 8654,
+      "category": "source"
+    },
+    {
+      "path": "tsconfig.json",
+      "size": 445,
+      "category": "source"
+    },
+    {
+      "path": "vite.config.ts",
+      "size": 1151,
+      "category": "source"
+    }
+  ]
+}

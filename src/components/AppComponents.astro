@@ -1,0 +1,27 @@
+---
+import type { AppSetup } from "../lib/schema";
+import { connectorDisplayName } from "../lib/workflowMetadata";
+
+interface Props { connectors: AppSetup["connectors"] }
+const { connectors } = Astro.props;
+---
+
+{connectors.length > 0 ? (
+  <div class="overflow-x-auto rounded-xl border border-border">
+    <table class="w-full table-fixed text-left text-sm" aria-label="Required app connectors">
+      <thead class="bg-elevated text-xs text-muted">
+        <tr><th scope="col" class="px-3 py-3 font-semibold">Connector</th><th scope="col" class="px-3 py-3 font-semibold">Type</th><th scope="col" class="px-3 py-3 font-semibold">Logical source</th><th scope="col" class="px-3 py-3 font-semibold">Table</th></tr>
+      </thead>
+      <tbody>
+        {connectors.map((binding) => (
+          <tr class="border-t border-border">
+            <th scope="row" class="break-words px-3 py-3 font-semibold text-ink" title={binding.connector}>{connectorDisplayName(binding.connector)}</th>
+            <td class="break-words px-3 py-3 text-muted">{binding.mode === "table" ? "Table connector" : "Action connector"}</td>
+            <td class="break-all px-3 py-3 font-mono text-xs text-muted">{binding.dataSource}</td>
+            <td class="break-words px-3 py-3 text-muted">{binding.table ?? "Not applicable"}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+) : <p class="text-sm text-muted">This app does not declare any required connectors.</p>}

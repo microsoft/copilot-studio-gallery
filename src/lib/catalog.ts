@@ -1,7 +1,7 @@
 import type { CollectionEntry } from "astro:content";
 import { isDemo } from "./discovery";
 import { launchRank } from "./launchOrder";
-import { CATEGORIES, contributorKey, type Category } from "./schema";
+import { CATEGORIES, contributorKey, isManagedApp, type Category } from "./schema";
 
 export type SolutionEntry = CollectionEntry<"solutions">;
 
@@ -13,6 +13,7 @@ export interface ContributorSummary {
   count: number;
   agents: number;
   workflows: number;
+  apps: number;
   featured: number;
   latest?: string;
   solutions: SolutionEntry[];
@@ -49,14 +50,18 @@ export function collectContributors(solutions: SolutionEntry[]): ContributorSumm
   const contributors = new Map<string, ContributorSummary>();
   for (const solution of solutions) {
     const updated = solution.data.updatedAt ?? solution.data.createdAt;
+    const inventory = isManagedApp(solution.data)
+      ? { apps: 1, agents: 0, workflows: 0 }
+      : { apps: 0, agents: solution.data.agentCount, workflows: solution.data.workflowCount };
     for (const author of solution.data.authors) {
       const key = contributorKey(author);
       const existing = contributors.get(key);
       if (existing) {
         if (existing.solutions.includes(solution)) continue;
         existing.count += 1;
-        existing.agents += solution.data.agentCount;
-        existing.workflows += solution.data.workflowCount;
+        existing.agents += inventory.agents;
+        existing.workflows += inventory.workflows;
+        existing.apps += inventory.apps ?? 0;
         existing.featured += solution.data.featured ? 1 : 0;
         if (updated && (!existing.latest || updated > existing.latest)) existing.latest = updated;
         if (!existing.github && author.github) existing.github = author.github;
@@ -70,8 +75,9 @@ export function collectContributors(solutions: SolutionEntry[]): ContributorSumm
         ...(author.github ? { github: author.github } : {}),
         ...(author.url ? { url: author.url } : {}),
         count: 1,
-        agents: solution.data.agentCount,
-        workflows: solution.data.workflowCount,
+        agents: inventory.agents,
+        workflows: inventory.workflows,
+        apps: inventory.apps ?? 0,
         featured: solution.data.featured ? 1 : 0,
         ...(updated ? { latest: updated } : {}),
         solutions: [solution],
