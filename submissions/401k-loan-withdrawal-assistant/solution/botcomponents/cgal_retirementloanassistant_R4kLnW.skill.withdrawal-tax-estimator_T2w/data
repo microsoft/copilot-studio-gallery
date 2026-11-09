@@ -1,0 +1,89 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: withdrawal-tax-estimator
+  description: Use when the user asks how much they will actually receive from a 401(k) withdrawal, how much tax will be withheld or owed, how much to withdraw to net a specific amount, or how a withdrawal compares with a loan over the long term.
+  ---
+  # Withdrawal Tax Estimator
+
+  Estimate the cash in hand, the withholding, the tax due at filing, and the long-term cost of a withdrawal. Every figure is an estimate. Tell the user that a tax professional can confirm their situation.
+
+  ## Inputs
+
+  Ask only for what is missing:
+
+  - The net amount they need, or the gross amount they plan to withdraw.
+  - The money source: pre-tax, Roth, or after-tax. For Roth, ask whether it has been at least 5 tax years since their first Roth contribution to the plan, and whether they are 59½ or older, disabled, or a beneficiary.
+  - Their federal marginal tax bracket. If they don't know, use their filing status and approximate taxable income to estimate it, and say so.
+  - Their state income tax rate. Use 0% for states without income tax.
+  - Their age, and whether an exception from the early-withdrawal-exceptions skill applies.
+  - The withdrawal fee from plan-rules.
+
+  ## Withholding rules
+
+  | Withdrawal | Default federal withholding |
+  | --- | --- |
+  | Eligible for rollover and paid to the user (for example age 59½ in-service, or after leaving) | 20% mandatory. Avoid it with a direct rollover |
+  | Hardship withdrawal | 10%, and the user can choose a different rate on Form W-4R. Cannot be rolled over or repaid |
+  | SECURE 2.0 emergency, domestic abuse, birth or adoption, or disaster distribution | 10%, and the user can choose a different rate on Form W-4R. Not subject to the 20% rule, but it can be repaid within 3 years |
+  | Terminal illness withdrawal | Follows the rules for the underlying withdrawal type |
+  | Loan offset with no other cash paid | None, but the offset is taxable unless rolled over |
+  | Loan offset paid together with cash | 20% of the total, including the offset, taken from the cash |
+  | Deemed distribution of a defaulted loan | None, but the amount is taxable |
+
+  State withholding varies by state.
+
+  ## Calculate with the tool
+
+  Use the 401k Calculator MCP tool `estimate_withdrawal_taxes` for every estimate. Map the inputs:
+
+  | Situation | Tool inputs |
+  | --- | --- |
+  | Under 59½ with no exception | `additional_tax_applies: true` |
+  | Age 59½ or older, or an exception applies | `additional_tax_applies: false` |
+  | Hardship withdrawal | `withdrawal_type: hardship` |
+  | SECURE 2.0 emergency, domestic abuse, birth or adoption, or disaster distribution | `withdrawal_type: secure_2_0` and `additional_tax_applies: false` |
+  | Age 59½ in-service or after leaving, paid to the user | `withdrawal_type: rollover_eligible` |
+  | Roth or after-tax money | `taxable_percent` set to the taxable share |
+  | Long-term cost wanted | `years_to_retirement`, optionally `assumed_annual_return_percent` |
+
+  `withdrawal_type` and `additional_tax_applies` are always required, so decide them before calling. If the tool returns an error, explain the message and ask for corrected inputs. If it is unavailable, use the formulas below and label the result "calculated manually".
+
+  ## Formulas the tool uses
+
+  - Combined rate c = federal marginal rate + state rate + 10% if no exception applies.
+  - Taxable share s = the taxable percentage (100% for pre-tax money).
+  - Gross withdrawal to cover the need and all expected taxes: G = (N + fee) ÷ (1 − s × c).
+  - Taxable amount = G × s.
+  - Withholding W = taxable amount × withholding rate (the default, or the rate they choose).
+  - Cash received = G − W − state withholding − fee.
+  - Total expected tax = taxable amount × c.
+  - Extra to set aside for tax filing = total expected tax − W − state withholding. If negative, they may get a refund.
+  - Long-term cost (illustrative) = G × (1 + assumed annual return)^(years to retirement). Default to 6% and age 65, and label it as an assumption. This is a pre-tax balance that would itself be taxed when withdrawn in retirement, so it overstates the after-tax cost.
+
+  ## Present the result
+
+  Show one table: gross withdrawal, fee, federal withholding, state withholding, cash received, total expected tax, amount to set aside, and illustrative value at retirement. Show the inputs and formulas so the user can check them. Then add one or two plain sentences on the main takeaway. If a loan is available, offer to compare it with the loan-estimator.
+
+  ## Example
+
+  Need $8,000 net. Age 41, hardship withdrawal from pre-tax money, 22% federal bracket, 5% state rate, no exception, $50 fee. Assume no state withholding at payout.
+
+  | Item | Value |
+  | --- | --- |
+  | Combined rate | 22% + 5% + 10% = 37% |
+  | Gross withdrawal | ($8,000 + $50) ÷ 0.63 = **$12,777.78** |
+  | Federal withholding (10% default) | $1,277.78 |
+  | Cash received | $11,450.00 |
+  | Total expected tax | $4,727.78 |
+  | Set aside for tax filing | $3,450.00 |
+  | Illustrative pre-tax value at 65 (6% a year, 24 years) | about $51,736 |
+
+  For comparison, a 5-year loan of $8,075 at 8.50% with biweekly payments costs $76.35 per paycheck, has no tax, and the money goes back into the account.
+
+  ## Edge cases
+
+  - A large withdrawal can push part of the income into a higher bracket. Say so when the gross amount is large compared with their income.
+  - For a Roth source, a qualified distribution is tax-free. In a non-qualified distribution, only the earnings share is taxable, so ask for the contribution and earnings split, or point them to the recordkeeper.
+  - A qualified disaster recovery distribution can be spread over 3 tax years, so divide the taxable amount by 3 for each year's estimate unless they choose otherwise.
+  - Required minimum distributions start at 73 (75 if born in 1960 or later) for pre-tax money. Employees who are not 5% owners can delay them until they leave the employer. Roth 401(k) money has no lifetime required distributions since 2024. Point them to the recordkeeper for the calculation.
