@@ -17,6 +17,7 @@ export const GET: APIRoute = async () => {
       author: solution.data.author,
       authors: solution.data.authors,
       version: solution.data.version,
+      download: solution.data.download,
       submissionType: solution.data.submissionType,
       makeup: submissionMakeup(solution.data),
       appCount: inventory.apps ?? 0,
