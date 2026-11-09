@@ -17,12 +17,12 @@ export const HOOK_BADGE: ContributorBadge = {
 
 /** Rank the entire published catalog, including ties at the third-place cutoff. */
 export function topHookSubmissionIds(
-  publishedSolutions: readonly { id: string; data: { hookCount: number } }[],
+  publishedSolutions: readonly { id: string; data: { name?: string; hookCount?: number } }[],
 ): ReadonlySet<string> {
-  const ranked = publishedSolutions.filter((solution) => solution.data.hookCount > 0)
-    .sort((a, b) => b.data.hookCount - a.data.hookCount);
+  const ranked = publishedSolutions.filter((solution) => (solution.data.hookCount ?? 0) > 0)
+    .sort((a, b) => (b.data.hookCount ?? 0) - (a.data.hookCount ?? 0));
   const cutoff = ranked.slice(0, 3).at(-1)?.data.hookCount;
-  return new Set(ranked.filter((solution) => cutoff !== undefined && solution.data.hookCount >= cutoff).map((solution) => solution.id));
+  return new Set(ranked.filter((solution) => cutoff !== undefined && (solution.data.hookCount ?? 0) >= cutoff).map((solution) => solution.id));
 }
 
 /** Call with a contributor's published solutions and the catalog-wide hooks leaderboard. */
