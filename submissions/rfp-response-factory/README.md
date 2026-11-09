@@ -18,6 +18,19 @@ rule really apply, write this response) is done by prompts that return typed JSO
 > pick the wrong answer or misjudge a policy rule. Nothing it produces is legal, contractual or pricing advice. A person must
 > review every response, flag and clarification before anything goes to a buyer. Test it on the synthetic data first.
 
+## How this differs from RFP Response Manager
+
+The gallery's [RFP Response Manager](https://github.com/microsoft/copilot-studio-gallery/tree/main/submissions/rfp-response-manager)
+is the lightweight option: one workflow that drafts a proposal from an RFP and asks for one approval, with nothing to set up beyond
+connections. Choose this sample when a bid team also needs:
+
+- each requirement extracted and tracked separately, with the buyer's IDs and source locations
+- responses limited to approved library answers, each one citing its answer ID
+- code-computed compliance checks (word and page limits, thresholds, certification dates)
+- SME routing for gaps, clarification questions and addendum reconciliation
+
+The cost is a larger setup: an Azure Function, Document Intelligence, a separate data solution and reference data.
+
 ## Agents
 
 **RFP Orchestrator** is the conversational entry point (Copilot Studio, Teams channel). It doesn't drive the pipeline. It answers
