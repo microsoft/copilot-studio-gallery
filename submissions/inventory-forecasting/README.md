@@ -130,6 +130,7 @@ Each forecast returns:
 
 - A Power Platform environment with **Dataverse**
 - Microsoft 365 account with **Outlook** (for email)
+- Availability of the **Work IQ MCP connector** (`shared_workiqmcp`) and an authorized user connection. The submitted agent enables **Write** access for mail, files, people, sites, Teams and calendar; review these capabilities and the associated permissions before use.
 - Access to an AI agent platform (e.g. Microsoft Copilot Studio) that supports Dataverse, Office 365 connectors, web search and code execution
 
 ### Steps
