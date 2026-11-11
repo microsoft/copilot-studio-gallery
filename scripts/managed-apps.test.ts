@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -121,6 +122,44 @@ test("rejects local identity, caches, symlinks, missing lockfiles, mixed payload
       await assert.rejects(importSubmissions({ root }), /unsafe source path/);
     } finally { await rm(root, { recursive: true, force: true }); }
   }
+});
+
+test("Oddly's portable template excludes contributor config but tracks newly generated app config", async () => {
+  const { root, app } = await fixture();
+  try {
+    const original = JSON.stringify({ connectionReferences: { original: { id: "fixture" } } });
+    await writeFile(join(app, "ms.config.json"), original);
+    await writeFile(join(app, ".gitignore"), await readFile(new URL("../submissions/oddly/app/.gitignore", import.meta.url)));
+    const gallery = join(root, "gallery");
+    await mkdir(join(gallery, "submissions"), { recursive: true });
+    const prepared = await prepareManagedApp({ root: gallery, source: app, slug: "ideas" });
+    assert.ok(prepared.excluded.includes("ms.config.json"));
+    assert.equal(await readFile(join(app, "ms.config.json"), "utf8"), original);
+    await writeFile(join(prepared.destination, "metadata.json"), JSON.stringify(metadata));
+    await writeFile(join(prepared.destination, "README.md"), "# Ideas\n\nChoose your own connection.\n");
+    const record = await imported(gallery);
+    const archive = new AdmZip(await readFile(join(gallery, "public", record.bundle)));
+    assert.equal(archive.getEntry("ms.config.json"), null);
+    assert.ok(archive.getEntry(".gitignore"));
+
+    const installed = join(root, "installed");
+    archive.extractAllTo(installed);
+    await writeFile(join(installed, "ms.config.json"), JSON.stringify({ connectionReferences: {} }));
+    await mkdir(join(installed, ".ms"));
+    await writeFile(join(installed, ".ms/cache.json"), "{}");
+    await writeFile(join(installed, ".env.local"), "EXAMPLE=fixture");
+    const git = (...args: string[]) => {
+      const result = spawnSync("git", ["-c", "core.excludesFile=", ...args], { cwd: installed, encoding: "utf8" });
+      assert.equal(result.status, 0, result.stdout + result.stderr);
+      return result.stdout;
+    };
+    git("init", "--quiet");
+    git("add", "--all");
+    const tracked = git("ls-files").trim().split("\n");
+    assert.ok(tracked.includes("ms.config.json"), "the installed app config must be staged for hosted builds");
+    assert.ok(!tracked.includes(".ms/cache.json"));
+    assert.ok(!tracked.includes(".env.local"));
+  } finally { await rm(root, { recursive: true, force: true }); }
 });
 
 test("validates and publishes PNG screenshots, then cleans stale image artifacts", async () => {

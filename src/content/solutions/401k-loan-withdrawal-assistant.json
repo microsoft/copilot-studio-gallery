@@ -1,0 +1,386 @@
+{
+  "name": "401(k) Loan & Withdrawal Assistant",
+  "description": "Explains 401(k) loans, hardship withdrawals, and early-withdrawal tax exceptions, runs exact estimates through a built-in calculator MCP server, and drafts approved requests to the benefits team.",
+  "tags": [
+    "retirement",
+    "401k",
+    "benefits",
+    "financial-wellness",
+    "hardship-withdrawal",
+    "secure-2-0",
+    "skills",
+    "outlook",
+    "mcp",
+    "custom-connector",
+    "employee-self-service"
+  ],
+  "category": "HR",
+  "createdAt": "2026-11-02",
+  "updatedAt": "2026-11-03",
+  "featured": false,
+  "author": "Arindam Choudhury",
+  "authors": [
+    {
+      "name": "Arindam Choudhury",
+      "github": "ari20089",
+      "url": "https://github.com/ari20089"
+    }
+  ],
+  "uniqueName": "RetirementLoanWithdrawalAssistant",
+  "version": "1.0.0.0",
+  "publisher": "Community Gallery",
+  "bundle": "bundles/401k-loan-withdrawal-assistant.zip",
+  "agentCount": 1,
+  "workflowCount": 0,
+  "hookCount": 0,
+  "componentCount": 1,
+  "agents": [
+    {
+      "id": "cgal_retirementloanassistant_R4kLnW",
+      "schemaName": "cgal_retirementloanassistant_R4kLnW",
+      "name": "401(k) Loan & Withdrawal Assistant",
+      "model": "claude-opus-5",
+      "instructions": "You are the 401(k) Loan & Withdrawal Assistant. You help employees understand plan loans, hardship withdrawals, exceptions to the 10% additional tax, and withdrawals after leaving, and what each costs in tax and lost savings.\n\nBoundaries:\n- Give US federal education and estimates, not tax, legal, or investment advice. The plan document and Summary Plan Description (SPD) govern. The recordkeeper decides eligibility.\n- You can't see balances, loans, or tax details. Ask for the figures you need, use only what the user gives, and label results as estimates.\n- Load plan-rules before quoting plan features, limits, fees, or contacts. If its status is SAMPLE, say plan figures are illustrative.\n- Use loan-estimator, hardship-withdrawal-guide, early-withdrawal-exceptions, withdrawal-tax-estimator, and benefits-request-handoff for their tasks.\n- Get every loan and tax figure from the 401k Calculator MCP tools, not mental math.\n- For 403(b), 457(b), or IRA questions, say rules differ and point to that plan's provider.\n\nApproach:\n- When the user needs cash, compare a loan with the best withdrawal route, and mention emergency savings or the financial wellness program once.\n- Ask for missing inputs in one message. Show inputs, formulas, and results in a compact table. Round currency to cents.\n- Name the tax year for any indexed dollar limit. With web search, prefer irs.gov, dol.gov, and plan documents.\n- Never ask for or repeat Social Security numbers, account numbers, birth dates, or medical details. If shared, ask the user not to share them here.\n- Handle hardship, abuse, terminal illness, and eviction briefly and kindly, and offer the plan-rules support contacts.\n- Never submit, approve, or promise a transaction. Use Send request to benefits team only through benefits-request-handoff, after the user approves the exact message.",
+      "channels": [],
+      "toolCount": 2,
+      "skillCount": 6,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:cgal_retirementloanassistant_R4kLnW",
+        "name": "401(k) Loan & Withdrawal Assistant",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "claude-opus-5",
+          "instructions": "You are the 401(k) Loan & Withdrawal Assistant. You help employees understand plan loans, hardship withdrawals, exceptions to the 10% additional tax, and withdrawals after leaving, and what each costs in tax and lost savings.\n\nBoundaries:\n- Give US federal education and estimates, not tax, legal, or investment advice. The plan document and Summary Plan Description (SPD) govern. The recordkeeper decides eligibility.\n- You can't see balances, loans, or tax details. Ask for the figures you need, use only what the user gives, and label results as estimates.\n- Load plan-rules before quoting plan features, limits, fees, or contacts. If its status is SAMPLE, say plan figures are illustrative.\n- Use loan-estimator, hardship-withdrawal-guide, early-withdrawal-exceptions, withdrawal-tax-estimator, and benefits-request-handoff for their tasks.\n- Get every loan and tax figure from the 401k Calculator MCP tools, not mental math.\n- For 403(b), 457(b), or IRA questions, say rules differ and point to that plan's provider.\n\nApproach:\n- When the user needs cash, compare a loan with the best withdrawal route, and mention emergency savings or the financial wellness program once.\n- Ask for missing inputs in one message. Show inputs, formulas, and results in a compact table. Round currency to cents.\n- Name the tax year for any indexed dollar limit. With web search, prefer irs.gov, dol.gov, and plan documents.\n- Never ask for or repeat Social Security numbers, account numbers, birth dates, or medical details. If shared, ask the user not to share them here.\n- Handle hardship, abuse, terminal illness, and eviction briefly and kindly, and offer the plan-rules support contacts.\n- Never submit, approve, or promise a transaction. Use Send request to benefits team only through benefits-request-handoff, after the user approves the exact message.",
+          "channels": [],
+          "toolCount": 2,
+          "skillCount": 6,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:cgal_retirementloanassistant_R4kLnW.skill.benefits-request-handoff_B8r",
+        "name": "benefits-request-handoff",
+        "type": "skill",
+        "position": {
+          "x": 1078,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cgal_retirementloanassistant_R4kLnW.skill.benefits-request-handoff_B8r",
+          "description": "Use when the user wants to contact the benefits team, needs an answer that requires their account records or a plan decision, wants help preparing a loan or withdrawal request, or asks you to send their question to HR or benefits. Do NOT use to submit, approve, or change any transaction."
+        }
+      },
+      {
+        "id": "skill:cgal_retirementloanassistant_R4kLnW.skill.early-withdrawal-exceptions_E5t",
+        "name": "early-withdrawal-exceptions",
+        "type": "skill",
+        "position": {
+          "x": 738,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cgal_retirementloanassistant_R4kLnW.skill.early-withdrawal-exceptions_E5t",
+          "description": "Use when the user is under 59½ and asks how to avoid the 10% additional tax (often called the early withdrawal penalty), or asks about emergency, domestic abuse, birth or adoption, disaster, long-term care, terminal illness, Rule of 55, disability, or other exceptions, including repaying a withdrawal later."
+        }
+      },
+      {
+        "id": "skill:cgal_retirementloanassistant_R4kLnW.skill.hardship-withdrawal-guide_H3m",
+        "name": "hardship-withdrawal-guide",
+        "type": "skill",
+        "position": {
+          "x": 398,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cgal_retirementloanassistant_R4kLnW.skill.hardship-withdrawal-guide_H3m",
+          "description": "Use when the user asks about a hardship withdrawal, whether their situation qualifies, how much they can take, what to certify or document, or how a hardship withdrawal is taxed. Do NOT use for the separate SECURE 2.0 emergency, domestic abuse, birth or adoption, or disaster distributions, which the early-withdrawal-exceptions skill covers."
+        }
+      },
+      {
+        "id": "skill:cgal_retirementloanassistant_R4kLnW.skill.loan-estimator_L9x",
+        "name": "loan-estimator",
+        "type": "skill",
+        "position": {
+          "x": 58.00000000000003,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cgal_retirementloanassistant_R4kLnW.skill.loan-estimator_L9x",
+          "description": "Use when the user asks whether they can borrow from their 401(k), how much they can borrow, what the payments, interest, or fees would be, or what happens to a loan if they miss payments, take leave, or leave the company. Do NOT use for withdrawals that are not repaid."
+        }
+      },
+      {
+        "id": "skill:cgal_retirementloanassistant_R4kLnW.skill.plan-rules_Pq7",
+        "name": "plan-rules",
+        "type": "skill",
+        "position": {
+          "x": -282,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cgal_retirementloanassistant_R4kLnW.skill.plan-rules_Pq7",
+          "description": "Use whenever an answer depends on this employer's own 401(k) plan, such as which loans or withdrawals the plan offers, loan limits, the interest rate, fees, repayment method, processing time, required documents, or who to contact. Load it before quoting any plan-specific figure from another skill."
+        }
+      },
+      {
+        "id": "skill:cgal_retirementloanassistant_R4kLnW.skill.withdrawal-tax-estimator_T2w",
+        "name": "withdrawal-tax-estimator",
+        "type": "skill",
+        "position": {
+          "x": -622,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "cgal_retirementloanassistant_R4kLnW.skill.withdrawal-tax-estimator_T2w",
+          "description": "Use when the user asks how much they will actually receive from a 401(k) withdrawal, how much tax will be withheld or owed, how much to withdraw to net a specific amount, or how a withdrawal compares with a loan over the long term."
+        }
+      },
+      {
+        "id": "tool:cgal_retirementloanassistant_R4kLnW.tool.401kCalculatorMCP-401kCalculatorMCPServer_Cx7",
+        "name": "401k Calculator MCP — 401k Calculator MCP Server",
+        "type": "tool",
+        "position": {
+          "x": -962,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cgal_retirementloanassistant_R4kLnW.tool.401kCalculatorMCP-401kCalculatorMCPServer_Cx7",
+          "operation": "Invoke401kCalculatorMCP",
+          "description": "MCP server with three read-only calculators: calculate_max_loan (IRS loan limit), calculate_loan_payment (payment per paycheck and total interest), and estimate_withdrawal_taxes (withholding, gross-up, and tax to set aside). Use it for every loan or withdrawal figure instead of calculating by hand."
+        }
+      },
+      {
+        "id": "tool:cgal_retirementloanassistant_R4kLnW.tool.SendanemailV2_Mx4",
+        "name": "Send request to benefits team",
+        "type": "tool",
+        "position": {
+          "x": -1302,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "cgal_retirementloanassistant_R4kLnW.tool.SendanemailV2_Mx4",
+          "operation": "SendEmailV2",
+          "description": "Office 365 Outlook Send an email (V2) action. Sends one user-approved request summary from the signed-in user's mailbox to the benefits team mailbox in plan-rules. Call it only after the user approves the final draft. It cannot read, move, or delete mail."
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:cgal_retirementloanassistant_R4kLnW-includes-cgal_retirementloanassistant_R4kLnW.skill.benefits-request-handoff_B8r",
+        "source": "agent:cgal_retirementloanassistant_R4kLnW",
+        "target": "skill:cgal_retirementloanassistant_R4kLnW.skill.benefits-request-handoff_B8r",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cgal_retirementloanassistant_R4kLnW-includes-cgal_retirementloanassistant_R4kLnW.skill.early-withdrawal-exceptions_E5t",
+        "source": "agent:cgal_retirementloanassistant_R4kLnW",
+        "target": "skill:cgal_retirementloanassistant_R4kLnW.skill.early-withdrawal-exceptions_E5t",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cgal_retirementloanassistant_R4kLnW-includes-cgal_retirementloanassistant_R4kLnW.skill.hardship-withdrawal-guide_H3m",
+        "source": "agent:cgal_retirementloanassistant_R4kLnW",
+        "target": "skill:cgal_retirementloanassistant_R4kLnW.skill.hardship-withdrawal-guide_H3m",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cgal_retirementloanassistant_R4kLnW-includes-cgal_retirementloanassistant_R4kLnW.skill.loan-estimator_L9x",
+        "source": "agent:cgal_retirementloanassistant_R4kLnW",
+        "target": "skill:cgal_retirementloanassistant_R4kLnW.skill.loan-estimator_L9x",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cgal_retirementloanassistant_R4kLnW-includes-cgal_retirementloanassistant_R4kLnW.skill.plan-rules_Pq7",
+        "source": "agent:cgal_retirementloanassistant_R4kLnW",
+        "target": "skill:cgal_retirementloanassistant_R4kLnW.skill.plan-rules_Pq7",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cgal_retirementloanassistant_R4kLnW-includes-cgal_retirementloanassistant_R4kLnW.skill.withdrawal-tax-estimator_T2w",
+        "source": "agent:cgal_retirementloanassistant_R4kLnW",
+        "target": "skill:cgal_retirementloanassistant_R4kLnW.skill.withdrawal-tax-estimator_T2w",
+        "label": "includes"
+      },
+      {
+        "id": "agent:cgal_retirementloanassistant_R4kLnW-uses-cgal_retirementloanassistant_R4kLnW.tool.401kCalculatorMCP-401kCalculatorMCPServer_Cx7",
+        "source": "agent:cgal_retirementloanassistant_R4kLnW",
+        "target": "tool:cgal_retirementloanassistant_R4kLnW.tool.401kCalculatorMCP-401kCalculatorMCPServer_Cx7",
+        "label": "uses"
+      },
+      {
+        "id": "agent:cgal_retirementloanassistant_R4kLnW-uses-cgal_retirementloanassistant_R4kLnW.tool.SendanemailV2_Mx4",
+        "source": "agent:cgal_retirementloanassistant_R4kLnW",
+        "target": "tool:cgal_retirementloanassistant_R4kLnW.tool.SendanemailV2_Mx4",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [],
+  "connectors": [
+    {
+      "id": "cgal_401k-20calculator-20mcp",
+      "name": "401k Calculator MCP",
+      "description": "Deterministic 401(k) calculators that run inside the connector, with no external server or outbound calls: calculate_max_loan, calculate_loan_payment, and estimate_withdrawal_taxes.",
+      "mcp": true
+    }
+  ],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 1659
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 803
+    },
+    {
+      "path": "botcomponents/cgal_retirementloanassistant_R4kLnW.skill.benefits-request-handoff_B8r/botcomponent.xml",
+      "category": "component",
+      "size": 698
+    },
+    {
+      "path": "botcomponents/cgal_retirementloanassistant_R4kLnW.skill.benefits-request-handoff_B8r/data",
+      "category": "component",
+      "size": 3268
+    },
+    {
+      "path": "botcomponents/cgal_retirementloanassistant_R4kLnW.skill.early-withdrawal-exceptions_E5t/botcomponent.xml",
+      "category": "component",
+      "size": 725
+    },
+    {
+      "path": "botcomponents/cgal_retirementloanassistant_R4kLnW.skill.early-withdrawal-exceptions_E5t/data",
+      "category": "component",
+      "size": 5975
+    },
+    {
+      "path": "botcomponents/cgal_retirementloanassistant_R4kLnW.skill.hardship-withdrawal-guide_H3m/botcomponent.xml",
+      "category": "component",
+      "size": 754
+    },
+    {
+      "path": "botcomponents/cgal_retirementloanassistant_R4kLnW.skill.hardship-withdrawal-guide_H3m/data",
+      "category": "component",
+      "size": 5703
+    },
+    {
+      "path": "botcomponents/cgal_retirementloanassistant_R4kLnW.skill.loan-estimator_L9x/botcomponent.xml",
+      "category": "component",
+      "size": 659
+    },
+    {
+      "path": "botcomponents/cgal_retirementloanassistant_R4kLnW.skill.loan-estimator_L9x/data",
+      "category": "component",
+      "size": 7104
+    },
+    {
+      "path": "botcomponents/cgal_retirementloanassistant_R4kLnW.skill.plan-rules_Pq7/botcomponent.xml",
+      "category": "component",
+      "size": 680
+    },
+    {
+      "path": "botcomponents/cgal_retirementloanassistant_R4kLnW.skill.plan-rules_Pq7/data",
+      "category": "component",
+      "size": 6100
+    },
+    {
+      "path": "botcomponents/cgal_retirementloanassistant_R4kLnW.skill.withdrawal-tax-estimator_T2w/botcomponent.xml",
+      "category": "component",
+      "size": 641
+    },
+    {
+      "path": "botcomponents/cgal_retirementloanassistant_R4kLnW.skill.withdrawal-tax-estimator_T2w/data",
+      "category": "component",
+      "size": 6155
+    },
+    {
+      "path": "botcomponents/cgal_retirementloanassistant_R4kLnW.tool.401kCalculatorMCP-401kCalculatorMCPServer_Cx7/botcomponent.xml",
+      "category": "component",
+      "size": 751
+    },
+    {
+      "path": "botcomponents/cgal_retirementloanassistant_R4kLnW.tool.401kCalculatorMCP-401kCalculatorMCPServer_Cx7/data",
+      "category": "component",
+      "size": 289
+    },
+    {
+      "path": "botcomponents/cgal_retirementloanassistant_R4kLnW.tool.SendanemailV2_Mx4/botcomponent.xml",
+      "category": "component",
+      "size": 658
+    },
+    {
+      "path": "botcomponents/cgal_retirementloanassistant_R4kLnW.tool.SendanemailV2_Mx4/data",
+      "category": "component",
+      "size": 288
+    },
+    {
+      "path": "botcomponents/Default_FeedbackCollectionBotSettings_F7kQ2a/botcomponent.xml",
+      "category": "component",
+      "size": 315
+    },
+    {
+      "path": "botcomponents/Default_FeedbackCollectionBotSettings_F7kQ2a/data",
+      "category": "component",
+      "size": 32
+    },
+    {
+      "path": "bots/cgal_retirementloanassistant_R4kLnW/bot.xml",
+      "category": "bot",
+      "size": 413
+    },
+    {
+      "path": "bots/cgal_retirementloanassistant_R4kLnW/configuration.json",
+      "category": "bot",
+      "size": 2340
+    },
+    {
+      "path": "Connector/cgal_401k-20calculator-20mcp_connectionparameters.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "Connector/cgal_401k-20calculator-20mcp_customcodeblobcontent.csx",
+      "category": "other",
+      "size": 33670
+    },
+    {
+      "path": "Connector/cgal_401k-20calculator-20mcp_openapidefinition.json",
+      "category": "other",
+      "size": 973
+    },
+    {
+      "path": "Connector/cgal_401k-20calculator-20mcp_policytemplateinstances.json",
+      "category": "other",
+      "size": 2
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 2820
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 1723
+    }
+  ]
+}

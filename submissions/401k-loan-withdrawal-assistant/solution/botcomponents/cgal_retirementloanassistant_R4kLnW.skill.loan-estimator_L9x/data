@@ -1,0 +1,66 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: loan-estimator
+  description: Use when the user asks whether they can borrow from their 401(k), how much they can borrow, what the payments, interest, or fees would be, or what happens to a loan if they miss payments, take leave, or leave the company. Do NOT use for withdrawals that are not repaid.
+  ---
+  # 401(k) Loan Estimator
+
+  Work out whether a plan loan is available, the maximum amount, the payment per paycheck, and the real trade-offs, using the user's own figures and the plan-rules skill.
+
+  ## Procedure
+
+  1. **Check the plan.** From plan-rules, confirm that loans are offered and read the minimum loan, the maximum number of loans, the rate for estimates, the term limits, the fees, and the payroll frequency.
+  2. **Collect inputs.** Ask only for what is missing, in one message:
+     - Vested balance. This is not the same as the total balance when the employer match is not fully vested.
+     - Number of loans outstanding now, and their combined balance. Include any loan that was defaulted and taxed but never repaid, because it still counts.
+     - The highest combined loan balance at any point in the last 12 months. Zero if there were no loans.
+     - The amount they need in hand, the term they want, and whether the loan is to buy their principal residence.
+  3. **Check eligibility.** If they already have the plan's maximum number of loans, they cannot take another one. Say so and suggest the closest alternative.
+  4. **Calculate the maximum new loan** with the 401k Calculator MCP tool `calculate_max_loan`. Pass the vested balance, current balance, highest balance in the last 12 months, and the plan-rules settings (the $10,000 exception, minimum loan, loan count, and maximum loans). The tool applies these rules:
+     - A = $50,000 − the highest combined loan balance in the last 12 months.
+     - B = 50% × vested balance − the current combined loan balance. If plan-rules offers the $10,000 exception, use the greater of 50% of the vested balance or $10,000 (never more than the vested balance), minus the current balance.
+     - Maximum new loan = the lesser of A and B, and never less than $0.
+     - If the maximum is below the plan minimum, they are not eligible for a new loan.
+  5. **Size the loan.** The origination fee comes out of the proceeds, so to receive a net amount N, borrow N + fee. Cap the loan at the maximum from step 4.
+  6. **Calculate the payment** with `calculate_loan_payment`. Pass the rate, term, payments per year, and either the principal or the net amount needed plus the origination fee. The tool uses level amortization:
+     - r = annual rate ÷ pay periods per year
+     - n = years × pay periods per year
+     - Payment = P × r ÷ (1 − (1 + r)^−n)
+     - Total interest ≈ payment × n − P. Round the payment to cents. The final payment may differ by a few cents.
+     - Show the inputs and the tool's steps so the user can check the result.
+     - If the tool returns an error, explain the message and ask for corrected inputs. If the tool is unavailable, calculate with the formulas above and label the result "calculated manually".
+  7. **Present the result.** Show a compact table with: maximum loan, loan amount, fee, cash received, rate, term, payment per paycheck, number of payments, and total interest. Mention any annual maintenance fee from plan-rules, which the calculator doesn't include. Then give the trade-offs below that apply. Keep it to the ones that matter for this user.
+
+  ## Trade-offs to explain
+
+  - **Interest goes back into their own account**, but the borrowed money is out of the market. Lost growth can cost more than the interest earned.
+  - **Repayments come from after-tax pay.** Only the interest portion is effectively taxed twice, not the whole loan.
+  - **Take-home pay drops** by the payment amount every paycheck. Encourage them to keep contributing enough to get any employer match.
+  - **Leaving the job.** Payroll deductions stop. If the balance is not repaid by the end of the cure period in plan-rules, it becomes a loan offset. The offset is taxable income, plus the 10% additional tax if they are under 59½ and no exception applies. When the offset happens because they left the job (within 12 months of leaving) or the plan ended, they can avoid the tax by rolling over the offset amount to an IRA or another plan by their tax-filing due date, including extensions. Other offsets have the usual 60-day rollover deadline.
+  - **Missed payments while employed.** If a missed payment is not made up by the end of the cure period, the outstanding balance becomes a deemed distribution: taxed as income, possibly with the 10% additional tax, and it cannot be rolled over. The loan is still owed. Until it is repaid, it counts as outstanding (with accruing interest) for future loan limits, and the plan can require payroll repayment or extra security on any new loan.
+  - **Leave.** During an unpaid leave of absence, or paid leave where pay is less than the payment, the plan can suspend payments for up to 12 months. The loan is then reamortized within the original term. For military service, the plan can suspend payments and extend the term by the length of service. Interest on a loan taken before service is capped at 6% under the Servicemembers Civil Relief Act.
+
+  ## Example
+
+  Inputs: vested balance $64,000, no loans in the past year, wants $10,000 in hand, 5 years, plan rate 8.50%, biweekly pay, $75 origination fee.
+
+  | Item | Value |
+  | --- | --- |
+  | Maximum new loan | Lesser of $50,000 and $32,000 = **$32,000** |
+  | Loan amount (to net $10,000) | $10,075 |
+  | Cash received | $10,000.00 |
+  | Payment per paycheck | $95.26 × 130 payments |
+  | Total interest (paid to own account) | about $2,308.80 |
+
+  Second example: vested balance $90,000, one loan with a $12,000 balance today, and the highest balance in the past 12 months was $20,000.
+  A = $50,000 − $20,000 = $30,000. B = $45,000 − $12,000 = $33,000. Maximum new loan = **$30,000**, and the plan allows a second loan.
+
+  ## Edge cases
+
+  - If the user only knows their total balance, explain vesting briefly and ask them to check the vested figure in the recordkeeper portal. You can give a provisional estimate labeled as such.
+  - A principal-residence loan can have a longer term only for buying their main home, not for renovation or refinancing.
+  - The $10,000 exception needs collateral beyond the account, because Department of Labor rules let the account secure only 50% of the vested balance. That is why many plans don't offer it.
+  - Refinancing an existing loan is complex under IRS rules. Say the recordkeeper will calculate it, and don't estimate it.
+  - Disaster relief: if plan-rules says the plan adopted SECURE 2.0 disaster loan relief, a qualified disaster individual may borrow up to $100,000 or 100% of the vested balance, and payments may be delayed for up to 1 year. Otherwise, use the normal limits.
+  - If the user wants to pay off a loan early, plan-rules says whether partial or full prepayment is allowed.
