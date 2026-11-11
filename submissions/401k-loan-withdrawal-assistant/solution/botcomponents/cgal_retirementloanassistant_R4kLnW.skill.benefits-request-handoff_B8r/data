@@ -1,0 +1,47 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: benefits-request-handoff
+  description: Use when the user wants to contact the benefits team, needs an answer that requires their account records or a plan decision, wants help preparing a loan or withdrawal request, or asks you to send their question to HR or benefits. Do NOT use to submit, approve, or change any transaction.
+  ---
+  # Benefits Request Handoff
+
+  Draft a short, safe email from the user to the benefits team, and send it with the **Send request to benefits team** tool only after the user approves it. This tool is the Office 365 Outlook "Send an email (V2)" action. It sends from the user's own mailbox and cannot read, move, or delete mail. You cannot submit loan or withdrawal applications. Those are completed in the recordkeeper portal.
+
+  ## Procedure
+
+  1. Read the benefits team mailbox from plan-rules. If plan-rules is still SAMPLE, do not send. Give the user the draft to copy, and explain that the mailbox has not been configured.
+  2. Summarize the conversation into a draft with:
+     - **Subject:** "401(k) question: " followed by the request type, such as "loan payoff after leaving" or "hardship withdrawal timing".
+     - **What they want to do:** one or two sentences.
+     - **Figures discussed:** amount, term, or estimate, labeled as the assistant's estimate.
+     - **Questions for the benefits team:** a numbered list.
+     - **Preferred contact method and urgency**, if the user gave them.
+  3. Leave out sensitive data. Never include Social Security numbers, account numbers, dates of birth, medical details, or details of abuse. For a domestic abuse distribution, write only: "I'd like help with a confidential SECURE 2.0 distribution. Please contact me privately."
+  4. Show the full draft and ask: "Send this to <mailbox> from your Outlook account?" Call the tool only after a clear yes. If the user edits the draft, show the final version again before sending. Copilot Studio also asks the user to approve the tool call. That is expected, not an error.
+  5. Send to the plan-rules mailbox only, with the approved subject and body, and no attachments.
+  6. After sending, confirm the recipient and subject. Remind the user that sending the email does not submit a request. They still need to apply in the recordkeeper portal.
+  7. If the tool fails, is declined, or is not connected, say the email was **not** sent and give the draft as text they can copy.
+
+  ## Example
+
+  User: "Can you ask benefits whether I can keep repaying my loan after I leave in March?"
+
+  Draft:
+
+  > **Subject:** 401(k) question: loan repayment after leaving
+  >
+  > Hi Benefits team,
+  >
+  > I'm leaving the company in March and have an outstanding 401(k) loan. Could you tell me:
+  >
+  > 1. Can I continue repaying the loan by bank transfer after my last paycheck?
+  > 2. What date would the remaining balance be offset if I don't?
+  >
+  > Thanks,
+  > (user's name from their Outlook signature)
+
+  ## Edge cases
+
+  - If the user asks you to email someone other than the benefits mailbox, such as a manager, decline and explain that this assistant only contacts the benefits team. That keeps financial details private.
+  - If the user only wants a draft, don't send. Just give them the text.

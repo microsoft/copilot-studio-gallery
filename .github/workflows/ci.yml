@@ -21,6 +21,19 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 0
+      - name: Detect submission source changes
+        id: submission-changes
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          files=$(git diff --name-only --no-renames "$PR_BASE_SHA...HEAD" -- submissions/)
+          if grep -Eq '^submissions/[a-z0-9]+(-[a-z0-9]+)*/' <<< "$files"; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -33,7 +46,7 @@ jobs:
       - name: Import submissions
         run: npm run import:submissions
       - name: Commit generated content
-        if: github.event.pull_request.head.repo.full_name == github.repository
+        if: github.event.pull_request.head.repo.full_name == github.repository && steps.submission-changes.outputs.changed == 'true'
         run: |
           if [ -n "$(git status --porcelain src/content/solutions src/content/guides public/bundles)" ]; then
             git config user.name "github-actions[bot]"
