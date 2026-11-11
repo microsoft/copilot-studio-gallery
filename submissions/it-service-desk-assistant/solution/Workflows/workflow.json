@@ -1,4 +1,71 @@
 {
+  "definition": {
+    "triggers": {
+      "manual": {
+        "type": "Request",
+        "kind": "Http",
+        "inputs": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "employeeId": {
+                "type": "string"
+              },
+              "issueDescription": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "actions": {
+      "Classify_Request": {
+        "type": "Compose",
+        "inputs": "@triggerBody()?['issueDescription']",
+        "runAfter": {}
+      },
+      "Route_By_Urgency": {
+        "type": "If",
+        "runAfter": {
+          "Classify_Request": [
+            "Succeeded"
+          ]
+        },
+        "actions": {
+          "Escalate_P1_Incident": {
+            "type": "Response",
+            "inputs": {
+              "statusCode": 200,
+              "body": {
+                "ticketId": "INC-P1-AUTO",
+                "status": "EscalatedToEngineering"
+              }
+            },
+            "runAfter": {}
+          }
+        },
+        "else": {
+          "actions": {
+            "Provide_Self_Service_Guidance": {
+              "type": "Response",
+              "inputs": {
+                "statusCode": 200,
+                "body": {
+                  "ticketId": "INC-SELF-SERVICE",
+                  "status": "PlaybookDelivered"
+                }
+              },
+              "runAfter": {}
+            }
+          }
+        }
+      }
+    }
+  },
   "trigger": {
     "metadata": {
       "associatedData": {
