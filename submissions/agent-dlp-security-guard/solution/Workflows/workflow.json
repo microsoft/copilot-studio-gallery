@@ -1,4 +1,68 @@
 {
+  "definition": {
+    "triggers": {
+      "manual": {
+        "type": "Request",
+        "kind": "Http",
+        "inputs": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "agentId": {
+                "type": "string"
+              },
+              "submissionPayload": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "actions": {
+      "Extract_Connectors": {
+        "type": "Compose",
+        "inputs": "@triggerBody()?['submissionPayload']",
+        "runAfter": {}
+      },
+      "Evaluate_DLP_Boundaries": {
+        "type": "If",
+        "runAfter": {
+          "Extract_Connectors": [
+            "Succeeded"
+          ]
+        },
+        "actions": {
+          "Log_Clearance_Verdict": {
+            "type": "Response",
+            "inputs": {
+              "statusCode": 200,
+              "body": {
+                "verdict": "APPROVED",
+                "message": "All connector bindings comply with environment DLP rules."
+              }
+            },
+            "runAfter": {}
+          }
+        },
+        "else": {
+          "actions": {
+            "Log_Remediation_Notice": {
+              "type": "Response",
+              "inputs": {
+                "statusCode": 400,
+                "body": {
+                  "verdict": "REJECTED",
+                  "message": "Blocked connectors or policy violations detected."
+                }
+              },
+              "runAfter": {}
+            }
+          }
+        }
+      }
+    }
+  },
   "trigger": {
     "metadata": {
       "associatedData": {
