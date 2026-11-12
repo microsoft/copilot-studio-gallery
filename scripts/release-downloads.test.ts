@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import test from "node:test";
 import { parse } from "yaml";
 import {
-  downloadSnapshotSchema, projectDownloadCounts, releaseDownloadUrl, submissionDownload, type DownloadAsset,
+  DOWNLOAD_REPOSITORY, downloadSnapshotSchema, projectDownloadCounts, releaseDownloadUrl, submissionDownload, type DownloadAsset,
 } from "../src/lib/downloads";
 import { GitHub, GitHubError, collectDownloads, loadSnapshot, publishBundles, readBundles, saveSnapshot } from "./release-downloads";
 
@@ -474,6 +474,7 @@ test("workflow sequencing isolates PRs, serializes data writes and collects with
   const deploy = parse(await readFile(".github/workflows/deploy.yml", "utf8"));
   const stats = parse(await readFile(".github/workflows/download-stats.yml", "utf8"));
   const ci = await readFile(".github/workflows/ci.yml", "utf8");
+  assert.equal(stats.jobs.collect.if, `github.repository == '${DOWNLOAD_REPOSITORY}'`);
   assert.equal(deploy.concurrency["cancel-in-progress"], false);
   assert.deepEqual(deploy.jobs.build.concurrency, stats.jobs.collect.concurrency);
   assert.equal(deploy.jobs.build.permissions.contents, "write");

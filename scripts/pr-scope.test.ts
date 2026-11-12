@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { execFileSync } from "node:child_process";
 import test from "node:test";
 import { parse } from "yaml";
 import {
@@ -187,5 +190,46 @@ test("fork CI regenerates build inputs without committing to forks", () => {
   assert.ok(index < steps.findIndex((step: { run?: string }) => step.run === "npm run check"));
   assert.ok(index < steps.findIndex((step: { run?: string }) => step.run === "npm run build"));
   const commit = steps.find((step: { name: string }) => step.name === "Commit generated content");
-  assert.equal(commit.if, "github.event.pull_request.head.repo.full_name == github.repository");
+  assert.equal(commit.if, "github.event.pull_request.head.repo.full_name == github.repository && steps.submission-changes.outputs.changed == 'true'");
+  const detect = steps.find((step: { id?: string }) => step.id === "submission-changes");
+  assert.equal(detect.if, "github.event.pull_request.head.repo.full_name == github.repository");
+  assert.equal(detect.env.PR_BASE_SHA, "${{ github.event.pull_request.base.sha }}");
+  assert.equal(steps[0].with["fetch-depth"], 0);
+});
+
+test("CI commits generated content only when the PR changes submission source", () => {
+  const ci = parse(readFileSync(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8"));
+  const detect = ci.jobs.build.steps.find((step: { id?: string }) => step.id === "submission-changes");
+  const root = mkdtempSync(join(tmpdir(), "gallery-ci-scope-"));
+  const git = (...args: string[]) => execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
+  try {
+    git("init", "--quiet");
+    git("config", "user.name", "Test");
+    git("config", "user.email", "test@example.com");
+    git("commit", "--quiet", "--allow-empty", "-m", "base");
+    const base = git("rev-parse", "HEAD");
+    for (const [path, expected] of [
+      [".github/workflows/example.yml", "false"],
+      ["submissions/README.md", "false"],
+      ["submissions/_template/metadata.json", "false"],
+      ["submissions/sample/metadata.json", "true"],
+    ]) {
+      mkdirSync(join(root, path, ".."), { recursive: true });
+      writeFileSync(join(root, path), "fixture\n");
+      git("add", path);
+      git("commit", "--quiet", "-m", path);
+      const output = join(root, "output");
+      writeFileSync(output, "");
+      execFileSync("bash", ["-e", "-o", "pipefail", "-c", detect.run], {
+        cwd: root, env: { ...process.env, PR_BASE_SHA: base, GITHUB_OUTPUT: output },
+      });
+      assert.equal(readFileSync(output, "utf8"), `changed=${expected}\n`, path);
+    }
+    assert.throws(() => execFileSync("bash", ["-e", "-o", "pipefail", "-c", detect.run], {
+      cwd: root, env: { ...process.env, PR_BASE_SHA: "invalid-ref", GITHUB_OUTPUT: join(root, "output") },
+      stdio: "pipe",
+    }));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
