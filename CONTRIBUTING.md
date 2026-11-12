@@ -353,7 +353,9 @@ or execute contributor code. Adding/removing a label reruns the policy.
 
 The normal PR workflow validates submissions, tests the repository, regenerates
 gallery content for **forks and internal PRs**, type checks, and builds. Only
-internal PRs retain the existing automatic generated-content commit step.
+internal PRs with changes under `submissions/<slug>/` automatically commit
+regenerated content. Repository-only PRs regenerate for validation and builds
+without committing unrelated stale outputs; generated-only edits remain blocked.
 Deployment regenerates content from source again.
 
 Existing repository-owned graph-only demos are exempted only by exact
