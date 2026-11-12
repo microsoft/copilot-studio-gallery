@@ -1,0 +1,95 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: plan-rules
+  description: Use whenever an answer depends on this employer's own 401(k) plan, such as which loans or withdrawals the plan offers, loan limits, the interest rate, fees, repayment method, processing time, required documents, or who to contact. Load it before quoting any plan-specific figure from another skill.
+  ---
+  # Plan Rules
+
+  > **Configuration status: SAMPLE.** Every value below describes a fictional plan.
+  > Replace the values with your plan's Summary Plan Description (SPD) terms, then
+  > change the status to **CONFIGURED**. While the status is SAMPLE, tell users that
+  > plan-specific figures are illustrative and that their SPD governs.
+  >
+  > When you configure this skill, check these settings with your plan documents.
+  > They vary most between plans: spousal consent for loans, whether a loan must be
+  > taken before a hardship withdrawal, which SECURE 2.0 distributions are adopted,
+  > and disaster loan relief.
+
+  ## How to use this skill
+
+  1. Read the configuration status first. If it is SAMPLE, say once per conversation, briefly: "I'm using sample plan settings, so check plan-specific figures against your SPD."
+  2. Use these values as the plan-specific inputs for the other skills (loan limits, rate, fees, which withdrawal types exist).
+  3. If the plan does not offer a feature, say so plainly and suggest the closest option it does offer. For SECURE 2.0 distributions, the early-withdrawal-exceptions skill explains how the tax treatment can still apply.
+  4. If the user's question is not covered here, say the SPD or the recordkeeper is the authority, and offer the benefits-request-handoff skill.
+
+  ## Plan identity
+
+  | Setting | Value |
+  | --- | --- |
+  | Plan name | Contoso 401(k) Savings Plan (sample) |
+  | Recordkeeper | Your plan recordkeeper (replace with name and website) |
+  | Benefits team mailbox | benefits@contoso.example (replace) |
+  | Payroll frequency | Biweekly, 26 pay periods per year |
+  | Roth 401(k) contributions | Offered |
+
+  ## Loans
+
+  | Rule | Value |
+  | --- | --- |
+  | Loans offered | Yes |
+  | Maximum loans outstanding at one time | 2 |
+  | Minimum loan | $1,000 |
+  | Maximum loan | IRS limit: the lesser of $50,000 (reduced by recent loan balances) or 50% of the vested balance. The optional $10,000 exception is **not** offered. |
+  | Interest rate | Prime rate + 1%, set on the first business day of the month the loan is issued and fixed for the life of the loan |
+  | Rate to use for estimates | 8.50% (update monthly, or tell users the real rate is shown when they apply) |
+  | General-purpose loan term | 1 to 5 years |
+  | Principal-residence loan term | Up to 15 years, with purchase documentation |
+  | Repayment | After-tax payroll deduction every pay period. Full payoff is allowed at any time with no penalty. Partial prepayments are not accepted. |
+  | Origination fee | $75 per loan, deducted from the loan proceeds |
+  | Annual maintenance fee | $25 per loan, deducted from the account |
+  | Missed-payment cure period | Until the end of the calendar quarter after the quarter in which the payment was missed |
+  | After leaving the company | Repayments can continue by bank transfer (ACH). Any unpaid balance at the end of the cure period becomes a loan offset. |
+  | Leave of absence | Payments can be suspended for up to 12 months during unpaid leave, or paid leave where pay is less than the loan payment, then reamortized within the original term |
+  | Military leave | Payments can be suspended during military service. The repayment term is extended by the length of service |
+  | Disaster loan relief (SECURE 2.0) | Not adopted |
+  | Spousal consent | Not required (the plan is not subject to joint and survivor annuity rules) |
+  | Processing time | 3 to 5 business days after the application is approved |
+
+  ## Withdrawals while employed
+
+  | Withdrawal type | Offered | Notes |
+  | --- | --- | --- |
+  | Hardship withdrawal | Yes | Safe-harbor reasons only. Employee self-certification accepted. Sources: employee deferrals, rollover, and vested employer match. A loan is **not** required first, but any other withdrawal currently available (rollover-source or age 59½) must be taken first. No contribution suspension afterwards. |
+  | Age 59½ in-service withdrawal | Yes | Any vested source |
+  | Rollover-source withdrawal (any age) | Yes | Only money rolled in from a previous plan or IRA |
+  | Emergency personal expense distribution | Yes | Up to $1,000 per calendar year, self-certified |
+  | Domestic abuse victim distribution | Yes | Self-certified, handled confidentially |
+  | Qualified birth or adoption distribution | Yes | Up to $5,000 per child |
+  | Qualified disaster recovery distribution | Yes | Only when the plan announces a covered disaster |
+  | Qualified long-term care distribution | No | Not adopted |
+  | Withdrawal processing fee | $50 per withdrawal | Deducted from the payment |
+
+  ## After leaving the company
+
+  | Balance (vested) | What happens |
+  | --- | --- |
+  | More than $7,000 | Can stay in the plan until the participant chooses to withdraw or roll over |
+  | $1,000 to $7,000 | Rolled to an IRA automatically if no election is made |
+  | Less than $1,000 | Paid out automatically if no election is made |
+
+  Partial withdrawals and installment payments are allowed after separation.
+
+  ## Documents
+
+  - Hardship and SECURE 2.0 distributions: self-certification in the recordkeeper portal. Users should keep supporting documents (bills, purchase contracts, notices) in case the plan or the IRS asks for them.
+  - Principal-residence loans: a signed purchase agreement.
+
+  ## Contacts
+
+  | Need | Contact |
+  | --- | --- |
+  | Plan questions and requests | Benefits team mailbox (above) |
+  | Confidential personal support | Employee Assistance Program (replace with phone and website) |
+  | Budgeting and debt coaching | Financial wellness program (replace with link) |
+  | Domestic violence support (US) | National Domestic Violence Hotline: 1-800-799-7233, or text START to 88788 |

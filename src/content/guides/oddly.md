@@ -46,6 +46,11 @@ The gallery's setup script creates the app, guides you through sign-in and
 You need access to the agent and permission to use the connector. The submission
 contains portable app source, so you bring your own agent and connection.
 
+Native app creation generates a new `ms.config.json` for your app. Keep it
+tracked and commit it with your connected source in the new managed repository
+so hosted builds can use it; the setup script does this before building.
+The contributor's original configuration is excluded from the gallery source.
+
 ## Chat with your agent
 
 Chat directly with your Copilot Studio agent in Oddly's custom canvas. Pick a
