@@ -14,8 +14,8 @@ The **IT Service Desk Assistant** demonstrates a pattern for 24/7 first-contact 
 
 ## Key Capabilities
 
-- **Intelligent Classification & Intent Detection**: Automatically identifies category and urgency across *Access & Identity*, *Network & Connectivity*, *Software & Licensing*, and *Hardware & Endpoints*.
-- **Self-Service Diagnostic Playbooks**:
+- **Conversational Classification & Intent Detection**: The agent identifies category and urgency across *Access & Identity*, *Network & Connectivity*, *Software & Licensing*, and *Hardware & Endpoints*.
+- **Guided Self-Service Troubleshooting (conversational)**:
   - **Account & Identity**: Step-by-step guidance for Entra ID / Active Directory self-service password reset (SSPR) portals, MFA re-registration, and account lockout verification.
   - **VPN & Network**: Step-by-step connectivity troubleshooting (DNS flushing, certificate validation, split tunneling checks).
   - **Software Provisioning**: Guided software catalog lookups, entitlement criteria validation, and self-service portal links.
@@ -39,13 +39,17 @@ The agent includes dedicated inline skills and tool definitions:
 2. **Triage & Classification**: The agent parses the request, determines the domain, and evaluates whether a known self-service resolution path exists.
 3. **Knowledge Guidance**: References common IT operating procedures and troubleshooting steps.
 4. **Interactive Troubleshooting**: If self-service is possible, walks the user through diagnostic steps with clear confirmation gates.
-5. **Human Escalation**: If self-service fails or high urgency is detected, formats a prioritized IT ticket payload for queue hand-off.
+5. **Human Escalation**: If self-service fails or high urgency is detected, formats a prioritized IT ticket payload for manual submission or for a ticketing tool you bind in your tenant.
 
 ## Conceptual Workflow Canvas
 
 The solution includes a visual workflow canvas titled **`Triage and resolve IT support incidents`** (`it-service-desk-triage-workflow`).
 
-> **Note on Workflow Implementation:** This workflow (`solution/Workflows/workflow.json`) provides a **conceptual visual preview** of the end-to-end support triage and escalation flow on the Copilot Studio canvas (`trigger.metadata.associatedData.graph`). It does not contain an executable backend flow definition outside of its saved canvas metadata. Actual automated ticket creation and knowledge retrieval require binding the agent's tools to active connectors or custom Power Automate flows in your tenant.
+> **Note on Workflow Implementation (placeholder logic):** `solution/Workflows/workflow.json` contains two parts:
+> - **Canvas graph** (`trigger.metadata.associatedData.graph`): a conceptual visual preview of the triage and escalation flow.
+> - **Executable `definition`**: a **nonfunctional placeholder** included only so the export is structurally complete. Its HTTP trigger captures the request and a single Response action returns `501 NotImplemented` with `isPlaceholder: true`. It does **not** classify requests, search knowledge, create ITSM tickets, return ticket IDs, deliver playbooks, or send notifications.
+>
+> To make the workflow functional, replace the placeholder Response with your own actions (for example, an ITSM `CreateIncident` connector call and a Dataverse knowledge search) or a Power Automate flow in your tenant. Classification and guided troubleshooting in this sample are performed conversationally by the agent and its skills, not by this workflow.
 
 The canvas illustrates:
 - **Intake**: Conceptual entry point for employee requests.
