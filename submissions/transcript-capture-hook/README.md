@@ -4,7 +4,7 @@ Attach an available conversation snapshot to a support ticket at the moment an a
 
 **Supported channel: Microsoft 365 Copilot only. The Microsoft Teams channel is not supported.**
 
-> **Configure before enabling.** Both workflows are packaged disabled, automatic agent publication is off, and the Azure resource and query-scope values are nonfunctional placeholders. The ticket tool is a simulation: it never writes to a real ticketing system. Review the solution and its data access before importing it.
+> **Configure before publishing.** Both workflows are imported as drafts, automatic agent publication is off, and the Azure resource and query-scope values are nonfunctional placeholders. The ticket tool is a simulation: it never writes to a real ticketing system. Review the solution and its data access before importing it.
 
 ## Included Assets
 
@@ -37,25 +37,24 @@ Screenshot from a real demo run, cropped to the Outputs panel with conversation 
 - Environment-level Application Insights export configured for the target environment. Export configuration is external to this solution; importing the solution does not provision Azure resources or enable telemetry.
 - An Application Insights resource receiving the target environment's `dependencies` telemetry and an Azure Monitor Logs connection with least-privilege permission to query that resource.
 - Permission to import unmanaged solutions and configure/publish the imported agent and workflows.
-- A model available to the target environment. The native export retains its source model selection; verify or select a supported model in Studio before publishing.
 
 See [environment-level telemetry setup and limitations](https://learn.microsoft.com/en-us/microsoft-copilot-studio/advanced-environment-level-agent-telemetry) and [hooks documentation](https://learn.microsoft.com/en-us/microsoft-copilot-studio/agents-experience/hooks-overview).
 
-## Enable the Solution
+## Set Up the Solution
 
-Import the unmanaged solution into your target environment and bind the Azure Monitor Logs connection references to an approved connection. After importing:
+Import **Transcript Capture at Runtime** into your target environment and bind the Azure Monitor Logs connection reference to an approved connection. After importing:
 
-1. Enable **IT Support - Log ticket**.
+1. Publish **IT Support - Log ticket**.
 2. Open **Capture transcript before ticket** and update **Run query and list results**:
 	- Select your Azure subscription, resource group, and Application Insights resource; keep resource type **Application Insights**.
 	- Replace `REPLACE_WITH_ENVIRONMENT_ID` in the query with your Power Platform environment ID. The agent ID comes from the hook automatically.
 	- Set **Time range type** to **3**, using **Enter custom value** if needed.
 	- Save and **publish the flow**.
-	- Open `https://make.powerautomate.com/environments/[EnvID]/flows/[FlowID]/details`, then **Run-only users > Edit > Connections Used > Azure Monitor Logs > Use this connection...**. Choose the approved connection and save. Use the capture flow's Power Automate details ID for `[FlowID]`, which can differ from its Copilot Studio authoring ID.
+	- Open `https://make.powerautomate.com/environments/[EnvID]/flows/[FlowID]/details`, then **Run-only user > Edit > Connections Used > Azure Monitor Logs > Use this connection...**. Choose the approved connection and save. Use the capture flow's id for `[FlowID]`.
 	- **After any changes to this flow, update the run-only connection setting again.** Chat users should not have to supply their own Azure Monitor connection.
 3. Publish **IT Support Transcript Demo** to **Microsoft 365 Copilot**, granting access only to the intended users. Chat with the agent, discuss an issue, and ask it to log a ticket. Open **Capture transcript before ticket > Activity**, select the run, and inspect **Run query and list results > Outputs > body > value**.
 
-Before publishing, verify that **Attach available transcript** is a **Pre tool use** hook scoped to **Log ticket** and invokes **Capture transcript before ticket**. Leave the tool's optional `transcript` and `conversationId` inputs empty for the hook. Check that the selected model is available in your environment.
+Before publishing, verify that **Attach available transcript** is a **Pre tool use** hook scoped to **Log ticket** and invokes **Capture transcript before ticket**. Leave the tool's optional `transcript` and `conversationId` inputs empty for the hook.
 
 ### Placeholder Reference
 
@@ -66,14 +65,8 @@ Before publishing, verify that **Attach available transcript** is a **Pre tool u
 | `REPLACE_WITH_APPLICATION_INSIGHTS_RESOURCE` | Application Insights resource name |
 | `REPLACE_WITH_ENVIRONMENT_ID` | Target Power Platform environment ID used by `env.id` |
 
-Configure through the native designer so the executable workflow and saved graph remain synchronized. Keep the environment ID explicit; no manual agent-ID configuration is needed. A hook authoring ID is not interchangeable with telemetry `gen_ai.agent.id`.
-
 ## Limitations and Safety
 
-- **Best-effort telemetry, not a live-transcript API.** Export can be delayed, lost, or truncated. The current request can be absent, and the pre-tool snapshot cannot include the subsequent ticket result. No asynchronous enrichment worker is included.
-- **Timestamp ordering is unchanged.** Messages can share span timestamps, and a greeting can appear after a user/reply pair. This is not an exact chat chronology or compliance record.
-- **Demo only.** No real ticket backend or durable archive is included. Missing capture does not block the simulated ticket; a hook is not an authorization boundary.
-- **Privacy and access.** Conversation text can be sensitive. Restrict telemetry and run-history access and define retention policies. For production, add an authorized backend, validation, and idempotency.
-- **Authoring compatibility.** Use Studio for hook management and verify the binding after import. Full PAC workspace pushes did not safely preserve hooks in the versions tested; preserve the native expression-returned hook response fields.
-
-The gallery rebuilds the downloadable ZIP from `solution/`. Documentation and example images remain outside that payload. Review the native source before import.
+- **Best-effort transcript.** The source is asynchronous Application Insights telemetry, not a live-transcript API. Messages may be delayed, missing, truncated, or out of chat order. Do not treat the snapshot as a complete audit record.
+- **Demo only.** No real ticket backend or durable archive is included. Missing transcript data does not block the simulated ticket.
+- **Privacy and access.** Conversation text can be sensitive. Restrict telemetry and run-history access and define retention policies before using real conversations.
