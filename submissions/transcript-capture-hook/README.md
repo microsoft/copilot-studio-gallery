@@ -38,9 +38,9 @@ Screenshot from a real demo run, cropped to the Outputs panel with conversation 
 
 See [environment-level telemetry setup and limitations](https://learn.microsoft.com/en-us/microsoft-copilot-studio/advanced-environment-level-agent-telemetry) and [hooks documentation](https://learn.microsoft.com/en-us/microsoft-copilot-studio/agents-experience/hooks-overview).
 
-> **Configure before publishing.** Both workflows are imported as drafts, automatic agent publication is off, and the Azure resource and query-scope values are nonfunctional placeholders. The ticket tool is a simulation: it never writes to a real ticketing system. Review the solution and its data access before importing it.
-
 ## Set Up the Solution
+
+> **Configure before publishing.** Both workflows are imported as drafts, automatic agent publication is off, and the Azure resource and query-scope values are nonfunctional placeholders. The ticket tool is a simulation: it never writes to a real ticketing system. Review the solution and its data access before importing it.
 
 Import **Transcript Capture at Runtime** into your target environment and bind the Azure Monitor Logs connection reference to an approved connection. After importing:
 
