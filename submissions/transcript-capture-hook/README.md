@@ -1,8 +1,8 @@
-# Transcript Capture with a Pre-Tool Hook
+# Capture conversation transcript at runtime
 
-Attach an available conversation snapshot to a support ticket at the moment an agent calls a tool. This sample uses a **Pre tool use** hook on a Copilot Studio agent powered by the GitHub Copilot harness. The hook receives the current conversation ID directly, queries environment-level Azure Application Insights telemetry, and supplies the result as tool arguments.
+Attach an available conversation snapshot to a support ticket at the moment an agent calls a tool. This sample uses a **Pre tool use** hook on a Copilot Studio agent powered by the Microsoft Copilot harness. The hook receives the current conversation ID directly, queries environment-level Azure Application Insights telemetry, and supplies the result as tool arguments.
 
-There is no connected helper agent and no conversation-ID reverse lookup. This is a separate alternative to the older connected-agent Runtime Transcript Capture sample.
+**Supported channel: Microsoft 365 Copilot only. The Microsoft Teams channel is not supported.**
 
 > **Configure before enabling.** Both workflows are packaged disabled, automatic agent publication is off, and the Azure resource and query-scope values are nonfunctional placeholders. The ticket tool is a simulation: it never writes to a real ticketing system. Review the solution and its data access before importing it.
 
@@ -33,7 +33,7 @@ Screenshot from a real demo run, cropped to the Outputs panel with conversation 
 
 ## Prerequisites
 
-- A target Copilot Studio environment that supports GitHub Copilot-harness agents, agent skills, modern workflows, and Pre tool use hooks. These capabilities are subject to preview availability and licensing.
+- A target Copilot Studio environment that supports Microsoft Copilot-harness agents, agent skills, modern workflows, and Pre tool use hooks. These capabilities are subject to preview availability and licensing.
 - Environment-level Application Insights export configured for the target environment. Export configuration is external to this solution; importing the solution does not provision Azure resources or enable telemetry.
 - An Application Insights resource receiving the target environment's `dependencies` telemetry and an Azure Monitor Logs connection with least-privilege permission to query that resource.
 - Permission to import unmanaged solutions and configure/publish the imported agent and workflows.
