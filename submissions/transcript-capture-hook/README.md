@@ -4,8 +4,6 @@ Attach an available conversation snapshot to a support ticket at the moment an a
 
 **Supported channel: Microsoft 365 Copilot only. The Microsoft Teams channel is not supported.**
 
-> **Configure before publishing.** Both workflows are imported as drafts, automatic agent publication is off, and the Azure resource and query-scope values are nonfunctional placeholders. The ticket tool is a simulation: it never writes to a real ticketing system. Review the solution and its data access before importing it.
-
 ## Included Assets
 
 | Asset | Purpose |
@@ -39,6 +37,8 @@ Screenshot from a real demo run, cropped to the Outputs panel with conversation 
 - Permission to import unmanaged solutions and configure/publish the imported agent and workflows.
 
 See [environment-level telemetry setup and limitations](https://learn.microsoft.com/en-us/microsoft-copilot-studio/advanced-environment-level-agent-telemetry) and [hooks documentation](https://learn.microsoft.com/en-us/microsoft-copilot-studio/agents-experience/hooks-overview).
+
+> **Configure before publishing.** Both workflows are imported as drafts, automatic agent publication is off, and the Azure resource and query-scope values are nonfunctional placeholders. The ticket tool is a simulation: it never writes to a real ticketing system. Review the solution and its data access before importing it.
 
 ## Set Up the Solution
 
