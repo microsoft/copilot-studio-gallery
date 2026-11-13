@@ -1,6 +1,17 @@
 # Capture conversation transcript at runtime
 
-Attach an available conversation snapshot to a support ticket at the moment an agent calls a tool. This sample uses a **Pre tool use** hook on a Copilot Studio agent powered by the Microsoft Copilot harness. The hook receives the current conversation ID directly, queries environment-level Azure Application Insights telemetry, and supplies the result as tool arguments.
+Capture conversation context at runtime and pass it to the next step in a business process. This sample demonstrates a reusable pattern for Copilot Studio agents powered by the **Microsoft Copilot harness**: a **Pre tool use** hook retrieves available conversation messages from Azure Application Insights and supplies them to a selected tool before it executes.
+
+The included IT support scenario illustrates this pattern by attaching the conversation snapshot to a simulated support ticket. The same approach can be adapted to other use cases where an agent needs to pass conversation context into a request, record, or handoff while the conversation is still in progress.
+
+## Example Scenarios
+
+- **Customer service escalation:** Include the discussion with an escalation so a human representative has context without asking the customer to repeat everything.
+- **Sales handoff:** Attach the conversation to a CRM lead or opportunity, preserving requirements, questions, and preferences.
+- **Employee service requests:** Include relevant discussion when submitting an HR, facilities, or procurement request.
+- **Bug reports and product feedback:** Attach the conversation describing the problem, reproduction steps, and troubleshooting already attempted.
+- **Approval requests:** Provide the discussion supporting a purchase, exception, or access request for the approver's review.
+- **Service bookings:** Pass the conversation alongside a booking or work order so the service team understands the customer's requirements.
 
 **Supported channel: Microsoft 365 Copilot only. The Microsoft Teams channel is not supported.**
 
@@ -13,7 +24,7 @@ Attach an available conversation snapshot to a support ticket at the moment an a
 | **Log ticket** tool | Exposes **IT Support - Log ticket** to the agent, accepting a title, description, and optional transcript and conversation ID. |
 | **Attach available transcript** hook | Runs only before **Log ticket**. Invokes **Capture transcript before ticket** with the proposed tool inputs and platform-provided conversation metadata. |
 | **Capture transcript before ticket** workflow | Queries available user and assistant messages in Application Insights for the conversation. Returns updated tool inputs that preserve the ticket details and add the available transcript and conversation ID. |
-| **IT Support - Log ticket** workflow | Generates a simulated `DEMO-...` receipt and reports whether transcript data was supplied with a conversation ID. Does not create a real ticket. |
+| **IT Support - Log ticket** workflow | Returns the ticket ID, status, and whether a conversation transcript was included. Ticket creation is simulated in this sample. |
 | **Azure Monitor Logs** connection reference | Links the capture workflow to an Azure Monitor Logs connection authorized to query the configured Application Insights resource. |
 
 ## How It Works
