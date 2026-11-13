@@ -23,44 +23,29 @@
       }
     },
     "actions": {
-      "Classify_Request": {
+      "Capture_Request_Context": {
         "type": "Compose",
-        "inputs": "@triggerBody()?['issueDescription']",
+        "inputs": {
+          "employeeId": "@triggerBody()?['employeeId']",
+          "issueDescription": "@triggerBody()?['issueDescription']",
+          "category": "@triggerBody()?['category']"
+        },
         "runAfter": {}
       },
-      "Route_By_Urgency": {
-        "type": "If",
+      "Return_Placeholder_Not_Implemented": {
+        "type": "Response",
         "runAfter": {
-          "Classify_Request": [
+          "Capture_Request_Context": [
             "Succeeded"
           ]
         },
-        "actions": {
-          "Escalate_P1_Incident": {
-            "type": "Response",
-            "inputs": {
-              "statusCode": 200,
-              "body": {
-                "ticketId": "INC-P1-AUTO",
-                "status": "EscalatedToEngineering"
-              }
-            },
-            "runAfter": {}
-          }
-        },
-        "else": {
-          "actions": {
-            "Provide_Self_Service_Guidance": {
-              "type": "Response",
-              "inputs": {
-                "statusCode": 200,
-                "body": {
-                  "ticketId": "INC-SELF-SERVICE",
-                  "status": "PlaybookDelivered"
-                }
-              },
-              "runAfter": {}
-            }
+        "inputs": {
+          "statusCode": 501,
+          "body": {
+            "status": "NotImplemented",
+            "isPlaceholder": true,
+            "message": "Sample placeholder only. This workflow does not classify requests, create ITSM tickets, search knowledge, or deliver playbooks. Replace this action with your own connector or Power Automate logic before use.",
+            "receivedRequest": "@outputs('Capture_Request_Context')"
           }
         }
       }
