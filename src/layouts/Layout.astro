@@ -101,6 +101,46 @@ const socialImageAlt = "Copilot Studio Gallery with app, workflow, agent, tool, 
       </div>
     </footer>
     <script>
+      import { galleryRoute, trackGalleryEvent, type GalleryEvent } from "../lib/analytics";
+
+      if (import.meta.env.PROD) {
+        const context = galleryRoute(window.location.pathname, import.meta.env.BASE_URL);
+        const pageEvents: Partial<Record<NonNullable<typeof context.page_type>, GalleryEvent>> = {
+          gallery: "gallery_view",
+          solution: "solution_view",
+          contributors: "contributors_view",
+          contributor_profile: "contributor_profile_view",
+        };
+        const submissionType = document.querySelector<HTMLElement>("[data-submission-type]")?.dataset.submissionType;
+        if (submissionType === "solution" || submissionType === "managed-app") context.submission_type = submissionType;
+        const pageEvent = context.page_type && pageEvents[context.page_type];
+        if (pageEvent) trackGalleryEvent(pageEvent, context);
+
+        const trackLink = (event: MouseEvent) => {
+          if (event.defaultPrevented || (event.type === "auxclick" && event.button !== 1)) return;
+          const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[href]") : null;
+          if (!link) return;
+          const explicitEvent = link.dataset.contributorAction;
+          if (explicitEvent === "contributor_github_click" || explicitEvent === "contributor_filter_click") {
+            trackGalleryEvent(explicitEvent, context);
+            return;
+          }
+          const url = new URL(link.href);
+          if (url.origin === "https://github.com"
+            && url.pathname === "/microsoft/copilot-studio-gallery/blob/main/CONTRIBUTING.md") {
+            trackGalleryEvent("contribution_guide_clicked", context);
+            return;
+          }
+          if (url.origin !== window.location.origin) return;
+          const destination = galleryRoute(url.pathname, import.meta.env.BASE_URL);
+          if (destination.page_type === "contributors") trackGalleryEvent("contributors_click", context);
+          if (destination.page_type === "contributor_profile") trackGalleryEvent("contributor_profile_click", context);
+          if (destination.page_type === "solution") trackGalleryEvent("solution_click", { ...context, solution_slug: destination.solution_slug });
+        };
+        document.addEventListener("click", trackLink);
+        document.addEventListener("auxclick", trackLink);
+      }
+
       document.getElementById("theme-toggle")?.addEventListener("click", () => {
         const root = document.documentElement;
         root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";

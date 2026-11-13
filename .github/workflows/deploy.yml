@@ -12,11 +12,16 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: release-download-data
+      cancel-in-progress: false
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -27,13 +32,20 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Test importer
-        run: npm test
       - name: Regenerate submissions
         run: npm run import:submissions
+      - name: Test importer
+        run: npm test
       - name: Type check
         run: npm run check
+      - name: Publish ZIP assets and snapshot downloads
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node --import tsx scripts/release-downloads.ts publish "$RUNNER_TEMP/gallery-downloads.json"
       - name: Build
+        env:
+          GALLERY_DOWNLOAD_DATA: ${{ runner.temp }}/gallery-downloads.json
+          GALLERY_REQUIRE_RELEASES: "true"
         run: npm run build
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0

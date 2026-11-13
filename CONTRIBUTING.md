@@ -151,6 +151,18 @@ by the modern workflow designer. The importer reads the graph's nodes, edges,
 handles, and positions from the workflow JSON. A workflow without that graph
 fails validation.
 
+The graph is a preview, not the executable workflow. Submit the full export,
+including `properties.definition` (or `definition`) with typed triggers and
+actions. Graph-only JSON fails validation. Nested actions and their local
+`runAfter` references must be structurally valid.
+
+Every workflow file must have exactly one mapping in `customizations.xml`,
+including its `Name`, `WorkflowId`, and `JsonFileName`. Missing files, duplicate
+identities/mappings, unsafe paths, dangling graph edges, and component
+`parentbotid` references to missing local bots fail validation. Connected-agent
+targets may be external; they are not treated as missing local parent bots.
+These checks do not certify Power Platform importability or runtime behavior.
+
 ## Shared gallery metadata
 
 Both formats require `metadata.json` beside their source directory. Use these
@@ -232,6 +244,11 @@ contains. Designer notes in workflow canvases are not shown in the gallery.
 App version comes from `app/package.json`; apps appear under Apps without
 requiring solution identity or agent/workflow graphs.
 
+ZIP hashes and public download counts are generated, not contributor-authored
+metadata. Release-asset counts are collected on the bot-owned `download-stats`
+branch and joined into submission detail pages when the site builds. Do not add
+or edit counters in `metadata.json`; see [Gallery analytics](docs/analytics.md#release-backed-zip-counts).
+
 ## Write the visitor overview
 
 `README.md` becomes the Overview tab and stays outside the downloadable source
@@ -299,9 +316,84 @@ and respond to review feedback before merge.
 
 ### Pull-request scope
 
-Keep submission changes separate from site, importer, workflow, or repository
-configuration changes. Submit these as separate pull requests; CI checks this
-separation.
+Ordinary contributions change one `submissions/<slug>/` entry, optionally with
+its regenerated outputs. Choose an existing category and use only documented
+metadata fields. Do not edit generated files by hand.
+
+Repository-wide and maintainer-owned changes require explicit PR labels:
+
+| Label | Required for |
+| --- | --- |
+| `allow-metadata-changes` | Changing the category vocabulary or metadata contract in `src/lib/submissionMetadata.ts`, shared submission guidance in `submissions/README.md`, template metadata, or existing `featured` / `hackathon` values. Newly granting these distinctions also requires this label. |
+| `allow-site-changes` | Changing layout, behavior, graph schemas, importer logic, tests, tooling, installers, workflows, configuration, or other repository files, including `CONTRIBUTING.md`. |
+
+These are independent approvals, required even on PRs without submissions.
+A PR affecting both boundaries needs **both** labels. For example, expanding the
+category vocabulary and updating the filter UI needs both. Selecting an existing
+category or preserving an existing award during an ordinary submission update
+needs neither. An omitted `featured` value is equivalent to `false`.
+
+Multi-entry metadata/README maintenance needs `allow-metadata-changes`;
+multi-entry payload maintenance needs `allow-site-changes`. Changes to privileged
+metadata still require the metadata label even when site changes are authorized.
+The old `allow-mixed-changes` label no longer grants an exception.
+
+Maintainers apply these labels using GitHub's repository permissions. Labels
+authorize the **scope of changes**, not invalid content: unsupported metadata,
+malformed payloads, broken references, failing tests, and build errors remain
+blocking. New metadata fields or category values require a valid schema update,
+not just a label.
+
+### What CI checks
+
+The required `Guard pull request scope` status evaluates actual PR files and
+base/head metadata using trusted base-branch code. It reads PR data through the
+GitHub API and writes the result to the PR's head commit; it does not check out
+or execute contributor code. Adding/removing a label reruns the policy.
+
+The normal PR workflow validates submissions, tests the repository, regenerates
+gallery content for **forks and internal PRs**, type checks, and builds. Only
+internal PRs with changes under `submissions/<slug>/` automatically commit
+regenerated content. Repository-only PRs regenerate for validation and builds
+without committing unrelated stale outputs; generated-only edits remain blocked.
+Deployment regenerates content from source again.
+
+Existing repository-owned graph-only demos are exempted only by exact
+slug/path/content fingerprints while designated as demos. Adding a `demo` tag,
+copying a demo to a new slug, or changing an exempt workflow does not grant an
+exception. Test fixtures use minimal executable definitions; their preview
+graphs remain reduced test data.
+
+CI checks structural consistency, not a successful fresh-environment import,
+functional usefulness, or security approval. Contributors remain responsible
+for fresh-environment testing; Copilot and maintainers review claims, permissions,
+dependencies, and limitations.
+
+### Minimal content review
+
+The [Copilot review instructions](.github/instructions/submission-review.instructions.md)
+limit solution content review to changed agent/workflow definitions, including
+their instructions, skills, hooks, and tool bindings. README and metadata provide
+context; reviewers do not audit the entire exploded solution or its attachments.
+This is not a full-payload secret scan or a review of managed app implementations.
+
+Describe the submission as a sample, not production-ready. For healthcare,
+financial, legal, or other high-stakes use, include a visitor-facing disclaimer
+that outputs are illustrative, may be incorrect, are not professional advice,
+and require qualified human review before real-world use. An absent README
+does not waive these disclosures; put them in the visitor-facing overview.
+
+The remaining review bar is no embedded secrets/private data in reviewed
+definitions, disclosed consequential actions and data destinations with
+appropriate safeguards, honest capability claims, and documented essential
+prerequisites. Copilot should report concrete evidence, not style preferences
+or speculative concerns. Maintainers retain the publication decision.
+
+### Policy activation
+
+The trusted policy workflow activates once present on the default branch.
+When first introducing or changing that policy, maintainers must review the
+bootstrap PR directly; a PR cannot activate its own new trusted policy.
 
 By contributing, you agree that the submitted content is shared under this
 repository's [MIT license](LICENSE).

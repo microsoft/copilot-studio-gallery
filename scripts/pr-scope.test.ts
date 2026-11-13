@@ -1,33 +1,235 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { execFileSync } from "node:child_process";
 import test from "node:test";
 import { parse } from "yaml";
+import {
+  checkContributionPolicy,
+  GitHubPolicyApi,
+  inspectPullRequest,
+  METADATA_LABEL,
+  SITE_LABEL,
+  type ChangedFile,
+  type MetadataChange,
+} from "./contribution-policy";
 
-const workflow = parse(readFileSync(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8"));
-const scopeGuard = workflow.jobs["guard-scope"].steps[0].run;
-assert.equal(typeof scopeGuard, "string");
+const file = (filename: string, status = "modified", previous_filename?: string): ChangedFile => ({ filename, status, previous_filename });
+const metadataPath = "submissions/sample/metadata.json";
+const submission = file(metadataPath);
+const policy = (files: ChangedFile[], labels: string[] = [], metadata: MetadataChange[] = []) => checkContributionPolicy(files, labels, metadata);
+const metadataChange = (head: Record<string, unknown>, base?: Record<string, unknown>): MetadataChange => ({ path: metadataPath, base, head });
 
-const cases = [
-  { name: "allows category documentation with site changes", files: ["submissions/README.md", "CONTRIBUTING.md", "src/lib/schema.ts"], status: 0 },
-  { name: "rejects submission metadata with site changes", files: ["submissions/sample/metadata.json", "src/lib/schema.ts"], status: 1 },
-  { name: "rejects sample README changes with site changes", files: ["submissions/sample/README.md", "src/lib/schema.ts"], status: 1 },
-  { name: "rejects submission payload with site changes", files: ["submissions/sample/solution/solution.xml", "src/lib/schema.ts"], status: 1 },
-  { name: "rejects template changes with site changes", files: ["submissions/_template/metadata.json", "src/lib/schema.ts"], status: 1 },
-  { name: "does not exempt other submission-root files", files: ["submissions/other.json", "src/lib/schema.ts"], status: 1 },
-  { name: "allows submission and generated content changes", files: ["submissions/sample/metadata.json", "src/content/solutions/sample.json", "src/content/guides/sample.md", "public/bundles/sample.zip"], status: 0 },
-  { name: "preserves the maintainer scope override", files: ["submissions/sample/metadata.json", "src/lib/schema.ts"], labels: ["allow-mixed-changes"], status: 0 },
-];
+test("ordinary single submissions and regenerated outputs need no labels", () => {
+  assert.deepEqual(policy([submission, file("submissions/sample/solution/solution.xml"), file("src/content/solutions/sample.json")]), []);
+  assert.deepEqual(policy([submission], [], [metadataChange({ category: "HR", featured: false })]), []);
+});
 
-for (const { name, files, labels = [], status } of cases) {
-  test(`PR scope guard ${name}`, () => {
-    const result = spawnSync("bash", ["-c", `gh() { printf '%s\\n' "$CHANGED_FILES"; }\n${scopeGuard}`], {
-      env: { ...process.env, CHANGED_FILES: files.join("\n"), LABELS: JSON.stringify(labels), PR: "1", REPO: "test/gallery" },
-      encoding: "utf8",
-      timeout: 10_000,
+test("metadata and site labels authorize independent boundaries on every PR", () => {
+  const contract = file("src/lib/submissionMetadata.ts");
+  const site = file("src/pages/index.astro");
+  for (const path of ["src/lib/schema.ts", "scripts/import-submissions.ts", ".github/workflows/ci.yml", "CONTRIBUTING.md", "public/installers/setup.sh"]) {
+    assert.match(policy([file(path)]).join("\n"), /allow-site-changes/);
+    assert.deepEqual(policy([file(path)], [SITE_LABEL]), []);
+    assert.match(policy([file(path)], [METADATA_LABEL]).join("\n"), /allow-site-changes/);
+  }
+  assert.match(policy([contract]).join("\n"), /allow-metadata-changes/);
+  assert.deepEqual(policy([contract], [METADATA_LABEL]), []);
+  assert.match(policy([contract], [SITE_LABEL]).join("\n"), /allow-metadata-changes/);
+  assert.equal(policy([contract, site]).length, 2);
+  assert.deepEqual(policy([contract, site, submission], [METADATA_LABEL, SITE_LABEL]), []);
+});
+
+test("shared metadata guidance and template metadata need the metadata label", () => {
+  for (const path of ["submissions/README.md", "submissions/_template/metadata.json"]) {
+    assert.match(policy([file(path)]).join("\n"), /allow-metadata-changes/);
+    assert.deepEqual(policy([file(path)], [METADATA_LABEL]), []);
+  }
+});
+
+test("legacy override, partial label names, and label removal do not authorize changes", () => {
+  const site = file("src/pages/index.astro");
+  for (const labels of [[], ["allow-mixed-changes"], ["not-allow-site-changes"], [METADATA_LABEL]]) {
+    assert.match(policy([site], labels).join("\n"), /allow-site-changes/);
+  }
+  assert.deepEqual(policy([site], [SITE_LABEL]), []);
+  assert.notDeepEqual(policy([site], []), []);
+});
+
+test("deleted and renamed files are classified using both names", () => {
+  assert.match(policy([file("src/pages/old.astro", "removed")]).join("\n"), /allow-site-changes/);
+  const rename = file(metadataPath, "renamed", "src/lib/submissionMetadata.ts");
+  assert.match(policy([rename]).join("\n"), /allow-metadata-changes/);
+  assert.deepEqual(policy([rename], [METADATA_LABEL]), []);
+  assert.match(policy([file(metadataPath, "renamed", "src/lib/old.ts")]).join("\n"), /allow-site-changes/);
+});
+
+test("multiple submission entries require the applicable maintenance approval", () => {
+  const second = file("submissions/second/metadata.json");
+  assert.match(policy([submission, second]).join("\n"), /allow-metadata-changes/);
+  assert.deepEqual(policy([submission, second], [METADATA_LABEL]), []);
+  assert.match(policy([submission, second], [SITE_LABEL]).join("\n"), /allow-metadata-changes/);
+  const payload = file("submissions/second/solution/solution.xml");
+  assert.match(policy([submission, payload], [METADATA_LABEL]).join("\n"), /allow-site-changes/);
+  assert.deepEqual(policy([submission, payload], [SITE_LABEL]), []);
+});
+
+test("generated-only edits are rejected even with scope labels", () => {
+  for (const path of ["src/content/solutions/sample.json", "src/content/guides/sample.md", "public/bundles/sample.zip"]) {
+    assert.match(policy([file(path)], [METADATA_LABEL, SITE_LABEL]).join("\n"), /corresponding submission source/);
+  }
+});
+
+test("badges are compared to base, not trusted from submitted metadata", () => {
+  for (const head of [{ featured: true }, { hackathon: "winner" }, { hackathon: "hacker" }]) {
+    assert.match(policy([submission], [], [metadataChange(head)]).join("\n"), /allow-metadata-changes/);
+    assert.match(policy([submission], [SITE_LABEL], [metadataChange(head)]).join("\n"), /allow-metadata-changes/);
+    assert.deepEqual(policy([submission], [METADATA_LABEL], [metadataChange(head)]), []);
+  }
+  assert.deepEqual(policy([submission], [], [metadataChange({ featured: false }, {})]), []);
+  assert.deepEqual(policy([submission], [], [metadataChange({}, { featured: false })]), []);
+  assert.deepEqual(policy([submission], [], [metadataChange({ featured: true, hackathon: "winner" }, { featured: true, hackathon: "winner" })]), []);
+  assert.match(policy([submission], [], [metadataChange({ hackathon: "winner" }, { hackathon: "hacker" })]).join("\n"), /hackathon/);
+  assert.match(policy([submission], [], [metadataChange({}, { featured: true })]).join("\n"), /featured/);
+  assert.deepEqual(policy([file(metadataPath, "removed")], [], [{ path: metadataPath, base: { featured: true } }]), []);
+});
+
+test("unknown categories and metadata fields cannot be self-authorized", () => {
+  for (const head of [{ category: "Retail" }, { inventedBadge: true }]) {
+    assert.notDeepEqual(policy([submission], [], [metadataChange(head)]), []);
+    assert.notDeepEqual(policy([submission], [SITE_LABEL], [metadataChange(head)]), []);
+    assert.deepEqual(policy([submission], [METADATA_LABEL], [metadataChange(head)]), []);
+  }
+});
+
+const baseSha = "a".repeat(40);
+const headSha = "b".repeat(40);
+const pr = (count: number, labels: string[] = []) => ({
+  state: "open", changed_files: count, labels: labels.map((name) => ({ name })),
+  base: { sha: baseSha }, head: { sha: headSha },
+});
+function apiWith(handler: (path: string) => unknown | Response): GitHubPolicyApi {
+  return new GitHubPolicyApi("owner/repo", "test-token", "https://api.github.test",
+    async (url, init) => {
+      assert.equal(init?.redirect, "error");
+      const data = handler(new URL(String(url)).pathname.replace("/repos/owner/repo/", "") + new URL(String(url)).search);
+      return data instanceof Response ? data : Response.json(data);
     });
-    assert.ifError(result.error);
-    assert.equal(result.status, status, result.stdout + result.stderr);
-    if (status === 1) assert.match(result.stdout, /mixes submission content with site or repository changes/);
-  });
 }
+const content = (value: unknown) => {
+  const bytes = Buffer.from(JSON.stringify(value));
+  return { type: "file", encoding: "base64", size: bytes.length, content: bytes.toString("base64") };
+};
+
+test("GitHub policy paginates actual PR files and compares base/head metadata", async () => {
+  const calls: string[] = [];
+  const api = apiWith((path) => {
+    calls.push(path);
+    if (path === "pulls/1") return pr(101);
+    if (path.endsWith("page=1")) return [submission, ...Array.from({ length: 99 }, (_, i) => file(`submissions/sample/solution/${i}.xml`))];
+    if (path.endsWith("page=2")) return [file("submissions/sample/README.md")];
+    return content(path.endsWith(baseSha) ? { featured: false } : { featured: true });
+  });
+  assert.match((await inspectPullRequest(api, 1, { base: baseSha, head: headSha })).join("\n"), /featured/);
+  assert.ok(calls.some((path) => path.endsWith("page=2")));
+});
+
+test("policy fails closed on API errors, truncated files, stale revisions, and changing labels", async () => {
+  const failed = apiWith(() => new Response("denied", { status: 403 }));
+  await assert.rejects(() => inspectPullRequest(failed, 1), /GitHub API 403/);
+  const incomplete = apiWith((path) => path === "pulls/1" ? pr(2) : [submission]);
+  await assert.rejects(() => inspectPullRequest(incomplete, 1), /Incomplete PR file list/);
+  const stale = apiWith(() => pr(0));
+  await assert.rejects(() => inspectPullRequest(stale, 1, { base: baseSha, head: "c".repeat(40) }), /base or head changed/);
+  let reads = 0;
+  const relabeled = apiWith((path) => path === "pulls/1" ? pr(0, ++reads === 1 ? [SITE_LABEL] : []) : []);
+  await assert.rejects(() => inspectPullRequest(relabeled, 1), /labels changed/);
+  await assert.rejects(() => inspectPullRequest(stale, 0), /Invalid PR number/);
+});
+
+test("metadata reads accept absent base files but reject invalid or oversized data", async () => {
+  const missing = apiWith(() => new Response("", { status: 404 }));
+  assert.equal(await missing.metadata(metadataPath, baseSha), undefined);
+  for (const value of [
+    { type: "symlink", encoding: "base64", size: 2, content: "e30=" },
+    { type: "file", encoding: "base64", size: 600_000, content: "e30=" },
+    { type: "file", encoding: "base64", size: 20, content: "e30=" },
+    content([]),
+  ]) {
+    await assert.rejects(() => apiWith(() => value).metadata(metadataPath, headSha));
+  }
+});
+
+test("workflow uses trusted base code, a head commit status, and no PR code execution", () => {
+  const workflow = parse(readFileSync(new URL("../.github/workflows/contribution-policy.yml", import.meta.url), "utf8"));
+  assert.ok(workflow.on.pull_request_target);
+  assert.ok(workflow.on.pull_request_target.types.includes("edited"));
+  assert.ok(workflow.on.pull_request_target.types.includes("unlabeled"));
+  assert.deepEqual(workflow.permissions, { contents: "read", "pull-requests": "read", statuses: "write" });
+  const steps = workflow.jobs["guard-scope"].steps;
+  const checkout = steps.find((step: { uses?: string }) => step.uses?.startsWith("actions/checkout@"));
+  assert.equal(checkout.with.ref, "${{ github.event.pull_request.base.sha }}");
+  assert.equal(checkout.with["persist-credentials"], false);
+  const commands = steps.filter((step: { run?: string }) => step.run).map((step: { run: string }) => step.run).join("\n");
+  assert.equal(commands.includes("pull_request.head"), false);
+  assert.ok(commands.includes("node --import tsx scripts/contribution-policy.ts"));
+  assert.equal((commands.match(/context='Guard pull request scope'/g) ?? []).length, 2);
+  const reporting = steps.find((step: { name: string }) => step.name === "Publish required head status");
+  assert.equal(reporting.env.HEAD_SHA, "${{ github.event.pull_request.head.sha }}");
+  assert.equal(reporting.if, "${{ always() && !cancelled() }}");
+});
+
+test("fork CI regenerates build inputs without committing to forks", () => {
+  const ci = parse(readFileSync(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8"));
+  assert.equal(ci.jobs["guard-scope"], undefined);
+  const steps = ci.jobs.build.steps;
+  const index = steps.findIndex((step: { run?: string }) => step.run === "npm run import:submissions");
+  assert.ok(index >= 0);
+  assert.equal(steps[index].if, undefined);
+  assert.ok(index < steps.findIndex((step: { run?: string }) => step.run === "npm run check"));
+  assert.ok(index < steps.findIndex((step: { run?: string }) => step.run === "npm run build"));
+  const commit = steps.find((step: { name: string }) => step.name === "Commit generated content");
+  assert.equal(commit.if, "github.event.pull_request.head.repo.full_name == github.repository && steps.submission-changes.outputs.changed == 'true'");
+  const detect = steps.find((step: { id?: string }) => step.id === "submission-changes");
+  assert.equal(detect.if, "github.event.pull_request.head.repo.full_name == github.repository");
+  assert.equal(detect.env.PR_BASE_SHA, "${{ github.event.pull_request.base.sha }}");
+  assert.equal(steps[0].with["fetch-depth"], 0);
+});
+
+test("CI commits generated content only when the PR changes submission source", () => {
+  const ci = parse(readFileSync(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8"));
+  const detect = ci.jobs.build.steps.find((step: { id?: string }) => step.id === "submission-changes");
+  const root = mkdtempSync(join(tmpdir(), "gallery-ci-scope-"));
+  const git = (...args: string[]) => execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
+  try {
+    git("init", "--quiet");
+    git("config", "user.name", "Test");
+    git("config", "user.email", "test@example.com");
+    git("commit", "--quiet", "--allow-empty", "-m", "base");
+    const base = git("rev-parse", "HEAD");
+    for (const [path, expected] of [
+      [".github/workflows/example.yml", "false"],
+      ["submissions/README.md", "false"],
+      ["submissions/_template/metadata.json", "false"],
+      ["submissions/sample/metadata.json", "true"],
+    ]) {
+      mkdirSync(join(root, path, ".."), { recursive: true });
+      writeFileSync(join(root, path), "fixture\n");
+      git("add", path);
+      git("commit", "--quiet", "-m", path);
+      const output = join(root, "output");
+      writeFileSync(output, "");
+      execFileSync("bash", ["-e", "-o", "pipefail", "-c", detect.run], {
+        cwd: root, env: { ...process.env, PR_BASE_SHA: base, GITHUB_OUTPUT: output },
+      });
+      assert.equal(readFileSync(output, "utf8"), `changed=${expected}\n`, path);
+    }
+    assert.throws(() => execFileSync("bash", ["-e", "-o", "pipefail", "-c", detect.run], {
+      cwd: root, env: { ...process.env, PR_BASE_SHA: "invalid-ref", GITHUB_OUTPUT: join(root, "output") },
+      stdio: "pipe",
+    }));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
