@@ -14,7 +14,7 @@ The **Agent DLP & Security Guard** demonstrates a pattern for interactive pre-pu
 
 ## Key Capabilities
 
-- **Automated DLP Policy Verification**: Validates agent connection references and custom actions against organization Power Platform DLP policy groups (Business vs. Non-Business vs. Blocked).
+- **DLP Policy Review (agent-assisted)**: Reviews agent connection references and custom actions against organization Power Platform DLP policy groups (Business vs. Non-Business vs. Blocked).
 - **Sensitive Data & Credential Scanning**: Inspects static agent instructions, knowledge definitions, and prompt templates for exposed credentials, bearer tokens, connection strings, and unredacted PII.
 - **Prompt Injection & Adversarial Boundary Testing**: Evaluates agent system prompts against common jailbreak and indirect prompt injection signatures (instruction overriding, delimiter tampering, unauthorized system disclosure).
 - **Auditable Governance Scorecards**: Produces structured compliance summaries with remediation guidance for makers and approval records for CoE administrators.
@@ -34,13 +34,17 @@ The solution includes dedicated inline skills and tool definitions:
 2. **DLP & Connector Analysis**: Evaluates connectors and data sources to verify all endpoints are permitted within the target environment's DLP policy.
 3. **Instruction & Prompt Security Scan**: Inspects prompt text and fallback topics for sensitive pattern signatures (SSNs, credit card numbers, secret keys).
 4. **Adversarial Resilience Check**: Validates that system instructions enforce grounding and reject instruction-override attempts.
-5. **Scorecard & Governance Gate**: If all checks pass, generates a compliance summary; if issues are found, provides specific remediation steps and clearance prerequisites.
+5. **Scorecard for Human Review**: Generates a compliance summary with remediation steps and clearance prerequisites for a security administrator to review. The sample does not enforce or block publication.
 
 ## Conceptual Workflow Canvas
 
 The solution includes a visual workflow canvas titled **`Audit agent DLP and security compliance`** (`agent-dlp-audit-workflow`).
 
-> **Note on Workflow Implementation:** This workflow (`solution/Workflows/workflow.json`) provides a **conceptual visual preview** of the end-to-end agent audit and scorecard process on the Copilot Studio canvas (`trigger.metadata.associatedData.graph`). It does not contain an executable backend flow definition outside of its saved canvas metadata, and does **not** provide an automated pre-publication blocking gate into Copilot Studio's publishing engine. Center of Excellence (CoE) teams can implement automated publication blocking using Power Platform Application Lifecycle Management (ALM) pipelines or Center of Excellence Starter Kit audit flows.
+> **Note on Workflow Implementation (placeholder logic):** `solution/Workflows/workflow.json` contains two parts:
+> - **Canvas graph** (`trigger.metadata.associatedData.graph`): a conceptual visual preview of the audit and scorecard process.
+> - **Executable `definition`**: a **nonfunctional placeholder** included only so the export is structurally complete. Its HTTP trigger captures the submission and a single Response action returns `501 NotImplemented` with `isPlaceholder: true` and a null verdict. It does **not** extract connectors, evaluate DLP policies, write to Dataverse, or return APPROVED/REJECTED verdicts, and it does **not** provide a pre-publication blocking gate.
+>
+> DLP review, content inspection, and scorecards in this sample are produced conversationally by the agent and its skills for human security review. To automate checks or block publication, replace the placeholder with your own admin-connector logic, Power Platform ALM pipelines, or Center of Excellence Starter Kit audit flows.
 
 The canvas illustrates:
 - **Intake**: Conceptual entry point for agent governance review.
