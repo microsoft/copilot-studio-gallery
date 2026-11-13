@@ -37,9 +37,9 @@ Missing metadata, empty results, capture failures, or oversized results must not
 
 The capture action returns available text rows with `Timestamp`, `Role`, `Content`, `ConversationId`, and `TraceId`:
 
-![Example workflow output showing an assistant greeting, a user's slow-laptop report, and an assistant reply, with conversation and trace identifiers redacted](https://raw.githubusercontent.com/PetrosFeleskouras/copilot-studio-gallery/2c498c43e09e78beb131d7a26bdc8063539a0377/submissions/transcript-capture-hook/screenshots/transcript-result.png)
+![Full screenshot of the capture workflow run and conversation query outputs](https://raw.githubusercontent.com/PetrosFeleskouras/copilot-studio-gallery/6741ff43a99e28ba65432b96342552a42d1b4dd3/submissions/transcript-capture-hook/screenshots/transcript-result.png)
 
-Screenshot from a real demo run, cropped to the Outputs panel with conversation and trace identifiers redacted.
+Full screenshot from a real demo run, showing the capture workflow and query outputs.
 
 ## Prerequisites
 
