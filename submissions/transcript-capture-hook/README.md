@@ -8,7 +8,7 @@ Attach an available conversation snapshot to a support ticket at the moment an a
 
 | Asset | Purpose |
 | --- | --- |
-| **IT Support Transcript Demo** | Provides generic IT troubleshooting and routes explicit ticket requests to a skill |
+| **IT Support Transcript Demo** agent | Provides generic IT troubleshooting and routes explicit ticket requests to a skill |
 | **log-support-ticket** skill | Submits a demo ticket with existing conversation details, without additional intake questions; handles receipt and capture limitations |
 | **Attach available transcript** hook | Runs before **Log ticket** only |
 | **Capture transcript before ticket** workflow | Queries the current conversation and returns replacement tool arguments |
