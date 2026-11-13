@@ -8,12 +8,13 @@ Attach an available conversation snapshot to a support ticket at the moment an a
 
 | Asset | Purpose |
 | --- | --- |
-| **IT Support Transcript Demo** agent | Provides generic IT troubleshooting and routes explicit ticket requests to a skill |
-| **log-support-ticket** skill | Submits a demo ticket with existing conversation details, without additional intake questions; handles receipt and capture limitations |
-| **Attach available transcript** hook | Runs before **Log ticket** only |
-| **Capture transcript before ticket** workflow | Queries the current conversation and returns replacement tool arguments |
-| **IT Support - Log ticket** workflow | Returns a simulated ticket receipt, whether or not a transcript was captured |
-| **Azure Monitor Logs** connection reference | Binds the capture query to an importing maker's approved connection |
+| **IT Support Transcript Demo** agent | Provides IT troubleshooting and invokes **log-support-ticket** when the user explicitly requests a ticket or another submission attempt. |
+| **log-support-ticket** skill | Instructs the agent to prepare ticket details from the conversation, call **Log ticket** once without further intake questions, and report the returned result. |
+| **Log ticket** tool | Exposes **IT Support - Log ticket** to the agent, accepting a title, description, and optional transcript and conversation ID. |
+| **Attach available transcript** hook | Runs only before **Log ticket**. Invokes **Capture transcript before ticket** with the proposed tool inputs and platform-provided conversation metadata. |
+| **Capture transcript before ticket** workflow | Queries available user and assistant messages in Application Insights for the conversation. Returns updated tool inputs that preserve the ticket details and add the available transcript and conversation ID. |
+| **IT Support - Log ticket** workflow | Generates a simulated `DEMO-...` receipt and reports whether transcript data was supplied with a conversation ID. Does not create a real ticket. |
+| **Azure Monitor Logs** connection reference | Links the capture workflow to an Azure Monitor Logs connection authorized to query the configured Application Insights resource. |
 
 ## How It Works
 
@@ -69,4 +70,4 @@ Before publishing, verify that **Attach available transcript** is a **Pre tool u
 
 - **Best-effort transcript.** The source is asynchronous Application Insights telemetry, not a live-transcript API. Messages may be delayed, missing, truncated, or out of chat order. Do not treat the snapshot as a complete audit record.
 - **Demo only.** No real ticket backend or durable archive is included. Missing transcript data does not block the simulated ticket.
-- **Privacy and access.** Conversation text can be sensitive. Restrict telemetry and run-history access and define retention policies before using real conversations.
+- **Privacy and access.** Captured messages may contain personal or confidential information. Limit access to Application Insights and workflow run history to authorized users, and apply your organization's retention policies.
