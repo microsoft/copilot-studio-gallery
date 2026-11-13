@@ -20,44 +20,29 @@
       }
     },
     "actions": {
-      "Extract_Connectors": {
+      "Capture_Submission": {
         "type": "Compose",
-        "inputs": "@triggerBody()?['submissionPayload']",
+        "inputs": {
+          "agentId": "@triggerBody()?['agentId']",
+          "submissionPayload": "@triggerBody()?['submissionPayload']"
+        },
         "runAfter": {}
       },
-      "Evaluate_DLP_Boundaries": {
-        "type": "If",
+      "Return_Placeholder_Not_Implemented": {
+        "type": "Response",
         "runAfter": {
-          "Extract_Connectors": [
+          "Capture_Submission": [
             "Succeeded"
           ]
         },
-        "actions": {
-          "Log_Clearance_Verdict": {
-            "type": "Response",
-            "inputs": {
-              "statusCode": 200,
-              "body": {
-                "verdict": "APPROVED",
-                "message": "All connector bindings comply with environment DLP rules."
-              }
-            },
-            "runAfter": {}
-          }
-        },
-        "else": {
-          "actions": {
-            "Log_Remediation_Notice": {
-              "type": "Response",
-              "inputs": {
-                "statusCode": 400,
-                "body": {
-                  "verdict": "REJECTED",
-                  "message": "Blocked connectors or policy violations detected."
-                }
-              },
-              "runAfter": {}
-            }
+        "inputs": {
+          "statusCode": 501,
+          "body": {
+            "status": "NotImplemented",
+            "isPlaceholder": true,
+            "verdict": null,
+            "message": "Sample placeholder only. This workflow does not extract connectors, evaluate DLP policies, log to Dataverse, or approve or reject agents. Implement these checks with your own admin connectors or CoE / ALM pipeline logic before use.",
+            "receivedSubmission": "@outputs('Capture_Submission')"
           }
         }
       }
