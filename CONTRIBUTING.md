@@ -377,6 +377,10 @@ their instructions, skills, hooks, and tool bindings. README and metadata provid
 context; reviewers do not audit the entire exploded solution or its attachments.
 This is not a full-payload secret scan or a review of managed app implementations.
 
+[Managed-app review instructions](.github/instructions/managed-app-review.instructions.md)
+separately cover changed app source and directly relevant configuration, using
+static review only. Review automation must not install or run submitted apps.
+
 Describe the submission as a sample, not production-ready. For healthcare,
 financial, legal, or other high-stakes use, include a visitor-facing disclaimer
 that outputs are illustrative, may be incorrect, are not professional advice,
@@ -394,6 +398,81 @@ or speculative concerns. Maintainers retain the publication decision.
 The trusted policy workflow activates once present on the default branch.
 When first introducing or changing that policy, maintainers must review the
 bootstrap PR directly; a PR cannot activate its own new trusted policy.
+
+### Shared contributor PR task queue
+
+The **Submission PR tasks** workflow maintains one **Submission next steps**
+comment per open, non-draft contribution PR. It separates contributor tasks,
+maintainer tasks, and waiting on automation, with links to the relevant review
+threads and CI runs. No individual maintainer is automatically assigned.
+Site/layout, dependency, repository-maintenance, and mixed site/submission PRs
+remain outside this queue. Multi-entry submission mistakes remain visible.
+
+| Queue label | Who acts next |
+| --- | --- |
+| [`needs-contributor`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aneeds-contributor) | Contributor: fix or discuss findings, correct scope, update the branch, or complete the matching test attestations. |
+| [`needs-maintainer`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aneeds-maintainer) | Maintainer: inspect/authorize fork CI, request a missing Copilot review, follow up on fixes/disputed findings, or formally approve. |
+| [`awaiting-copilot`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aawaiting-copilot) | A native review of the current revision is still needed; the comment says whether a review must be requested. |
+| [`ready-for-merge`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aready-for-merge) | Maintainer: perform the final review and merge manually if satisfied. This label is not an approval or a bypass. |
+
+Contributor and maintainer tasks can coexist. A new push needs fresh evidence;
+an old finding is neither automatically still valid nor automatically fixed.
+Copilot can resolve its own addressed findings on rereview; humans retain
+responsibility for their discussions and disputed findings. Missing CI is not
+reported as failing code when the run is actually waiting for authorization.
+The bot reads GitHub-rendered checked attestations, not code examples or proof
+that an import or authenticated app test occurred. It does not add a new
+attestation enforcement check.
+
+The coordinator reads GitHub metadata and small submission metadata JSON files
+through the API; it never checks out contributor code, installs dependencies,
+downloads run artifacts, approves CI, submits reviews, or merges. The existing
+CI authorization policy remains unchanged. It updates on PR lifecycle/body
+changes and CI/policy completion, with scheduled reconciliation every 15 minutes
+for review/thread changes and external checks. Scans include all open PRs so
+retargeting a tracked PR away from `main` retires its queue labels. Closed PRs
+carrying queue labels are also reconciled, so a missed closure event cannot
+leave an active checklist or readiness label behind.
+Scheduled jobs can be delayed by
+GitHub; always use the live merge box, not an old label, as the final authority.
+The comment names the assessed head/base. API failures withdraw prior readiness,
+invalidate an existing comment where possible, and fail the workflow visibly.
+
+#### Maintainer setup and rollout
+
+1. Human-review and merge the infrastructure change first. The workflow executes
+   only trusted `main` code and cannot activate itself from a PR. Merging enables
+   its event/scheduled updates; it creates missing queue labels as needed. Its
+   token needs contents/Actions/checks/status/issues read and pull-request write access
+   for comments and labels, not Actions write, review approval, or merge calls.
+   If repository/organization policy denies those permissions, an admin must
+   resolve that policy explicitly; the workflow fails rather than weakening it.
+2. Ask a repository admin to edit the existing
+   [automatic Copilot review rule](https://github.com/microsoft/copilot-studio-gallery/rules/26852430)
+   and enable **Review new pushes**. Current maintain access is not admin access.
+   This native setting applies throughout the rule's repository-wide scope,
+   while this queue handles contribution PRs only. Leave formal Copilot approvals,
+   human-review requirements, and fork-workflow authorization policies unchanged.
+3. Preview the backlog from **Actions > Submission PR tasks > Run workflow** with
+   **dry_run** enabled. To publish the shared checklists, rerun with **dry_run**
+   disabled; optionally specify one **pr_number**. Equivalent commands:
+
+   ```sh
+   gh workflow run submission-pr-status.yml -f dry_run=true
+   gh workflow run submission-pr-status.yml -f pr_number=100 -f dry_run=false
+   ```
+
+4. On existing PRs, request a native Copilot rereview if the current head has none,
+   inspect and authorize outstanding fork CI runs individually, then follow the
+   comment's remaining human-review tasks. Resolve an addressed human thread
+   rather than asking the contributor to repeat an already supplied remedy.
+   Do not assume enabling push reviews retroactively reviews the backlog.
+
+For local read-only inspection using Node 24, set `GH_TOKEN`,
+`GITHUB_REPOSITORY`, and optionally `PR_NUMBER`, then run
+`node scripts/submission-pr-status.ts --dry-run`. No repository dependencies are
+needed for the coordinator. Do not run it locally without `--dry-run`; published
+comments are deliberately recognized only when authored by `github-actions[bot]`.
 
 By contributing, you agree that the submitted content is shared under this
 repository's [MIT license](LICENSE).
