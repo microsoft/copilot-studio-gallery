@@ -1,0 +1,361 @@
+kind: InlineAgentSkill
+skillFolderName: sp-list-report-generator
+content: |
+  ---
+  name: sp-list-report-generator
+  description: Use this skill whenever the user asks for an insights/reporting analysis of a SharePoint list from a connected SharePoint knowledge source;
+  ---
+  <!-- bic:source=generated -->
+  <!-- bic:source=upload -->
+  Before starting, verify that configured SharePoint connector actions, agent flows, or equivalent tools can discover approved lists and their schemas, retrieve list items page by page, and invoke **Create file** to return the created file's URL or path. A SharePoint knowledge source alone does not guarantee these capabilities. If any capability is unavailable, stop and name the missing capability.
+
+  ## Step 1 – Identify the Target List
+
+  1. Read the user request and identify the requested SharePoint list name.
+  2. Inspect the selected SharePoint knowledge source.
+  3. Retrieve all available SharePoint lists.
+  4. Perform a case-insensitive exact match on list title (and any explicit aliases in list metadata).
+  5. Proceed only on an exact match or an explicit user selection; otherwise stop and prompt the user to choose from the available lists.
+
+  ### Validation Logic
+  Before performing any analysis, enumerate all SharePoint lists available in the selected knowledge source.
+
+    The requested data source must be explicitly mapped to an existing SharePoint list.
+
+    Allowed conditions to continue:
+    - Exact list name match.
+    - User explicitly selects a list from the available lists.
+    - Alias defined in list metadata.
+
+    Forbidden behavior:
+    - Do not infer lists from business terminology.
+    - Do not infer lists from column names.
+    - Do not infer lists from data values.
+    - Do not infer lists from semantic similarity.
+    - Do not select a list because it appears related.
+
+    Examples:
+
+    User request:
+    Create a report for Campaign
+
+    Available lists:
+    - Campaign
+    - Product Catalog
+
+    Result:
+    Proceed with Campaign.
+
+    User request:
+    Create a report for sales data
+
+    Available lists:
+    - Campaign
+    - Product Catalog
+
+    Result:
+    Stop.
+    Return available lists.
+    Ask the user to select one.
+
+    User request:
+    Create a report for quarterly revenue
+
+    Available lists:
+    - Campaign
+    - Product Catalog
+
+    Result:
+    Stop.
+    Do not select Campaign.
+
+  ### If the requested list does not exist:
+
+  - Stop the process immediately.
+  - Do not analyze data.
+  - Do not generate a report.
+  - Return all available SharePoint lists.
+  - Return closest matching list names.
+
+  Proceed only if the requested list exists.
+  For example: if the user requests "sales" and only a "Product" list exists that happens to contain sales-related data, stop and ask the user to choose an existing list from the knowledge source.
+
+  ---
+
+  ## Step 2 – Discover List Structure
+
+  Retrieve:
+
+  - List title
+  - Internal name
+  - Item count
+  - Created date
+  - Last modified date
+  - All columns
+  - Column types
+  - Required fields
+  - Indexed fields
+  - Lookup fields
+  - Choice fields
+  - Person fields
+  - Managed metadata fields
+
+  Generate a schema summary.
+
+  ---
+
+  ## Step 3 – Analyze Data
+
+  Analyze all accessible records within the confirmed scope, retrieving them page by page through the configured tool and following its continuation tokens. Respect any hard per-call or per-report limit enforced by the configured tool itself; if that connector-level limit would be exceeded, ask the user to narrow the scope. Never silently truncate or sample records.
+
+  Retrieve and analyze every accessible record regardless of total item count — full retrieval is required for accurate statistics, insights, and archival-candidate evaluation. When the total number of retrieved items exceeds 1,000, keep this full retrieval and evaluation, but record that the list is large: Step 6 renders the report in summary mode for lists over that size (overall analysis plus the Archival Candidates report, with the full per-item data table omitted) instead of asking the user to narrow the scope.
+
+  Generate:
+
+  ### General Statistics
+
+  - Total records
+  - Distinct values
+  - Missing values
+  - Data completeness score
+
+  ### Trend Analysis
+
+  - Monthly trends
+  - Annual trends
+  - Growth trends
+
+  ### Category Analysis
+
+  - Top categories
+  - Frequency distribution
+  - Ranking statistics
+
+  ### Ownership Analysis
+
+  - Records by owner
+  - Top contributors
+
+  ### Quality Analysis
+
+  - Empty fields
+  - Duplicate values
+  - Potential anomalies
+
+  ---
+
+  ## Step 4 – Identify Archival Candidates
+
+  Flag list items that are safe to archive so the report surfaces them for cleanup. This step only identifies and reports candidates — never delete, update, move, or otherwise modify any list item.
+
+  ### Default Archival Criteria
+
+  When the list has a usable completeness-style field (see "Resolving the Status-like Field" below), an item qualifies as an archival candidate when **both** of the following are true:
+
+  - Its status-like field (a Choice or Text column such as `Status`, `State`, `Stage`, or similar, matched case-insensitively) is set to a completed/closed value — `Completed` if that exact choice exists, otherwise an equivalent closed value such as `Done`, `Closed`, or `Resolved`.
+  - Its `Modified` (last modified) date is more than 30 days before the date the report is generated.
+
+  For example, an item with Status = Completed and a Modified date 40 days before report generation qualifies. An item with Status = Completed but modified 10 days ago does not qualify, and an item last modified 45 days ago but with Status = In Progress does not qualify either.
+
+  When the list has **no** column relevant to completeness at all (no Choice/Text column whose name or available values suggest a status/state/phase/stage concept — see "Resolving the Status-like Field"), do not require a status condition the list cannot express. Instead limit the archival criterion to inactivity alone: an item qualifies as an archival candidate solely because its `Modified` date is more than 30 days before the report generation date. State in the report that completeness-based criteria were unavailable for this list and that only inactivity was used.
+
+  ### Resolving the Status-like Field
+
+  1. From the Step 2 schema summary, find Choice or Text columns whose name suggests a status/state concept (`Status`, `State`, `Stage`, `Phase`) or whose available choice values include a closed/done-sounding value (`Completed`, `Done`, `Closed`, `Resolved`).
+  2. If exactly one such column exists, use it together with its completed/closed value, combined with the inactivity threshold (see Default Archival Criteria).
+  3. If more than one plausible column exists, ask the user which column and which value(s) represent "completed/closed" before generating the archival section — never guess silently.
+  4. If no plausible status/phase/stage-like column exists anywhere in the schema, do not ask the user to pick or invent one. Fall back automatically to the inactivity-only criterion described above (30 days by default, or the user-specified duration — see Custom Criteria).
+  5. Remember the confirmed column and value (or the fact that no completeness field applies) plus the threshold for the rest of this report so the archival view reflects exactly what was confirmed or used.
+
+  ### Custom Criteria
+
+  If the user specifies a different inactivity threshold (for example "unmodified for 60 days") or a different status/value, use their criteria instead of the 30-day/Completed default, and state the exact criteria actually used in the report. This applies whether or not a completeness field is available: when the list has no completeness field, apply the user-specified duration to the inactivity-only criterion; when a completeness field is available, apply the user-specified duration alongside it.
+
+  ### Computing Results
+
+  For every record retrieved in Step 3, evaluate the applicable criteria — both the status condition and the inactivity condition when a completeness field is available, or the inactivity condition alone when it is not — and build a list of qualifying items, each carrying: the item's title/ID, the status value (when applicable), the Modified date, and the number of days since Modified. Keep this list available for Step 6's Archival Candidates section and for the Output Requirements summary.
+
+  ---
+
+  ## Step 5 – Generate Insights
+
+  Create business-oriented insights.
+
+  Examples:
+
+  - Most used categories
+  - Fastest growing areas
+  - Data quality issues
+  - Process bottlenecks
+  - Trends and anomalies
+  - Share of records that qualify as archival candidates, and what that implies for list cleanup
+
+  Prioritize actionable recommendations.
+
+  ---
+
+  ## Step 6 – Build Interactive HTML Report
+
+  Produce a single HTML file with all CSS and JavaScript embedded inline, except that Chart.js (version 4) may be loaded from an exact versioned CDN URL with matching SRI `integrity` metadata and `crossorigin="anonymous"` as the only permitted external dependency. If the exact version and matching SRI cannot be verified, do not load the CDN asset and use embedded browser APIs instead. Do not use external Bootstrap, DataTables, fonts, stylesheets, scripts, or other CDN resources. Implement table filtering, sorting, pagination, and responsive styling using embedded CSS and JavaScript.
+
+  Treat SharePoint field names and values as untrusted data. Use a real JSON serializer; before embedding serialized data in a `<script type="application/json">` element, escape `<`, `>`, `&`, U+2028, and U+2029, then read it via `textContent` and parse it. Insert data-driven content using `textContent`, `document.createElement`, and other safe DOM APIs, never `innerHTML`. Render rich-text fields as plain text unless a trusted sanitizer is available.
+
+  ### Technologies
+
+  Use:
+  - Chart.js
+
+  Use only libraries that can be used safely in a browser.
+
+  ### Large-List Summary Mode (over 1,000 items)
+
+  When Step 3 recorded that the list's total item count exceeds 1,000, build the report in summary mode:
+
+  - Include the Executive Summary, Interactive Charts, and Archival Candidates sections as normal — they are aggregate/filtered views, not a full per-item dump.
+  - Omit the full per-item Data Table section described below entirely.
+  - Near the top of the report, state plainly that the list has more than 1,000 items, that per-item detail was omitted for this reason, and that the report instead provides overall analysis and the archival report.
+
+  For lists at or under 1,000 items, build the full report including the Data Table section below.
+
+  ### Executive Summary
+
+  Display:
+
+  - List name
+  - Record count
+  - Column count
+  - Last update date
+  - Top insights
+
+  ### Interactive Filters
+
+  Provide filters for:
+
+  - Text fields
+  - Choice fields
+  - Lookup fields
+  - Person fields
+  - Date fields
+
+  Filters must update charts, KPIs and tables dynamically.
+
+  ### Interactive Charts
+
+  Generate appropriate charts automatically.
+
+  Support:
+
+  - Bar charts
+  - Pie charts
+  - Doughnut charts
+  - Line charts
+
+
+  For every colored segment in the pie or doughnut chart, display either:
+  - The number of records/items for each category
+  - The percentage share of the total for each category
+
+
+  Provide hover tooltips and legend controls.
+
+  ### Data Table
+
+  Only build this section for lists at or under 1,000 items (see "Large-List Summary Mode" above). When built, it must meet these requirements:
+
+  - Sort on every column
+  - Ascending and descending sorting
+  - Search box with placeholder:
+    Quick search in table...
+  - Pagination
+  - Column visibility controls
+  - Export buttons:
+    - CSV (Excel-compatible)
+    - Copy
+
+  For CSV export, neutralize spreadsheet formulas by prefixing an apostrophe when a cell's first non-whitespace or control character is `=`, `+`, `-`, or `@`.
+
+  ### Archival Candidates Section
+
+  Add a dedicated section (a separate tab or a clearly labeled panel) titled "Archival Candidates" that:
+
+  - States the exact criteria used in plain language at the top (for example, "Status = Completed and not modified in over 30 days", or, when no completeness field exists, "Not modified in over 30 days (no completeness-related field was available on this list)").
+  - Shows a KPI count of qualifying items out of total records.
+  - Lists qualifying items, from Step 4, in a sortable, searchable, paginated table with columns: Title/ID, status value (when applicable), Modified date, and days since last modification.
+  - Reuses the same Detail Modal Popup and Open SharePoint Item button behavior described below for each row.
+  - If no items qualify, states that clearly instead of leaving an empty table unexplained.
+  - Always include this section, including for lists over 1,000 items — it is unaffected by Large-List Summary Mode.
+
+  ### Detail Modal Popup
+
+  Selecting a row must open a modal displaying:
+
+  - All list fields
+  - Display names
+  - Internal names
+  - Values
+
+  Use a responsive two-column layout.
+
+  ### Open SharePoint Item Button
+
+  Inside the modal popup provide:
+
+  Open SharePoint Item
+
+  Requirements:
+
+  - Open in a new browser tab
+  - Use only the trusted SharePoint item URL returned by the configured connector or tool
+  - Permit the link only when it uses HTTPS and its origin matches the selected SharePoint site's origin; otherwise omit it
+  - Use target="_blank" and rel="noopener noreferrer"
+  ---
+
+  ## Step 7 – Save Report
+
+  After generating the HTML report:
+
+  - Generate a unique name using a sanitized list name: retain `[A-Za-z0-9_-]`, replace other runs with `_`, trim leading and trailing separators, cap the sanitized list-name portion at 80 characters, and use `SharePointList` if empty.
+
+     Report_<SanitizedListName>_<yyyyMMdd_HHmmss>.html
+
+  - Verify that the configured destination's audience is no broader than the source list and included items. If this cannot be verified, do not upload the report.
+  - Invoke the configured SharePoint **Create file** action or flow to save the report in the pre-approved SharePoint destination whose audience is no broader than the source list and included items.
+  - Capture the URL or path returned by **Create file** and use it in the response. If file creation fails or returns no URL or path, report the failure honestly and never guess a URL.
+
+  ---
+
+  ## Output Requirements
+
+  Return:
+
+  1. Report summary.
+  2. SharePoint URL of the generated report.
+  3. Report file name.
+  4. List schema summary.
+  5. Insights summary.
+  6. Archival candidates summary: the exact criteria used (status column/value when applicable, and the inactivity threshold) and the count of qualifying items out of total records.
+  7. Storage location within the configured SharePoint destination.
+  8. When the list exceeds 1,000 items, a note that the report was generated in summary mode (overall analysis and archival report only, no full per-item data table).
+
+  ---
+
+  ## Success Criteria
+
+  A successful execution must:
+
+  - Detect the requested SharePoint list.
+  - Validate its existence.
+  - Suggest available lists when not found.
+  - Discover schema.
+  - Analyze data.
+  - Identify archival candidates using the confirmed or default criteria: completed/closed status plus no modification in over 30 days when a completeness field exists, or no modification in over 30 days alone when it does not — without modifying any item, and using any user-specified inactivity duration in place of the 30-day default.
+  - Generate insights.
+  - Create an interactive HTML report.
+  - Include a dedicated Archival Candidates section stating the criteria used, for every list regardless of size.
+  - For lists at or under 1,000 items, provide sortable tables, pagination, quick search, modal detail view, and Open SharePoint Item action for the full Data Table.
+  - For lists over 1,000 items, omit the full Data Table and instead provide only the overall analysis sections and the Archival Candidates report, clearly noting why per-item detail was omitted.
+  - Save the report in the pre-approved SharePoint destination whose audience is no broader than the source list and included items.
+  - Return the direct SharePoint URL of the report.
+  - Generate a unique report name.
+  - Support responsive user experience.
+authoringSource: Generated
