@@ -10,6 +10,9 @@ const old = "c".repeat(40);
 const url = "https://github.com/owner/repo/pull/42";
 const template = readFileSync(new URL("../.github/pull_request_template.md", import.meta.url), "utf8");
 const attested = template.replaceAll("- [ ]", "- [x]");
+const statements = attested.split("\n").filter((line) => line.startsWith("- [x]")).map((line) => line.slice(6));
+const checkedItem = (statement: string) => `<li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Completed task" checked=""> ${statement}</li>`;
+const attestedHTML = `<ul class="contains-task-list">\n${statements.map(checkedItem).join("\n")}\n</ul>`;
 const native: Review = { id: 1, author: "copilot-pull-request-reviewer[bot]", human: false, copilot: true, head, state: "COMMENTED", url };
 const human: Review = { id: 2, author: "maintainer", human: true, copilot: false, head, state: "APPROVED", url };
 const checks = [
@@ -20,6 +23,7 @@ const checks = [
 function evidence(): Evidence {
   return {
     pr: { number: 42, head, base, baseBranch: "main", branch: "sample", headRepo: "author/repo", author: "contributor", body: attested, url, draft: false, state: "open", count: 1, labels: [], requested: [] },
+    bodyHTML: attestedHTML,
     files: [{ filename: "submissions/sample/README.md", status: "modified" }],
     formats: ["solution"], metadataProblems: [], reviews: [structuredClone(native), structuredClone(human)],
     threads: [], checks: structuredClone(checks), requiredChecks: checks.map((check) => check.name), ci: { state: "success", url },
@@ -91,6 +95,7 @@ test("pending reviews under either native Copilot login do not request duplicate
 test("resolved threads do not waive attestations, CI or approval", () => {
   const state = evidence();
   state.pr.body = "";
+  state.bodyHTML = "";
   state.reviews = [native];
   state.threads = [{ review: 1, head, resolved: true, url, replyByAuthor: false }];
   state.ci = { state: "action_required", url };
@@ -140,37 +145,37 @@ test("summary-only changes requests distinguish old revisions from current contr
   assert.ok(assess(state).labels.includes(QUEUE_LABELS.contributor));
 });
 
-test("attestations are format-aware and ignored in comments and fenced examples", () => {
+test("attestations use GitHub-rendered checked tasks, not code examples or quoted tasks", () => {
   const state = evidence();
-  const statements = attested.split("\n").filter((line) => line.startsWith("- [x]")).join("\n");
-  state.pr.body = `<!-- ${statements} -->\n\`\`\`md\n${statements}\n\`\`\``;
-  assert.match(assess(state).contributor.join(), /solution fresh-environment/);
+  for (const html of [
+    "",
+    `<pre><code>- [x] ${statements[0]}\n</code></pre>`,
+    `<ul><li><div class="highlight"><pre>- [x] ${statements[0]}\n</pre></div></li></ul>`,
+    `<pre><code>${attestedHTML.replaceAll("<", "&lt;").replaceAll(">", "&gt;")}</code></pre>`,
+    `<blockquote>${attestedHTML}</blockquote>`,
+    `<blockquote><blockquote>${attestedHTML}</blockquote>${attestedHTML}</blockquote>`,
+    attestedHTML.replaceAll(' checked=""', ""),
+  ]) {
+    state.bodyHTML = html;
+    assert.match(assess(state).contributor.join(), /solution fresh-environment/);
+    assert.ok(!assess(state).labels.includes(QUEUE_LABELS.ready));
+  }
   state.formats = ["app"];
-  state.pr.body = attested.split("## Managed app submission")[0];
+  state.bodyHTML = checkedItem(statements[0]);
   assert.match(assess(state).contributor.join(), /managed-app fresh-app and source\/privacy/);
-  state.pr.body = attested;
+  state.bodyHTML = attestedHTML;
   assert.deepEqual(assess(state).contributor, []);
 });
 
-test("indented, longer and unclosed Markdown fences cannot attest testing", () => {
-  const statements = attested.split("\n").filter((line) => line.startsWith("- [x]")).join("\n");
-  for (const indentation of ["", " ", "  ", "   "]) {
-    for (const fence of ["```", "~~~", "````"]) {
-      for (const closing of [fence, fence + fence[0], ""]) {
-        const state = evidence();
-        state.pr.body = `${indentation}${fence}md\n${statements}\n${indentation}${closing}`;
-        assert.match(assess(state).contributor.join(), /solution fresh-environment/);
-        assert.ok(!assess(state).labels.includes(QUEUE_LABELS.ready));
-        if (closing) {
-          state.pr.body += `\n${statements}`;
-          assert.deepEqual(assess(state).contributor, []);
-        }
-      }
-    }
-  }
+test("list-contained Markdown fences cannot satisfy attestations but real tasks after them can", () => {
   const state = evidence();
-  state.pr.body = statements.split("\n").map((line) => `    ${line}`).join("\n");
-  assert.match(assess(state).contributor.join(), /solution fresh-environment/);
+  for (const marker of ["- ~~~md", "1. ```md", "   - ````md"]) {
+    state.pr.body = `${marker}\n  - [x] ${statements[0]}\n  ~~~`;
+    state.bodyHTML = `<ul><li><pre><code>- [x] ${statements[0]}\n</code></pre></li></ul>`;
+    assert.match(assess(state).contributor.join(), /solution fresh-environment/);
+    state.bodyHTML += checkedItem(statements[0]);
+    assert.deepEqual(assess(state).contributor, []);
+  }
 });
 
 test("actual required failures, pending runs and unknown check states are not readiness", () => {
@@ -212,6 +217,7 @@ function mock() {
     if (path === "/graphql") {
       const query = String(body.query);
       const node = {
+        body: pr.body, bodyHTML: state.bodyHTML,
         headRefOid: head, baseRefOid: base, mergeStateStatus: state.mergeState, reviewDecision: state.decision,
         commits: { nodes: [{ commit: { statusCheckRollup: { contexts: {
           totalCount: state.checks.length, pageInfo: { hasNextPage: false, endCursor: null },
@@ -229,6 +235,7 @@ function mock() {
       } }]);
       if (path === "pulls/42/files?per_page=100&page=1") return Response.json(state.files);
       if (path === "issues/42/comments?per_page=100&page=1") return Response.json(comments);
+      if (path === "issues/42/labels?per_page=100&page=1") return Response.json(pr.labels);
       if (path.startsWith("issues?state=closed&labels=")) return Response.json([]);
       if (path === "labels?per_page=100&page=1") return Response.json(labels);
       if (path.startsWith("contents/")) {
@@ -311,6 +318,7 @@ test("both submission formats use metadata, not guesses from which payload files
   const fixture = mock();
   fixture.state.formats = ["app"];
   fixture.pr.body = "";
+  fixture.state.bodyHTML = "";
   assert.match(await reconcile(fixture.api, 42, true), /managed-app fresh-app and source\/privacy/);
 });
 
@@ -415,6 +423,30 @@ test("later comment/file pages are read and bot impersonation cannot suppress a 
   assert.ok(!writes(fixture.calls).some((call) => call.path.endsWith("/comments")));
 });
 
+test("failed retirement comments retain a recovery label even when the initial snapshot had it", async () => {
+  for (const original of [QUEUE_LABELS.ready, QUEUE_LABELS.maintainer]) {
+    const fixture = mock();
+    await reconcile(fixture.api, 42);
+    fixture.pr.state = "closed";
+    fixture.pr.labels = [{ name: original }, { name: "keep-this-label" }];
+    fixture.overrides.set("PATCH issues/comments/12", () => new Response(null, { status: 503 }));
+    await assert.rejects(reconcile(fixture.api, 42), /503/);
+    assert.ok(!fixture.pr.labels.some((label) => label.name === QUEUE_LABELS.ready));
+    assert.ok(fixture.pr.labels.some((label) => label.name === QUEUE_LABELS.maintainer));
+    assert.ok(fixture.pr.labels.some((label) => label.name === "keep-this-label"));
+    fixture.overrides.delete("PATCH issues/comments/12");
+    await reconcile(fixture.api, 42);
+    assert.deepEqual(fixture.pr.labels, [{ name: "keep-this-label" }]);
+    assert.match(String(fixture.comments[0].body), /this PR is closed/);
+  }
+});
+
+test("rendered attestations require a matching raw PR body", async () => {
+  const fixture = mock();
+  fixture.pr.body = "";
+  await assert.rejects(collectEvidence(fixture.api, evidence().pr, evidence().files), /PR body changed/);
+});
+
 test("revision races fail visibly and withdraw previous readiness, even in-place comments", async () => {
   const fixture = mock();
   await reconcile(fixture.api, 42);
@@ -478,6 +510,7 @@ test("GraphQL failures and repeated pagination cursors fail visibly", async () =
   fixture.overrides.set("POST /graphql", () => {
     const threads = String(fixture.calls.at(-1)!.body.query).includes("reviewThreads");
     return { data: { repository: { pullRequest: {
+      body: attested, bodyHTML: attestedHTML,
       headRefOid: head, baseRefOid: base, mergeStateStatus: "CLEAN", reviewDecision: "APPROVED",
       commits: { nodes: [{ commit: { statusCheckRollup: null } }] },
       ...(threads ? { reviewThreads: {

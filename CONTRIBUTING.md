@@ -420,8 +420,9 @@ an old finding is neither automatically still valid nor automatically fixed.
 Copilot can resolve its own addressed findings on rereview; humans retain
 responsibility for their discussions and disputed findings. Missing CI is not
 reported as failing code when the run is actually waiting for authorization.
-The bot reads checked attestations, not proof that an import or authenticated
-app test occurred. It does not add a new attestation enforcement check.
+The bot reads GitHub-rendered checked attestations, not code examples or proof
+that an import or authenticated app test occurred. It does not add a new
+attestation enforcement check.
 
 The coordinator reads GitHub metadata and small submission metadata JSON files
 through the API; it never checks out contributor code, installs dependencies,

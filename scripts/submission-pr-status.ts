@@ -178,6 +178,7 @@ export interface Check {
 }
 export interface Evidence {
   pr: Pull;
+  bodyHTML: string;
   files: ChangedFile[];
   formats: Array<keyof typeof attestations>;
   metadataProblems: string[];
@@ -192,7 +193,7 @@ export interface Evidence {
 
 const summaryQuery = `query($owner:String!,$name:String!,$number:Int!,$after:String) {
   repository(owner:$owner,name:$name) { pullRequest(number:$number) {
-    headRefOid baseRefOid mergeStateStatus reviewDecision
+    headRefOid baseRefOid mergeStateStatus reviewDecision body bodyHTML
     commits(last:1) { nodes { commit { statusCheckRollup {
       contexts(first:100,after:$after) { totalCount pageInfo { hasNextPage endCursor }
         nodes {
@@ -291,7 +292,10 @@ export async function collectEvidence(api: TaskApi, pr: Pull, files: ChangedFile
   });
   let mergeState = "UNKNOWN";
   let decision: string | null = null;
+  let bodyHTML: string | undefined;
   const checks = (await graphPages(api, pr, summaryQuery, (node) => {
+    if (text(node.body) !== pr.body) throw new Error("PR body changed during assessment");
+    bodyHTML = text(node.bodyHTML);
     mergeState = text(node.mergeStateStatus);
     decision = node.reviewDecision === null ? null : text(node.reviewDecision);
     const commit = object(object(array(object(node.commits).nodes)[0]).commit);
@@ -324,7 +328,7 @@ export async function collectEvidence(api: TaskApi, pr: Pull, files: ChangedFile
     .sort((a, b) => integer(b.id) - integer(a.id));
   const latest = runs[0];
   return {
-    pr, files, formats: [...formats], metadataProblems, reviews, threads, checks, requiredChecks, mergeState, decision,
+    pr, bodyHTML: text(bodyHTML), files, formats: [...formats], metadataProblems, reviews, threads, checks, requiredChecks, mergeState, decision,
     ci: latest ? { state: text(latest.conclusion ?? latest.status), url: api.url(latest.html_url) } : null,
   };
 }
@@ -336,22 +340,21 @@ export interface Assessment {
   labels: string[];
 }
 
-function checkedAttestations(body: string): Set<string> {
+function checkedAttestations(bodyHTML: string): Set<string> {
   const checked = new Set<string>();
-  let fence: { character: string; length: number } | undefined;
-  for (const line of body.replace(/<!--[\s\S]*?(?:-->|$)/g, "").split(/\r?\n/)) {
-    if (fence) {
-      const closing = /^ {0,3}(`+|~+)[\t ]*$/.exec(line);
-      if (closing && closing[1][0] === fence.character && closing[1].length >= fence.length) fence = undefined;
-      continue;
+  let quoteDepth = 0;
+  // GitHub renders Markdown; code examples are escaped, never checkbox inputs.
+  const unquoted = bodyHTML.replace(/<(\/?)blockquote\b[^>]*>|[^<]+|</g, (part, closing: string | undefined) => {
+    if (closing !== undefined) {
+      quoteDepth += closing ? -1 : 1;
+      return "";
     }
-    const opening = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
-    if (opening && !(opening[1][0] === "`" && opening[2].includes("`"))) {
-      fence = { character: opening[1][0], length: opening[1].length };
-      continue;
-    }
-    const match = /^ {0,3}-[\t ]+\[[xX]\][\t ]+(.+?)[\t ]*$/.exec(line);
-    if (match) checked.add(match[1]);
+    return quoteDepth ? "" : part;
+  });
+  for (const match of unquoted.matchAll(/<li class="task-list-item">\s*<input ([^>]*)>\s*([^<]*?)<\/li>/g)) {
+    if (/(?:^|\s)type="checkbox"/.test(match[1])
+      && /(?:^|\s)class="task-list-item-checkbox"/.test(match[1])
+      && /(?:^|\s)checked=""/.test(match[1])) checked.add(match[2].trim());
   }
   return checked;
 }
@@ -363,7 +366,7 @@ export function assess(evidence: Evidence): Assessment {
   const waiting: string[] = [];
   const scope = classifyContributionFiles(evidence.files);
   if (scope.slugs.size > 1) contributor.push("Keep this contribution to one submission, or ask a maintainer to review its maintenance scope.");
-  const checked = checkedAttestations(pr.body);
+  const checked = checkedAttestations(evidence.bodyHTML);
   for (const format of evidence.formats) {
     if (attestations[format].some((statement) => !checked.has(statement))) {
       contributor.push(`Complete the ${format === "app" ? "managed-app fresh-app and source/privacy" : "solution fresh-environment import"} attestations in the PR body. Only check them after doing the documented test/review.`);
@@ -554,13 +557,14 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
       // Invalidate a previous readiness claim even when fresh evidence is unavailable.
       try {
         await api.call(`issues/${number}/labels/${encodeURIComponent(QUEUE_LABELS.ready)}`, "DELETE", undefined, true);
+        if (initial && tracking) {
+          const current = (await api.pages(`issues/${number}/labels`)).map((value) => text(object(value).name));
+          const retained = current.filter((label) => label !== QUEUE_LABELS.ready && Object.values<string>(QUEUE_LABELS).includes(label));
+          await writeLabels(api, { ...initial, labels: current },
+            [...new Set([...retained, QUEUE_LABELS.maintainer])], false);
+        }
         if (initial && tracking && commentsLoaded) {
           await writeComment(api, number, comments, `${MARKER}\n## Submission next steps\nAssessment failed or changed while being read. Previous readiness is withdrawn. Maintainer: inspect the [Submission PR tasks workflow](${new URL(initial.url).origin}/${api.repo}/actions/workflows/submission-pr-status.yml) and rerun it; do not rely on the previous checklist.\n`, false);
-        }
-        if (initial && tracking) {
-          const retained = initial.labels.filter((label) => label !== QUEUE_LABELS.ready && Object.values<string>(QUEUE_LABELS).includes(label));
-          await writeLabels(api, { ...initial, labels: initial.labels.filter((label) => label !== QUEUE_LABELS.ready) },
-            [...new Set([...retained, QUEUE_LABELS.maintainer])], false);
         }
       } catch (cleanup) {
         throw new AggregateError([error, cleanup], `Assessment failed: ${String(error)}; readiness invalidation failed: ${String(cleanup)}`);
