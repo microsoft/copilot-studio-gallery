@@ -8,6 +8,7 @@ export const QUEUE_LABELS = {
   contributor: "needs-contributor",
   maintainer: "needs-maintainer",
   copilot: "awaiting-copilot",
+  ci: "awaiting-ci",
   ready: "ready-for-merge",
 } as const;
 const BOT = "github-actions[bot]";
@@ -333,12 +334,29 @@ export async function collectEvidence(api: TaskApi, pr: Pull, files: ChangedFile
   };
 }
 
+type ActionKind = "scope" | "review-changes" | "review-discussion" | "branch" | "fix-check"
+  | "attestation" | "authorize-ci" | "investigate-ci" | "wait-ci" | "request-review"
+  | "wait-review" | "judge-reply" | "confirm-review" | "investigate-state" | "approve" | "investigate-merge" | "merge";
+export interface NextAction {
+  kind: ActionKind;
+  owner: "Contributor" | "Maintainer" | "Automation";
+  title: string;
+  reason: string;
+  instruction: string;
+  reassess: string;
+}
 export interface Assessment {
-  contributor: string[];
-  maintainer: string[];
-  waiting: string[];
+  blockers: NextAction[];
+  next: NextAction;
   labels: string[];
 }
+// Fix prerequisite content before spending another review/CI cycle; approve last.
+const ACTION_PRIORITY: Record<ActionKind, number> = {
+  scope: 10, "review-changes": 20, "review-discussion": 21, branch: 30,
+  "fix-check": 40, attestation: 50, "authorize-ci": 60, "investigate-ci": 61,
+  "judge-reply": 25, "wait-ci": 65, "request-review": 70, "wait-review": 71, "confirm-review": 75, "investigate-state": 85,
+  approve: 90, "investigate-merge": 95, merge: 100,
+};
 
 function checkedAttestations(bodyHTML: string): Set<string> {
   const checked = new Set<string>();
@@ -361,15 +379,24 @@ function checkedAttestations(bodyHTML: string): Set<string> {
 
 export function assess(evidence: Evidence): Assessment {
   const { pr, reviews, threads, checks, ci } = evidence;
-  const contributor: string[] = [...evidence.metadataProblems];
-  const maintainer: string[] = [];
-  const waiting: string[] = [];
+  const blockers: NextAction[] = [];
+  const add = (kind: ActionKind, owner: NextAction["owner"], title: string, reason: string, instruction: string, reassess: string) => {
+    blockers.push({ kind, owner, title, reason, instruction, reassess });
+  };
   const scope = classifyContributionFiles(evidence.files);
-  if (scope.slugs.size > 1) contributor.push("Keep this contribution to one submission, or ask a maintainer to review its maintenance scope.");
+  for (const problem of evidence.metadataProblems) {
+    add("scope", "Contributor", "Correct the submission metadata", "The submission format or required metadata cannot be validated.",
+      problem, "After corrected submission files are pushed.");
+  }
+  if (scope.slugs.size > 1) add("scope", "Contributor", "Correct the contribution scope",
+    "This PR changes more than one submission.", "Keep this contribution to one submission, or ask a maintainer to review its maintenance scope.",
+    "After the scope is corrected or a maintainer explicitly authorizes it.");
   const checked = checkedAttestations(evidence.bodyHTML);
   for (const format of evidence.formats) {
     if (attestations[format].some((statement) => !checked.has(statement))) {
-      contributor.push(`Complete the ${format === "app" ? "managed-app fresh-app and source/privacy" : "solution fresh-environment import"} attestations in the PR body. Only check them after doing the documented test/review.`);
+      add("attestation", "Contributor", "Complete the submission attestation", "The required test/review has not been attested in the PR body.",
+        `Complete the ${format === "app" ? "managed-app fresh-app and source/privacy" : "solution fresh-environment import"} attestations in the [PR body](${pr.url}). Only check them after doing the documented test/review.`,
+        "After the PR body is updated.");
     }
   }
 
@@ -377,26 +404,53 @@ export function assess(evidence: Evidence): Assessment {
     .sort((a, b) => b.id - a.id)[0];
   const currentCopilot = latestCopilot !== undefined && ["COMMENTED", "APPROVED", "CHANGES_REQUESTED"].includes(latestCopilot.state);
   if (!currentCopilot) {
-    if (!pr.requested.some((author) => COPILOT_LOGINS.has(author.toLowerCase()))) maintainer.push(`Request a native Copilot review of the current revision in [Reviewers](${pr.url}). Enable **Review new pushes** for future fixes if it is not configured.`);
-    waiting.push("A native Copilot review of this revision is still needed. Earlier findings are not assumed fixed or still applicable.");
+    if (!pr.requested.some((author) => COPILOT_LOGINS.has(author.toLowerCase()))) {
+      add("request-review", "Maintainer", "Request Copilot review", "No completed native Copilot review exists for this revision.",
+        `Request a native Copilot review of the current revision in [Reviewers](${pr.url}).`,
+        "After the review is requested or submitted.");
+    } else {
+      add("wait-review", "Automation", "Wait for Copilot review", "A native Copilot review of this revision is requested but not yet complete.",
+        `Wait for the requested [Copilot review](${pr.url}). Earlier findings are not assumed fixed or still applicable.`,
+        "After Copilot submits its review.");
+    }
   }
   const copilotIds = new Set(reviews.filter((review) => review.copilot).map((review) => review.id));
-  if (latestCopilot?.state === "CHANGES_REQUESTED") {
-    contributor.push(`Address or discuss [Copilot's request for changes](${latestCopilot.url}); request a rereview after the agreed remedy.`);
-  }
   const open = threads.filter((thread) => !thread.resolved);
+  const repliedToAll = open.length > 0 && open.every((thread) => thread.replyByAuthor);
+  if (latestCopilot?.state === "CHANGES_REQUESTED" && !repliedToAll) {
+    add("review-changes", "Contributor", "Address the outstanding review request", "Copilot requested changes on this revision.",
+      `Address or discuss [Copilot's request for changes](${latestCopilot.url}), then push the agreed remedy and report verification in that discussion.`,
+      "After a correction is pushed or a response is posted; replies do not automatically resolve findings.");
+  } else if (latestCopilot?.state === "CHANGES_REQUESTED") {
+    add("judge-reply", "Maintainer", "Judge the response to the review request", "The contributor has replied, but Copilot's changes request remains outstanding.",
+      `Compare the replies with [Copilot's full request for changes](${latestCopilot.url}); confirm whether the concern is addressed or explain the remaining blocker.`,
+      "After reviewer confirmation or further contributor work.");
+  }
   const copilot = open.filter((thread) => thread.review !== null && copilotIds.has(thread.review));
   const human = open.filter((thread) => thread.review === null || !copilotIds.has(thread.review));
   if (copilot.length && currentCopilot) {
-    contributor.push(`Address or discuss [unresolved Copilot findings](${copilot[0].url}) (${copilot.length} threads); do not repeat already supplied fixes.`);
-    maintainer.push(`If a fix or explanation is already supplied, review it and resolve the [remaining Copilot discussion](${copilot[0].url}) rather than asking for the same fix again.`);
+    const awaitingAuthor = copilot.find((thread) => !thread.replyByAuthor && (thread.head === null || thread.head === pr.head));
+    if (awaitingAuthor) add("review-discussion", "Contributor", "Address the outstanding review finding",
+      "A current Copilot finding has no contributor response.",
+      `Address or discuss the [unresolved Copilot finding](${awaitingAuthor.url}), push the agreed correction, and report verification there. Do not repeat already supplied fixes.`,
+      "After a correction is pushed or a response is posted.");
+    const followup = copilot.find((thread) => thread.replyByAuthor || (thread.head !== null && thread.head !== pr.head));
+    if (followup) add(followup.head === pr.head && followup.replyByAuthor ? "judge-reply" : "confirm-review", "Maintainer", "Judge the response to the review finding",
+      "A reply or new revision needs confirmation; the open thread is not proof that the fix is absent.",
+      `Review the contributor's reply/new revision against the [remaining Copilot discussion](${followup.url}) and resolve it only if addressed.`,
+      "After the discussion is resolved or specific remaining work is identified.");
   }
   if (human.length) {
     const followup = human.find((thread) => thread.replyByAuthor || (thread.head !== null && thread.head !== pr.head));
-    if (followup) maintainer.push(`Review the contributor's reply/new revision against the [open human discussion](${followup.url}) and resolve it only if addressed.`);
+    if (followup) add(followup.head === pr.head && followup.replyByAuthor ? "judge-reply" : "confirm-review", "Maintainer", "Judge the response to the review discussion",
+      "A contributor reply or new revision needs human confirmation.",
+      `Review the contributor's reply/new revision against the [open human discussion](${followup.url}) and resolve it only if addressed.`,
+      "After the discussion is resolved or specific remaining work is identified.");
     const awaitingAuthor = human.find((thread) => !thread.replyByAuthor && (thread.head === null || thread.head === pr.head));
     if (awaitingAuthor) {
-      contributor.push(`Respond to the [open human review discussion](${awaitingAuthor.url}) with a fix or clarification.`);
+      add("review-discussion", "Contributor", "Respond to the review discussion", "A current human review discussion has no contributor response.",
+        `Respond to the [open human review discussion](${awaitingAuthor.url}) with a fix or clarification and report verification.`,
+        "After a correction is pushed or a response is posted.");
     }
   }
   const latestHuman = new Map<string, Review>();
@@ -406,8 +460,14 @@ export function assess(evidence: Evidence): Assessment {
   const requests = [...latestHuman.values()].filter((review) => review.state === "CHANGES_REQUESTED");
   const changes = requests[0];
   const currentChanges = requests.find((review) => review.head === pr.head);
-  if (currentChanges) contributor.push(`Address or discuss [the human request for changes](${currentChanges.url}), including feedback in the review summary.`);
-  if (changes) maintainer.push(`Follow up on [the human request for changes](${changes.url}); only that reviewer/maintainer can confirm the remaining concern is addressed.`);
+  if (currentChanges && !repliedToAll) add("review-changes", "Contributor", "Address the outstanding review request",
+    "A human reviewer requested changes on this revision.",
+    `Address or discuss [the human request for changes](${currentChanges.url}), including feedback in the review summary. Push the agreed correction and report verification there.`,
+    "After a correction is pushed or a response is posted; the reviewer must still confirm the remedy.");
+  if (changes && (!currentChanges || repliedToAll)) add(currentChanges ? "judge-reply" : "confirm-review", "Maintainer", "Judge the response to the changes request",
+    "The human changes request still needs confirmation against the reply/new revision.",
+    `Follow up on [the human request for changes](${changes.url}); compare the full request with the supplied response/revision and confirm it is addressed or identify the specific remaining concern.`,
+    "After the reviewer updates the review or requests a specific further correction.");
 
   const required = checks.filter((check) => check.required);
   const missing = evidence.requiredChecks.filter((name) => !required.some((check) => check.name === name));
@@ -415,53 +475,81 @@ export function assess(evidence: Evidence): Assessment {
   const failures = required.filter((check) => !["SUCCESS", "NEUTRAL", "SKIPPED", ...pending.map((item) => item.state)].includes(check.state));
   for (const check of failures) {
     if (["FAILURE", "ERROR", "TIMED_OUT", "STARTUP_FAILURE"].includes(check.state)) {
-      contributor.push(`Fix the failing [${check.name === SCOPE_CHECK ? "contribution scope check" : "required check"}](${check.url}); ask a maintainer if this is an infrastructure or authorized-scope issue.`);
+      add("fix-check", "Contributor", "Fix the failing required check", `${check.name} failed (${check.state}).`,
+        `Fix the failing [${check.name === SCOPE_CHECK ? "contribution scope check" : "required check"}](${check.url}); ask a maintainer if this is an infrastructure or authorized-scope issue.`,
+        "After the correction is pushed and the check reruns.");
     } else {
-      maintainer.push(`Inspect the [incomplete required check](${check.url}) (${check.state}) and decide whether a rerun is appropriate.`);
+      add("investigate-ci", "Maintainer", "Investigate the incomplete required check", `${check.name} has an incomplete or unknown result (${check.state}).`,
+        `Inspect the [incomplete required check](${check.url}) and decide whether a rerun is appropriate.`,
+        "After the check is rerun or its state changes.");
     }
   }
-  if (ci?.state === "action_required") maintainer.push(`Inspect and authorize the [fork CI run awaiting approval](${ci.url}). This is not a test failure.`);
-  else if (missing.length && !pending.length) maintainer.push(`Inspect [missing required checks](${pr.url}/checks) (${missing.join(", ")}); start/authorize CI or investigate the missing scope check as appropriate.`);
-  if (pending.length || (ci && ["queued", "in_progress", "waiting", "pending", "requested"].includes(ci.state))) {
-    waiting.push(`Wait for [current CI/checks](${ci?.url ?? `${pr.url}/checks`}) to finish.`);
+  const runningCI = ci !== null && ["queued", "in_progress", "waiting", "pending", "requested"].includes(ci.state);
+  if (ci?.state === "action_required") add("authorize-ci", "Maintainer", "Inspect and authorize fork CI", "The current fork CI run is awaiting approval, not failing tests.",
+    `Inspect and authorize the [fork CI run awaiting approval](${ci.url}) only if satisfied it is appropriate to run.`,
+    "After the run is authorized and its checks advance.");
+  else if (missing.length && !pending.length && !runningCI) add("investigate-ci", "Maintainer", "Investigate missing required checks",
+    `Required results are missing: ${missing.join(", ")}.`,
+    `Inspect [missing required checks](${pr.url}/checks); start/authorize CI or investigate the missing scope check as appropriate.`,
+    "After the missing checks appear or the cause is corrected.");
+  if (pending.length || runningCI) {
+    add("wait-ci", "Automation", "Wait for current CI", "Checks are running or pending on the assessed revision.",
+      `Wait for [current CI/checks](${ci?.url ?? `${pr.url}/checks`}) to finish.`,
+      "After current checks complete.");
   }
 
   const approved = evidence.decision === "APPROVED"
     && [...latestHuman.values()].some((review) => review.state === "APPROVED" && review.head === pr.head && review.author !== pr.author);
-  if (!approved) maintainer.push(`After reviewing the evidence, submit a formal human approval of this revision in [Files changed](${pr.url}/files), or explain the specific remaining blocker. Copilot comments are not that approval.`);
+  if (!approved) add("approve", "Maintainer", "Review and approve the current revision", "Formal human approval of this revision is missing.",
+    `Review the evidence and submit a formal human approval in [Files changed](${pr.url}/files), or explain a specific remaining blocker. Copilot comments are not that approval.`,
+    "After a formal review is submitted.");
   if (evidence.mergeState === "DIRTY" || evidence.mergeState === "BEHIND") {
-    contributor.push(`Resolve merge conflicts or update the branch against the base branch (${evidence.mergeState}); new commits need fresh checks and review.`);
+    add("branch", "Contributor", evidence.mergeState === "DIRTY" ? "Resolve merge conflicts" : "Update the branch against the base",
+      `GitHub reports ${evidence.mergeState}.`,
+      `Resolve merge conflicts or update the branch against the [base branch](${pr.url}) before the final checks/review cycle. New commits need fresh checks and review.`,
+      "After the updated branch is pushed.");
   } else if (!["CLEAN", "BLOCKED", "UNSTABLE", "HAS_HOOKS"].includes(evidence.mergeState)) {
-    maintainer.push(`GitHub merge state is ${evidence.mergeState}; inspect [merge requirements](${pr.url}) before proceeding.`);
+    add("investigate-state", "Maintainer", "Investigate GitHub's merge state", `GitHub merge state is ${evidence.mergeState}.`,
+      `Inspect [merge requirements](${pr.url}) before proceeding. Unknown state is not readiness.`,
+      "After GitHub reports a known merge state.");
   }
   if (["BLOCKED", "UNSTABLE", "HAS_HOOKS"].includes(evidence.mergeState)) {
-    maintainer.push(`Inspect GitHub's [remaining merge requirements](${pr.url}); the task queue does not bypass repository rules.`);
+    add("investigate-merge", "Maintainer", "Inspect the remaining merge requirement", `GitHub reports ${evidence.mergeState}.`,
+      `Inspect GitHub's [remaining merge requirements](${pr.url}); the task queue does not bypass repository rules.`,
+      "After the remaining GitHub requirement is satisfied.");
   }
-  const ready = contributor.length === 0 && maintainer.length === 0 && waiting.length === 0
+  const ready = blockers.length === 0
     && currentCopilot && open.length === 0 && !changes && approved
     && !missing.length && !failures.length && !pending.length && evidence.mergeState === "CLEAN";
-  if (ready) maintainer.push(`Perform the final review and [merge manually](${pr.url}) when satisfied.`);
-  const labels = ready ? [QUEUE_LABELS.ready] : [
-    ...(contributor.length ? [QUEUE_LABELS.contributor] : []),
-    ...(maintainer.length ? [QUEUE_LABELS.maintainer] : []),
-    ...(!currentCopilot ? [QUEUE_LABELS.copilot] : []),
-  ];
-  return { contributor, maintainer, waiting, labels };
+  const next = ready ? {
+    kind: "merge" as const, owner: "Maintainer" as const, title: "Perform the final review and merge",
+    reason: "Current review, checks, attestations, approval, and GitHub mergeability requirements are satisfied.",
+    instruction: `Perform the final review and [merge manually](${pr.url}) when satisfied.`,
+    reassess: "After merge or any change to the assessed evidence.",
+  } : [...blockers].sort((a, b) => ACTION_PRIORITY[a.kind] - ACTION_PRIORITY[b.kind])[0];
+  if (!next) throw new Error("Readiness failed without an actionable blocker");
+  const labels = next.kind === "merge" ? [QUEUE_LABELS.ready]
+    : next.owner === "Contributor" ? [QUEUE_LABELS.contributor]
+    : next.owner === "Maintainer" ? [QUEUE_LABELS.maintainer]
+    : next.kind === "wait-review" ? [QUEUE_LABELS.copilot] : [QUEUE_LABELS.ci];
+  return { blockers, next, labels };
 }
 
 export function render(pr: Pull, assessment: Assessment): string {
-  const section = (name: string, tasks: string[]) => `### ${name}\n${tasks.length ? tasks.map((task) => `- [ ] ${task}`).join("\n") : "No task identified."}`;
+  const { next } = assessment;
   return `${MARKER}
-## Submission next steps
+## Submission next step
 Assessed head \`${pr.head}\` against base \`${pr.base}\`. Informational only: GitHub's live merge requirements remain authoritative.
 
-${section("Contributor", assessment.contributor)}
+**Next: ${next.owner} - ${next.title}.**
 
-${section("Maintainer", assessment.maintainer)}
+${next.reason}
 
-${section("Waiting on automation", assessment.waiting)}
+${next.instruction}
 
-This comment is updated in place. Tasks may overlap; nobody is automatically assigned. CI authorization, formal approval, and merge stay manual. Checked attestations are contributor statements, not automated certification.
+**Reassessed:** ${next.reassess}
+
+This comment is updated in place and shows only the next step; later prerequisites remain tracked. CI authorization, formal approval, and merge stay manual. Checked attestations are contributor statements, not automated certification.
 `;
 }
 
@@ -527,7 +615,8 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
     let evidence: Evidence | undefined;
     let labels: string[] = [];
     if (!eligible || initial.draft || initial.state !== "open") {
-      body = `${MARKER}\n## Submission next steps\nTask routing is paused: this PR is ${initial.state !== "open" ? "closed" : initial.draft ? "a draft" : "outside ordinary contribution scope"}. Ordinary maintainer review and GitHub merge requirements still apply.\n`;
+      const reason = initial.state !== "open" ? "closed" : initial.draft ? "a draft" : "outside ordinary contribution scope";
+      body = `${MARKER}\n## Submission next step\n**Paused: this PR is ${reason}.**\n\n${initial.state !== "open" ? "No active contribution task remains." : initial.draft ? "Contributor: mark this PR ready for review when ready; the queue will reassess." : "Use ordinary maintainer review; this PR is outside the contribution queue."}\n`;
       if (!tracked && !comments.some(ownedComment)) return "Not tracking draft/closed PR";
     } else {
       evidence = await collectEvidence(api, initial, files);
@@ -560,14 +649,12 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
         async () => {
           const current = (await api.pages(`issues/${number}/labels`)).map((value) => text(object(value).name));
           if (!tracking && !current.some((label) => Object.values<string>(QUEUE_LABELS).includes(label))) return;
-          const retained = current.filter((label) => label !== QUEUE_LABELS.ready && Object.values<string>(QUEUE_LABELS).includes(label));
-          await writeLabels(api, { number, labels: current },
-            [...new Set([...retained, QUEUE_LABELS.maintainer])], false);
+          await writeLabels(api, { number, labels: current }, [QUEUE_LABELS.maintainer], false);
         },
         async () => { await api.call(`issues/${number}/labels/${encodeURIComponent(QUEUE_LABELS.ready)}`, "DELETE", undefined, true); },
         async () => {
           if (initial && tracking && commentsLoaded) {
-            await writeComment(api, number, comments, `${MARKER}\n## Submission next steps\nAssessment failed or changed while being read. Previous readiness is withdrawn. Maintainer: inspect the [Submission PR tasks workflow](${new URL(initial.url).origin}/${api.repo}/actions/workflows/submission-pr-status.yml) and rerun it; do not rely on the previous checklist.\n`, false);
+            await writeComment(api, number, comments, `${MARKER}\n## Submission next step\n**Next: Maintainer - investigate the failed assessment.**\n\nAssessment failed or changed while being read. Previous readiness is withdrawn.\n\nInspect the [Submission PR tasks workflow](${new URL(initial.url).origin}/${api.repo}/actions/workflows/submission-pr-status.yml) and rerun it; do not rely on the previous checklist. The queue reassesses after a successful rerun.\n`, false);
           }
         },
       ]) {
