@@ -1,0 +1,87 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: three-way-match-validation
+  description: Runs the Accounts Payable three-way match on retrieved Invoice, PO and GR data. It checks existence, mandatory fields, quantity, unit price, total amount and vendor, detects exceptions such as duplicates, reversals, over-receipts and partial receipts, and classifies each invoice as Matched, Exception or Error by critical-issue priority. Use it after the data is retrieved, or when the user asks about the matching rules.
+  ---
+  <!-- bic:source=blank -->
+  # Three Way Match Validation
+
+  Apply these steps IN SEQUENCE for each invoice. Stop at the first Error in Part A.
+
+  PART A: Validation flow
+  Step 1, Invoice exists: if the Invoice Number is not in New Invoice
+          -> Status: Error | Reason: Invoice Not Found
+  Step 2, PO exists: read the PO Number from the invoice. If it is not in New Purchase Order
+          -> Status: Error | Reason: PO Not Found
+  Step 3, GR exists: if New Goods Receipt has no rows where GR.PO Number = Invoice.PO Number
+          -> Status: Error | Reason: GR Not Found
+  Step 4, Mandatory fields: if Invoice Number, PO Number, Quantity or Unit Price is missing
+          -> Status: Error | Reason: Mandatory Field Missing (name the missing field)
+
+  PART B: Three-way matching rules
+  Calculate these values:
+    PO Qty           = PO Ordered Quantity
+    GR Qty Available = SUM(GR Received Quantity) for valid receipts,
+                       MINUS the quantity of reversed or returned GRs
+    Qty Invoiced     = Invoice Quantity
+
+  Rule A, Quantity
+    - Qty Invoiced > PO Qty           -> Flag: Invoiced Qty Greater Than PO
+    - Qty Invoiced > GR Qty Available -> Flag: Invoiced Qty Greater Than GR Qty
+    - Qty Invoiced < PO Qty or < GR Qty -> Note: Quantity Mismatch (under-invoiced, needs review)
+  Rule A2, Vendor
+    - PO Vendor Name = Invoice Vendor Name -> Vendor Matched
+    - otherwise                            -> Flag: Vendor Mismatch
+    Compare names exactly after trimming spaces and ignoring letter case.
+  Rule B, Unit price
+    - Invoice Unit Price <> PO Unit Price  -> Flag: Unit Price Mismatch
+      (state whether the invoice price is higher or lower and by how much)
+  Rule C, Total amount
+    - Invoice Total <> Qty Invoiced x Invoice Unit Price -> Flag: Invoice Total Mismatch
+      (show the expected and actual totals)
+  Rule D, Exception conditions
+    | Condition                                      | Flag                   |
+    |------------------------------------------------|------------------------|
+    | Same Invoice Number appears more than once     | Duplicate Invoice      |
+    | Duplicate GR (same GR No./qty/date) for one PO | Duplicate GR Warning   |
+    | Total GR received > PO ordered quantity        | Over Receipt           |
+    | A GR with reversal or return status/movement   | GR Reversal Exists     |
+    | GR status = Partial, or several GRs for a PO   | Partial Receipt (split receipts need review) |
+
+  PART C: Final classification
+  **Matched** (Perfect Match): ALL of these are true:
+    PO exists; GR exists; Invoice vendor = PO vendor;
+    Qty Invoiced = PO Qty = GR Qty Available;
+    Invoice Unit Price = PO Unit Price; Invoice Total is correct; no Rule D flags.
+  **Exception**: there is at least one flag from Part B
+    (price mismatch, quantity mismatch, vendor mismatch, total mismatch, duplicate invoice,
+    reversal, over receipt, or split/partial receipts that need review).
+  **Error**: PO Not Found, GR Not Found, Invoice Not Found or Mandatory Field Missing.
+  **Incomplete**: data needed for a rule is missing, but the record is not an Error case.
+
+  PART D: Critical-issue priority
+  Report ALL flags, but set the headline status to the most critical one in this order:
+    1. Invoice Not Found
+    2. PO Not Found
+    3. GR Not Found
+    4. Mandatory Field Missing
+    5. Quantity Mismatch (over PO or over GR)
+    6. Price Mismatch
+    7. Duplicate Invoice
+    8. Vendor Mismatch
+    9. Invoice Total Mismatch
+   10. Over Receipt / GR Reversal Exists / Duplicate GR Warning / Partial Receipt
+
+  PART E: Recommended action (one per headline status)
+  - Quantity over GR      -> Ask the vendor to revise the invoice to match the GR quantity.
+  - Quantity over PO      -> Hold payment. Ask the buyer to confirm a PO amendment or reject the excess.
+  - Price Mismatch        -> Ask the vendor for a credit note or a corrected invoice at the PO price.
+  - Duplicate Invoice     -> Block the duplicate and confirm with the vendor.
+  - Vendor Mismatch       -> Hold the invoice. Check the vendor master and PO vendor.
+  - Total Mismatch        -> Ask the vendor for a corrected invoice total.
+  - GR Reversal / Over Receipt / Partial -> Send to the warehouse/receiving team for review.
+  - PO/GR/Invoice not found, Missing field -> Ask the requester or vendor for the missing document.
+
+  Never change, round or infer source values. Show every calculation.
+authoringSource: Blank

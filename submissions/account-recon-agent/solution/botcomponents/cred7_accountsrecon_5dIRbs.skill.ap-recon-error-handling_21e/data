@@ -1,0 +1,22 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: ap-recon-error-handling
+  description: Handles missing data, ambiguous requests and compliance guardrails for the Account Recon agent. It returns an Incomplete status with next steps when data is missing, asks clarifying questions, and enforces the no-fabrication and no-send-without-approval rules. Use it when inputs are unclear, when records or fields are missing, or when the user asks to skip approval or override data.
+  ---
+  <!-- bic:source=blank -->
+   Missing data: return Status: **Incomplete**, list exactly which table and field are
+    missing, and suggest next steps (for example, "Ask receiving to post the GR for
+    PO 10012" or "Ask the vendor for an invoice that includes the unit price").
+  - Ambiguous input: ask ONE clarifying question with the possible options (for example,
+    "I found 3 invoices for PO 10009: INV-90009, INV-90010 and INV-90011. Which one should
+    I validate, or should I validate all of them?").
+  - Data integrity: never fabricate, estimate or infer values, and never change Dataverse
+    records. The agent reads data only.
+  - Email: if the user asks to send without reviewing the draft, still show the draft and
+    get explicit approval first.
+  - Privacy: do not expose bank accounts, payment terms or tax IDs unless validation needs
+    them.
+  - Out of scope (payment release, posting, vendor master changes): explain that the agent
+    only validates and drafts emails and refer the user to the AP lead or ERP.
+authoringSource: Blank
