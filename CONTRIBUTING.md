@@ -401,10 +401,11 @@ bootstrap PR directly; a PR cannot activate its own new trusted policy.
 
 ### Shared contributor PR task queue
 
-The **Submission PR tasks** workflow maintains one **Submission next steps**
-comment per open, non-draft contribution PR. It separates contributor tasks,
-maintainer tasks, and waiting on automation, with links to the relevant review
-threads and CI runs. No individual maintainer is automatically assigned.
+The **Submission PR tasks** workflow maintains one **Submission next step**
+comment per open, non-draft contribution PR. It shows **one prioritized current
+action**: who acts, what to do, why, a direct review/check link, and when the
+queue reassesses. Future approval/merge work is not presented as an immediate
+task. No individual maintainer is automatically assigned.
 Site/layout, dependency, repository-maintenance, and mixed site/submission PRs
 remain outside this queue. Multi-entry submission mistakes remain visible.
 
@@ -412,11 +413,30 @@ remain outside this queue. Multi-entry submission mistakes remain visible.
 | --- | --- |
 | [`needs-contributor`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aneeds-contributor) | Contributor: fix or discuss findings, correct scope, update the branch, or complete the matching test attestations. |
 | [`needs-maintainer`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aneeds-maintainer) | Maintainer: inspect/authorize fork CI, request a missing Copilot review, follow up on fixes/disputed findings, or formally approve. |
-| [`awaiting-copilot`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aawaiting-copilot) | A native review of the current revision is still needed; the comment says whether a review must be requested. |
+| [`awaiting-copilot`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aawaiting-copilot) | Automation: wait for the requested native review of the current revision. If a review must first be requested, the label is `needs-maintainer` instead. |
+| [`awaiting-ci`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aawaiting-ci) | Automation: wait for current CI/checks. A run requiring authorization instead routes to a maintainer. |
 | [`ready-for-merge`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aready-for-merge) | Maintainer: perform the final review and merge manually if satisfied. This label is not an approval or a bypass. |
 
-Contributor and maintainer tasks can coexist. A new push needs fresh evidence;
-an old finding is neither automatically still valid nor automatically fixed.
+Only the label for the **selected next step** is applied; obsolete queue labels
+are removed. The label identifies the next actor, while the comment gives the
+exact action. All remaining blockers stay tracked internally and still prevent
+readiness.
+
+The priority is submission scope/metadata, unaddressed current review feedback,
+judgment on replies to current findings, branch updates, failing checks, testing
+attestations, CI authorization/investigation or completion, native review
+request/completion, confirmation against a new revision, unknown merge-state
+investigation, formal approval, and final GitHub merge requirements. Each update
+selects the first applicable step, not a checklist of future work.
+
+For example, a current changes request with no contributor response shows
+**Next: Contributor - address the outstanding review request**, with its review
+link. It does not also ask maintainers to approve or conditionally resolve the
+discussion. A reply requires judgment, not automatic resolution; a new revision
+needs fresh checks/review before final confirmation and approval.
+
+A new push needs fresh evidence; an old finding is neither automatically still
+valid nor automatically fixed.
 Copilot can resolve its own addressed findings on rereview; humans retain
 responsibility for their discussions and disputed findings. Missing CI is not
 reported as failing code when the run is actually waiting for authorization.
@@ -462,10 +482,11 @@ invalidate an existing comment where possible, and fail the workflow visibly.
    gh workflow run submission-pr-status.yml -f pr_number=100 -f dry_run=false
    ```
 
-4. On existing PRs, request a native Copilot rereview if the current head has none,
-   inspect and authorize outstanding fork CI runs individually, then follow the
-   comment's remaining human-review tasks. Resolve an addressed human thread
-   rather than asking the contributor to repeat an already supplied remedy.
+4. Follow the comment's **current next step**, not a label alone. Request review,
+   authorize a fork CI run, judge a reply, or formally approve only when that
+   action is selected. Resolve an addressed human thread rather than asking the
+   contributor to repeat an already supplied remedy. After merging coordinator
+   updates, preview and reconcile the backlog to update the existing comments.
    Do not assume enabling push reviews retroactively reviews the backlog.
 
 For local read-only inspection using Node 24, set `GH_TOKEN`,

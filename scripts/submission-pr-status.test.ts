@@ -2,7 +2,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { parse } from "yaml";
-import { assess, collectEvidence, MARKER, QUEUE_LABELS, reconcile, reconcileQueue, render, TaskApi, type Evidence, type Review } from "./submission-pr-status";
+import { assess as assessEvidence, collectEvidence, MARKER, QUEUE_LABELS, reconcile, reconcileQueue, render, TaskApi, type Evidence, type Review } from "./submission-pr-status";
+
+function assess(state: Evidence) {
+  const result = assessEvidence(state);
+  const instructions = (owner: "Contributor" | "Maintainer" | "Automation") =>
+    result.blockers.filter((blocker) => blocker.owner === owner).map((blocker) => blocker.instruction);
+  return { ...result, contributor: instructions("Contributor"), maintainer: instructions("Maintainer"), waiting: instructions("Automation") };
+}
 
 const head = "a".repeat(40);
 const base = "b".repeat(40);
@@ -34,7 +41,7 @@ function evidence(): Evidence {
 test("ready requires current Copilot evidence, current human approval and GitHub's clean merge state", () => {
   const state = evidence();
   assert.deepEqual(assess(state).labels, [QUEUE_LABELS.ready]);
-  assert.match(assess(state).maintainer.join("\n"), /merge manually/);
+  assert.match(assess(state).next.instruction, /merge manually/);
   for (const change of [
     { decision: "REVIEW_REQUIRED" }, { mergeState: "UNKNOWN" }, { mergeState: "BLOCKED" },
     { mergeState: "BEHIND" }, { checks: checks.slice(0, 1) }, { reviews: [native] },
@@ -60,10 +67,10 @@ test("a new fixed revision awaits rereview instead of repeating old Copilot find
   state.decision = "REVIEW_REQUIRED";
   const result = assess(state);
   assert.deepEqual(result.contributor, []);
-  assert.match(result.waiting.join(), /current revision|this revision/);
+  assert.equal(result.next.kind, "authorize-ci");
   assert.match(result.maintainer.join(), /authorize.*awaiting approval/);
-  assert.match(result.maintainer.join(), /not a test failure/);
-  assert.ok(result.labels.includes(QUEUE_LABELS.copilot));
+  assert.match(result.next.reason, /not failing tests/);
+  assert.deepEqual(result.labels, [QUEUE_LABELS.maintainer]);
 });
 
 test("native reapproval still cannot substitute for a human approval", () => {
@@ -77,7 +84,7 @@ test("native reapproval still cannot substitute for a human approval", () => {
 test("a human's Copilot-looking approval text does not count as a native review", () => {
   const state = evidence();
   state.reviews = [{ ...human, state: "COMMENTED", author: "copilot-looking-name" }, human];
-  assert.ok(assess(state).labels.includes(QUEUE_LABELS.copilot));
+  assert.equal(assess(state).next.kind, "request-review");
   assert.ok(!assess(state).labels.includes(QUEUE_LABELS.ready));
 });
 
@@ -100,7 +107,7 @@ test("resolved threads do not waive attestations, CI or approval", () => {
   state.threads = [{ review: 1, head, resolved: true, url, replyByAuthor: false }];
   state.ci = { state: "action_required", url };
   assert.ok(assess(state).labels.includes(QUEUE_LABELS.contributor));
-  assert.ok(assess(state).labels.includes(QUEUE_LABELS.maintainer));
+  assert.deepEqual(assess(state).labels, [QUEUE_LABELS.contributor]);
   assert.ok(!assess(state).labels.includes(QUEUE_LABELS.ready));
 });
 
@@ -121,15 +128,16 @@ test("current unresolved Copilot findings permit fixes or discussion without aut
   const state = evidence();
   state.threads = [{ review: 1, head: old, resolved: false, url, replyByAuthor: true }];
   const result = assess(state);
-  assert.match(result.contributor.join(), /Address or discuss/);
-  assert.match(result.maintainer.join(), /already supplied/);
+  assert.deepEqual(result.contributor, []);
+  assert.equal(result.next.kind, "confirm-review");
+  assert.match(result.maintainer.join(), /reply\/new revision/);
   assert.ok(!result.labels.includes(QUEUE_LABELS.ready));
 });
 
 test("changes-requested reviews remain blockers and later comment-only reviews do not erase them", () => {
   const state = evidence();
   state.reviews.push({ ...human, id: 3, state: "CHANGES_REQUESTED" }, { ...human, id: 4, state: "COMMENTED" });
-  assert.match(assess(state).maintainer.join(), /human request for changes/);
+  assert.equal(assess(state).next.kind, "review-changes");
   assert.match(assess(state).contributor.join(), /feedback in the review summary/);
   assert.ok(assess(state).labels.includes(QUEUE_LABELS.contributor));
   assert.ok(!assess(state).labels.includes(QUEUE_LABELS.ready));
@@ -204,6 +212,109 @@ test("actual required failures, pending runs and unknown check states are not re
   const state = evidence();
   state.checks.push({ name: "Optional preview", state: "FAILURE", required: false, url });
   assert.deepEqual(assess(state).labels, [QUEUE_LABELS.ready]);
+});
+
+test("PR 119-like requests show only contributor correction, then judgment after a reply", () => {
+  const state = evidence();
+  const finding = `${url}#discussion_r1`;
+  const request = `${url}#pullrequestreview-3`;
+  state.reviews = [native, { ...human, id: 3, state: "CHANGES_REQUESTED", url: request }];
+  state.decision = "CHANGES_REQUESTED";
+  state.mergeState = "BEHIND";
+  state.threads = [{ review: native.id, head, resolved: false, replyByAuthor: false, url: finding }];
+  let result = assessEvidence(state);
+  assert.equal(result.next.owner, "Contributor");
+  assert.equal(result.next.kind, "review-changes");
+  assert.deepEqual(result.labels, [QUEUE_LABELS.contributor]);
+  let body = render(state.pr, result);
+  assert.match(body, /\*\*Next: Contributor - Address the outstanding review request/);
+  assert.ok(body.includes(request));
+  assert.doesNotMatch(body, /formal human approval|If a fix|### Contributor|### Maintainer|Waiting on automation|update the branch/);
+  assert.equal(body.match(/\*\*Next:/g)?.length, 1);
+  assert.ok(result.blockers.some((blocker) => blocker.kind === "branch"));
+  assert.ok(result.blockers.some((blocker) => blocker.kind === "approve"));
+
+  state.threads[0].replyByAuthor = true;
+  result = assessEvidence(state);
+  assert.equal(result.next.kind, "judge-reply");
+  assert.deepEqual(result.labels, [QUEUE_LABELS.maintainer]);
+  body = render(state.pr, result);
+  assert.match(body, /resolve it only if addressed/);
+  assert.doesNotMatch(body, /Address or discuss|formal human approval/);
+  assert.ok(result.blockers.some((blocker) => blocker.kind === "branch"));
+  assert.ok(result.blockers.some((blocker) => blocker.kind === "approve"));
+});
+
+test("a corrected head advances through CI, native rereview, human confirmation, approval and merge", () => {
+  const state = evidence();
+  state.pr.head = old;
+  state.reviews = [native, { ...human, state: "CHANGES_REQUESTED" }];
+  state.threads = [{ review: native.id, head, resolved: false, replyByAuthor: true, url }];
+  state.decision = "CHANGES_REQUESTED";
+  state.checks = [];
+  state.ci = { state: "action_required", url };
+  assert.equal(assessEvidence(state).next.kind, "authorize-ci");
+  assert.doesNotMatch(render(state.pr, assessEvidence(state)), /formal human approval|Judge the response/);
+
+  state.ci.state = "queued";
+  assert.equal(assessEvidence(state).next.kind, "wait-ci");
+  assert.deepEqual(assessEvidence(state).labels, [QUEUE_LABELS.ci]);
+  state.ci.state = "success";
+  state.checks = structuredClone(checks);
+  assert.equal(assessEvidence(state).next.kind, "request-review");
+  assert.deepEqual(assessEvidence(state).labels, [QUEUE_LABELS.maintainer]);
+  state.pr.requested = ["Copilot"];
+  assert.equal(assessEvidence(state).next.kind, "wait-review");
+  assert.deepEqual(assessEvidence(state).labels, [QUEUE_LABELS.copilot]);
+  state.reviews.push({ ...native, id: 3, head: old });
+  assert.equal(assessEvidence(state).next.kind, "confirm-review");
+  assert.ok(!assessEvidence(state).labels.includes(QUEUE_LABELS.ready));
+  state.threads[0].resolved = true;
+  state.reviews.push({ ...human, id: 4, head: old, state: "DISMISSED" });
+  state.decision = "REVIEW_REQUIRED";
+  assert.equal(assessEvidence(state).next.kind, "approve");
+  state.reviews.push({ ...human, id: 5, head: old });
+  state.decision = "APPROVED";
+  state.mergeState = "BLOCKED";
+  assert.equal(assessEvidence(state).next.kind, "investigate-merge");
+  state.mergeState = "CLEAN";
+  assert.equal(assessEvidence(state).next.kind, "merge");
+  assert.deepEqual(assessEvidence(state).labels, [QUEUE_LABELS.ready]);
+});
+
+test("content prerequisites outrank future review and CI work in a stable order", () => {
+  const state = evidence();
+  state.metadataProblems = ["Add the required metadata."];
+  state.threads = [{ review: native.id, head, resolved: false, replyByAuthor: false, url }];
+  state.mergeState = "BEHIND";
+  state.bodyHTML = "";
+  state.checks[1].state = "FAILURE";
+  state.ci = { state: "action_required", url };
+  state.reviews = [native];
+  state.decision = "REVIEW_REQUIRED";
+  assert.equal(assessEvidence(state).next.kind, "scope");
+  state.metadataProblems = [];
+  assert.equal(assessEvidence(state).next.kind, "review-discussion");
+  state.threads[0].resolved = true;
+  assert.equal(assessEvidence(state).next.kind, "branch");
+  state.mergeState = "CLEAN";
+  assert.equal(assessEvidence(state).next.kind, "fix-check");
+  state.checks[1].state = "SUCCESS";
+  assert.equal(assessEvidence(state).next.kind, "attestation");
+  state.bodyHTML = attestedHTML;
+  assert.equal(assessEvidence(state).next.kind, "authorize-ci");
+});
+
+test("unanswered findings still outrank judgment on a different replied thread", () => {
+  const state = evidence();
+  state.threads = [
+    { review: native.id, head, resolved: false, replyByAuthor: true, url },
+    { review: human.id, head, resolved: false, replyByAuthor: false, url },
+  ];
+  const result = assessEvidence(state);
+  assert.equal(result.next.kind, "review-discussion");
+  assert.deepEqual(result.labels, [QUEUE_LABELS.contributor]);
+  assert.ok(result.blockers.some((blocker) => blocker.kind === "judge-reply"));
 });
 
 interface Call { path: string; method: string; body: Record<string, unknown> }
@@ -311,6 +422,24 @@ test("reconciliation updates its own comment/labels only and unchanged repeat ru
   assert.equal(writes(fixture.calls).length, count);
 });
 
+test("single-action reconciliation replaces old role labels and keeps CI waits recoverable", async () => {
+  const fixture = mock();
+  fixture.pr.labels = [
+    { name: QUEUE_LABELS.contributor }, { name: QUEUE_LABELS.maintainer },
+    { name: QUEUE_LABELS.copilot }, { name: "keep-this-label" },
+  ];
+  fixture.state.checks = [];
+  fixture.state.ci = { state: "queued", url };
+  await reconcile(fixture.api, 42);
+  assert.deepEqual(fixture.pr.labels.map((label) => label.name).sort(), ["keep-this-label", QUEUE_LABELS.ci].sort());
+  assert.match(String(fixture.comments[0].body), /\*\*Next: Automation - Wait for current CI/);
+  assert.doesNotMatch(String(fixture.comments[0].body), /### Maintainer|formal human approval/);
+  fixture.pr.state = "closed";
+  await reconcile(fixture.api, 42);
+  assert.deepEqual(fixture.pr.labels, [{ name: "keep-this-label" }]);
+  assert.match(String(fixture.comments[0].body), /No active contribution task remains/);
+});
+
 test("read-only preview makes no mutations and works without installing dependencies", async () => {
   const fixture = mock();
   assert.match(await reconcile(fixture.api, 42, true), /merge manually/);
@@ -388,7 +517,7 @@ test("tracked PRs that become drafts or leave scope retire only coordinator labe
   await reconcile(fixture.api, 42);
   fixture.pr.draft = true;
   fixture.pr.labels.push({ name: "keep-this-label" });
-  assert.match(await reconcile(fixture.api, 42), /routing is paused/);
+  assert.match(await reconcile(fixture.api, 42), /Paused: this PR is a draft/);
   assert.deepEqual(fixture.pr.labels, [{ name: "keep-this-label" }]);
   assert.equal(fixture.comments.length, 1);
 });
