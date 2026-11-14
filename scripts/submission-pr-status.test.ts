@@ -125,7 +125,19 @@ test("changes-requested reviews remain blockers and later comment-only reviews d
   const state = evidence();
   state.reviews.push({ ...human, id: 3, state: "CHANGES_REQUESTED" }, { ...human, id: 4, state: "COMMENTED" });
   assert.match(assess(state).maintainer.join(), /human request for changes/);
+  assert.match(assess(state).contributor.join(), /feedback in the review summary/);
+  assert.ok(assess(state).labels.includes(QUEUE_LABELS.contributor));
   assert.ok(!assess(state).labels.includes(QUEUE_LABELS.ready));
+});
+
+test("summary-only changes requests distinguish old revisions from current contributor work", () => {
+  const state = evidence();
+  state.reviews = [native, { ...human, head: old, state: "CHANGES_REQUESTED" }];
+  assert.deepEqual(assess(state).contributor, []);
+  assert.match(assess(state).maintainer.join(), /human request for changes/);
+  state.reviews.push({ ...human, id: 3, author: "another-maintainer", state: "CHANGES_REQUESTED" });
+  assert.match(assess(state).contributor.join(), /feedback in the review summary/);
+  assert.ok(assess(state).labels.includes(QUEUE_LABELS.contributor));
 });
 
 test("attestations are format-aware and ignored in comments and fenced examples", () => {
@@ -217,6 +229,7 @@ function mock() {
       } }]);
       if (path === "pulls/42/files?per_page=100&page=1") return Response.json(state.files);
       if (path === "issues/42/comments?per_page=100&page=1") return Response.json(comments);
+      if (path.startsWith("issues?state=closed&labels=")) return Response.json([]);
       if (path === "labels?per_page=100&page=1") return Response.json(labels);
       if (path.startsWith("contents/")) {
         const content = Buffer.from(JSON.stringify({ submissionType: state.formats[0] === "app" ? "managed-app" : "solution" }));
@@ -368,6 +381,27 @@ test("queue reconciliation retires tracked PRs retargeted away from main", async
   assert.deepEqual(fixture.pr.labels, [{ name: "keep-this-label" }]);
   assert.match(String(fixture.comments[0].body), /outside ordinary contribution scope/);
   assert.equal(fixture.comments.length, 1);
+});
+
+test("queue sweeps recover superseded closure events without processing issues or duplicate PRs", async () => {
+  const fixture = mock();
+  await reconcile(fixture.api, 42);
+  fixture.pr.state = "closed";
+  fixture.pr.changed_files = 10_000;
+  fixture.pr.labels.push({ name: "keep-this-label" });
+  fixture.overrides.set("GET pulls?state=open&per_page=100&page=1", () => []);
+  const closed = { number: 42, pull_request: { url } };
+  for (const label of [QUEUE_LABELS.ready, QUEUE_LABELS.maintainer]) {
+    fixture.overrides.set(`GET issues?state=closed&labels=${encodeURIComponent(label)}&per_page=100&page=1`,
+      () => [closed, { number: 43 }]);
+  }
+  const previous = fixture.calls.length;
+  await reconcileQueue(fixture.api);
+  assert.deepEqual(fixture.pr.labels, [{ name: "keep-this-label" }]);
+  assert.match(String(fixture.comments[0].body), /this PR is closed/);
+  const reads = fixture.calls.slice(previous).filter((call) => call.method === "GET");
+  assert.equal(reads.filter((call) => call.path === "pulls/42").length, 2);
+  assert.ok(!reads.some((call) => call.path === "pulls/43" || call.path.startsWith("pulls/42/files")));
 });
 
 test("later comment/file pages are read and bot impersonation cannot suppress a checklist", async () => {

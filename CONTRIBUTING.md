@@ -429,7 +429,9 @@ downloads run artifacts, approves CI, submits reviews, or merges. The existing
 CI authorization policy remains unchanged. It updates on PR lifecycle/body
 changes and CI/policy completion, with scheduled reconciliation every 15 minutes
 for review/thread changes and external checks. Scans include all open PRs so
-retargeting a tracked PR away from `main` retires its queue labels.
+retargeting a tracked PR away from `main` retires its queue labels. Closed PRs
+carrying queue labels are also reconciled, so a missed closure event cannot
+leave an active checklist or readiness label behind.
 Scheduled jobs can be delayed by
 GitHub; always use the live merge box, not an old label, as the final authority.
 The comment names the assessed head/base. API failures withdraw prior readiness,

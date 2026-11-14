@@ -400,7 +400,10 @@ export function assess(evidence: Evidence): Assessment {
   for (const review of [...reviews].sort((a, b) => a.id - b.id)) {
     if (review.human && ["APPROVED", "CHANGES_REQUESTED", "DISMISSED"].includes(review.state)) latestHuman.set(review.author, review);
   }
-  const changes = [...latestHuman.values()].find((review) => review.state === "CHANGES_REQUESTED");
+  const requests = [...latestHuman.values()].filter((review) => review.state === "CHANGES_REQUESTED");
+  const changes = requests[0];
+  const currentChanges = requests.find((review) => review.head === pr.head);
+  if (currentChanges) contributor.push(`Address or discuss [the human request for changes](${currentChanges.url}), including feedback in the review summary.`);
   if (changes) maintainer.push(`Follow up on [the human request for changes](${changes.url}); only that reviewer/maintainer can confirm the remaining concern is addressed.`);
 
   const required = checks.filter((check) => check.required);
@@ -504,11 +507,11 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
   try {
     initial = pull(api, await api.call(`pulls/${number}`));
     tracking = initial.labels.some((label) => Object.values<string>(QUEUE_LABELS).includes(label));
-    const files = (await api.pages(`pulls/${number}/files`)).map((value): ChangedFile => {
+    const files = (initial.state === "open" ? await api.pages(`pulls/${number}/files`) : []).map((value): ChangedFile => {
       const file = object(value);
       return { filename: text(file.filename), status: text(file.status), ...(file.previous_filename === undefined ? {} : { previous_filename: text(file.previous_filename) }) };
     });
-    if (initial.count > 3000 || files.length !== initial.count) throw new Error("Incomplete changed-file list");
+    if (initial.state === "open" && (initial.count > 3000 || files.length !== initial.count)) throw new Error("Incomplete changed-file list");
     const scope = classifyContributionFiles(files);
     const maintenance = scope.slugs.size > 1 && initial.labels.includes(scope.payloadChanges ? SITE_LABEL : METADATA_LABEL);
     const eligible = initial.baseBranch === "main" && scope.slugs.size > 0 && scope.sites.length === 0 && scope.contracts.length === 0 && !maintenance;
@@ -521,7 +524,7 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
     let evidence: Evidence | undefined;
     let labels: string[] = [];
     if (!eligible || initial.draft || initial.state !== "open") {
-      body = `${MARKER}\n## Submission next steps\nTask routing is paused: this PR is ${!eligible ? "outside ordinary contribution scope" : initial.draft ? "a draft" : "closed"}. Ordinary maintainer review and GitHub merge requirements still apply.\n`;
+      body = `${MARKER}\n## Submission next steps\nTask routing is paused: this PR is ${initial.state !== "open" ? "closed" : initial.draft ? "a draft" : "outside ordinary contribution scope"}. Ordinary maintainer review and GitHub merge requirements still apply.\n`;
       if (!tracked && !comments.some(ownedComment)) return "Not tracking draft/closed PR";
     } else {
       evidence = await collectEvidence(api, initial, files);
@@ -568,7 +571,17 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
 }
 
 export async function reconcileQueue(api: TaskApi, requested = "", dryRun = false): Promise<void> {
-  const numbers = requested ? [Number(requested)] : (await api.pages("pulls?state=open")).map((value) => integer(object(value).number));
+  const numbers = new Set<number>();
+  if (requested) numbers.add(Number(requested));
+  else {
+    for (const value of await api.pages("pulls?state=open")) numbers.add(integer(object(value).number));
+    for (const label of Object.values(QUEUE_LABELS)) {
+      for (const value of await api.pages(`issues?state=closed&labels=${encodeURIComponent(label)}`)) {
+        const issue = object(value);
+        if (issue.pull_request !== undefined) numbers.add(integer(issue.number));
+      }
+    }
+  }
   const errors: string[] = [];
   for (const number of numbers) {
     try {
