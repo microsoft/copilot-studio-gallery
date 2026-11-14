@@ -1,0 +1,54 @@
+name: Submission PR tasks
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled, ready_for_review, converted_to_draft, closed, review_requested, review_request_removed]
+  workflow_run:
+    workflows: [CI, Contribution policy]
+    types: [completed]
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number (empty reconciles all open PRs targeting main)
+        type: string
+        required: false
+      dry_run:
+        description: Preview tasks without changing comments or labels
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  actions: read
+  checks: read
+  statuses: read
+  pull-requests: write
+
+concurrency:
+  group: submission-pr-tasks
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    name: Update contribution task queue
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout trusted default branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Reconcile submission tasks using GitHub metadata only
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+        run: node scripts/submission-pr-status.ts
