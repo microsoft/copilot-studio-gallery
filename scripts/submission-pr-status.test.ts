@@ -178,6 +178,20 @@ test("list-contained Markdown fences cannot satisfy attestations but real tasks 
   }
 });
 
+test("paragraph-wrapped loose-list tasks satisfy attestations without accepting quoted or unchecked tasks", () => {
+  const state = evidence();
+  state.formats = ["app"];
+  const loose = attestedHTML.replaceAll('<li class="task-list-item">', '<li class="task-list-item">\n<p dir="auto">')
+    .replaceAll("</li>", "</p>\n</li>");
+  state.bodyHTML = loose;
+  assert.deepEqual(assess(state).contributor, []);
+  for (const html of [loose.replaceAll(' checked=""', ""), `<blockquote>${loose}</blockquote>`]) {
+    state.bodyHTML = html;
+    assert.match(assess(state).contributor.join(), /managed-app fresh-app and source\/privacy/);
+    assert.ok(!assess(state).labels.includes(QUEUE_LABELS.ready));
+  }
+});
+
 test("actual required failures, pending runs and unknown check states are not readiness", () => {
   for (const checkState of ["FAILURE", "TIMED_OUT", "IN_PROGRESS", "QUEUED", "CANCELLED", "UNKNOWN"]) {
     const state = evidence();

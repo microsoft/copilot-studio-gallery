@@ -351,7 +351,7 @@ function checkedAttestations(bodyHTML: string): Set<string> {
     }
     return quoteDepth ? "" : part;
   });
-  for (const match of unquoted.matchAll(/<li class="task-list-item">\s*<input ([^>]*)>\s*([^<]*?)<\/li>/g)) {
+  for (const match of unquoted.matchAll(/<li class="task-list-item">\s*(?:<p(?: dir="auto")?>)?\s*<input ([^>]*)>\s*([^<]*?)(?:<\/p>\s*)?<\/li>/g)) {
     if (/(?:^|\s)type="checkbox"/.test(match[1])
       && /(?:^|\s)class="task-list-item-checkbox"/.test(match[1])
       && /(?:^|\s)checked=""/.test(match[1])) checked.add(match[2].trim());
