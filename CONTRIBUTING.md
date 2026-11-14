@@ -442,7 +442,7 @@ invalidate an existing comment where possible, and fail the workflow visibly.
 1. Human-review and merge the infrastructure change first. The workflow executes
    only trusted `main` code and cannot activate itself from a PR. Merging enables
    its event/scheduled updates; it creates missing queue labels as needed. Its
-   token needs contents/Actions/checks/status read and pull-request write access
+   token needs contents/Actions/checks/status/issues read and pull-request write access
    for comments and labels, not Actions write, review approval, or merge calls.
    If repository/organization policy denies those permissions, an admin must
    resolve that policy explicitly; the workflow fails rather than weakening it.

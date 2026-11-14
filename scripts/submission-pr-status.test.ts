@@ -507,7 +507,7 @@ test("the API write allowlist forbids authorizing runs, reviewing, merging and G
 
 test("workflow uses only trusted main code, metadata permissions, supported triggers and serialized writes", () => {
   const workflow = parse(readFileSync(new URL("../.github/workflows/submission-pr-status.yml", import.meta.url), "utf8"));
-  assert.deepEqual(workflow.permissions, { contents: "read", actions: "read", checks: "read", statuses: "read", "pull-requests": "write" });
+  assert.deepEqual(workflow.permissions, { contents: "read", actions: "read", checks: "read", statuses: "read", issues: "read", "pull-requests": "write" });
   assert.equal(workflow.concurrency["cancel-in-progress"], false);
   assert.equal(workflow.on.schedule[0].cron, "*/15 * * * *");
   assert.ok(workflow.on.pull_request_target);
