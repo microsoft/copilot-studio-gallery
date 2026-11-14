@@ -4,8 +4,10 @@ applyTo: "submissions/*/README.md,submissions/*/metadata.json,submissions/*/solu
 
 # Minimal solution content review
 
-For solution content review only. CI owns packaging, categories, schemas,
-references, and builds.
+For solution content review only. On shared README/metadata paths, first identify
+the format: `submissionType: managed-app` uses `managed-app-review.instructions.md`
+instead. The boundaries below do not prohibit that separate managed-app review.
+CI owns packaging, categories, schemas, references, and builds.
 
 ## Strict review boundary
 
@@ -58,6 +60,12 @@ correction. Separate confirmed problems from uncertainty, not speculative
 blockers. For missing disclosure, cite the overview or relevant definition.
 
 Skip style, architecture preferences, CI issues, exhaustive domain fact checking,
-and certification demands. Disclose scope limits; do not certify importability,
+and certification demands. On rereview, check the requested remedy rather than
+repeating an earlier implementation request: accurate placeholder disclosure can
+satisfy a disclosure request when that was the accepted remedy. Do not assume an
+outdated thread is fixed or unresolved code is unchanged just from its thread
+status.
+
+Disclose scope limits; do not certify importability,
 runtime behavior, compliance, safety, or absence of secrets. Findings inform
 human review, not automatic merge decisions or a replacement for secret scanning.
