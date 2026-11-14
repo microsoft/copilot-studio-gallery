@@ -1,0 +1,144 @@
+kind: InlineAgentSkill
+skillFolderName: quality-data-analysis
+content: |-
+  ---
+  name: quality-data-analysis
+  description: Analyze manufacturing quality data by retrieving records through the Dataverse MCP Server. Use for defect analysis, inspection summaries, production yield, work-center comparisons, recurring quality issues, and corrective-action recommendations.
+  ---
+  <!-- bic:source=upload -->
+  # Quality Data Analysis
+
+  ## Purpose
+
+  Analyze manufacturing quality data retrieved through the **Dataverse MCP Server**. Identify defect patterns, inspection outcomes, production yield, work-center performance, and opportunities for improvement.
+  Schema Name : crf1c_defectrecord, crf1c_WorkCenters, crf1c_correctiveaction, crf1c_inspectionrecord
+
+  ## 1. Defect Analysis
+
+  Using retrieved Dataverse records:
+
+  - Summarize total defect counts and significant findings.
+  - Identify the most frequent defect types and severity distribution.
+  - Compare defects by `WorkCenterCode` and production line.
+  - Identify recurring defect patterns using available historical records.
+  - Include linked inspection notes when available.
+  - Highlight significant changes and concentrations of defects.
+  - Recommend investigation areas based on validated findings.
+  - Distinguish confirmed findings from possible explanations.
+
+  ### Required Defect Table
+
+  | Defect Type | WorkCenterCode | Production Line | Defect Count | Severity | Classification |
+  |---|---|---|---:|---|---|
+
+  ## 2. Inspection Analysis
+
+  Using retrieved inspection and production records:
+
+  - Summarize inspections, units produced, units passed, and units defective.
+  - Calculate pass rate, defect rate, and yield when sufficient data is available.
+  - Analyze average yield and significant changes.
+  - Identify notable inspection issues and recurring failures.
+  - Compare results across work centers and production lines.
+  - Include linked inspection notes when available.
+  - Recommend follow-up actions supported by the data.
+
+  ### Required Inspection Table
+
+  | OrderId | WorkCenterCode | Units Produced | Units Passed | Units Defective | Yield (%) | Notes | Classification |
+  |---|---|---:|---:|---:|---:|---|---|
+
+  ### Calculation Rules
+
+  - **Pass Rate (%)** = Units Passed ÷ Units Inspected × 100.
+  - **Defect Rate (%)** = Units Defective ÷ Units Inspected × 100.
+  - **Yield (%)** = Units Passed ÷ Units Produced × 100, only when the units are comparable.
+  - Calculate aggregate yield using total units passed divided by total units produced, multiplied by 100, when records are comparable.
+  - Do not assume units inspected equal units produced.
+  - Do not derive units defective by subtraction unless the source data's counting rules establish that all non-passed units are defective and the totals are consistent.
+  - Handle missing values, zero denominators, duplicate records, and inconsistent totals explicitly.
+
+  ## 3. Work-Center Analysis
+
+  Retrieve the relevant production, inspection, defect, and corrective-action records through the Dataverse MCP Server.
+
+  - Compare defect counts, defect rates, yield, inspection outcomes, and corrective-action status.
+  - Highlight only differences supported by validated and comparable data.
+  - Consider production volume when interpreting defect counts.
+  - Use defect rates when the required denominators are available.
+  - Do not rank work centers when records are incomplete or not comparable.
+  - Do not attribute a defect to a work center without supporting evidence.
+
+  ### Required Work-Center Comparison Table
+
+  | WorkCenterCode | Units Produced | Units Defective | Yield (%) | Classification |
+  |---|---:|---:|---:|---|
+
+  ## 4. Classification Rules
+
+  Use configured business rules and source-system classifications whenever available.
+
+  - **Critical:** Meets a validated critical-severity or escalation criterion.
+  - **High:** Meets a validated high-severity or escalation criterion.
+  - **Medium:** Meets a validated medium-priority criterion.
+  - **Low:** Meets a validated low-priority criterion.
+  - **Needs Review:** Data is incomplete, inconsistent, or insufficient for reliable classification.
+  - **Unclassified:** No applicable classification rule or sufficient evidence is available.
+
+  Do not invent severity thresholds or assign classifications based only on defect counts.
+
+  ## 5. Analysis Workflow
+
+  1. Identify the user's intent: defect analysis, inspection analysis, work-center comparison, or a combination.
+  2. Use the Dataverse MCP Server to identify and retrieve the relevant records.
+  3. Retrieve linked records and historical data when needed and supported.
+  4. Validate the retrieved data, including completeness, duplicates, relationships, and numerical consistency.
+  5. Calculate applicable metrics using the defined formulas.
+  6. Generate the relevant required tables.
+  7. Summarize significant patterns and differences supported by the data.
+  8. Recommend specific investigation or corrective actions.
+  9. Explain missing data, limitations, and assumptions.
+
+  Do not claim that records were retrieved, validated, or analyzed unless the corresponding Dataverse MCP operation actually succeeded.
+
+  ## 6. Recommendations
+
+  Base recommendations on retrieved and validated Dataverse records.
+
+  Examples:
+
+  - Investigate recurring defects at a specific work center.
+  - Review inspection notes associated with repeated failures.
+  - Verify the status and effectiveness of corrective actions.
+  - Compare defect rates across production lines with comparable production volumes.
+  - Review inspection coverage when totals are incomplete.
+  - Monitor yield changes across a defined period.
+
+  Distinguish confirmed findings from possible explanations and proposed actions. Never report a corrective action as completed unless Dataverse records confirm its completion.
+
+  ## 7. Response Format
+
+  For analytical requests, use the following structure when appropriate:
+
+  1. **Executive Summary** — Key findings.
+  2. **Metrics** — Relevant counts, rates, and yield calculations.
+  3. **Required Tables** — Relevant inspection, defect, and work-center tables.
+  4. **Significant Findings** — Recurring patterns and supported comparisons.
+  5. **Recommended Actions** — Prioritized follow-up steps.
+  6. **Data Limitations** — Missing records, inconsistent totals, and unavailable information.
+
+  Keep responses concise for simple requests and provide detailed analysis for broader comparisons.
+
+  ## 8. Guardrails
+
+  - Use the Dataverse MCP Server as the retrieval mechanism for quality data.
+  - Use only records actually returned by the available Dataverse MCP tools.
+  - Discover real table names, column names, and relationships instead of assuming them.
+  - Never fabricate records, inspection notes, severity values, or corrective actions.
+  - Preserve source identifiers such as `OrderId` and `WorkCenterCode`.
+  - Do not silently discard inconsistent records.
+  - Do not treat correlation as proof of causation.
+  - Do not calculate metrics without the required data.
+  - Clearly label unavailable information and assumptions.
+  - Respect the user's requested scope and output format.
+authoringSource: Upload
