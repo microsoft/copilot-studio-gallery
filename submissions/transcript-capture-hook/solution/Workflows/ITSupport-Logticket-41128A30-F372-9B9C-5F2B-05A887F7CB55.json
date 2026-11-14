@@ -1,0 +1,292 @@
+{
+  "properties": {
+    "connectionReferences": {},
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "title": "title",
+                  "type": "string",
+                  "description": "Short summary of the IT issue.",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "description": {
+                  "title": "description",
+                  "type": "string",
+                  "description": "Affected device or service, impact, and troubleshooting attempted.",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "transcript": {
+                  "title": "transcript",
+                  "type": "string",
+                  "description": "Hook-provided telemetry transcript as JSON text. Leave empty. Never reconstruct or invent it.",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "conversationId": {
+                  "title": "conversationId",
+                  "type": "string",
+                  "description": "Conversation ID provided by the hook. Leave empty.",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "title",
+                "description"
+              ]
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "IT Support - Log ticket",
+                "nodes": [
+                  {
+                    "id": "start-4eca2f3f-5b6a-44da-a782-8d715d172acc",
+                    "name": "When an agent calls the flow",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 250,
+                      "y": 538
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "connector",
+                        "connector": {
+                          "apiName": "Skills",
+                          "operationName": "When_an_agent_calls_the_flow",
+                          "displayName": "When an agent calls the flow",
+                          "kind": "Skills",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "title": {
+                                  "title": "title",
+                                  "type": "string",
+                                  "description": "Short summary of the IT issue.",
+                                  "x-ms-content-hint": "TEXT",
+                                  "x-ms-dynamically-added": true
+                                },
+                                "description": {
+                                  "title": "description",
+                                  "type": "string",
+                                  "description": "Affected device or service, impact, and troubleshooting attempted.",
+                                  "x-ms-content-hint": "TEXT",
+                                  "x-ms-dynamically-added": true
+                                },
+                                "transcript": {
+                                  "title": "transcript",
+                                  "type": "string",
+                                  "description": "Hook-provided telemetry transcript as JSON text. Leave empty. Never reconstruct or invent it.",
+                                  "x-ms-content-hint": "TEXT",
+                                  "x-ms-dynamically-added": true
+                                },
+                                "conversationId": {
+                                  "title": "conversationId",
+                                  "type": "string",
+                                  "description": "Conversation ID provided by the hook. Leave empty.",
+                                  "x-ms-content-hint": "TEXT",
+                                  "x-ms-dynamically-added": true
+                                }
+                              },
+                              "required": [
+                                "title",
+                                "description"
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Trigger output (schema determined by connector)"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 261,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-8be7d1da-1b11-4fa8-a9ed-e82e13a9268a",
+                    "name": "Respond to the agent",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 650,
+                      "y": 538
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "response",
+                        "operationName": "response",
+                        "displayName": "Respond to the agent",
+                        "category": "request",
+                        "categoryDisplayName": "Request",
+                        "iconUri": "",
+                        "brandColor": "",
+                        "description": "Return a simulated ticket receipt. No real ticket is created.",
+                        "kind": "Skills",
+                        "parameters": {
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "ticketId": {
+                                "title": "ticketId",
+                                "type": "string"
+                              },
+                              "status": {
+                                "title": "status",
+                                "type": "string"
+                              },
+                              "transcriptAttached": {
+                                "title": "transcriptAttached",
+                                "type": "boolean"
+                              },
+                              "message": {
+                                "title": "message",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "ticketId",
+                              "status",
+                              "transcriptAttached",
+                              "message"
+                            ]
+                          },
+                          "body": {
+                            "ticketId": "@concat('DEMO-',substring(guid(),0,8))",
+                            "status": "Simulated",
+                            "transcriptAttached": "@and(not(empty(triggerBody()?['transcript'])),not(equals(triggerBody()?['transcript'],'[]')),not(empty(triggerBody()?['conversationId'])))",
+                            "message": "@if(and(not(empty(triggerBody()?['transcript'])),not(equals(triggerBody()?['transcript'],'[]')),not(empty(triggerBody()?['conversationId']))),'Demo ticket logged with a best-effort telemetry transcript; completeness is not guaranteed. No internal ticketing system was called.','Demo ticket logged. Transcript was not captured or could not be associated with a conversation ID. No internal ticketing system was called.')"
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-4eca2f3f-5b6a-44da-a782-8d715d172acc-builtinFunction-8be7d1da-1b11-4fa8-a9ed-e82e13a9268a",
+                    "source": "start-4eca2f3f-5b6a-44da-a782-8d715d172acc",
+                    "target": "builtinFunction-8be7d1da-1b11-4fa8-a9ed-e82e13a9268a"
+                  }
+                ],
+                "connectionReferences": {},
+                "parameters": {
+                  "$authentication": {
+                    "type": "SecureObject",
+                    "defaultValue": {}
+                  },
+                  "$connections": {
+                    "type": "Object",
+                    "defaultValue": {}
+                  }
+                }
+              },
+              "nodeActionMapping": {
+                "builtinFunction-8be7d1da-1b11-4fa8-a9ed-e82e13a9268a": [
+                  "Respond_to_the_agent"
+                ]
+              },
+              "canvasOrientation": "horizontal"
+            }
+          }
+        }
+      },
+      "actions": {
+        "Respond_to_the_agent": {
+          "type": "Response",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "ticketId": {
+                  "title": "ticketId",
+                  "type": "string"
+                },
+                "status": {
+                  "title": "status",
+                  "type": "string"
+                },
+                "transcriptAttached": {
+                  "title": "transcriptAttached",
+                  "type": "boolean"
+                },
+                "message": {
+                  "title": "message",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ticketId",
+                "status",
+                "transcriptAttached",
+                "message"
+              ]
+            },
+            "statusCode": 200,
+            "body": {
+              "ticketId": "@concat('DEMO-',substring(guid(),0,8))",
+              "status": "Simulated",
+              "transcriptAttached": "@and(not(empty(triggerBody()?['transcript'])),not(equals(triggerBody()?['transcript'],'[]')),not(empty(triggerBody()?['conversationId'])))",
+              "message": "@if(and(not(empty(triggerBody()?['transcript'])),not(equals(triggerBody()?['transcript'],'[]')),not(empty(triggerBody()?['conversationId']))),'Demo ticket logged with a best-effort telemetry transcript; completeness is not guaranteed. No internal ticketing system was called.','Demo ticket logged. Transcript was not captured or could not be associated with a conversation ID. No internal ticketing system was called.')"
+            }
+          },
+          "metadata": {
+            "description": "Respond to the agent",
+            "nodeId": "builtinFunction-8be7d1da-1b11-4fa8-a9ed-e82e13a9268a"
+          }
+        }
+      },
+      "outputs": {}
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
