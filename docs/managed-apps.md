@@ -169,6 +169,12 @@ app with only its documented prerequisites as described below, then
 [open a pull request](../CONTRIBUTING.md#open-a-pull-request) and complete the
 managed app attestation.
 
+Native Copilot uses [static managed-app review guidance](../.github/instructions/managed-app-review.instructions.md);
+review automation never installs or executes the submitted app. The
+[shared PR task queue](../CONTRIBUTING.md#shared-contributor-pr-task-queue)
+separates contributor fixes/testing attestations from maintainer CI authorization,
+formal approval, and merge. Checked attestations are not automated runtime tests.
+
 ## Testing before publication
 
 The page's setup command reads the submission's `app/` folder from the
