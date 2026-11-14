@@ -484,11 +484,28 @@ test("a failed initial PR fetch still withdraws readiness using the validated PR
   await assert.rejects(reconcile(fixture.api, 42), /503/);
   assert.ok(!fixture.pr.labels.some((label) => label.name === QUEUE_LABELS.ready));
   assert.ok(fixture.pr.labels.some((label) => label.name === "keep-this-label"));
+  assert.ok(fixture.pr.labels.some((label) => label.name === QUEUE_LABELS.maintainer));
   assert.equal(fixture.comments.length, 1);
-  assert.deepEqual(writes(fixture.calls.slice(previous)).map((call) => call.method), ["DELETE"]);
+  const cleanup = writes(fixture.calls.slice(previous));
+  assert.equal(cleanup[0].path, "issues/42/labels");
+  assert.ok(cleanup.some((call) => call.method === "DELETE"));
+  assert.ok(!cleanup.some((call) => call.path.includes("comments")));
+  fixture.overrides.delete("GET pulls/42");
+  fixture.pr.state = "closed";
+  await reconcile(fixture.api, 42);
+  assert.match(String(fixture.comments[0].body), /this PR is closed/);
   const count = fixture.calls.length;
   await assert.rejects(reconcile(fixture.api, 0), /Invalid PR number/);
   assert.equal(fixture.calls.length, count);
+});
+
+test("readiness is still withdrawn if recovery-label discovery also fails", async () => {
+  const fixture = mock();
+  await reconcile(fixture.api, 42);
+  fixture.overrides.set("GET pulls/42", () => new Response(null, { status: 503 }));
+  fixture.overrides.set("GET issues/42/labels?per_page=100&page=1", () => new Response(null, { status: 503 }));
+  await assert.rejects(reconcile(fixture.api, 42), /readiness invalidation failed/);
+  assert.ok(!fixture.pr.labels.some((label) => label.name === QUEUE_LABELS.ready));
 });
 
 test("same-head review/merge-state changes are rechecked before publishing readiness", async () => {

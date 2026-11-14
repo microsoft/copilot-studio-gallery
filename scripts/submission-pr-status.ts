@@ -480,13 +480,8 @@ async function writeComment(api: TaskApi, number: number, comments: unknown[], b
   else await api.call(`issues/${number}/comments`, "POST", { body });
 }
 
-async function writeLabels(api: TaskApi, pr: Pull, desired: string[], dryRun: boolean) {
+async function writeLabels(api: TaskApi, pr: Pick<Pull, "number" | "labels">, desired: string[], dryRun: boolean) {
   if (dryRun) return;
-  for (const label of Object.values(QUEUE_LABELS)) {
-    if (pr.labels.includes(label) && !desired.includes(label)) {
-      await api.call(`issues/${pr.number}/labels/${encodeURIComponent(label)}`, "DELETE", undefined, true);
-    }
-  }
   const add = desired.filter((label) => !pr.labels.includes(label));
   if (add.length) {
     const available = (await api.pages("labels")).map((value) => text(object(value).name));
@@ -494,6 +489,11 @@ async function writeLabels(api: TaskApi, pr: Pull, desired: string[], dryRun: bo
       await api.call("labels", "POST", { name, color: name === QUEUE_LABELS.ready ? "2da44e" : "fbca04", description: "Informational submission task queue; not an approval or merge gate." });
     }
     await api.call(`issues/${pr.number}/labels`, "POST", { labels: add });
+  }
+  for (const label of Object.values(QUEUE_LABELS)) {
+    if (pr.labels.includes(label) && !desired.includes(label)) {
+      await api.call(`issues/${pr.number}/labels/${encodeURIComponent(label)}`, "DELETE", undefined, true);
+    }
   }
 }
 
@@ -555,20 +555,29 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
   } catch (error) {
     if (!dryRun) {
       // Invalidate a previous readiness claim even when fresh evidence is unavailable.
-      try {
-        await api.call(`issues/${number}/labels/${encodeURIComponent(QUEUE_LABELS.ready)}`, "DELETE", undefined, true);
-        if (initial && tracking) {
+      const failures: unknown[] = [];
+      for (const cleanup of [
+        async () => {
           const current = (await api.pages(`issues/${number}/labels`)).map((value) => text(object(value).name));
+          if (!tracking && !current.some((label) => Object.values<string>(QUEUE_LABELS).includes(label))) return;
           const retained = current.filter((label) => label !== QUEUE_LABELS.ready && Object.values<string>(QUEUE_LABELS).includes(label));
-          await writeLabels(api, { ...initial, labels: current },
+          await writeLabels(api, { number, labels: current },
             [...new Set([...retained, QUEUE_LABELS.maintainer])], false);
+        },
+        async () => { await api.call(`issues/${number}/labels/${encodeURIComponent(QUEUE_LABELS.ready)}`, "DELETE", undefined, true); },
+        async () => {
+          if (initial && tracking && commentsLoaded) {
+            await writeComment(api, number, comments, `${MARKER}\n## Submission next steps\nAssessment failed or changed while being read. Previous readiness is withdrawn. Maintainer: inspect the [Submission PR tasks workflow](${new URL(initial.url).origin}/${api.repo}/actions/workflows/submission-pr-status.yml) and rerun it; do not rely on the previous checklist.\n`, false);
+          }
+        },
+      ]) {
+        try {
+          await cleanup();
+        } catch (failure) {
+          failures.push(failure);
         }
-        if (initial && tracking && commentsLoaded) {
-          await writeComment(api, number, comments, `${MARKER}\n## Submission next steps\nAssessment failed or changed while being read. Previous readiness is withdrawn. Maintainer: inspect the [Submission PR tasks workflow](${new URL(initial.url).origin}/${api.repo}/actions/workflows/submission-pr-status.yml) and rerun it; do not rely on the previous checklist.\n`, false);
-        }
-      } catch (cleanup) {
-        throw new AggregateError([error, cleanup], `Assessment failed: ${String(error)}; readiness invalidation failed: ${String(cleanup)}`);
       }
+      if (failures.length) throw new AggregateError([error, ...failures], `Assessment failed: ${String(error)}; readiness invalidation failed: ${failures.map(String).join("; ")}`);
     }
     throw error;
   }
