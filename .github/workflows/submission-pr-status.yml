@@ -2,7 +2,6 @@ name: Submission PR tasks
 
 on:
   pull_request_target:
-    branches: [main]
     types: [opened, synchronize, reopened, edited, labeled, unlabeled, ready_for_review, converted_to_draft, closed, review_requested, review_request_removed]
   workflow_run:
     workflows: [CI, Contribution policy]
@@ -12,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: PR number (empty reconciles all open PRs targeting main)
+        description: PR number (empty scans all open PRs; routes main contributions only)
         type: string
         required: false
       dry_run:

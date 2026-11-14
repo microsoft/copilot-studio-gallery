@@ -11,7 +11,7 @@ export const QUEUE_LABELS = {
   ready: "ready-for-merge",
 } as const;
 const BOT = "github-actions[bot]";
-const COPILOT = "copilot-pull-request-reviewer[bot]";
+const COPILOT_LOGINS = new Set(["copilot-pull-request-reviewer[bot]", "copilot"]);
 const SCOPE_CHECK = "Guard pull request scope";
 const attestations = {
   solution: ["I successfully imported the submitted solution into a fresh environment containing only its documented prerequisites, without skipping dependency checks."],
@@ -266,6 +266,10 @@ export async function collectEvidence(api: TaskApi, pr: Pull, files: ChangedFile
       metadataProblems.push(`Correct invalid JSON in \`${path}\`; the submission format and attestations cannot yet be assessed.`);
       continue;
     }
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+      metadataProblems.push(`Correct \`${path}\` to a JSON object; the submission format and attestations cannot yet be assessed.`);
+      continue;
+    }
     const metadata = object(parsed);
     if (metadata.submissionType !== undefined && metadata.submissionType !== "solution" && metadata.submissionType !== "managed-app") {
       metadataProblems.push(`Correct the unknown \`submissionType\` in \`${path}\`; the submission format and attestations cannot yet be assessed.`);
@@ -277,7 +281,8 @@ export async function collectEvidence(api: TaskApi, pr: Pull, files: ChangedFile
     const review = object(value);
     const user = review.user === null ? null : object(review.user);
     const author = login(review.user);
-    const copilot = review.is_copilot_code_review === true || (review.is_copilot_code_review === undefined && author === COPILOT);
+    const copilot = review.is_copilot_code_review === true
+      || (review.is_copilot_code_review === undefined && user?.type === "Bot" && COPILOT_LOGINS.has(author.toLowerCase()));
     return {
       id: integer(review.id), author, human: !copilot && user?.type === "User", copilot,
       head: sha(review.commit_id), state: text(review.state),
@@ -331,6 +336,26 @@ export interface Assessment {
   labels: string[];
 }
 
+function checkedAttestations(body: string): Set<string> {
+  const checked = new Set<string>();
+  let fence: { character: string; length: number } | undefined;
+  for (const line of body.replace(/<!--[\s\S]*?(?:-->|$)/g, "").split(/\r?\n/)) {
+    if (fence) {
+      const closing = /^ {0,3}(`+|~+)[\t ]*$/.exec(line);
+      if (closing && closing[1][0] === fence.character && closing[1].length >= fence.length) fence = undefined;
+      continue;
+    }
+    const opening = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
+    if (opening && !(opening[1][0] === "`" && opening[2].includes("`"))) {
+      fence = { character: opening[1][0], length: opening[1].length };
+      continue;
+    }
+    const match = /^ {0,3}-[\t ]+\[[xX]\][\t ]+(.+?)[\t ]*$/.exec(line);
+    if (match) checked.add(match[1]);
+  }
+  return checked;
+}
+
 export function assess(evidence: Evidence): Assessment {
   const { pr, reviews, threads, checks, ci } = evidence;
   const contributor: string[] = [...evidence.metadataProblems];
@@ -338,12 +363,7 @@ export function assess(evidence: Evidence): Assessment {
   const waiting: string[] = [];
   const scope = classifyContributionFiles(evidence.files);
   if (scope.slugs.size > 1) contributor.push("Keep this contribution to one submission, or ask a maintainer to review its maintenance scope.");
-  // Ignore HTML comments and fenced examples rather than accepting copied template text.
-  const body = pr.body.replace(/<!--[\s\S]*?(?:-->|$)/g, "").replace(/^(`{3,}|~{3,})[\s\S]*?^\1.*$/gm, "");
-  const checked = new Set(body.split(/\r?\n/).flatMap((line) => {
-    const match = /^\s*-\s+\[[xX]\]\s+(.+?)\s*$/.exec(line);
-    return match ? [match[1]] : [];
-  }));
+  const checked = checkedAttestations(pr.body);
   for (const format of evidence.formats) {
     if (attestations[format].some((statement) => !checked.has(statement))) {
       contributor.push(`Complete the ${format === "app" ? "managed-app fresh-app and source/privacy" : "solution fresh-environment import"} attestations in the PR body. Only check them after doing the documented test/review.`);
@@ -354,7 +374,7 @@ export function assess(evidence: Evidence): Assessment {
     .sort((a, b) => b.id - a.id)[0];
   const currentCopilot = latestCopilot !== undefined && ["COMMENTED", "APPROVED", "CHANGES_REQUESTED"].includes(latestCopilot.state);
   if (!currentCopilot) {
-    if (!pr.requested.includes(COPILOT)) maintainer.push(`Request a native Copilot review of the current revision in [Reviewers](${pr.url}). Enable **Review new pushes** for future fixes if it is not configured.`);
+    if (!pr.requested.some((author) => COPILOT_LOGINS.has(author.toLowerCase()))) maintainer.push(`Request a native Copilot review of the current revision in [Reviewers](${pr.url}). Enable **Review new pushes** for future fixes if it is not configured.`);
     waiting.push("A native Copilot review of this revision is still needed. Earlier findings are not assumed fixed or still applicable.");
   }
   const copilotIds = new Set(reviews.filter((review) => review.copilot).map((review) => review.id));
@@ -527,14 +547,14 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
     await writeComment(api, number, comments, body, dryRun);
     return body;
   } catch (error) {
-    if (initial && !dryRun) {
+    if (!dryRun) {
       // Invalidate a previous readiness claim even when fresh evidence is unavailable.
       try {
         await api.call(`issues/${number}/labels/${encodeURIComponent(QUEUE_LABELS.ready)}`, "DELETE", undefined, true);
-        if (tracking && commentsLoaded) {
+        if (initial && tracking && commentsLoaded) {
           await writeComment(api, number, comments, `${MARKER}\n## Submission next steps\nAssessment failed or changed while being read. Previous readiness is withdrawn. Maintainer: inspect the [Submission PR tasks workflow](${new URL(initial.url).origin}/${api.repo}/actions/workflows/submission-pr-status.yml) and rerun it; do not rely on the previous checklist.\n`, false);
         }
-        if (tracking) {
+        if (initial && tracking) {
           const retained = initial.labels.filter((label) => label !== QUEUE_LABELS.ready && Object.values<string>(QUEUE_LABELS).includes(label));
           await writeLabels(api, { ...initial, labels: initial.labels.filter((label) => label !== QUEUE_LABELS.ready) },
             [...new Set([...retained, QUEUE_LABELS.maintainer])], false);
@@ -547,16 +567,8 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
   }
 }
 
-async function main() {
-  const token = process.env.GH_TOKEN;
-  const repo = process.env.GITHUB_REPOSITORY;
-  if (!token || !repo) throw new Error("GH_TOKEN and GITHUB_REPOSITORY are required");
-  const api = new TaskApi(repo, token, process.env.GITHUB_API_URL);
-  const dryRun = process.argv.includes("--dry-run") || process.env.DRY_RUN === "true";
-  if (!dryRun && process.env.GITHUB_ACTIONS !== "true") throw new Error("Local use requires --dry-run; publish only through the trusted GitHub Actions workflow");
-  const event = process.env.GITHUB_EVENT_PATH ? object(JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH, "utf8"))) : {};
-  const requested = process.env.PR_NUMBER || (event.pull_request ? String(object(event.pull_request).number) : "");
-  const numbers = requested ? [Number(requested)] : (await api.pages("pulls?state=open&base=main")).map((value) => integer(object(value).number));
+export async function reconcileQueue(api: TaskApi, requested = "", dryRun = false): Promise<void> {
+  const numbers = requested ? [Number(requested)] : (await api.pages("pulls?state=open")).map((value) => integer(object(value).number));
   const errors: string[] = [];
   for (const number of numbers) {
     try {
@@ -568,6 +580,18 @@ async function main() {
     }
   }
   if (errors.length) throw new Error(errors.join("\n"));
+}
+
+async function main() {
+  const token = process.env.GH_TOKEN;
+  const repo = process.env.GITHUB_REPOSITORY;
+  if (!token || !repo) throw new Error("GH_TOKEN and GITHUB_REPOSITORY are required");
+  const api = new TaskApi(repo, token, process.env.GITHUB_API_URL);
+  const dryRun = process.argv.includes("--dry-run") || process.env.DRY_RUN === "true";
+  if (!dryRun && process.env.GITHUB_ACTIONS !== "true") throw new Error("Local use requires --dry-run; publish only through the trusted GitHub Actions workflow");
+  const event = process.env.GITHUB_EVENT_PATH ? object(JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH, "utf8"))) : {};
+  const requested = process.env.PR_NUMBER || (event.pull_request ? String(object(event.pull_request).number) : "");
+  await reconcileQueue(api, requested, dryRun);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

@@ -428,7 +428,9 @@ through the API; it never checks out contributor code, installs dependencies,
 downloads run artifacts, approves CI, submits reviews, or merges. The existing
 CI authorization policy remains unchanged. It updates on PR lifecycle/body
 changes and CI/policy completion, with scheduled reconciliation every 15 minutes
-for review/thread changes and external checks. Scheduled jobs can be delayed by
+for review/thread changes and external checks. Scans include all open PRs so
+retargeting a tracked PR away from `main` retires its queue labels.
+Scheduled jobs can be delayed by
 GitHub; always use the live merge box, not an old label, as the final authority.
 The comment names the assessed head/base. API failures withdraw prior readiness,
 invalidate an existing comment where possible, and fail the workflow visibly.

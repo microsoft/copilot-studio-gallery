@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { parse } from "yaml";
-import { assess, collectEvidence, MARKER, QUEUE_LABELS, reconcile, render, TaskApi, type Evidence, type Review } from "./submission-pr-status";
+import { assess, collectEvidence, MARKER, QUEUE_LABELS, reconcile, reconcileQueue, render, TaskApi, type Evidence, type Review } from "./submission-pr-status";
 
 const head = "a".repeat(40);
 const base = "b".repeat(40);
@@ -77,6 +77,17 @@ test("a human's Copilot-looking approval text does not count as a native review"
   assert.ok(!assess(state).labels.includes(QUEUE_LABELS.ready));
 });
 
+test("pending reviews under either native Copilot login do not request duplicate maintainer action", () => {
+  for (const author of ["Copilot", "copilot-pull-request-reviewer[bot]"]) {
+    const state = evidence();
+    state.reviews = [human];
+    state.pr.requested = [author];
+    const result = assess(state);
+    assert.ok(result.labels.includes(QUEUE_LABELS.copilot));
+    assert.doesNotMatch(result.maintainer.join(), /Request a native Copilot review/);
+  }
+});
+
 test("resolved threads do not waive attestations, CI or approval", () => {
   const state = evidence();
   state.pr.body = "";
@@ -127,6 +138,27 @@ test("attestations are format-aware and ignored in comments and fenced examples"
   assert.match(assess(state).contributor.join(), /managed-app fresh-app and source\/privacy/);
   state.pr.body = attested;
   assert.deepEqual(assess(state).contributor, []);
+});
+
+test("indented, longer and unclosed Markdown fences cannot attest testing", () => {
+  const statements = attested.split("\n").filter((line) => line.startsWith("- [x]")).join("\n");
+  for (const indentation of ["", " ", "  ", "   "]) {
+    for (const fence of ["```", "~~~", "````"]) {
+      for (const closing of [fence, fence + fence[0], ""]) {
+        const state = evidence();
+        state.pr.body = `${indentation}${fence}md\n${statements}\n${indentation}${closing}`;
+        assert.match(assess(state).contributor.join(), /solution fresh-environment/);
+        assert.ok(!assess(state).labels.includes(QUEUE_LABELS.ready));
+        if (closing) {
+          state.pr.body += `\n${statements}`;
+          assert.deepEqual(assess(state).contributor, []);
+        }
+      }
+    }
+  }
+  const state = evidence();
+  state.pr.body = statements.split("\n").map((line) => `    ${line}`).join("\n");
+  assert.match(assess(state).contributor.join(), /solution fresh-environment/);
 });
 
 test("actual required failures, pending runs and unknown check states are not readiness", () => {
@@ -280,6 +312,21 @@ test("missing and unknown-format metadata become explicit contributor tasks, nev
   assert.deepEqual(writes(fixture.calls), []);
 });
 
+test("valid non-object metadata JSON becomes a contributor task rather than a failed assessment", async () => {
+  for (const value of [null, [], 42, true, "sample"]) {
+    const fixture = mock();
+    const content = Buffer.from(JSON.stringify(value));
+    fixture.overrides.set(`GET contents/submissions/sample/metadata.json?ref=${head}`, () => ({
+      type: "file", encoding: "base64", size: content.length, content: content.toString("base64"),
+    }));
+    const result = await reconcile(fixture.api, 42);
+    assert.match(result, /Correct .* to a JSON object/);
+    assert.ok(fixture.pr.labels.some((label) => label.name === QUEUE_LABELS.contributor));
+    assert.ok(!fixture.pr.labels.some((label) => label.name === QUEUE_LABELS.ready));
+    assert.doesNotMatch(result, /Assessment failed/);
+  }
+});
+
 test("site, dependency and mixed changes are excluded; multiple ordinary submissions remain visible", async () => {
   for (const files of [
     [{ filename: "package-lock.json", status: "modified" }],
@@ -311,6 +358,18 @@ test("tracked PRs that become drafts or leave scope retire only coordinator labe
   assert.equal(fixture.comments.length, 1);
 });
 
+test("queue reconciliation retires tracked PRs retargeted away from main", async () => {
+  const fixture = mock();
+  await reconcile(fixture.api, 42);
+  fixture.pr.base.ref = "release";
+  fixture.pr.labels.push({ name: "keep-this-label" });
+  fixture.overrides.set("GET pulls?state=open&per_page=100&page=1", () => [{ number: 42 }]);
+  await reconcileQueue(fixture.api);
+  assert.deepEqual(fixture.pr.labels, [{ name: "keep-this-label" }]);
+  assert.match(String(fixture.comments[0].body), /outside ordinary contribution scope/);
+  assert.equal(fixture.comments.length, 1);
+});
+
 test("later comment/file pages are read and bot impersonation cannot suppress a checklist", async () => {
   const fixture = mock();
   fixture.pr.changed_files = 101;
@@ -334,6 +393,22 @@ test("revision races fail visibly and withdraw previous readiness, even in-place
   assert.ok(!fixture.pr.labels.some((label) => label.name === QUEUE_LABELS.ready));
   assert.ok(fixture.pr.labels.some((label) => label.name === QUEUE_LABELS.maintainer));
   assert.match(String(fixture.comments[0].body), /Previous readiness is withdrawn/);
+});
+
+test("a failed initial PR fetch still withdraws readiness using the validated PR number", async () => {
+  const fixture = mock();
+  await reconcile(fixture.api, 42);
+  fixture.pr.labels.push({ name: "keep-this-label" });
+  fixture.overrides.set("GET pulls/42", () => new Response(null, { status: 503 }));
+  const previous = fixture.calls.length;
+  await assert.rejects(reconcile(fixture.api, 42), /503/);
+  assert.ok(!fixture.pr.labels.some((label) => label.name === QUEUE_LABELS.ready));
+  assert.ok(fixture.pr.labels.some((label) => label.name === "keep-this-label"));
+  assert.equal(fixture.comments.length, 1);
+  assert.deepEqual(writes(fixture.calls.slice(previous)).map((call) => call.method), ["DELETE"]);
+  const count = fixture.calls.length;
+  await assert.rejects(reconcile(fixture.api, 0), /Invalid PR number/);
+  assert.equal(fixture.calls.length, count);
 });
 
 test("same-head review/merge-state changes are rechecked before publishing readiness", async () => {
@@ -402,6 +477,8 @@ test("workflow uses only trusted main code, metadata permissions, supported trig
   assert.equal(workflow.concurrency["cancel-in-progress"], false);
   assert.equal(workflow.on.schedule[0].cron, "*/15 * * * *");
   assert.ok(workflow.on.pull_request_target);
+  assert.equal(workflow.on.pull_request_target.branches, undefined);
+  assert.ok(workflow.on.pull_request_target.types.includes("edited"));
   assert.ok(!workflow.on.pull_request);
   assert.deepEqual(workflow.on.workflow_run.workflows, ["CI", "Contribution policy"]);
   const steps = workflow.jobs.reconcile.steps;
