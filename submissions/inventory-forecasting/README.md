@@ -145,14 +145,14 @@ Each forecast returns:
 ### Steps
 
 1. **Create the Dataverse tables** listed in [Data model](#data-model-dataverse) and load your store, SKU, stock, history and event data.
-2. **Create the agent** and paste the agent instructions from `agent/instructions.md` (see [Project structure](#project-structure)).
+2. **Create the agent** and copy the instruction text from `agentSettings.instructions.segments[].value` in `solution/bots/cred7_inventoryforecastingagent2_bVSobs/configuration.json`.
 3. **Add the tools / connectors**:
    - Dataverse (read access to the five tables above)
    - Weather
    - Web search
    - Outlook: Send an email (V2)
    - Code execution (for calculations, charts and report files)
-4. **Add the skills** from the `skills/` folder.
+4. **Add the skills** using the Markdown `content` fields in `solution/botcomponents/cred7_inventoryforecastingagent2_bVSobs.skill.inventory-forecast_qZ_/data` and `solution/botcomponents/cred7_inventoryforecastingagent2_bVSobs.skill.local-events-search_sU2/data`. The [Project structure](#project-structure) below is a suggested alternative layout, not the paths shipped in this export.
 5. **Test** with the [example prompts](#example-prompts), starting with a city that has baseline data.
 6. **Publish** the agent to your channel (Teams, web, etc.).
 
