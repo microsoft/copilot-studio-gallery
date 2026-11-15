@@ -433,19 +433,24 @@ contributor action first appears or changes, including after a maintainer step.
 Routine reruns and head/base changes alone do not post another notification.
 Persisted bot-owned action markers prevent duplicate notifications on retry;
 delivered notification history also preserves generations after failed status
-updates. Author-written lookalike markers are ignored. Edits to the selected
-review request or finding count as changed work. Before publishing, the queue
-rechecks the selected action so a newly answered/resolved finding or passing
-check does not trigger a stale contributor notification. Notifications are historical:
+updates. Author-written lookalike markers are ignored. Edits to any displayed
+contributor review request or finding count as changed work. Before publishing,
+the queue rechecks the selected action and other contributor requirements so a
+newly answered/resolved finding or passing check does not trigger a stale
+contributor notification. Notifications are historical:
 the updated **Submission next step** comment and exclusive label identify the
 current action. Paused, closed, and out-of-scope PRs receive no new notifications.
 
 The priority is submission scope/metadata, unaddressed current review feedback,
-judgment on replies to current findings, branch updates, failing checks, testing
-attestations, CI authorization/investigation or completion, native review
+judgment on replies to current findings, testing attestations, branch updates,
+failing checks, CI authorization/investigation or completion, native review
 request/completion, confirmation against a new revision, unknown merge-state
 investigation, formal approval, and final GitHub merge requirements. Each update
-selects the first applicable step, not a checklist of future work.
+selects the first applicable step. The comment and contributor notification also
+list other known contributor requirements, including all unanswered current
+review findings, so corrections and required testing can be handled together.
+Routine branch updates do not hide a missing attestation. Later maintainer
+actions remain hidden until their prerequisites are satisfied.
 
 For example, a current changes request with no contributor response shows
 **Next: Contributor - address the outstanding review request**, with its review
