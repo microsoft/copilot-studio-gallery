@@ -750,6 +750,7 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
         async () => { await api.call(`issues/${number}/labels/${encodeURIComponent(QUEUE_LABELS.ready)}`, "DELETE", undefined, true); },
         async () => {
           if (initial && tracking && commentsLoaded) {
+            comments = await api.pages(`issues/${number}/comments`);
             const previous = previousActionState(comments);
             await writeComment(api, number, comments, `${MARKER}\n## Submission next step\n**Next: Maintainer - investigate the failed assessment.**\n\nAssessment failed or changed while being read. Previous readiness is withdrawn.\n\nInspect the [Submission PR tasks workflow](${new URL(initial.url).origin}/${api.repo}/actions/workflows/submission-pr-status.yml) and rerun it; do not rely on the previous checklist. The queue reassesses after a successful rerun.\n${previous.marker}\n`, false);
           }

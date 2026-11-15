@@ -633,6 +633,28 @@ test("same-head resolved/answered findings and passing checks abort stale contri
   }
 });
 
+test("an uncertain initial status POST is recovered in place rather than duplicated", async () => {
+  const fixture = mock();
+  let failed = false;
+  fixture.overrides.set("POST issues/42/comments", () => {
+    if (!failed) {
+      failed = true;
+      fixture.comments.push({
+        id: 8, body: fixture.calls.at(-1)!.body.body,
+        user: { login: "github-actions[bot]", type: "Bot" },
+      });
+      return new Response("response lost after delivery", { status: 503 });
+    }
+    return undefined;
+  });
+  await assert.rejects(reconcile(fixture.api, 42));
+  assert.equal(fixture.comments.length, 1);
+  assert.match(String(fixture.comments[0].body), /investigate the failed assessment/);
+  await reconcile(fixture.api, 42);
+  assert.equal(fixture.comments.length, 1);
+  assert.match(String(fixture.comments[0].body), /merge manually/);
+});
+
 test("reconciliation updates its own comment/labels only and unchanged repeat runs produce no writes", async () => {
   const fixture = mock();
   fixture.comments.push({ id: 7, body: `${MARKER}\nSpoofed`, user: { login: "visitor", type: "User" } });
