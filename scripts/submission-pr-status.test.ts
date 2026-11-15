@@ -552,6 +552,38 @@ test("a failed status update does not repeat a persisted changed-action notifica
   assert.equal(notifications(fixture).length, 3);
 });
 
+test("a different failing check sharing the checks URL gets a new notification", async () => {
+  const fixture = mock();
+  fixture.state.checks[0].state = "FAILURE";
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, 1);
+  fixture.state.checks[0].state = "SUCCESS";
+  fixture.state.checks[1].state = "FAILURE";
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, 2);
+  assert.match(String(notifications(fixture)[1].body), /Validate, test, and build failed/);
+});
+
+test("failed status delivery followed by a maintainer step never reuses a notification generation", async () => {
+  const fixture = mock();
+  fixture.state.bodyHTML = "";
+  await reconcile(fixture.api, 42);
+  const status = fixture.comments.find((comment) => String(comment.body).startsWith(MARKER))!;
+  const path = `PATCH issues/comments/${status.id}`;
+  fixture.state.mergeState = "DIRTY";
+  fixture.overrides.set(path, () => new Response("status update failed", { status: 503 }));
+  await assert.rejects(reconcile(fixture.api, 42));
+  assert.equal(notifications(fixture).length, 2);
+  fixture.overrides.delete(path);
+  fixture.state.mergeState = "BEHIND";
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, 2);
+  fixture.state.mergeState = "DIRTY";
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, 3);
+  assert.match(String(notifications(fixture)[2].body), /:3 -->/);
+});
+
 test("reconciliation updates its own comment/labels only and unchanged repeat runs produce no writes", async () => {
   const fixture = mock();
   fixture.comments.push({ id: 7, body: `${MARKER}\nSpoofed`, user: { login: "visitor", type: "User" } });

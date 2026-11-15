@@ -581,12 +581,24 @@ function ownedComment(value: unknown) {
 function previousActionState(comments: unknown[]) {
   const existing = comments.filter(ownedComment);
   if (existing.length > 1) throw new Error("Duplicate coordinator comments; maintainer cleanup required");
-  const previous = existing.length ? text(object(existing[0]).body) : "";
-  const state = previous.match(/<!-- gallery-submission-action:v1:([a-f0-9]{64}):(\d+) -->/);
-  if (previous.includes(ACTION_MARKER) && !state) throw new Error("Invalid contributor notification state");
+  const body = existing.length ? text(object(existing[0]).body) : "";
+  const state = body.match(/<!-- gallery-submission-action:v1:([a-f0-9]{64}):(\d+) -->/);
+  if (body.includes(ACTION_MARKER) && !state) throw new Error("Invalid contributor notification state");
   const sequence = state ? Number(state[2]) : 0;
   if (!Number.isSafeInteger(sequence) || sequence < 0) throw new Error("Invalid contributor notification sequence");
-  return { key: state?.[1], sequence, marker: state?.[0] ?? "" };
+  let previous = { key: state?.[1], sequence, marker: state?.[0] ?? "" };
+  // Delivery can persist even when the following status update fails.
+  for (const comment of comments.filter(botComment)) {
+    const delivered = text(object(comment).body).match(/^<!-- gallery-contributor-action:v1:([a-f0-9]{64}):(\d+) -->/);
+    if (!delivered) continue;
+    const generation = Number(delivered[2]);
+    if (!Number.isSafeInteger(generation) || generation < 1) throw new Error("Invalid delivered notification sequence");
+    if (generation > previous.sequence) previous = {
+      key: delivered[1], sequence: generation,
+      marker: `${ACTION_MARKER}${delivered[1]}:${generation} -->`,
+    };
+  }
+  return previous;
 }
 
 function actionState(pr: Pull, assessment: Assessment, comments: unknown[]) {
@@ -594,6 +606,7 @@ function actionState(pr: Pull, assessment: Assessment, comments: unknown[]) {
   const { next } = assessment;
   const key = createHash("sha256").update(JSON.stringify([
     pr.author, next.kind, next.owner, next.title, next.instruction, next.reassess,
+    next.kind === "fix-check" ? next.reason : "",
   ])).digest("hex");
   const notify = next.owner === "Contributor" && previous.key !== key;
   const generation = previous.sequence + (notify ? 1 : 0);
