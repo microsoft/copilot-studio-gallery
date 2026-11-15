@@ -23,7 +23,7 @@ the gallery checkout, install its dependencies:
 npm ci
 ```
 
-The gallery requires Node >=22.12. App source export and testing also require
+The gallery requires Node >=22.23.4. App source export and testing also require
 the [managed app CLI prerequisites](docs/managed-apps.md#contribute-an-app),
 including Node >=24.11 and compatible Git/Git Credential Manager.
 
