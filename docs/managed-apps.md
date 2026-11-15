@@ -173,7 +173,10 @@ Native Copilot uses [static managed-app review guidance](../.github/instructions
 review automation never installs or executes the submitted app. The
 [shared PR task queue](../CONTRIBUTING.md#shared-contributor-pr-task-queue)
 shows one prioritized next action and its owner, rather than simultaneous
-contributor and maintainer task lists. CI authorization, formal approval, and
+contributor and maintainer task lists. Behind-main branch updates belong to
+maintainers; actual conflicts remain contributor work. Contributor instructions
+mention the author, with a new notification on action changes rather than on
+routine reruns. CI authorization, formal approval, and
 merge remain manual; later actions are hidden until their prerequisites are
 satisfied. Checked attestations are not automated runtime tests.
 

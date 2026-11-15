@@ -411,8 +411,8 @@ remain outside this queue. Multi-entry submission mistakes remain visible.
 
 | Queue label | Who acts next |
 | --- | --- |
-| [`needs-contributor`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aneeds-contributor) | Contributor: fix or discuss findings, correct scope, update the branch, or complete the matching test attestations. |
-| [`needs-maintainer`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aneeds-maintainer) | Maintainer: inspect/authorize fork CI, request a missing Copilot review, follow up on fixes/disputed findings, or formally approve. |
+| [`needs-contributor`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aneeds-contributor) | Contributor: fix or discuss findings, correct scope, resolve actual merge conflicts, or complete the matching test attestations. |
+| [`needs-maintainer`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aneeds-maintainer) | Maintainer: update a behind-main branch, inspect/authorize fork CI, request a missing Copilot review, follow up on fixes/disputed findings, or formally approve. |
 | [`awaiting-copilot`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aawaiting-copilot) | Automation: wait for the requested native review of the current revision. If a review must first be requested, the label is `needs-maintainer` instead. |
 | [`awaiting-ci`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aawaiting-ci) | Automation: wait for current CI/checks. A run requiring authorization instead routes to a maintainer. |
 | [`ready-for-merge`](https://github.com/microsoft/copilot-studio-gallery/pulls?q=is%3Apr+is%3Aopen+label%3Aready-for-merge) | Maintainer: perform the final review and merge manually if satisfied. This label is not an approval or a bypass. |
@@ -421,6 +421,24 @@ Only the label for the **selected next step** is applied; obsolete queue labels
 are removed. The label identifies the next actor, while the comment gives the
 exact action. All remaining blockers stay tracked internally and still prevent
 readiness.
+
+A branch being behind its base is maintainer work, not an outstanding
+contributor correction. The maintainer inspects and updates the branch, or
+coordinates with the author if update permission is unavailable. Actual merge
+conflicts remain contributor work. The queue never updates branches itself.
+
+Contributor instructions address `@the-author` with the specific action and
+its review/check/file evidence. The bot posts a separate notification when a
+contributor action first appears or changes, including after a maintainer step.
+Routine reruns and head/base changes alone do not post another notification.
+Persisted bot-owned action markers prevent duplicate notifications on retry;
+delivered notification history also preserves generations after failed status
+updates. Author-written lookalike markers are ignored. Edits to the selected
+review request or finding count as changed work. Before publishing, the queue
+rechecks the selected action so a newly answered/resolved finding or passing
+check does not trigger a stale contributor notification. Notifications are historical:
+the updated **Submission next step** comment and exclusive label identify the
+current action. Paused, closed, and out-of-scope PRs receive no new notifications.
 
 The priority is submission scope/metadata, unaddressed current review feedback,
 judgment on replies to current findings, branch updates, failing checks, testing
@@ -442,6 +460,11 @@ thread replies alone cannot prove that summary feedback was answered.
 
 A new push needs fresh evidence; an old finding is neither automatically still
 valid nor automatically fixed.
+A resolved thread is not independent verification that its remedy was applied.
+If a reviewer verifies that a requested correction is still missing, they must
+record an explicit current review request with the precise remaining work.
+The metadata-only queue uses that request; it does not inspect submitted source
+to overrule thread resolution or certify a fix.
 Copilot can resolve its own addressed findings on rereview; humans retain
 responsibility for their discussions and disputed findings. Missing CI is not
 reported as failing code when the run is actually waiting for authorization.

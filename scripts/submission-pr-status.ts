@@ -1,9 +1,12 @@
 import { readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { classifyContributionFiles, METADATA_LABEL, SITE_LABEL, type ChangedFile } from "./contribution-scope.ts";
 
 export const MARKER = "<!-- gallery-submission-tasks:v1 -->";
+export const NOTIFICATION_MARKER = "<!-- gallery-contributor-action:v1:";
+const ACTION_MARKER = "<!-- gallery-submission-action:v1:";
 export const QUEUE_LABELS = {
   contributor: "needs-contributor",
   maintainer: "needs-maintainer",
@@ -171,6 +174,7 @@ export interface Thread {
   resolved: boolean;
   replyByAuthor: boolean;
   head: string | null;
+  body?: string;
 }
 export interface Check {
   name: string;
@@ -211,7 +215,7 @@ const threadsQuery = `query($owner:String!,$name:String!,$number:Int!,$after:Str
     headRefOid baseRefOid
     reviewThreads(first:100,after:$after) { totalCount pageInfo { hasNextPage endCursor }
       nodes { isResolved comments(first:1) { nodes {
-        url pullRequestReview { databaseId commit { oid } }
+        url body pullRequestReview { databaseId commit { oid } }
       } } lastReply:comments(last:1) { nodes { author { login } } } }
     }
   } }
@@ -319,6 +323,7 @@ export async function collectEvidence(api: TaskApi, pr: Pull, files: ChangedFile
     return {
       review: first.pullRequestReview === null ? null : integer(object(first.pullRequestReview).databaseId),
       url: api.url(first.url), resolved: boolean(thread.isResolved),
+      body: text(first.body),
       replyByAuthor: login(last.author) === pr.author,
       head: first.pullRequestReview === null || object(first.pullRequestReview).commit === null
         ? null : sha(object(object(first.pullRequestReview).commit).oid),
@@ -346,6 +351,7 @@ export interface NextAction {
   reason: string;
   instruction: string;
   reassess: string;
+  evidence?: string;
 }
 export interface Assessment {
   blockers: NextAction[];
@@ -382,8 +388,8 @@ function checkedAttestations(bodyHTML: string): Set<string> {
 export function assess(evidence: Evidence): Assessment {
   const { pr, reviews, threads, checks, ci } = evidence;
   const blockers: NextAction[] = [];
-  const add = (kind: ActionKind, owner: NextAction["owner"], title: string, reason: string, instruction: string, reassess: string) => {
-    blockers.push({ kind, owner, title, reason, instruction, reassess });
+  const add = (kind: ActionKind, owner: NextAction["owner"], title: string, reason: string, instruction: string, reassess: string, evidence?: string) => {
+    blockers.push({ kind, owner, title, reason, instruction, reassess, ...(evidence === undefined ? {} : { evidence }) });
   };
   const scope = classifyContributionFiles(evidence.files);
   for (const problem of evidence.metadataProblems) {
@@ -426,7 +432,7 @@ export function assess(evidence: Evidence): Assessment {
   if (latestCopilot?.state === "CHANGES_REQUESTED" && !repliedToReview(latestCopilot)) {
     add("review-changes", "Contributor", "Address the outstanding review request", "Copilot requested changes on this revision.",
       `Address or discuss [Copilot's request for changes](${latestCopilot.url}), then push the agreed remedy and report verification in that discussion.`,
-      "After a correction is pushed or a response is posted; replies do not automatically resolve findings.");
+      "After a correction is pushed or a response is posted; replies do not automatically resolve findings.", latestCopilot.summary);
   } else if (latestCopilot?.state === "CHANGES_REQUESTED") {
     add("judge-reply", "Maintainer", "Judge the response to the review request", "The contributor has replied, but Copilot's changes request remains outstanding.",
       `Compare the replies with [Copilot's full request for changes](${latestCopilot.url}); confirm whether the concern is addressed or explain the remaining blocker.`,
@@ -439,7 +445,7 @@ export function assess(evidence: Evidence): Assessment {
     if (awaitingAuthor) add("review-discussion", "Contributor", "Address the outstanding review finding",
       "A current Copilot finding has no contributor response.",
       `Address or discuss the [unresolved Copilot finding](${awaitingAuthor.url}), push the agreed correction, and report verification there. Do not repeat already supplied fixes.`,
-      "After a correction is pushed or a response is posted.");
+      "After a correction is pushed or a response is posted.", awaitingAuthor.body);
     const followup = copilot.find((thread) => thread.head === pr.head && thread.replyByAuthor)
       ?? copilot.find((thread) => thread.replyByAuthor || (thread.head !== null && thread.head !== pr.head));
     if (followup) add(followup.head === pr.head && followup.replyByAuthor ? "judge-reply" : "confirm-review", "Maintainer", "Judge the response to the review finding",
@@ -458,7 +464,7 @@ export function assess(evidence: Evidence): Assessment {
     if (awaitingAuthor) {
       add("review-discussion", "Contributor", "Respond to the review discussion", "A current human review discussion has no contributor response.",
         `Respond to the [open human review discussion](${awaitingAuthor.url}) with a fix or clarification and report verification.`,
-        "After a correction is pushed or a response is posted.");
+        "After a correction is pushed or a response is posted.", awaitingAuthor.body);
     }
   }
   const latestHuman = new Map<string, Review>();
@@ -471,7 +477,7 @@ export function assess(evidence: Evidence): Assessment {
   if (request.head === pr.head && !repliedToReview(request)) add("review-changes", "Contributor", "Address the outstanding review request",
     "A human reviewer requested changes on this revision.",
     `Address or discuss [the human request for changes](${request.url}), including feedback in the review summary. Push the agreed correction and report verification there.`,
-    "After a correction is pushed or a response is posted; the reviewer must still confirm the remedy.");
+    "After a correction is pushed or a response is posted; the reviewer must still confirm the remedy.", request.summary);
   if (request.head !== pr.head || repliedToReview(request)) add(request.head === pr.head ? "judge-reply" : "confirm-review", "Maintainer", "Judge the response to the changes request",
     "The human changes request still needs confirmation against the reply/new revision.",
     `Follow up on [the human request for changes](${request.url}); compare the full request with the supplied response/revision and confirm it is addressed or identify the specific remaining concern.`,
@@ -512,10 +518,13 @@ export function assess(evidence: Evidence): Assessment {
   if (!approved) add("approve", "Maintainer", "Review and approve the current revision", "Formal human approval of this revision is missing.",
     `Review the evidence and submit a formal human approval in [Files changed](${pr.url}/files), or explain a specific remaining blocker. Copilot comments are not that approval.`,
     "After a formal review is submitted.");
-  if (evidence.mergeState === "DIRTY" || evidence.mergeState === "BEHIND") {
-    add("branch", "Contributor", evidence.mergeState === "DIRTY" ? "Resolve merge conflicts" : "Update the branch against the base",
-      `GitHub reports ${evidence.mergeState}.`,
-      `Resolve merge conflicts or update the branch against the [base branch](${pr.url}) before the final checks/review cycle. New commits need fresh checks and review.`,
+  if (evidence.mergeState === "DIRTY") {
+    add("branch", "Contributor", "Resolve merge conflicts", "GitHub reports merge conflicts.",
+      `Resolve conflicts against the base branch \`${pr.baseBranch}\` in [this PR](${pr.url}), push the corrected branch, and report how you verified the conflict resolution. New commits need fresh checks and review.`,
+      "After the updated branch is pushed.");
+  } else if (evidence.mergeState === "BEHIND") {
+    add("branch", "Maintainer", "Update the branch against the base", "The branch is behind its base; a maintainer owns this update.",
+      `Inspect and update [this PR's branch](${pr.url}) against \`${pr.baseBranch}\` before the final checks/review cycle. If you cannot update it, coordinate with the contributor. Do not authorize CI or approve automatically; new commits need fresh checks and review.`,
       "After the updated branch is pushed.");
   } else if (!["CLEAN", "BLOCKED", "UNSTABLE", "HAS_HOOKS"].includes(evidence.mergeState)) {
     add("investigate-state", "Maintainer", "Investigate GitHub's merge state", `GitHub merge state is ${evidence.mergeState}.`,
@@ -554,7 +563,7 @@ Assessed head \`${pr.head}\` against base \`${pr.base}\`. Informational only: Gi
 
 ${next.reason}
 
-${next.instruction}
+${next.owner === "Contributor" ? `@${pr.author}, ` : ""}${next.instruction}
 
 **Reassessed:** ${next.reassess}
 
@@ -562,10 +571,74 @@ This comment is updated in place and shows only the next step; later prerequisit
 `;
 }
 
-function ownedComment(value: unknown) {
+function botComment(value: unknown) {
   const comment = object(value);
   const user = comment.user === null ? null : object(comment.user);
-  return user?.login === BOT && user.type === "Bot" && typeof comment.body === "string" && comment.body.startsWith(MARKER);
+  return user?.login === BOT && user.type === "Bot" && typeof comment.body === "string";
+}
+
+function ownedComment(value: unknown) {
+  return botComment(value) && text(object(value).body).startsWith(MARKER);
+}
+
+function previousActionState(comments: unknown[]) {
+  const existing = comments.filter(ownedComment);
+  if (existing.length > 1) throw new Error("Duplicate coordinator comments; maintainer cleanup required");
+  const body = existing.length ? text(object(existing[0]).body) : "";
+  const state = body.match(/<!-- gallery-submission-action:v1:([a-f0-9]{64}):(\d+) -->/);
+  if (body.includes(ACTION_MARKER) && !state) throw new Error("Invalid contributor notification state");
+  const sequence = state ? Number(state[2]) : 0;
+  if (!Number.isSafeInteger(sequence) || sequence < 0) throw new Error("Invalid contributor notification sequence");
+  let previous = { key: state?.[1], sequence, marker: state?.[0] ?? "" };
+  // Delivery can persist even when the following status update fails.
+  for (const comment of comments.filter(botComment)) {
+    const delivered = text(object(comment).body).match(/^<!-- gallery-contributor-action:v1:([a-f0-9]{64}):(\d+) -->/);
+    if (!delivered) continue;
+    const generation = Number(delivered[2]);
+    if (!Number.isSafeInteger(generation) || generation < 1) throw new Error("Invalid delivered notification sequence");
+    if (generation > previous.sequence) previous = {
+      key: delivered[1], sequence: generation,
+      marker: `${ACTION_MARKER}${delivered[1]}:${generation} -->`,
+    };
+  }
+  return previous;
+}
+
+function actionKey(pr: Pull, assessment: Assessment) {
+  const { next } = assessment;
+  return createHash("sha256").update(JSON.stringify([
+    pr.author, next.kind, next.owner, next.title, next.instruction, next.reassess,
+    next.kind === "fix-check" ? next.reason : "", next.evidence ?? "",
+  ])).digest("hex");
+}
+
+function actionState(pr: Pull, assessment: Assessment, comments: unknown[]) {
+  const previous = previousActionState(comments);
+  const key = actionKey(pr, assessment);
+  const { next } = assessment;
+  const notify = next.owner === "Contributor" && previous.key !== key;
+  const generation = previous.sequence + (notify ? 1 : 0);
+  if (!Number.isSafeInteger(generation)) throw new Error("Contributor notification sequence exhausted");
+  return { key, generation, notify };
+}
+
+async function notifyContributor(api: TaskApi, pr: Pull, assessment: Assessment, comments: unknown[], state: ReturnType<typeof actionState>, dryRun: boolean) {
+  if (!state.notify || dryRun) return;
+  const marker = `${NOTIFICATION_MARKER}${state.key}:${state.generation} -->`;
+  if (comments.some((comment) => botComment(comment) && text(object(comment).body).startsWith(marker))) return;
+  await api.call(`issues/${pr.number}/comments`, "POST", {
+    body: `${marker}
+@${pr.author}, **${assessment.next.title}.**
+
+${assessment.next.reason}
+
+${assessment.next.instruction}
+
+**Reassessed:** ${assessment.next.reassess}
+
+This notification records the action at posting time. See the **Submission next step** comment and queue label for the current action.
+`,
+  });
 }
 
 async function writeComment(api: TaskApi, number: number, comments: unknown[], body: string, dryRun: boolean) {
@@ -622,16 +695,29 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
     commentsLoaded = true;
     let body: string;
     let evidence: Evidence | undefined;
+    let assessment: Assessment | undefined;
+    let notification: ReturnType<typeof actionState> | undefined;
     let labels: string[] = [];
     if (!eligible || initial.draft || initial.state !== "open") {
       const reason = initial.state !== "open" ? "closed" : initial.draft ? "a draft" : "outside ordinary contribution scope";
       body = `${MARKER}\n## Submission next step\n**Paused: this PR is ${reason}.**\n\n${initial.state !== "open" ? "No active contribution task remains." : initial.draft ? "Contributor: mark this PR ready for review when ready; the queue will reassess." : "Use ordinary maintainer review; this PR is outside the contribution queue."}\n`;
       if (!tracked && !comments.some(ownedComment)) return "Not tracking draft/closed PR";
+      const previous = previousActionState(comments);
+      const key = createHash("sha256").update(`paused:${reason}`).digest("hex");
+      body += `\n${ACTION_MARKER}${key}:${previous.sequence} -->\n`;
     } else {
       evidence = await collectEvidence(api, initial, files);
-      const assessment = assess(evidence);
-      body = render(initial, assessment);
+      assessment = assess(evidence);
+      notification = actionState(initial, assessment, comments);
+      body = `${render(initial, assessment)}\n${ACTION_MARKER}${notification.key}:${notification.generation} -->\n`;
       labels = assessment.labels;
+    }
+    if (evidence && assessment) {
+      const current = assess(await collectEvidence(api, initial, files));
+      if (actionKey(initial, current) !== actionKey(initial, assessment)
+        || JSON.stringify(current.labels) !== JSON.stringify(assessment.labels)) {
+        throw new Error("PR next action changed during assessment");
+      }
     }
     const live = pull(api, await api.call(`pulls/${number}`));
     if (fingerprint(live) !== fingerprint(initial)) throw new Error("PR state changed during assessment");
@@ -648,6 +734,7 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
       }
     }
     await writeLabels(api, live, labels, dryRun);
+    if (assessment && notification) await notifyContributor(api, live, assessment, comments, notification, dryRun);
     await writeComment(api, number, comments, body, dryRun);
     return body;
   } catch (error) {
@@ -663,7 +750,9 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
         async () => { await api.call(`issues/${number}/labels/${encodeURIComponent(QUEUE_LABELS.ready)}`, "DELETE", undefined, true); },
         async () => {
           if (initial && tracking && commentsLoaded) {
-            await writeComment(api, number, comments, `${MARKER}\n## Submission next step\n**Next: Maintainer - investigate the failed assessment.**\n\nAssessment failed or changed while being read. Previous readiness is withdrawn.\n\nInspect the [Submission PR tasks workflow](${new URL(initial.url).origin}/${api.repo}/actions/workflows/submission-pr-status.yml) and rerun it; do not rely on the previous checklist. The queue reassesses after a successful rerun.\n`, false);
+            comments = await api.pages(`issues/${number}/comments`);
+            const previous = previousActionState(comments);
+            await writeComment(api, number, comments, `${MARKER}\n## Submission next step\n**Next: Maintainer - investigate the failed assessment.**\n\nAssessment failed or changed while being read. Previous readiness is withdrawn.\n\nInspect the [Submission PR tasks workflow](${new URL(initial.url).origin}/${api.repo}/actions/workflows/submission-pr-status.yml) and rerun it; do not rely on the previous checklist. The queue reassesses after a successful rerun.\n${previous.marker}\n`, false);
           }
         },
       ]) {
