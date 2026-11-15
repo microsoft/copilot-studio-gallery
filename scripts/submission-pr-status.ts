@@ -1,0 +1,835 @@
+import { readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { classifyContributionFiles, METADATA_LABEL, SITE_LABEL, type ChangedFile } from "./contribution-scope.ts";
+
+export const MARKER = "<!-- gallery-submission-tasks:v1 -->";
+export const NOTIFICATION_MARKER = "<!-- gallery-contributor-action:v1:";
+const ACTION_MARKER = "<!-- gallery-submission-action:v1:";
+export const QUEUE_LABELS = {
+  contributor: "needs-contributor",
+  maintainer: "needs-maintainer",
+  copilot: "awaiting-copilot",
+  ci: "awaiting-ci",
+  ready: "ready-for-merge",
+} as const;
+const BOT = "github-actions[bot]";
+const COPILOT_LOGINS = new Set(["copilot-pull-request-reviewer[bot]", "copilot"]);
+const SCOPE_CHECK = "Guard pull request scope";
+const attestations = {
+  solution: ["I successfully imported the submitted solution into a fresh environment containing only its documented prerequisites, without skipping dependency checks."],
+  app: [
+    "I created a fresh platform-managed app from the submitted source with only its documented prerequisites, regenerated its native data-source clients, and verified authenticated preview and its intended connector operations.",
+    "I reviewed all submitted source, generated clients, screenshots, and setup metadata for private data, credentials, and original deployment bindings.",
+  ],
+};
+
+function object(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Expected API object");
+  return value as Record<string, unknown>;
+}
+function array(value: unknown): unknown[] {
+  if (!Array.isArray(value)) throw new Error("Expected API array");
+  return value;
+}
+function text(value: unknown): string {
+  if (typeof value !== "string") throw new Error("Expected API string");
+  return value;
+}
+function integer(value: unknown): number {
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) throw new Error("Expected API integer");
+  return value;
+}
+function boolean(value: unknown): boolean {
+  if (typeof value !== "boolean") throw new Error("Expected API boolean");
+  return value;
+}
+function sha(value: unknown): string {
+  const result = text(value);
+  if (!/^[a-f0-9]{40}$/.test(result)) throw new Error("Invalid API commit SHA");
+  return result;
+}
+function login(value: unknown): string {
+  return value === null ? "" : text(object(value).login);
+}
+export class TaskApi {
+  readonly repo: string;
+  private readonly token: string;
+  private readonly apiUrl: string;
+  private readonly request: typeof fetch;
+
+  constructor(
+    repo: string,
+    token: string,
+    apiUrl = "https://api.github.com",
+    request: typeof fetch = fetch,
+  ) {
+    if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) throw new Error("Invalid repository");
+    if (new URL(apiUrl).protocol !== "https:") throw new Error("GitHub API must use HTTPS");
+    this.repo = repo;
+    this.token = token;
+    this.apiUrl = apiUrl;
+    this.request = request;
+  }
+
+  async call(path: string, method = "GET", body?: unknown, missingAllowed = false): Promise<unknown> {
+    // Restrict writes to this coordinator's comments and queue labels.
+    const labelNames = Object.values(QUEUE_LABELS).map(encodeURIComponent).join("|");
+    const allowed = method === "GET"
+      || (method === "POST" && /^(?:labels|issues\/\d+\/(?:comments|labels))$/.test(path))
+      || (method === "PATCH" && /^issues\/comments\/\d+$/.test(path))
+      || (method === "DELETE" && new RegExp(`^issues/\\d+/labels/(?:${labelNames})$`).test(path));
+    if (!allowed) throw new Error(`Forbidden coordinator operation: ${method} ${path}`);
+    return this.send(`/repos/${this.repo}/${path}`, method, body, missingAllowed);
+  }
+
+  private async send(path: string, method: string, body?: unknown, missingAllowed = false): Promise<unknown> {
+    const response = await this.request(`${this.apiUrl}${path}`, {
+      method,
+      headers: { Authorization: `Bearer ${this.token}`, Accept: "application/vnd.github+json", "Content-Type": "application/json" },
+      redirect: "error",
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    });
+    if (missingAllowed && response.status === 404) return undefined;
+    if (!response.ok) throw new Error(`GitHub API ${response.status}: ${method} ${path}`);
+    if (response.status === 204) return undefined;
+    return response.json();
+  }
+
+  async pages(path: string, key?: string): Promise<unknown[]> {
+    const results: unknown[] = [];
+    for (let page = 1; page <= 100; page++) {
+      const data = await this.call(`${path}${path.includes("?") ? "&" : "?"}per_page=100&page=${page}`);
+      const batch = array(key ? object(data)[key] : data);
+      results.push(...batch);
+      if (key && integer(object(data).total_count) > 10_000) throw new Error("API result exceeds pagination limit");
+      if (batch.length < 100) {
+        if (key && results.length !== integer(object(data).total_count)) throw new Error("Incomplete API pagination");
+        return results;
+      }
+    }
+    throw new Error("API pagination limit exceeded");
+  }
+
+  async graph(query: string, variables: Record<string, unknown>): Promise<Record<string, unknown>> {
+    if (!/^\s*query\b/.test(query)) throw new Error("Only GraphQL queries are allowed");
+    const result = object(await this.send("/graphql", "POST", { query, variables }));
+    if (result.errors !== undefined) throw new Error("GitHub GraphQL query failed");
+    return object(object(result.data).repository);
+  }
+
+  url(value: unknown): string {
+    const result = new URL(text(value));
+    const host = new URL(this.apiUrl).hostname === "api.github.com" ? "github.com" : new URL(this.apiUrl).hostname;
+    if (result.protocol !== "https:" || result.hostname !== host || !result.pathname.startsWith(`/${this.repo}/`)) {
+      throw new Error("Unexpected GitHub evidence URL");
+    }
+    return result.href;
+  }
+}
+
+interface Pull {
+  number: number;
+  head: string;
+  base: string;
+  baseBranch: string;
+  branch: string;
+  headRepo: string;
+  author: string;
+  body: string;
+  url: string;
+  draft: boolean;
+  state: string;
+  count: number;
+  labels: string[];
+  requested: string[];
+}
+function pull(api: TaskApi, value: unknown): Pull {
+  const pr = object(value);
+  const head = object(pr.head);
+  return {
+    number: integer(pr.number), head: sha(head.sha), base: sha(object(pr.base).sha), baseBranch: text(object(pr.base).ref),
+    branch: text(head.ref), headRepo: head.repo === null ? "" : text(object(head.repo).full_name),
+    author: login(pr.user), body: pr.body === null ? "" : text(pr.body), url: api.url(pr.html_url),
+    draft: boolean(pr.draft), state: text(pr.state), count: integer(pr.changed_files),
+    labels: array(pr.labels).map((label) => text(object(label).name)),
+    requested: array(pr.requested_reviewers).map(login),
+  };
+}
+
+export interface Review {
+  id: number;
+  author: string;
+  human: boolean;
+  copilot: boolean;
+  head: string;
+  state: string;
+  url: string;
+  summary: string;
+}
+export interface Thread {
+  review: number | null;
+  url: string;
+  resolved: boolean;
+  replyByAuthor: boolean;
+  head: string | null;
+  body?: string;
+}
+export interface Check {
+  name: string;
+  required: boolean;
+  state: string;
+  url: string;
+}
+export interface Evidence {
+  pr: Pull;
+  bodyHTML: string;
+  files: ChangedFile[];
+  formats: Array<keyof typeof attestations>;
+  metadataProblems: string[];
+  reviews: Review[];
+  threads: Thread[];
+  checks: Check[];
+  requiredChecks: string[];
+  ci: { state: string; url: string } | null;
+  mergeState: string;
+  decision: string | null;
+}
+
+const summaryQuery = `query($owner:String!,$name:String!,$number:Int!,$after:String) {
+  repository(owner:$owner,name:$name) { pullRequest(number:$number) {
+    headRefOid baseRefOid mergeStateStatus reviewDecision body bodyHTML
+    commits(last:1) { nodes { commit { statusCheckRollup {
+      contexts(first:100,after:$after) { totalCount pageInfo { hasNextPage endCursor }
+        nodes {
+          ... on CheckRun { name status conclusion detailsUrl isRequired(pullRequestNumber:$number) }
+          ... on StatusContext { context state targetUrl isRequired(pullRequestNumber:$number) }
+        }
+      }
+    } } } }
+  } }
+}`;
+const threadsQuery = `query($owner:String!,$name:String!,$number:Int!,$after:String) {
+  repository(owner:$owner,name:$name) { pullRequest(number:$number) {
+    headRefOid baseRefOid
+    reviewThreads(first:100,after:$after) { totalCount pageInfo { hasNextPage endCursor }
+      nodes { isResolved comments(first:1) { nodes {
+        url body pullRequestReview { databaseId commit { oid } }
+      } } lastReply:comments(last:1) { nodes { author { login } } } }
+    }
+  } }
+}`;
+
+async function graphPages(api: TaskApi, pr: Pull, query: string, read: (node: Record<string, unknown>) => unknown): Promise<unknown[]> {
+  const [owner, name] = api.repo.split("/");
+  let after: string | null = null;
+  const cursors = new Set<string>();
+  const results: unknown[] = [];
+  for (let page = 0; page < 100; page++) {
+    const node = object((await api.graph(query, { owner, name, number: pr.number, after })).pullRequest);
+    if (sha(node.headRefOid) !== pr.head || sha(node.baseRefOid) !== pr.base) throw new Error("PR revision changed during assessment");
+    const value = read(node);
+    if (value === null) return results;
+    const connection = object(value);
+    results.push(...array(connection.nodes));
+    const info = object(connection.pageInfo);
+    if (!boolean(info.hasNextPage)) {
+      if (results.length !== integer(connection.totalCount)) throw new Error("Incomplete GraphQL pagination");
+      return results;
+    }
+    after = text(info.endCursor);
+    if (!after || cursors.has(after)) throw new Error("Repeated GraphQL cursor");
+    cursors.add(after);
+  }
+  throw new Error("GraphQL pagination limit exceeded");
+}
+
+export async function collectEvidence(api: TaskApi, pr: Pull, files: ChangedFile[]): Promise<Evidence> {
+  const formats = new Set<keyof typeof attestations>();
+  const metadataProblems: string[] = [];
+  const requiredChecks = [...new Set(array(await api.call(`rules/branches/${encodeURIComponent(pr.baseBranch)}`))
+    .map(object).flatMap((rule) => text(rule.type) === "required_status_checks"
+      ? array(object(rule.parameters).required_status_checks).map((check) => text(object(check).context)) : []))];
+  const scope = classifyContributionFiles(files);
+  for (const slug of scope.slugs) {
+    const path = `submissions/${slug}/metadata.json`;
+    const removed = files.some((file) => file.filename === path && file.status === "removed");
+    const ref = removed ? pr.base : pr.head;
+    const response = await api.call(`contents/${path}?ref=${ref}`, "GET", undefined, true);
+    if (response === undefined) {
+      metadataProblems.push(`Add the required gallery metadata at \`${path}\`, or remove that extra submission folder if it was copied accidentally.`);
+      continue;
+    }
+    const content = object(response);
+    if (content.type !== "file" || content.encoding !== "base64" || integer(content.size) > 512 * 1024) throw new Error("Invalid submission metadata content");
+    const data = Buffer.from(text(content.content), "base64");
+    if (data.length !== content.size) throw new Error("Incomplete submission metadata");
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(data.toString("utf8"));
+    } catch (error) {
+      if (!(error instanceof SyntaxError)) throw error;
+      metadataProblems.push(`Correct invalid JSON in \`${path}\`; the submission format and attestations cannot yet be assessed.`);
+      continue;
+    }
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+      metadataProblems.push(`Correct \`${path}\` to a JSON object; the submission format and attestations cannot yet be assessed.`);
+      continue;
+    }
+    const metadata = object(parsed);
+    if (metadata.submissionType !== undefined && metadata.submissionType !== "solution" && metadata.submissionType !== "managed-app") {
+      metadataProblems.push(`Correct the unknown \`submissionType\` in \`${path}\`; the submission format and attestations cannot yet be assessed.`);
+      continue;
+    }
+    formats.add(metadata.submissionType === "managed-app" ? "app" : "solution");
+  }
+  const reviews = (await api.pages(`pulls/${pr.number}/reviews`)).map((value): Review => {
+    const review = object(value);
+    const user = review.user === null ? null : object(review.user);
+    const author = login(review.user);
+    const copilot = review.is_copilot_code_review === true
+      || (review.is_copilot_code_review === undefined && user?.type === "Bot" && COPILOT_LOGINS.has(author.toLowerCase()));
+    return {
+      id: integer(review.id), author, human: !copilot && user?.type === "User", copilot,
+      head: sha(review.commit_id), state: text(review.state),
+      url: api.url(review.html_url),
+      summary: review.body === null ? "" : text(review.body),
+    };
+  });
+  let mergeState = "UNKNOWN";
+  let decision: string | null = null;
+  let bodyHTML: string | undefined;
+  const checks = (await graphPages(api, pr, summaryQuery, (node) => {
+    if (text(node.body) !== pr.body) throw new Error("PR body changed during assessment");
+    bodyHTML = text(node.bodyHTML);
+    mergeState = text(node.mergeStateStatus);
+    decision = node.reviewDecision === null ? null : text(node.reviewDecision);
+    const commit = object(object(array(object(node.commits).nodes)[0]).commit);
+    return commit.statusCheckRollup === null ? null : object(commit.statusCheckRollup).contexts;
+  })).map((value): Check => {
+    const check = object(value);
+    const run = check.name !== undefined;
+    return {
+      name: text(run ? check.name : check.context), required: boolean(check.isRequired),
+      state: text(run ? (check.status === "COMPLETED" ? check.conclusion : check.status) : check.state),
+      url: `${pr.url}/checks`,
+    };
+  });
+  const threads = (await graphPages(api, pr, threadsQuery, (node) => node.reviewThreads)).map((value): Thread => {
+    const thread = object(value);
+    const first = object(array(object(thread.comments).nodes)[0]);
+    const last = object(array(object(thread.lastReply).nodes)[0]);
+    return {
+      review: first.pullRequestReview === null ? null : integer(object(first.pullRequestReview).databaseId),
+      url: api.url(first.url), resolved: boolean(thread.isResolved),
+      body: text(first.body),
+      replyByAuthor: login(last.author) === pr.author,
+      head: first.pullRequestReview === null || object(first.pullRequestReview).commit === null
+        ? null : sha(object(object(first.pullRequestReview).commit).oid),
+    };
+  });
+  const runs = (await api.pages(`actions/workflows/ci.yml/runs?event=pull_request&head_sha=${pr.head}`, "workflow_runs"))
+    .map(object)
+    .filter((run) => sha(run.head_sha) === pr.head && run.head_branch === pr.branch
+      && run.head_repository !== null && object(run.head_repository).full_name === pr.headRepo)
+    .sort((a, b) => integer(b.id) - integer(a.id));
+  const latest = runs[0];
+  return {
+    pr, bodyHTML: text(bodyHTML), files, formats: [...formats], metadataProblems, reviews, threads, checks, requiredChecks, mergeState, decision,
+    ci: latest ? { state: text(latest.conclusion ?? latest.status), url: api.url(latest.html_url) } : null,
+  };
+}
+
+type ActionKind = "scope" | "review-changes" | "review-discussion" | "branch" | "fix-check"
+  | "attestation" | "authorize-ci" | "investigate-ci" | "wait-ci" | "request-review"
+  | "wait-review" | "judge-reply" | "confirm-review" | "investigate-state" | "approve" | "investigate-merge" | "merge";
+export interface NextAction {
+  kind: ActionKind;
+  owner: "Contributor" | "Maintainer" | "Automation";
+  title: string;
+  reason: string;
+  instruction: string;
+  reassess: string;
+  evidence?: string;
+}
+export interface Assessment {
+  blockers: NextAction[];
+  next: NextAction;
+  labels: string[];
+}
+// Fix prerequisite content before spending another review/CI cycle; approve last.
+const ACTION_PRIORITY: Record<ActionKind, number> = {
+  scope: 10, "review-changes": 20, "review-discussion": 21, attestation: 29, branch: 30,
+  "fix-check": 40, "authorize-ci": 60, "investigate-ci": 61,
+  "judge-reply": 25, "wait-ci": 65, "request-review": 70, "wait-review": 71, "confirm-review": 75, "investigate-state": 85,
+  approve: 90, "investigate-merge": 95, merge: 100,
+};
+
+function checkedAttestations(bodyHTML: string): Set<string> {
+  const checked = new Set<string>();
+  let quoteDepth = 0;
+  // GitHub renders Markdown; code examples are escaped, never checkbox inputs.
+  const unquoted = bodyHTML.replace(/<(\/?)blockquote\b[^>]*>|[^<]+|</g, (part, closing: string | undefined) => {
+    if (closing !== undefined) {
+      quoteDepth += closing ? -1 : 1;
+      return "";
+    }
+    return quoteDepth ? "" : part;
+  });
+  for (const match of unquoted.matchAll(/<li class="task-list-item">\s*(?:<p(?: dir="auto")?>)?\s*<input ([^>]*)>\s*([^<]*?)(?:<\/p>\s*)?<\/li>/g)) {
+    if (/(?:^|\s)type="checkbox"/.test(match[1])
+      && /(?:^|\s)class="task-list-item-checkbox"/.test(match[1])
+      && /(?:^|\s)checked=""/.test(match[1])) checked.add(match[2].trim());
+  }
+  return checked;
+}
+
+export function assess(evidence: Evidence): Assessment {
+  const { pr, reviews, threads, checks, ci } = evidence;
+  const blockers: NextAction[] = [];
+  const add = (kind: ActionKind, owner: NextAction["owner"], title: string, reason: string, instruction: string, reassess: string, evidence?: string) => {
+    blockers.push({ kind, owner, title, reason, instruction, reassess, ...(evidence === undefined ? {} : { evidence }) });
+  };
+  const scope = classifyContributionFiles(evidence.files);
+  for (const problem of evidence.metadataProblems) {
+    add("scope", "Contributor", "Correct the submission metadata", "The submission format or required metadata cannot be validated.",
+      problem, "After corrected submission files are pushed.");
+  }
+  if (scope.slugs.size > 1) add("scope", "Contributor", "Correct the contribution scope",
+    "This PR changes more than one submission.", "Keep this contribution to one submission, or ask a maintainer to review its maintenance scope.",
+    "After the scope is corrected or a maintainer explicitly authorizes it.");
+  const checked = checkedAttestations(evidence.bodyHTML);
+  for (const format of evidence.formats) {
+    if (attestations[format].some((statement) => !checked.has(statement))) {
+      add("attestation", "Contributor", "Complete the submission attestation", "The required test/review has not been attested in the PR body.",
+        `Complete the ${format === "app" ? "managed-app fresh-app and source/privacy" : "solution fresh-environment import"} attestations in the [PR body](${pr.url}). Only check them after doing the documented test/review.`,
+        "After the PR body is updated.");
+    }
+  }
+
+  const latestCopilot = reviews.filter((review) => review.copilot && review.head === pr.head && review.state !== "PENDING")
+    .sort((a, b) => b.id - a.id)[0];
+  const currentCopilot = latestCopilot !== undefined && ["COMMENTED", "APPROVED", "CHANGES_REQUESTED"].includes(latestCopilot.state);
+  if (!currentCopilot) {
+    if (!pr.requested.some((author) => COPILOT_LOGINS.has(author.toLowerCase()))) {
+      add("request-review", "Maintainer", "Request Copilot review", "No completed native Copilot review exists for this revision.",
+        `Request a native Copilot review of the current revision in [Reviewers](${pr.url}).`,
+        "After the review is requested or submitted.");
+    } else {
+      add("wait-review", "Automation", "Wait for Copilot review", "A native Copilot review of this revision is requested but not yet complete.",
+        `Wait for the requested [Copilot review](${pr.url}). Earlier findings are not assumed fixed or still applicable.`,
+        "After Copilot submits its review.");
+    }
+  }
+  const copilotIds = new Set(reviews.filter((review) => review.copilot).map((review) => review.id));
+  const open = threads.filter((thread) => !thread.resolved);
+  const repliedToReview = (review: Review) => {
+    const related = threads.filter((thread) => thread.review === review.id);
+    // A thread reply cannot establish that separate review-summary feedback was answered.
+    return !review.summary.trim() && related.length > 0 && related.every((thread) => thread.resolved || thread.replyByAuthor);
+  };
+  if (latestCopilot?.state === "CHANGES_REQUESTED" && !repliedToReview(latestCopilot)) {
+    add("review-changes", "Contributor", "Address the outstanding review request", "Copilot requested changes on this revision.",
+      `Address or discuss [Copilot's request for changes](${latestCopilot.url}), then push the agreed remedy and report verification in that discussion.`,
+      "After a correction is pushed or a response is posted; replies do not automatically resolve findings.", latestCopilot.summary);
+  } else if (latestCopilot?.state === "CHANGES_REQUESTED") {
+    add("judge-reply", "Maintainer", "Judge the response to the review request", "The contributor has replied, but Copilot's changes request remains outstanding.",
+      `Compare the replies with [Copilot's full request for changes](${latestCopilot.url}); confirm whether the concern is addressed or explain the remaining blocker.`,
+      "After reviewer confirmation or further contributor work.");
+  }
+  const copilot = open.filter((thread) => thread.review !== null && copilotIds.has(thread.review));
+  const human = open.filter((thread) => thread.review === null || !copilotIds.has(thread.review));
+  if (copilot.length && currentCopilot) {
+    for (const awaitingAuthor of copilot.filter((thread) => !thread.replyByAuthor && (thread.head === null || thread.head === pr.head))) {
+      add("review-discussion", "Contributor", "Address the outstanding review finding",
+        "A current Copilot finding has no contributor response.",
+        `Address or discuss the [unresolved Copilot finding](${awaitingAuthor.url}), push the agreed correction, and report verification there. Do not repeat already supplied fixes.`,
+        "After a correction is pushed or a response is posted.", awaitingAuthor.body);
+    }
+    const followup = copilot.find((thread) => thread.head === pr.head && thread.replyByAuthor)
+      ?? copilot.find((thread) => thread.replyByAuthor || (thread.head !== null && thread.head !== pr.head));
+    if (followup) add(followup.head === pr.head && followup.replyByAuthor ? "judge-reply" : "confirm-review", "Maintainer", "Judge the response to the review finding",
+      "A reply or new revision needs confirmation; the open thread is not proof that the fix is absent.",
+      `Review the contributor's reply/new revision against the [remaining Copilot discussion](${followup.url}) and resolve it only if addressed.`,
+      "After the discussion is resolved or specific remaining work is identified.");
+  }
+  if (human.length) {
+    const followup = human.find((thread) => thread.head === pr.head && thread.replyByAuthor)
+      ?? human.find((thread) => thread.replyByAuthor || (thread.head !== null && thread.head !== pr.head));
+    if (followup) add(followup.head === pr.head && followup.replyByAuthor ? "judge-reply" : "confirm-review", "Maintainer", "Judge the response to the review discussion",
+      "A contributor reply or new revision needs human confirmation.",
+      `Review the contributor's reply/new revision against the [open human discussion](${followup.url}) and resolve it only if addressed.`,
+      "After the discussion is resolved or specific remaining work is identified.");
+    for (const awaitingAuthor of human.filter((thread) => !thread.replyByAuthor && (thread.head === null || thread.head === pr.head))) {
+      add("review-discussion", "Contributor", "Respond to the review discussion", "A current human review discussion has no contributor response.",
+        `Respond to the [open human review discussion](${awaitingAuthor.url}) with a fix or clarification and report verification.`,
+        "After a correction is pushed or a response is posted.", awaitingAuthor.body);
+    }
+  }
+  const latestHuman = new Map<string, Review>();
+  for (const review of [...reviews].sort((a, b) => a.id - b.id)) {
+    if (review.human && ["APPROVED", "CHANGES_REQUESTED", "DISMISSED"].includes(review.state)) latestHuman.set(review.author, review);
+  }
+  const requests = [...latestHuman.values()].filter((review) => review.state === "CHANGES_REQUESTED");
+  const changes = requests[0];
+  for (const request of requests) {
+  if (request.head === pr.head && !repliedToReview(request)) add("review-changes", "Contributor", "Address the outstanding review request",
+    "A human reviewer requested changes on this revision.",
+    `Address or discuss [the human request for changes](${request.url}), including feedback in the review summary. Push the agreed correction and report verification there.`,
+    "After a correction is pushed or a response is posted; the reviewer must still confirm the remedy.", request.summary);
+  if (request.head !== pr.head || repliedToReview(request)) add(request.head === pr.head ? "judge-reply" : "confirm-review", "Maintainer", "Judge the response to the changes request",
+    "The human changes request still needs confirmation against the reply/new revision.",
+    `Follow up on [the human request for changes](${request.url}); compare the full request with the supplied response/revision and confirm it is addressed or identify the specific remaining concern.`,
+    "After the reviewer updates the review or requests a specific further correction.");
+  }
+
+  const required = checks.filter((check) => check.required);
+  const missing = evidence.requiredChecks.filter((name) => !required.some((check) => check.name === name));
+  const pending = required.filter((check) => ["PENDING", "QUEUED", "IN_PROGRESS", "EXPECTED", "WAITING", "REQUESTED"].includes(check.state));
+  const failures = required.filter((check) => !["SUCCESS", "NEUTRAL", "SKIPPED", ...pending.map((item) => item.state)].includes(check.state));
+  for (const check of failures) {
+    if (["FAILURE", "ERROR", "TIMED_OUT", "STARTUP_FAILURE"].includes(check.state)) {
+      add("fix-check", "Contributor", "Fix the failing required check", `${check.name} failed (${check.state}).`,
+        `Fix the failing [${check.name === SCOPE_CHECK ? "contribution scope check" : "required check"}](${check.url}); ask a maintainer if this is an infrastructure or authorized-scope issue.`,
+        "After the correction is pushed and the check reruns.");
+    } else {
+      add("investigate-ci", "Maintainer", "Investigate the incomplete required check", `${check.name} has an incomplete or unknown result (${check.state}).`,
+        `Inspect the [incomplete required check](${check.url}) and decide whether a rerun is appropriate.`,
+        "After the check is rerun or its state changes.");
+    }
+  }
+  const runningCI = ci !== null && ["queued", "in_progress", "waiting", "pending", "requested"].includes(ci.state);
+  if (ci?.state === "action_required") add("authorize-ci", "Maintainer", "Inspect and authorize fork CI", "The current fork CI run is awaiting approval, not failing tests.",
+    `Inspect and authorize the [fork CI run awaiting approval](${ci.url}) only if satisfied it is appropriate to run.`,
+    "After the run is authorized and its checks advance.");
+  else if (missing.length && !pending.length && !runningCI) add("investigate-ci", "Maintainer", "Investigate missing required checks",
+    `Required results are missing: ${missing.join(", ")}.`,
+    `Inspect [missing required checks](${pr.url}/checks); start/authorize CI or investigate the missing scope check as appropriate.`,
+    "After the missing checks appear or the cause is corrected.");
+  if (pending.length || runningCI) {
+    add("wait-ci", "Automation", "Wait for current CI", "Checks are running or pending on the assessed revision.",
+      `Wait for [current CI/checks](${ci?.url ?? `${pr.url}/checks`}) to finish.`,
+      "After current checks complete.");
+  }
+
+  const approved = evidence.decision === "APPROVED"
+    && [...latestHuman.values()].some((review) => review.state === "APPROVED" && review.head === pr.head && review.author !== pr.author);
+  if (!approved) add("approve", "Maintainer", "Review and approve the current revision", "Formal human approval of this revision is missing.",
+    `Review the evidence and submit a formal human approval in [Files changed](${pr.url}/files), or explain a specific remaining blocker. Copilot comments are not that approval.`,
+    "After a formal review is submitted.");
+  if (evidence.mergeState === "DIRTY") {
+    add("branch", "Contributor", "Resolve merge conflicts", "GitHub reports merge conflicts.",
+      `Resolve conflicts against the base branch \`${pr.baseBranch}\` in [this PR](${pr.url}), push the corrected branch, and report how you verified the conflict resolution. New commits need fresh checks and review.`,
+      "After the updated branch is pushed.");
+  } else if (evidence.mergeState === "BEHIND") {
+    add("branch", "Maintainer", "Update the branch against the base", "The branch is behind its base; a maintainer owns this update.",
+      `Inspect and update [this PR's branch](${pr.url}) against \`${pr.baseBranch}\` before the final checks/review cycle. If you cannot update it, coordinate with the contributor. Do not authorize CI or approve automatically; new commits need fresh checks and review.`,
+      "After the updated branch is pushed.");
+  } else if (!["CLEAN", "BLOCKED", "UNSTABLE", "HAS_HOOKS"].includes(evidence.mergeState)) {
+    add("investigate-state", "Maintainer", "Investigate GitHub's merge state", `GitHub merge state is ${evidence.mergeState}.`,
+      `Inspect [merge requirements](${pr.url}) before proceeding. Unknown state is not readiness.`,
+      "After GitHub reports a known merge state.");
+  }
+  if (["BLOCKED", "UNSTABLE", "HAS_HOOKS"].includes(evidence.mergeState)) {
+    add("investigate-merge", "Maintainer", "Inspect the remaining merge requirement", `GitHub reports ${evidence.mergeState}.`,
+      `Inspect GitHub's [remaining merge requirements](${pr.url}); the task queue does not bypass repository rules.`,
+      "After the remaining GitHub requirement is satisfied.");
+  }
+  const ready = blockers.length === 0
+    && currentCopilot && open.length === 0 && !changes && approved
+    && !missing.length && !failures.length && !pending.length && evidence.mergeState === "CLEAN";
+  const next = ready ? {
+    kind: "merge" as const, owner: "Maintainer" as const, title: "Perform the final review and merge",
+    reason: "Current review, checks, attestations, approval, and GitHub mergeability requirements are satisfied.",
+    instruction: `Perform the final review and [merge manually](${pr.url}) when satisfied.`,
+    reassess: "After merge or any change to the assessed evidence.",
+  } : [...blockers].sort((a, b) => ACTION_PRIORITY[a.kind] - ACTION_PRIORITY[b.kind])[0];
+  if (!next) throw new Error("Readiness failed without an actionable blocker");
+  const labels = next.kind === "merge" ? [QUEUE_LABELS.ready]
+    : next.owner === "Contributor" ? [QUEUE_LABELS.contributor]
+    : next.owner === "Maintainer" ? [QUEUE_LABELS.maintainer]
+    : next.kind === "wait-review" ? [QUEUE_LABELS.copilot] : [QUEUE_LABELS.ci];
+  return { blockers, next, labels };
+}
+
+export function render(pr: Pull, assessment: Assessment): string {
+  const { next } = assessment;
+  return `${MARKER}
+## Submission next step
+Assessed head \`${pr.head}\` against base \`${pr.base}\`. Informational only: GitHub's live merge requirements remain authoritative.
+
+**Next: ${next.owner} - ${next.title}.**
+
+${next.reason}
+
+${next.owner === "Contributor" ? `@${pr.author}, ` : ""}${next.instruction}
+${otherContributorRequirements(pr, assessment)}
+
+**Reassessed:** ${next.reassess}
+
+This comment is updated in place and shows one next step plus other known contributor requirements, so they can be addressed together. Later maintainer actions remain tracked. CI authorization, formal approval, and merge stay manual. Checked attestations are contributor statements, not automated certification.
+`;
+}
+
+function contributorRequirements(assessment: Assessment): NextAction[] {
+  return assessment.blockers.filter((action) => action.owner === "Contributor")
+    .sort((a, b) => ACTION_PRIORITY[a.kind] - ACTION_PRIORITY[b.kind]);
+}
+
+function otherContributorRequirements(pr: Pull, assessment: Assessment): string {
+  const others = contributorRequirements(assessment).filter((action) => action !== assessment.next);
+  if (!others.length) return "";
+  return `\n### Other known contributor requirements
+
+@${pr.author}, address these together where possible; only attest after completing the required test/review.
+
+${others.map((action) => `- **${action.title}:** ${action.reason} ${action.instruction}`).join("\n")}
+`;
+}
+
+function botComment(value: unknown) {
+  const comment = object(value);
+  const user = comment.user === null ? null : object(comment.user);
+  return user?.login === BOT && user.type === "Bot" && typeof comment.body === "string";
+}
+
+function ownedComment(value: unknown) {
+  return botComment(value) && text(object(value).body).startsWith(MARKER);
+}
+
+function previousActionState(comments: unknown[]) {
+  const existing = comments.filter(ownedComment);
+  if (existing.length > 1) throw new Error("Duplicate coordinator comments; maintainer cleanup required");
+  const body = existing.length ? text(object(existing[0]).body) : "";
+  const state = body.match(/<!-- gallery-submission-action:v1:([a-f0-9]{64}):(\d+) -->/);
+  if (body.includes(ACTION_MARKER) && !state) throw new Error("Invalid contributor notification state");
+  const sequence = state ? Number(state[2]) : 0;
+  if (!Number.isSafeInteger(sequence) || sequence < 0) throw new Error("Invalid contributor notification sequence");
+  let previous = { key: state?.[1], sequence, marker: state?.[0] ?? "" };
+  // Delivery can persist even when the following status update fails.
+  for (const comment of comments.filter(botComment)) {
+    const delivered = text(object(comment).body).match(/^<!-- gallery-contributor-action:v1:([a-f0-9]{64}):(\d+) -->/);
+    if (!delivered) continue;
+    const generation = Number(delivered[2]);
+    if (!Number.isSafeInteger(generation) || generation < 1) throw new Error("Invalid delivered notification sequence");
+    if (generation > previous.sequence) previous = {
+      key: delivered[1], sequence: generation,
+      marker: `${ACTION_MARKER}${delivered[1]}:${generation} -->`,
+    };
+  }
+  return previous;
+}
+
+function actionKey(pr: Pull, assessment: Assessment) {
+  const { next } = assessment;
+  return createHash("sha256").update(JSON.stringify([
+    pr.author, next.kind, next.owner, next.title, next.instruction, next.reassess,
+    next.kind === "fix-check" ? next.reason : "", next.evidence ?? "",
+    contributorRequirements(assessment).map((action) => [
+      action.kind, action.title, action.instruction, action.reassess,
+      action.kind === "fix-check" ? action.reason : "", action.evidence ?? "",
+    ]),
+  ])).digest("hex");
+}
+
+function actionState(pr: Pull, assessment: Assessment, comments: unknown[]) {
+  const previous = previousActionState(comments);
+  const key = actionKey(pr, assessment);
+  const { next } = assessment;
+  const notify = next.owner === "Contributor" && previous.key !== key;
+  const generation = previous.sequence + (notify ? 1 : 0);
+  if (!Number.isSafeInteger(generation)) throw new Error("Contributor notification sequence exhausted");
+  return { key, generation, notify };
+}
+
+async function notifyContributor(api: TaskApi, pr: Pull, assessment: Assessment, comments: unknown[], state: ReturnType<typeof actionState>, dryRun: boolean) {
+  if (!state.notify || dryRun) return;
+  const marker = `${NOTIFICATION_MARKER}${state.key}:${state.generation} -->`;
+  if (comments.some((comment) => botComment(comment) && text(object(comment).body).startsWith(marker))) return;
+  await api.call(`issues/${pr.number}/comments`, "POST", {
+    body: `${marker}
+@${pr.author}, **${assessment.next.title}.**
+
+${assessment.next.reason}
+
+${assessment.next.instruction}
+${otherContributorRequirements(pr, assessment)}
+
+**Reassessed:** ${assessment.next.reassess}
+
+This notification records the action at posting time. See the **Submission next step** comment and queue label for the current action.
+`,
+  });
+}
+
+async function writeComment(api: TaskApi, number: number, comments: unknown[], body: string, dryRun: boolean) {
+  const existing = comments.filter(ownedComment);
+  if (existing.length > 1) throw new Error("Duplicate coordinator comments; maintainer cleanup required");
+  const comment = existing.length ? object(existing[0]) : undefined;
+  if (comment?.body === body || dryRun) return;
+  if (comment) await api.call(`issues/comments/${integer(comment.id)}`, "PATCH", { body });
+  else await api.call(`issues/${number}/comments`, "POST", { body });
+}
+
+async function writeLabels(api: TaskApi, pr: Pick<Pull, "number" | "labels">, desired: string[], dryRun: boolean) {
+  if (dryRun) return;
+  const add = desired.filter((label) => !pr.labels.includes(label));
+  if (add.length) {
+    const available = (await api.pages("labels")).map((value) => text(object(value).name));
+    for (const name of add.filter((name) => !available.includes(name))) {
+      await api.call("labels", "POST", { name, color: name === QUEUE_LABELS.ready ? "2da44e" : "fbca04", description: "Informational submission task queue; not an approval or merge gate." });
+    }
+    await api.call(`issues/${pr.number}/labels`, "POST", { labels: add });
+  }
+  for (const label of Object.values(QUEUE_LABELS)) {
+    if (pr.labels.includes(label) && !desired.includes(label)) {
+      await api.call(`issues/${pr.number}/labels/${encodeURIComponent(label)}`, "DELETE", undefined, true);
+    }
+  }
+}
+
+function fingerprint(pr: Pull): string {
+  return JSON.stringify([pr.head, pr.base, pr.baseBranch, pr.body, pr.state, pr.draft, [...pr.labels].sort(), [...pr.requested].sort()]);
+}
+
+export async function reconcile(api: TaskApi, number: number, dryRun = false): Promise<string> {
+  if (!Number.isSafeInteger(number) || number < 1) throw new Error("Invalid PR number");
+  let initial: Pull | undefined;
+  let comments: unknown[] = [];
+  let commentsLoaded = false;
+  let tracking = false;
+  try {
+    initial = pull(api, await api.call(`pulls/${number}`));
+    tracking = initial.labels.some((label) => Object.values<string>(QUEUE_LABELS).includes(label));
+    const files = (initial.state === "open" ? await api.pages(`pulls/${number}/files`) : []).map((value): ChangedFile => {
+      const file = object(value);
+      return { filename: text(file.filename), status: text(file.status), ...(file.previous_filename === undefined ? {} : { previous_filename: text(file.previous_filename) }) };
+    });
+    if (initial.state === "open" && (initial.count > 3000 || files.length !== initial.count)) throw new Error("Incomplete changed-file list");
+    const scope = classifyContributionFiles(files);
+    const maintenance = scope.slugs.size > 1 && initial.labels.includes(scope.payloadChanges ? SITE_LABEL : METADATA_LABEL);
+    const eligible = initial.baseBranch === "main" && scope.slugs.size > 0 && scope.sites.length === 0 && scope.contracts.length === 0 && !maintenance;
+    const tracked = initial.labels.some((label) => Object.values<string>(QUEUE_LABELS).includes(label));
+    if (!eligible && !tracked) return "Out of scope";
+    tracking = true;
+    comments = await api.pages(`issues/${number}/comments`);
+    commentsLoaded = true;
+    let body: string;
+    let evidence: Evidence | undefined;
+    let assessment: Assessment | undefined;
+    let notification: ReturnType<typeof actionState> | undefined;
+    let labels: string[] = [];
+    if (!eligible || initial.draft || initial.state !== "open") {
+      const reason = initial.state !== "open" ? "closed" : initial.draft ? "a draft" : "outside ordinary contribution scope";
+      body = `${MARKER}\n## Submission next step\n**Paused: this PR is ${reason}.**\n\n${initial.state !== "open" ? "No active contribution task remains." : initial.draft ? "Contributor: mark this PR ready for review when ready; the queue will reassess." : "Use ordinary maintainer review; this PR is outside the contribution queue."}\n`;
+      if (!tracked && !comments.some(ownedComment)) return "Not tracking draft/closed PR";
+      const previous = previousActionState(comments);
+      const key = createHash("sha256").update(`paused:${reason}`).digest("hex");
+      body += `\n${ACTION_MARKER}${key}:${previous.sequence} -->\n`;
+    } else {
+      evidence = await collectEvidence(api, initial, files);
+      assessment = assess(evidence);
+      notification = actionState(initial, assessment, comments);
+      body = `${render(initial, assessment)}\n${ACTION_MARKER}${notification.key}:${notification.generation} -->\n`;
+      labels = assessment.labels;
+    }
+    if (evidence && assessment) {
+      const current = assess(await collectEvidence(api, initial, files));
+      if (actionKey(initial, current) !== actionKey(initial, assessment)
+        || JSON.stringify(current.labels) !== JSON.stringify(assessment.labels)) {
+        throw new Error("PR next action changed during assessment");
+      }
+    }
+    const live = pull(api, await api.call(`pulls/${number}`));
+    if (fingerprint(live) !== fingerprint(initial)) throw new Error("PR state changed during assessment");
+    if (evidence) {
+      const [owner, name] = api.repo.split("/");
+      const state = object((await api.graph(`query($owner:String!,$name:String!,$number:Int!) {
+        repository(owner:$owner,name:$name) { pullRequest(number:$number) {
+          headRefOid baseRefOid mergeStateStatus reviewDecision
+        } }
+      }`, { owner, name, number })).pullRequest);
+      if (sha(state.headRefOid) !== live.head || sha(state.baseRefOid) !== live.base
+        || state.mergeStateStatus !== evidence.mergeState || state.reviewDecision !== evidence.decision) {
+        throw new Error("PR merge/review state changed during assessment");
+      }
+    }
+    await writeLabels(api, live, labels, dryRun);
+    if (assessment && notification) await notifyContributor(api, live, assessment, comments, notification, dryRun);
+    await writeComment(api, number, comments, body, dryRun);
+    return body;
+  } catch (error) {
+    if (!dryRun) {
+      // Invalidate a previous readiness claim even when fresh evidence is unavailable.
+      const failures: unknown[] = [];
+      for (const cleanup of [
+        async () => {
+          const current = (await api.pages(`issues/${number}/labels`)).map((value) => text(object(value).name));
+          if (!tracking && !current.some((label) => Object.values<string>(QUEUE_LABELS).includes(label))) return;
+          await writeLabels(api, { number, labels: current }, [QUEUE_LABELS.maintainer], false);
+        },
+        async () => { await api.call(`issues/${number}/labels/${encodeURIComponent(QUEUE_LABELS.ready)}`, "DELETE", undefined, true); },
+        async () => {
+          if (initial && tracking && commentsLoaded) {
+            comments = await api.pages(`issues/${number}/comments`);
+            const previous = previousActionState(comments);
+            await writeComment(api, number, comments, `${MARKER}\n## Submission next step\n**Next: Maintainer - investigate the failed assessment.**\n\nAssessment failed or changed while being read. Previous readiness is withdrawn.\n\nInspect the [Submission PR tasks workflow](${new URL(initial.url).origin}/${api.repo}/actions/workflows/submission-pr-status.yml) and rerun it; do not rely on the previous checklist. The queue reassesses after a successful rerun.\n${previous.marker}\n`, false);
+          }
+        },
+      ]) {
+        try {
+          await cleanup();
+        } catch (failure) {
+          failures.push(failure);
+        }
+      }
+      if (failures.length) throw new AggregateError([error, ...failures], `Assessment failed: ${String(error)}; readiness invalidation failed: ${failures.map(String).join("; ")}`);
+    }
+    throw error;
+  }
+}
+
+export async function reconcileQueue(api: TaskApi, requested = "", dryRun = false): Promise<void> {
+  const numbers = new Set<number>();
+  if (requested) numbers.add(Number(requested));
+  else {
+    for (const value of await api.pages("pulls?state=open")) numbers.add(integer(object(value).number));
+    for (const label of Object.values(QUEUE_LABELS)) {
+      for (const value of await api.pages(`issues?state=closed&labels=${encodeURIComponent(label)}`)) {
+        const issue = object(value);
+        if (issue.pull_request !== undefined) numbers.add(integer(issue.number));
+      }
+    }
+  }
+  const errors: string[] = [];
+  for (const number of numbers) {
+    try {
+      console.log(`#${number}: ${await reconcile(api, number, dryRun)}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`#${number}: ${message}`);
+      errors.push(`#${number}: ${message}`);
+    }
+  }
+  if (errors.length) throw new Error(errors.join("\n"));
+}
+
+async function main() {
+  const token = process.env.GH_TOKEN;
+  const repo = process.env.GITHUB_REPOSITORY;
+  if (!token || !repo) throw new Error("GH_TOKEN and GITHUB_REPOSITORY are required");
+  const api = new TaskApi(repo, token, process.env.GITHUB_API_URL);
+  const dryRun = process.argv.includes("--dry-run") || process.env.DRY_RUN === "true";
+  if (!dryRun && process.env.GITHUB_ACTIONS !== "true") throw new Error("Local use requires --dry-run; publish only through the trusted GitHub Actions workflow");
+  const event = process.env.GITHUB_EVENT_PATH ? object(JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH, "utf8"))) : {};
+  const requested = process.env.PR_NUMBER || (event.pull_request ? String(object(event.pull_request).number) : "");
+  await reconcileQueue(api, requested, dryRun);
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch((error: unknown) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  });
+}

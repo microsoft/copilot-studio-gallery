@@ -3,24 +3,12 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "astro/zod";
 import { CATEGORIES, submissionMetadataFields } from "../src/lib/submissionMetadata";
+import { classifyContributionFiles, METADATA_LABEL, SITE_LABEL, type ChangedFile } from "./contribution-scope";
 
-export const METADATA_LABEL = "allow-metadata-changes";
-export const SITE_LABEL = "allow-site-changes";
-const metadataPaths = new Set([
-  "src/lib/submissionMetadata.ts",
-  "submissions/README.md",
-  "submissions/_template/metadata.json",
-]);
-const generatedPattern = /^(?:src\/content\/(?:solutions|guides)|public\/bundles)\//;
-const submissionPattern = /^submissions\/([a-z0-9]+(?:-[a-z0-9]+)*)\//;
+export { METADATA_LABEL, SITE_LABEL, type ChangedFile } from "./contribution-scope";
+
 const metadataKeys = new Set(Object.keys(submissionMetadataFields));
 const objectSchema = z.record(z.string(), z.unknown());
-
-export interface ChangedFile {
-  filename: string;
-  status: string;
-  previous_filename?: string;
-}
 
 export interface MetadataChange {
   path: string;
@@ -36,28 +24,7 @@ export function checkContributionPolicy(
   const errors: string[] = [];
   const metadataAllowed = labels.includes(METADATA_LABEL);
   const siteAllowed = labels.includes(SITE_LABEL);
-  const slugs = new Set<string>();
-  const sites: string[] = [];
-  const contracts: string[] = [];
-  const generated: string[] = [];
-  let payloadChanges = false;
-  for (const file of files) {
-    for (const path of [file.filename, file.previous_filename].filter((path): path is string => path !== undefined)) {
-      if (metadataPaths.has(path)) {
-        contracts.push(path);
-      } else if (generatedPattern.test(path)) {
-        generated.push(path);
-      } else {
-        const submission = submissionPattern.exec(path);
-        if (submission) {
-          slugs.add(submission[1]);
-          if (!/^submissions\/[^/]+\/(?:metadata\.json|README\.md)$/.test(path)) payloadChanges = true;
-        } else {
-          sites.push(path);
-        }
-      }
-    }
-  }
+  const { slugs, sites, contracts, generated, payloadChanges } = classifyContributionFiles(files);
   if (contracts.length && !metadataAllowed) {
     errors.push(`Metadata contract changes require the maintainer label ${METADATA_LABEL}: ${[...new Set(contracts)].join(", ")}`);
   }
