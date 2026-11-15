@@ -27,10 +27,69 @@ Before beginning a report, the agent must verify that configured SharePoint conn
 2. Retrieve list definitions and complete schemas.
 3. Retrieve list items page by page and follow continuation tokens.
 4. Return a trusted SharePoint item URL for each item when available.
-5. Invoke **Create file** in the approved report destination.
-6. Return the created file's URL or path.
+5. Generating downloadable HTML files.
 
 A SharePoint knowledge source alone does not guarantee these capabilities. If one is unavailable, the agent stops and identifies the missing capability.
+
+Important: SharePoint Create file is optional and is not required for direct HTML delivery in Copilot Chat.
+
+
+## Optional Extension: SharePoint Create File
+
+Purpose
+The sp-list-report-generator Skill generates HTML reports but does not include a built-in SharePoint Create file action.
+Users can extend the agent with a SharePoint connector action or agent flow to save generated reports to a specified SharePoint location.
+This extension is optional and does not affect the Skill's core reporting functionality.
+Configuration Requirements
+To enable SharePoint report storage:
+
+1. Add a SharePoint Create file connector action or equivalent agent flow.
+2. Configure the required SharePoint connection.
+3. Grant the connection appropriate permissions.
+4. Allow users to provide or select an approved destination.
+5. Accept the generated HTML filename and file content as inputs.
+6. Return the created file's URL or path.
+7. Verify that the destination's audience is no broader than the source list and included items.
+8. Update the agent's delivery instructions to permit SharePoint uploads.
+
+Destination Configuration
+The user or solution owner should provide:
+
+- SharePoint site
+- Document library
+- Destination folder
+- Required access permissions
+
+The agent must not invent a destination.
+A user-provided destination must be validated before uploading.
+Optional Create File Workflow
+When SharePoint storage is explicitly requested and the extension is configured:
+
+1. Generate the HTML report using the Skill.
+2. Identify the requested SharePoint destination.
+3. Validate the destination and its permissions.
+4. Generate a unique report filename.
+5. Invoke the configured Create file action.
+6. Pass the HTML filename and complete file content.
+7. Capture the URL or path returned by the action.
+8. Return the report summary and actual SharePoint file location.
+If Create file fails or returns no URL or path, report the failure honestly.
+Never generate or guess a SharePoint file URL.
+Behavior When Create File Is Unavailable
+If Create file is not configured:
+
+- Continue supporting direct HTML report generation.
+- Return the downloadable HTML file in Copilot Chat.
+- Do not attempt SharePoint uploads.
+- Explain that SharePoint storage requires an additional configured action when requested.
+Example Requests
+Direct download:
+Generate an HTML report for the Campaign list.
+Optional SharePoint storage:
+Generate a report for the Campaign list and save it to my approved SharePoint Reports folder.
+Custom destination:
+Generate the report and save it to the SharePoint destination I specify, after verifying access permissions.
+
 
 ## List Selection Rules
 The requested data source must map explicitly to a SharePoint list.
