@@ -1,0 +1,15 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: prompt-injection-scanner
+  description: Use when auditing agent instructions for adversarial prompt injection, jailbreak susceptibility, or exposed secrets.
+  ---
+  # Prompt Injection Scanner
+
+  Inspect agent instructions and topic prompts to verify adversarial robustness and credential safety.
+
+  ## Procedure
+  1. Scan all static instruction segments for embedded secrets: API tokens, private keys, connection strings, and plaintext credentials.
+  2. Verify that system instructions explicitly instruct the model to maintain role adherence and ignore user attempts to override core boundaries.
+  3. Validate delimiter formatting: ensuring user-supplied variables are wrapped in explicit delimiters (XML tags, triple quotes) to prevent prompt concatenation exploits.
+  4. Test Fallback topic behavior: confirming unhandled intents do not leak internal system prompts or error stack traces.
