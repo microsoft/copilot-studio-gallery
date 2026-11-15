@@ -20,8 +20,8 @@ const attested = template.replaceAll("- [ ]", "- [x]");
 const statements = attested.split("\n").filter((line) => line.startsWith("- [x]")).map((line) => line.slice(6));
 const checkedItem = (statement: string) => `<li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Completed task" checked=""> ${statement}</li>`;
 const attestedHTML = `<ul class="contains-task-list">\n${statements.map(checkedItem).join("\n")}\n</ul>`;
-const native: Review = { id: 1, author: "copilot-pull-request-reviewer[bot]", human: false, copilot: true, head, state: "COMMENTED", url };
-const human: Review = { id: 2, author: "maintainer", human: true, copilot: false, head, state: "APPROVED", url };
+const native: Review = { id: 1, author: "copilot-pull-request-reviewer[bot]", human: false, copilot: true, head, state: "COMMENTED", url, summary: "" };
+const human: Review = { id: 2, author: "maintainer", human: true, copilot: false, head, state: "APPROVED", url, summary: "" };
 const checks = [
   { name: "Guard pull request scope", required: true, state: "SUCCESS", url },
   { name: "Validate, test, and build", required: true, state: "SUCCESS", url },
@@ -235,6 +235,7 @@ test("PR 119-like requests show only contributor correction, then judgment after
   assert.ok(result.blockers.some((blocker) => blocker.kind === "approve"));
 
   state.threads[0].replyByAuthor = true;
+  state.threads.push({ review: 3, head, resolved: false, replyByAuthor: true, url: request });
   result = assessEvidence(state);
   assert.equal(result.next.kind, "judge-reply");
   assert.deepEqual(result.labels, [QUEUE_LABELS.maintainer]);
@@ -318,6 +319,38 @@ test("unanswered findings still outrank judgment on a different replied thread",
 });
 
 interface Call { path: string; method: string; body: Record<string, unknown> }
+test("unrelated replies do not answer summary-only human requests", () => {
+  const state = evidence();
+  state.reviews = [native, { ...human, state: "CHANGES_REQUESTED", summary: "Correct the failure path." }];
+  state.threads = [{ review: native.id, head, resolved: false, replyByAuthor: true, url }];
+  assert.equal(assessEvidence(state).next.kind, "review-changes");
+  state.threads.push({ review: human.id, head, resolved: false, replyByAuthor: true, url });
+  assert.equal(assessEvidence(state).next.kind, "review-changes");
+});
+
+test("current replies outrank earlier unresolved threads and link their own changes request", () => {
+  for (const review of [native, human]) {
+    const state = evidence();
+    state.mergeState = "BEHIND";
+    state.threads = [
+      { review: review.id, head: old, resolved: false, replyByAuthor: false, url: `${url}#old` },
+      { review: review.id, head, resolved: false, replyByAuthor: true, url: `${url}#current` },
+    ];
+    assert.equal(assessEvidence(state).next.kind, "judge-reply");
+    assert.ok(assessEvidence(state).next.instruction.includes("#current"));
+  }
+  const state = evidence();
+  state.reviews = [
+    native, { ...human, head: old, state: "CHANGES_REQUESTED", url: `${url}#old` },
+    { ...human, id: 3, author: "second-reviewer", state: "CHANGES_REQUESTED", url: `${url}#current` },
+  ];
+  state.threads = [{ review: 3, head, resolved: false, replyByAuthor: true, url: `${url}#current-thread` }];
+  assert.equal(assessEvidence(state).next.kind, "judge-reply");
+  assert.ok(assessEvidence(state).next.instruction.includes("#current"));
+  assert.ok(assessEvidence(state).blockers.some((blocker) => blocker.title === "Judge the response to the changes request"
+    && blocker.kind === "judge-reply" && blocker.instruction.includes(`${url}#current)`)));
+});
+
 function mock() {
   const state = evidence();
   const pr = {
@@ -369,6 +402,7 @@ function mock() {
       }
       if (path === "pulls/42/reviews?per_page=100&page=1") return Response.json(state.reviews.map((review) => ({
         id: review.id, user: { login: review.author, type: review.human ? "User" : "Bot" },
+        body: review.summary,
         commit_id: review.head, state: review.state, is_copilot_code_review: review.copilot, html_url: review.url,
       })));
       if (path.startsWith("actions/workflows/ci.yml/runs?")) return Response.json({

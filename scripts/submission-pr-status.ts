@@ -163,6 +163,7 @@ export interface Review {
   head: string;
   state: string;
   url: string;
+  summary: string;
 }
 export interface Thread {
   review: number | null;
@@ -289,6 +290,7 @@ export async function collectEvidence(api: TaskApi, pr: Pull, files: ChangedFile
       id: integer(review.id), author, human: !copilot && user?.type === "User", copilot,
       head: sha(review.commit_id), state: text(review.state),
       url: api.url(review.html_url),
+      summary: review.body === null ? "" : text(review.body),
     };
   });
   let mergeState = "UNKNOWN";
@@ -416,8 +418,12 @@ export function assess(evidence: Evidence): Assessment {
   }
   const copilotIds = new Set(reviews.filter((review) => review.copilot).map((review) => review.id));
   const open = threads.filter((thread) => !thread.resolved);
-  const repliedToAll = open.length > 0 && open.every((thread) => thread.replyByAuthor);
-  if (latestCopilot?.state === "CHANGES_REQUESTED" && !repliedToAll) {
+  const repliedToReview = (review: Review) => {
+    const related = threads.filter((thread) => thread.review === review.id);
+    // A thread reply cannot establish that separate review-summary feedback was answered.
+    return !review.summary.trim() && related.length > 0 && related.every((thread) => thread.resolved || thread.replyByAuthor);
+  };
+  if (latestCopilot?.state === "CHANGES_REQUESTED" && !repliedToReview(latestCopilot)) {
     add("review-changes", "Contributor", "Address the outstanding review request", "Copilot requested changes on this revision.",
       `Address or discuss [Copilot's request for changes](${latestCopilot.url}), then push the agreed remedy and report verification in that discussion.`,
       "After a correction is pushed or a response is posted; replies do not automatically resolve findings.");
@@ -434,14 +440,16 @@ export function assess(evidence: Evidence): Assessment {
       "A current Copilot finding has no contributor response.",
       `Address or discuss the [unresolved Copilot finding](${awaitingAuthor.url}), push the agreed correction, and report verification there. Do not repeat already supplied fixes.`,
       "After a correction is pushed or a response is posted.");
-    const followup = copilot.find((thread) => thread.replyByAuthor || (thread.head !== null && thread.head !== pr.head));
+    const followup = copilot.find((thread) => thread.head === pr.head && thread.replyByAuthor)
+      ?? copilot.find((thread) => thread.replyByAuthor || (thread.head !== null && thread.head !== pr.head));
     if (followup) add(followup.head === pr.head && followup.replyByAuthor ? "judge-reply" : "confirm-review", "Maintainer", "Judge the response to the review finding",
       "A reply or new revision needs confirmation; the open thread is not proof that the fix is absent.",
       `Review the contributor's reply/new revision against the [remaining Copilot discussion](${followup.url}) and resolve it only if addressed.`,
       "After the discussion is resolved or specific remaining work is identified.");
   }
   if (human.length) {
-    const followup = human.find((thread) => thread.replyByAuthor || (thread.head !== null && thread.head !== pr.head));
+    const followup = human.find((thread) => thread.head === pr.head && thread.replyByAuthor)
+      ?? human.find((thread) => thread.replyByAuthor || (thread.head !== null && thread.head !== pr.head));
     if (followup) add(followup.head === pr.head && followup.replyByAuthor ? "judge-reply" : "confirm-review", "Maintainer", "Judge the response to the review discussion",
       "A contributor reply or new revision needs human confirmation.",
       `Review the contributor's reply/new revision against the [open human discussion](${followup.url}) and resolve it only if addressed.`,
@@ -459,15 +467,16 @@ export function assess(evidence: Evidence): Assessment {
   }
   const requests = [...latestHuman.values()].filter((review) => review.state === "CHANGES_REQUESTED");
   const changes = requests[0];
-  const currentChanges = requests.find((review) => review.head === pr.head);
-  if (currentChanges && !repliedToAll) add("review-changes", "Contributor", "Address the outstanding review request",
+  for (const request of requests) {
+  if (request.head === pr.head && !repliedToReview(request)) add("review-changes", "Contributor", "Address the outstanding review request",
     "A human reviewer requested changes on this revision.",
-    `Address or discuss [the human request for changes](${currentChanges.url}), including feedback in the review summary. Push the agreed correction and report verification there.`,
+    `Address or discuss [the human request for changes](${request.url}), including feedback in the review summary. Push the agreed correction and report verification there.`,
     "After a correction is pushed or a response is posted; the reviewer must still confirm the remedy.");
-  if (changes && (!currentChanges || repliedToAll)) add(currentChanges ? "judge-reply" : "confirm-review", "Maintainer", "Judge the response to the changes request",
+  if (request.head !== pr.head || repliedToReview(request)) add(request.head === pr.head ? "judge-reply" : "confirm-review", "Maintainer", "Judge the response to the changes request",
     "The human changes request still needs confirmation against the reply/new revision.",
-    `Follow up on [the human request for changes](${changes.url}); compare the full request with the supplied response/revision and confirm it is addressed or identify the specific remaining concern.`,
+    `Follow up on [the human request for changes](${request.url}); compare the full request with the supplied response/revision and confirm it is addressed or identify the specific remaining concern.`,
     "After the reviewer updates the review or requests a specific further correction.");
+  }
 
   const required = checks.filter((check) => check.required);
   const missing = evidence.requiredChecks.filter((name) => !required.some((check) => check.name === name));

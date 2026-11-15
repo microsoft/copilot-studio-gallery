@@ -435,6 +435,11 @@ link. It does not also ask maintainers to approve or conditionally resolve the
 discussion. A reply requires judgment, not automatic resolution; a new revision
 needs fresh checks/review before final confirmation and approval.
 
+Reply evidence is scoped to the review that raised the finding. Replies on
+unrelated threads do not answer a changes request. Separate review-summary
+feedback remains contributor work on the current revision until corrected;
+thread replies alone cannot prove that summary feedback was answered.
+
 A new push needs fresh evidence; an old finding is neither automatically still
 valid nor automatically fixed.
 Copilot can resolve its own addressed findings on rereview; humans retain
