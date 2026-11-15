@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { parse } from "yaml";
-import { assess as assessEvidence, collectEvidence, MARKER, QUEUE_LABELS, reconcile, reconcileQueue, render, TaskApi, type Evidence, type Review } from "./submission-pr-status";
+import { assess as assessEvidence, collectEvidence, MARKER, NOTIFICATION_MARKER, QUEUE_LABELS, reconcile, reconcileQueue, render, TaskApi, type Evidence, type Review } from "./submission-pr-status";
 
 function assess(state: Evidence) {
   const result = assessEvidence(state);
@@ -376,7 +376,7 @@ function mock() {
       const query = String(body.query);
       const node = {
         body: pr.body, bodyHTML: state.bodyHTML,
-        headRefOid: head, baseRefOid: base, mergeStateStatus: state.mergeState, reviewDecision: state.decision,
+        headRefOid: pr.head.sha, baseRefOid: pr.base.sha, mergeStateStatus: state.mergeState, reviewDecision: state.decision,
         commits: { nodes: [{ commit: { statusCheckRollup: { contexts: {
           totalCount: state.checks.length, pageInfo: { hasNextPage: false, endCursor: null },
           nodes: state.checks.map((check) => ({ name: check.name, status: "COMPLETED", conclusion: check.state, detailsUrl: url, isRequired: check.required })),
@@ -414,12 +414,12 @@ function mock() {
       });
     } else {
       if (method === "POST" && path === "issues/42/comments") {
-        const comment = { id: 12, body: body.body, user: { login: "github-actions[bot]", type: "Bot" } };
+        const comment = { id: 12 + comments.length, body: body.body, user: { login: "github-actions[bot]", type: "Bot" } };
         comments.push(comment);
         return Response.json(comment);
       }
-      if (method === "PATCH" && path === "issues/comments/12") {
-        comments.find((comment) => comment.id === 12)!.body = body.body;
+      if (method === "PATCH" && /^issues\/comments\/\d+$/.test(path)) {
+        comments.find((comment) => comment.id === Number(path.split("/").at(-1)))!.body = body.body;
         return Response.json({});
       }
       if (method === "POST" && path === "issues/42/labels") {
@@ -441,6 +441,116 @@ function mock() {
   return { api, state, pr, comments, labels, calls, overrides };
 }
 const writes = (calls: Call[]) => calls.filter((call) => call.method !== "GET" && call.path !== "/graphql");
+
+test("behind branches belong to maintainers while conflicts require a contributor correction", () => {
+  const state = evidence();
+  state.mergeState = "BEHIND";
+  assert.equal(assessEvidence(state).next.owner, "Maintainer");
+  assert.deepEqual(assessEvidence(state).labels, [QUEUE_LABELS.maintainer]);
+  assert.match(render(state.pr, assessEvidence(state)), /coordinate with the contributor/);
+  assert.doesNotMatch(render(state.pr, assessEvidence(state)), /@contributor/);
+  state.mergeState = "DIRTY";
+  assert.deepEqual(assessEvidence(state).labels, [QUEUE_LABELS.contributor]);
+  assert.match(render(state.pr, assessEvidence(state)), /@contributor, Resolve conflicts/);
+  state.mergeState = "BEHIND";
+  state.reviews.push({ ...human, id: 3, state: "CHANGES_REQUESTED", summary: "Add the sample disclaimer.", url: `${url}#disclaimer` });
+  state.threads = [{ review: 1, head: old, resolved: true, replyByAuthor: false, url }];
+  assert.equal(assessEvidence(state).next.kind, "review-changes");
+  assert.match(render(state.pr, assessEvidence(state)), /@contributor, .*#disclaimer/);
+});
+
+const notifications = (fixture: ReturnType<typeof mock>) =>
+  fixture.comments.filter((comment) => String(comment.body).startsWith(NOTIFICATION_MARKER));
+
+test("contributor notifications ping once per action change, not per rerun or SHA update", async () => {
+  const fixture = mock();
+  fixture.state.bodyHTML = "";
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, 1);
+  assert.match(String(notifications(fixture)[0].body), /@contributor,.*Complete the submission attestation/);
+  const count = writes(fixture.calls).length;
+  await reconcile(fixture.api, 42);
+  assert.equal(writes(fixture.calls).length, count);
+  fixture.pr.base.sha = old;
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, 1);
+  fixture.pr.head.sha = "d".repeat(40);
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, 1);
+  fixture.state.mergeState = "DIRTY";
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, 2);
+  fixture.state.mergeState = "BEHIND";
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, 2);
+  assert.ok(fixture.pr.labels.some((label) => label.name === QUEUE_LABELS.maintainer));
+  fixture.state.mergeState = "DIRTY";
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, 3);
+});
+
+test("notification retries inspect persisted bot evidence and ignore spoofed comments", async () => {
+  const fixture = mock();
+  fixture.state.bodyHTML = "";
+  const body = await reconcile(fixture.api, 42, true);
+  const marker = body.match(/<!-- gallery-submission-action:v1:([a-f0-9]{64}):(\d+) -->/)!;
+  fixture.comments.push({
+    id: 7, body: `${NOTIFICATION_MARKER}${marker[1]}:${marker[2]} -->\nspoof`,
+    user: { login: "visitor", type: "User" },
+  });
+  const key = "POST issues/42/comments";
+  let interrupted = false;
+  fixture.overrides.set(key, () => {
+    if (!interrupted) {
+      interrupted = true;
+      fixture.comments.push({
+        id: 8, body: `${NOTIFICATION_MARKER}${marker[1]}:${marker[2]} -->\n@contributor`,
+        user: { login: "github-actions[bot]", type: "Bot" },
+      });
+      return new Response("uncertain response", { status: 503 });
+    }
+    return undefined;
+  });
+  await assert.rejects(reconcile(fixture.api, 42));
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, 2);
+  assert.equal(fixture.comments.filter((comment) => String(comment.body).startsWith(MARKER)).length, 1);
+});
+
+test("contributor previews and paused PRs never post notifications", async () => {
+  const fixture = mock();
+  fixture.state.bodyHTML = "";
+  assert.match(await reconcile(fixture.api, 42, true), /@contributor/);
+  assert.deepEqual(writes(fixture.calls), []);
+  await reconcile(fixture.api, 42);
+  const count = notifications(fixture).length;
+  fixture.pr.draft = true;
+  await reconcile(fixture.api, 42);
+  fixture.pr.draft = false;
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, count + 1);
+  fixture.pr.state = "closed";
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, count + 1);
+});
+
+test("a failed status update does not repeat a persisted changed-action notification", async () => {
+  const fixture = mock();
+  fixture.state.bodyHTML = "";
+  await reconcile(fixture.api, 42);
+  const status = fixture.comments.find((comment) => String(comment.body).startsWith(MARKER))!;
+  const path = `PATCH issues/comments/${status.id}`;
+  fixture.state.mergeState = "DIRTY";
+  fixture.overrides.set(path, () => new Response("status update failed", { status: 503 }));
+  await assert.rejects(reconcile(fixture.api, 42));
+  assert.equal(notifications(fixture).length, 2);
+  fixture.overrides.delete(path);
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, 2);
+  fixture.state.mergeState = "CLEAN";
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, 3);
+});
 
 test("reconciliation updates its own comment/labels only and unchanged repeat runs produce no writes", async () => {
   const fixture = mock();
@@ -595,7 +705,8 @@ test("later comment/file pages are read and bot impersonation cannot suppress a 
   fixture.overrides.set("GET pulls/42/files?per_page=100&page=1", () => Array.from({ length: 100 }, () => evidence().files[0]));
   fixture.overrides.set("GET pulls/42/files?per_page=100&page=2", () => evidence().files);
   fixture.overrides.set("GET issues/42/comments?per_page=100&page=1", () => Array.from({ length: 100 }, () => ({ body: MARKER, user: { login: "github-actions[bot]", type: "User" } })));
-  fixture.overrides.set("GET issues/42/comments?per_page=100&page=2", () => [{ id: 12, body: render(evidence().pr, assess(evidence())), user: { login: "github-actions[bot]", type: "Bot" } }]);
+  fixture.comments.push({ id: 12, body: render(evidence().pr, assess(evidence())), user: { login: "github-actions[bot]", type: "Bot" } });
+  fixture.overrides.set("GET issues/42/comments?per_page=100&page=2", () => fixture.comments);
   await reconcile(fixture.api, 42);
   assert.ok(!writes(fixture.calls).some((call) => call.path.endsWith("/comments")));
 });

@@ -1,9 +1,12 @@
 import { readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { classifyContributionFiles, METADATA_LABEL, SITE_LABEL, type ChangedFile } from "./contribution-scope.ts";
 
 export const MARKER = "<!-- gallery-submission-tasks:v1 -->";
+export const NOTIFICATION_MARKER = "<!-- gallery-contributor-action:v1:";
+const ACTION_MARKER = "<!-- gallery-submission-action:v1:";
 export const QUEUE_LABELS = {
   contributor: "needs-contributor",
   maintainer: "needs-maintainer",
@@ -512,10 +515,13 @@ export function assess(evidence: Evidence): Assessment {
   if (!approved) add("approve", "Maintainer", "Review and approve the current revision", "Formal human approval of this revision is missing.",
     `Review the evidence and submit a formal human approval in [Files changed](${pr.url}/files), or explain a specific remaining blocker. Copilot comments are not that approval.`,
     "After a formal review is submitted.");
-  if (evidence.mergeState === "DIRTY" || evidence.mergeState === "BEHIND") {
-    add("branch", "Contributor", evidence.mergeState === "DIRTY" ? "Resolve merge conflicts" : "Update the branch against the base",
-      `GitHub reports ${evidence.mergeState}.`,
-      `Resolve merge conflicts or update the branch against the [base branch](${pr.url}) before the final checks/review cycle. New commits need fresh checks and review.`,
+  if (evidence.mergeState === "DIRTY") {
+    add("branch", "Contributor", "Resolve merge conflicts", "GitHub reports merge conflicts.",
+      `Resolve conflicts against the base branch \`${pr.baseBranch}\` in [this PR](${pr.url}), push the corrected branch, and report how you verified the conflict resolution. New commits need fresh checks and review.`,
+      "After the updated branch is pushed.");
+  } else if (evidence.mergeState === "BEHIND") {
+    add("branch", "Maintainer", "Update the branch against the base", "The branch is behind its base; a maintainer owns this update.",
+      `Inspect and update [this PR's branch](${pr.url}) against \`${pr.baseBranch}\` before the final checks/review cycle. If you cannot update it, coordinate with the contributor. Do not authorize CI or approve automatically; new commits need fresh checks and review.`,
       "After the updated branch is pushed.");
   } else if (!["CLEAN", "BLOCKED", "UNSTABLE", "HAS_HOOKS"].includes(evidence.mergeState)) {
     add("investigate-state", "Maintainer", "Investigate GitHub's merge state", `GitHub merge state is ${evidence.mergeState}.`,
@@ -554,7 +560,7 @@ Assessed head \`${pr.head}\` against base \`${pr.base}\`. Informational only: Gi
 
 ${next.reason}
 
-${next.instruction}
+${next.owner === "Contributor" ? `@${pr.author}, ` : ""}${next.instruction}
 
 **Reassessed:** ${next.reassess}
 
@@ -562,10 +568,56 @@ This comment is updated in place and shows only the next step; later prerequisit
 `;
 }
 
-function ownedComment(value: unknown) {
+function botComment(value: unknown) {
   const comment = object(value);
   const user = comment.user === null ? null : object(comment.user);
-  return user?.login === BOT && user.type === "Bot" && typeof comment.body === "string" && comment.body.startsWith(MARKER);
+  return user?.login === BOT && user.type === "Bot" && typeof comment.body === "string";
+}
+
+function ownedComment(value: unknown) {
+  return botComment(value) && text(object(value).body).startsWith(MARKER);
+}
+
+function previousActionState(comments: unknown[]) {
+  const existing = comments.filter(ownedComment);
+  if (existing.length > 1) throw new Error("Duplicate coordinator comments; maintainer cleanup required");
+  const previous = existing.length ? text(object(existing[0]).body) : "";
+  const state = previous.match(/<!-- gallery-submission-action:v1:([a-f0-9]{64}):(\d+) -->/);
+  if (previous.includes(ACTION_MARKER) && !state) throw new Error("Invalid contributor notification state");
+  const sequence = state ? Number(state[2]) : 0;
+  if (!Number.isSafeInteger(sequence) || sequence < 0) throw new Error("Invalid contributor notification sequence");
+  return { key: state?.[1], sequence, marker: state?.[0] ?? "" };
+}
+
+function actionState(pr: Pull, assessment: Assessment, comments: unknown[]) {
+  const previous = previousActionState(comments);
+  const { next } = assessment;
+  const key = createHash("sha256").update(JSON.stringify([
+    pr.author, next.kind, next.owner, next.title, next.instruction, next.reassess,
+  ])).digest("hex");
+  const notify = next.owner === "Contributor" && previous.key !== key;
+  const generation = previous.sequence + (notify ? 1 : 0);
+  if (!Number.isSafeInteger(generation)) throw new Error("Contributor notification sequence exhausted");
+  return { key, generation, notify };
+}
+
+async function notifyContributor(api: TaskApi, pr: Pull, assessment: Assessment, comments: unknown[], state: ReturnType<typeof actionState>, dryRun: boolean) {
+  if (!state.notify || dryRun) return;
+  const marker = `${NOTIFICATION_MARKER}${state.key}:${state.generation} -->`;
+  if (comments.some((comment) => botComment(comment) && text(object(comment).body).startsWith(marker))) return;
+  await api.call(`issues/${pr.number}/comments`, "POST", {
+    body: `${marker}
+@${pr.author}, **${assessment.next.title}.**
+
+${assessment.next.reason}
+
+${assessment.next.instruction}
+
+**Reassessed:** ${assessment.next.reassess}
+
+This notification records the action at posting time. See the **Submission next step** comment and queue label for the current action.
+`,
+  });
 }
 
 async function writeComment(api: TaskApi, number: number, comments: unknown[], body: string, dryRun: boolean) {
@@ -622,15 +674,21 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
     commentsLoaded = true;
     let body: string;
     let evidence: Evidence | undefined;
+    let assessment: Assessment | undefined;
+    let notification: ReturnType<typeof actionState> | undefined;
     let labels: string[] = [];
     if (!eligible || initial.draft || initial.state !== "open") {
       const reason = initial.state !== "open" ? "closed" : initial.draft ? "a draft" : "outside ordinary contribution scope";
       body = `${MARKER}\n## Submission next step\n**Paused: this PR is ${reason}.**\n\n${initial.state !== "open" ? "No active contribution task remains." : initial.draft ? "Contributor: mark this PR ready for review when ready; the queue will reassess." : "Use ordinary maintainer review; this PR is outside the contribution queue."}\n`;
       if (!tracked && !comments.some(ownedComment)) return "Not tracking draft/closed PR";
+      const previous = previousActionState(comments);
+      const key = createHash("sha256").update(`paused:${reason}`).digest("hex");
+      body += `\n${ACTION_MARKER}${key}:${previous.sequence} -->\n`;
     } else {
       evidence = await collectEvidence(api, initial, files);
-      const assessment = assess(evidence);
-      body = render(initial, assessment);
+      assessment = assess(evidence);
+      notification = actionState(initial, assessment, comments);
+      body = `${render(initial, assessment)}\n${ACTION_MARKER}${notification.key}:${notification.generation} -->\n`;
       labels = assessment.labels;
     }
     const live = pull(api, await api.call(`pulls/${number}`));
@@ -648,6 +706,7 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
       }
     }
     await writeLabels(api, live, labels, dryRun);
+    if (assessment && notification) await notifyContributor(api, live, assessment, comments, notification, dryRun);
     await writeComment(api, number, comments, body, dryRun);
     return body;
   } catch (error) {
@@ -663,7 +722,8 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
         async () => { await api.call(`issues/${number}/labels/${encodeURIComponent(QUEUE_LABELS.ready)}`, "DELETE", undefined, true); },
         async () => {
           if (initial && tracking && commentsLoaded) {
-            await writeComment(api, number, comments, `${MARKER}\n## Submission next step\n**Next: Maintainer - investigate the failed assessment.**\n\nAssessment failed or changed while being read. Previous readiness is withdrawn.\n\nInspect the [Submission PR tasks workflow](${new URL(initial.url).origin}/${api.repo}/actions/workflows/submission-pr-status.yml) and rerun it; do not rely on the previous checklist. The queue reassesses after a successful rerun.\n`, false);
+            const previous = previousActionState(comments);
+            await writeComment(api, number, comments, `${MARKER}\n## Submission next step\n**Next: Maintainer - investigate the failed assessment.**\n\nAssessment failed or changed while being read. Previous readiness is withdrawn.\n\nInspect the [Submission PR tasks workflow](${new URL(initial.url).origin}/${api.repo}/actions/workflows/submission-pr-status.yml) and rerun it; do not rely on the previous checklist. The queue reassesses after a successful rerun.\n${previous.marker}\n`, false);
           }
         },
       ]) {
