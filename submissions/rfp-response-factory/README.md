@@ -53,11 +53,11 @@ sections and clarifications), called from the pipeline flow.
 
 | Workflow | Trigger | What it does |
 |---|---|---|
-| `RFP - Receive Inbound Document` | A file lands in the SharePoint `Inbound` folder | Matches it to an opportunity, then creates the RFP, revision and document rows, and starts the run. A second file for the same RFP becomes an addendum revision |
+| `RFP - Receive Inbound Document` | A file lands in the SharePoint `Inbound` folder | Matches it to an opportunity, then creates the RFP, revision and document rows, and starts the run. A second file for the same RFP becomes an addendum revision. If that RFP is waiting for approval, its open approval is withdrawn and the run restarts to apply the addendum. Files are handled one at a time, so two addenda uploaded together get consecutive revision numbers |
 | `RFP - Run Pipeline` (hero) | An RFP's status changes to Running | Runs nine stages in order: intake and normalize, extract requirements, reconcile addendum, analyze, select answers, evaluate policy, route gaps and clarifications, assemble, approve. Each stage writes its state and a run-log row, so the run can restart at any stage. It stops at "Awaiting human" for gaps, OCR checks and approval |
 | `RFP - Route Gap To SME` | A gap row is created | Posts a Teams card to the SME, with a reminder and then an escalation to the backup SME. Records the answer as a Draft library entry |
-| `RFP - Verify OCR Requirement` | A low-confidence OCR flag is created | Posts a card with the page crop so a person can confirm or correct the text |
-| `RFP - Request Approval` | An approval row is created | Posts the approval card at the derived level (L1-L4). Approve files the package; reject sends it back with comments |
+| `RFP - Verify OCR Requirement` | A low-confidence OCR flag is created | Posts a card with the page crop so a person can confirm or correct the text. A blank or unchanged correction isn't saved: the flag stays open and the card is sent again |
+| `RFP - Request Approval` | An approval row is created | Posts the approval card at the derived level (L1-L4). Approve files the package; reject sends it back with comments. Before either, it checks the card is still current: if an addendum or a rerun changed the RFP after the card was sent, the decision isn't recorded and nothing is filed |
 | `RFP - Get Run Status`, `Explain Flag`, `Explain Answer`, `Rerun Stage` | The agent calls the flow | The Orchestrator's tools |
 | `RFP - Hook Pre Tool Use`, `RFP - Hook Post Tool Use` | Agent hook events | The Orchestrator's hooks |
 
@@ -116,7 +116,8 @@ Then turn on the flows. Importing with bound references hasn't turned them on in
 - Requirement text goes to the AI Builder prompts and the Orchestrator's model in your environment.
 - The flows **post Teams cards** (to `hrs_PilotRecipientUpn` in the pilot setup), **write files** to your SharePoint site, and
   **write and delete Dataverse rows** for the run. A rerun deletes the rows that the rerun stage and every later stage created
-  for that RFP, then runs those stages again.
+  for that RFP, then runs those stages again. Only one rerun of an RFP runs at a time, and cards answered while it's removing
+  rows don't resume the run. An addendum for an RFP that is waiting for approval deletes the open approval row.
 - Nothing is sent to a buyer. Submitting the proposal is left to people.
 
 ## Limitations
