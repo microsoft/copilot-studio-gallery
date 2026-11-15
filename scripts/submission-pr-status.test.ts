@@ -381,7 +381,19 @@ function mock() {
           totalCount: state.checks.length, pageInfo: { hasNextPage: false, endCursor: null },
           nodes: state.checks.map((check) => ({ name: check.name, status: "COMPLETED", conclusion: check.state, detailsUrl: url, isRequired: check.required })),
         } } } }] },
-        reviewThreads: { totalCount: 0, pageInfo: { hasNextPage: false, endCursor: null }, nodes: [] },
+        reviewThreads: {
+          totalCount: state.threads.length, pageInfo: { hasNextPage: false, endCursor: null },
+          nodes: state.threads.map((thread) => ({
+            isResolved: thread.resolved,
+            comments: { nodes: [{
+              url: thread.url, body: thread.body ?? "",
+              pullRequestReview: thread.review === null ? null : {
+                databaseId: thread.review, commit: thread.head === null ? null : { oid: thread.head },
+              },
+            }] },
+            lastReply: { nodes: [{ author: { login: thread.replyByAuthor ? "contributor" : "maintainer" } }] },
+          })),
+        },
       };
       assert.match(query, /^\s*query/);
       return Response.json({ data: { repository: { pullRequest: node } } });
@@ -582,6 +594,43 @@ test("failed status delivery followed by a maintainer step never reuses a notifi
   await reconcile(fixture.api, 42);
   assert.equal(notifications(fixture).length, 3);
   assert.match(String(notifications(fixture)[2].body), /:3 -->/);
+});
+
+test("editing the selected review summary or finding body notifies the changed work", async () => {
+  for (const summary of [true, false]) {
+    const fixture = mock();
+    if (summary) {
+      fixture.state.reviews.push({ ...human, id: 3, state: "CHANGES_REQUESTED", summary: "Add a disclaimer." });
+    } else {
+      fixture.state.threads = [{ review: 1, url, head, resolved: false, replyByAuthor: false, body: "Add a disclaimer." }];
+    }
+    await reconcile(fixture.api, 42);
+    assert.equal(notifications(fixture).length, 1);
+    if (summary) fixture.state.reviews[2].summary = "Document the connector permission.";
+    else fixture.state.threads[0].body = "Document the connector permission.";
+    await reconcile(fixture.api, 42);
+    assert.equal(notifications(fixture).length, 2);
+  }
+});
+
+test("same-head resolved/answered findings and passing checks abort stale contributor notifications", async () => {
+  for (const change of ["check", "resolved", "reply"]) {
+    const fixture = mock();
+    if (change === "check") fixture.state.checks[0].state = "FAILURE";
+    else fixture.state.threads = [{ review: 1, url, head, resolved: false, replyByAuthor: false, body: "Add a disclaimer." }];
+    let reads = 0;
+    fixture.overrides.set("GET pulls/42/reviews?per_page=100&page=1", () => {
+      if (++reads === 2) {
+        if (change === "check") fixture.state.checks[0].state = "SUCCESS";
+        else if (change === "resolved") fixture.state.threads[0].resolved = true;
+        else fixture.state.threads[0].replyByAuthor = true;
+      }
+      return undefined;
+    });
+    await assert.rejects(reconcile(fixture.api, 42), /next action changed/);
+    assert.equal(notifications(fixture).length, 0);
+    assert.deepEqual(fixture.pr.labels, [{ name: QUEUE_LABELS.maintainer }]);
+  }
 });
 
 test("reconciliation updates its own comment/labels only and unchanged repeat runs produce no writes", async () => {

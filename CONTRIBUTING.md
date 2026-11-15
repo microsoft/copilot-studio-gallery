@@ -432,7 +432,11 @@ its review/check/file evidence. The bot posts a separate notification when a
 contributor action first appears or changes, including after a maintainer step.
 Routine reruns and head/base changes alone do not post another notification.
 Persisted bot-owned action markers prevent duplicate notifications on retry;
-author-written lookalike markers are ignored. Notifications are historical:
+delivered notification history also preserves generations after failed status
+updates. Author-written lookalike markers are ignored. Edits to the selected
+review request or finding count as changed work. Before publishing, the queue
+rechecks the selected action so a newly answered/resolved finding or passing
+check does not trigger a stale contributor notification. Notifications are historical:
 the updated **Submission next step** comment and exclusive label identify the
 current action. Paused, closed, and out-of-scope PRs receive no new notifications.
 

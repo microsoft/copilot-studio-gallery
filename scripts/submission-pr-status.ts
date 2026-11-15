@@ -174,6 +174,7 @@ export interface Thread {
   resolved: boolean;
   replyByAuthor: boolean;
   head: string | null;
+  body?: string;
 }
 export interface Check {
   name: string;
@@ -214,7 +215,7 @@ const threadsQuery = `query($owner:String!,$name:String!,$number:Int!,$after:Str
     headRefOid baseRefOid
     reviewThreads(first:100,after:$after) { totalCount pageInfo { hasNextPage endCursor }
       nodes { isResolved comments(first:1) { nodes {
-        url pullRequestReview { databaseId commit { oid } }
+        url body pullRequestReview { databaseId commit { oid } }
       } } lastReply:comments(last:1) { nodes { author { login } } } }
     }
   } }
@@ -322,6 +323,7 @@ export async function collectEvidence(api: TaskApi, pr: Pull, files: ChangedFile
     return {
       review: first.pullRequestReview === null ? null : integer(object(first.pullRequestReview).databaseId),
       url: api.url(first.url), resolved: boolean(thread.isResolved),
+      body: text(first.body),
       replyByAuthor: login(last.author) === pr.author,
       head: first.pullRequestReview === null || object(first.pullRequestReview).commit === null
         ? null : sha(object(object(first.pullRequestReview).commit).oid),
@@ -349,6 +351,7 @@ export interface NextAction {
   reason: string;
   instruction: string;
   reassess: string;
+  evidence?: string;
 }
 export interface Assessment {
   blockers: NextAction[];
@@ -385,8 +388,8 @@ function checkedAttestations(bodyHTML: string): Set<string> {
 export function assess(evidence: Evidence): Assessment {
   const { pr, reviews, threads, checks, ci } = evidence;
   const blockers: NextAction[] = [];
-  const add = (kind: ActionKind, owner: NextAction["owner"], title: string, reason: string, instruction: string, reassess: string) => {
-    blockers.push({ kind, owner, title, reason, instruction, reassess });
+  const add = (kind: ActionKind, owner: NextAction["owner"], title: string, reason: string, instruction: string, reassess: string, evidence?: string) => {
+    blockers.push({ kind, owner, title, reason, instruction, reassess, ...(evidence === undefined ? {} : { evidence }) });
   };
   const scope = classifyContributionFiles(evidence.files);
   for (const problem of evidence.metadataProblems) {
@@ -429,7 +432,7 @@ export function assess(evidence: Evidence): Assessment {
   if (latestCopilot?.state === "CHANGES_REQUESTED" && !repliedToReview(latestCopilot)) {
     add("review-changes", "Contributor", "Address the outstanding review request", "Copilot requested changes on this revision.",
       `Address or discuss [Copilot's request for changes](${latestCopilot.url}), then push the agreed remedy and report verification in that discussion.`,
-      "After a correction is pushed or a response is posted; replies do not automatically resolve findings.");
+      "After a correction is pushed or a response is posted; replies do not automatically resolve findings.", latestCopilot.summary);
   } else if (latestCopilot?.state === "CHANGES_REQUESTED") {
     add("judge-reply", "Maintainer", "Judge the response to the review request", "The contributor has replied, but Copilot's changes request remains outstanding.",
       `Compare the replies with [Copilot's full request for changes](${latestCopilot.url}); confirm whether the concern is addressed or explain the remaining blocker.`,
@@ -442,7 +445,7 @@ export function assess(evidence: Evidence): Assessment {
     if (awaitingAuthor) add("review-discussion", "Contributor", "Address the outstanding review finding",
       "A current Copilot finding has no contributor response.",
       `Address or discuss the [unresolved Copilot finding](${awaitingAuthor.url}), push the agreed correction, and report verification there. Do not repeat already supplied fixes.`,
-      "After a correction is pushed or a response is posted.");
+      "After a correction is pushed or a response is posted.", awaitingAuthor.body);
     const followup = copilot.find((thread) => thread.head === pr.head && thread.replyByAuthor)
       ?? copilot.find((thread) => thread.replyByAuthor || (thread.head !== null && thread.head !== pr.head));
     if (followup) add(followup.head === pr.head && followup.replyByAuthor ? "judge-reply" : "confirm-review", "Maintainer", "Judge the response to the review finding",
@@ -461,7 +464,7 @@ export function assess(evidence: Evidence): Assessment {
     if (awaitingAuthor) {
       add("review-discussion", "Contributor", "Respond to the review discussion", "A current human review discussion has no contributor response.",
         `Respond to the [open human review discussion](${awaitingAuthor.url}) with a fix or clarification and report verification.`,
-        "After a correction is pushed or a response is posted.");
+        "After a correction is pushed or a response is posted.", awaitingAuthor.body);
     }
   }
   const latestHuman = new Map<string, Review>();
@@ -474,7 +477,7 @@ export function assess(evidence: Evidence): Assessment {
   if (request.head === pr.head && !repliedToReview(request)) add("review-changes", "Contributor", "Address the outstanding review request",
     "A human reviewer requested changes on this revision.",
     `Address or discuss [the human request for changes](${request.url}), including feedback in the review summary. Push the agreed correction and report verification there.`,
-    "After a correction is pushed or a response is posted; the reviewer must still confirm the remedy.");
+    "After a correction is pushed or a response is posted; the reviewer must still confirm the remedy.", request.summary);
   if (request.head !== pr.head || repliedToReview(request)) add(request.head === pr.head ? "judge-reply" : "confirm-review", "Maintainer", "Judge the response to the changes request",
     "The human changes request still needs confirmation against the reply/new revision.",
     `Follow up on [the human request for changes](${request.url}); compare the full request with the supplied response/revision and confirm it is addressed or identify the specific remaining concern.`,
@@ -601,13 +604,18 @@ function previousActionState(comments: unknown[]) {
   return previous;
 }
 
+function actionKey(pr: Pull, assessment: Assessment) {
+  const { next } = assessment;
+  return createHash("sha256").update(JSON.stringify([
+    pr.author, next.kind, next.owner, next.title, next.instruction, next.reassess,
+    next.kind === "fix-check" ? next.reason : "", next.evidence ?? "",
+  ])).digest("hex");
+}
+
 function actionState(pr: Pull, assessment: Assessment, comments: unknown[]) {
   const previous = previousActionState(comments);
+  const key = actionKey(pr, assessment);
   const { next } = assessment;
-  const key = createHash("sha256").update(JSON.stringify([
-    pr.author, next.kind, next.owner, next.title, next.instruction, next.reassess,
-    next.kind === "fix-check" ? next.reason : "",
-  ])).digest("hex");
   const notify = next.owner === "Contributor" && previous.key !== key;
   const generation = previous.sequence + (notify ? 1 : 0);
   if (!Number.isSafeInteger(generation)) throw new Error("Contributor notification sequence exhausted");
@@ -703,6 +711,13 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
       notification = actionState(initial, assessment, comments);
       body = `${render(initial, assessment)}\n${ACTION_MARKER}${notification.key}:${notification.generation} -->\n`;
       labels = assessment.labels;
+    }
+    if (evidence && assessment) {
+      const current = assess(await collectEvidence(api, initial, files));
+      if (actionKey(initial, current) !== actionKey(initial, assessment)
+        || JSON.stringify(current.labels) !== JSON.stringify(assessment.labels)) {
+        throw new Error("PR next action changed during assessment");
+      }
     }
     const live = pull(api, await api.call(`pulls/${number}`));
     if (fingerprint(live) !== fingerprint(initial)) throw new Error("PR state changed during assessment");
