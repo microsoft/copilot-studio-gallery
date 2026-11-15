@@ -172,8 +172,10 @@ managed app attestation.
 Native Copilot uses [static managed-app review guidance](../.github/instructions/managed-app-review.instructions.md);
 review automation never installs or executes the submitted app. The
 [shared PR task queue](../CONTRIBUTING.md#shared-contributor-pr-task-queue)
-separates contributor fixes/testing attestations from maintainer CI authorization,
-formal approval, and merge. Checked attestations are not automated runtime tests.
+shows one prioritized next action and its owner, rather than simultaneous
+contributor and maintainer task lists. CI authorization, formal approval, and
+merge remain manual; later actions are hidden until their prerequisites are
+satisfied. Checked attestations are not automated runtime tests.
 
 ## Testing before publication
 
