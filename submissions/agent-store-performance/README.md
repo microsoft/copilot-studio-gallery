@@ -15,7 +15,8 @@
 7. [Input Requirements](#input-requirements)
 8. [Output Formats](#output-formats)
 9. [Emailing Reports](#emailing-reports)
-10. [Guidelines & Guardrails](#guidelines--guardrails)
+10. [Sharing Reports in Microsoft Teams](#sharing-reports-in-microsoft-teams)
+11. [Guidelines & Guardrails](#guidelines--guardrails)
 11. [Error Handling & Limitations](#error-handling--limitations)
 12. [Interaction Examples](#interaction-examples)
 13. [Feedback & Continuous Improvement](#feedback--continuous-improvement)
@@ -23,6 +24,11 @@
 ---
 
 ## Overview
+
+> [!IMPORTANT]
+> **Sample and demonstration use only**
+>
+> This agent is provided as a sample and is not production-ready by default. It can create or update store-performance records and send reports through configured connectors. Before using it with live data, review the agent instructions, validate all connected data sources and actions, configure appropriate permissions, and test the solution in a non-production environment.
 
 The **Store Performance Agent** enables retail teams to monitor and maintain store performance data. Users can:
 
@@ -51,8 +57,8 @@ By supporting key KPIs such as sales, footfall, conversion, and operational metr
 - **Data retrieval** – Calls the **Store Insights Agent New** with validated inputs to retrieve performance data via the **Dataverse MCP Server**.
 - **Multi-store comparison** – Compares performance across stores or provides an overall view.
 - **Record management** – Creates or updates performance records, but only with explicit user intent and confirmation.
-- **Visual summaries** – Generates charts and graphs using Python (e.g., `matplotlib`) when requested.
-- **Report generation** – Produces downloadable **PDF** or **Word** reports with visuals and recommendations using the Python Code Interpreter.
+- **Visual summaries** – Generates charts and graphs using Python when Code Interpreter has been configured after import.
+- **Report generation** – Produces downloadable **PDF** or **Word** reports with visuals and recommendations only after Code Interpreter has been configured and tested.
 - **Email delivery** – Sends reports via Outlook using an HTML-formatted body with the report attached, on explicit request only.
 - **Format management** – Informs users when a requested output format is unavailable.
 
@@ -84,7 +90,8 @@ Store Performance Agent  ──►  Store Insights Agent New  ──►  Dataver
   │                                                           (performance data)
   ├──►  Python Code Interpreter  (charts, PDF/Word reports)
   │
-  └──►  Outlook Email Action      (HTML email + report attachment)
+  ├──►  Outlook Email Action      (HTML email + report attachment)
+  └──►  Microsoft Teams Action    (optional; confirmed destination and invoker permissions required)
 ```
 
 | Component | Purpose |
@@ -93,6 +100,22 @@ Store Performance Agent  ──►  Store Insights Agent New  ──►  Dataver
 | **Dataverse MCP Server** | Data source for store performance records |
 | **Python Code Interpreter** | Chart generation (`matplotlib`) and PDF/Word report creation |
 | **SendEmailOutlook** (or configured Outlook action) | Sends reports by email |
+| **Microsoft Teams connector** | Optional sharing destination; requires an authorized connection, permission to post, and explicit destination confirmation |
+
+---
+
+### Post-import setup: Code Interpreter
+
+Code Interpreter is an additional prerequisite for chart generation and downloadable PDF or Word reports. It is not configured automatically when the agent is imported.
+
+After importing the solution:
+
+1. Open the Store Performance Agent in Copilot Studio.
+2. Enable or add the available Code Interpreter capability.
+3. Confirm that the agent is permitted to execute Python.
+4. Test chart generation and PDF/Word file creation before advertising these formats to users.
+
+Without Code Interpreter, the agent can still retrieve, compare, and summarize store-performance data in the conversation, but it cannot generate charts or downloadable PDF/Word reports.
 
 ---
 
@@ -165,9 +188,9 @@ See [Emailing Reports](#emailing-reports).
 | Format | Availability | Notes |
 |--------|--------------|-------|
 | In-chat summary (bullets / tables) | Always | Default response format |
-| Charts & graphs | On request | Generated with Python (`matplotlib`) |
-| PDF report | When Code Interpreter is available | Includes visuals and recommendations |
-| Word report | When Code Interpreter is available | Includes visuals and recommendations |
+| Charts & graphs | Requires post-import Code Interpreter configuration | Generated with Python after the capability is configured and tested |
+| PDF report | Requires post-import Code Interpreter configuration | Includes visuals and recommendations after the capability is configured and tested |
+| Word report | Requires post-import Code Interpreter configuration | Includes visuals and recommendations after the capability is configured and tested |
 | Other formats | Not supported | The agent informs the user and suggests a supported alternative |
 
 ---
@@ -203,6 +226,23 @@ Parameters:
 
 ---
 
+## Sharing Reports in Microsoft Teams
+
+The agent can share a generated report or summary in Microsoft Teams only when the `Postmessageinachatorchannel` action is retained and properly configured.
+
+### Requirements
+
+- Create or select a valid Microsoft Teams connector connection after import.
+- The connector uses invoker authentication, so the action runs with the permissions of the signed-in user.
+- The signed-in user must have permission to access and post to the selected team and channel.
+- The user must select or provide the destination team and channel.
+- The agent must display and confirm the team, channel, and content before posting.
+- The agent must not infer, silently select, or reuse an unconfirmed destination.
+
+If the destination cannot be verified or the user lacks permission, the agent must not post the message and must explain the connection or permission issue.
+
+---
+
 ## Guidelines & Guardrails
 
 ### Tone
@@ -220,6 +260,7 @@ Parameters:
 - ❌ Do not modify or create records without explicit user intent (e.g., "update", "add", "correct", "save").
 - ❌ Do not recommend actions, products, or categories not present in the store's current performance data.
 - ❌ Do not send emails without explicit user confirmation and a valid email address.
+- ❌ Do not post to Microsoft Teams until the destination team and channel have been identified and explicitly confirmed by the user.
 - ❌ Do not generate or send reports if document creation has errors or data is incomplete.
 
 ---
@@ -233,7 +274,7 @@ Parameters:
 | **Ambiguous requests** | Does not assume intent; asks clarifying questions |
 | **Missing metrics (create/update)** | Prompts for the missing values before saving |
 | **Sub-agent errors** | Informs the user that the Store Insights Agent failed and suggests a retry, modified inputs, or an alternative date range |
-| **Export limitations** | Generates PDF/Word reports only when Code Interpreter is available |
+| **Export limitations** | Generates charts and PDF/Word reports only after Code Interpreter has been configured and tested after import |
 | **Email limitations** | Sends only on request, with a valid address, and after the report is successfully generated |
 
 ---
