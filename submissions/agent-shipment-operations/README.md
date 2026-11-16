@@ -2,11 +2,14 @@
 
 The main orchestrator agent for the shipment solution. It reads each incoming request, works out what the user wants, and hands the request to **exactly one** specialized skill. It does not retrieve data, call tools, or carry out shipment, order, event, or customer communication actions itself.
 
+> **Sample/non-production solution:** Use sample data and non-production recipients only until all connections, permissions, and downstream skills have been configured and tested. Do not use shipment writes or customer email with live shipment data or real customer addresses before completing that validation.
+
 ---
 
 ## Table of Contents
 
-1. [Overview](#overview)
+1. [Prerequisites and permissions](#prerequisites-and-permissions)
+13. [Overview](#overview)
 2. [Responsibilities](#responsibilities)
 3. [Architecture](#architecture)
 4. [Skills Catalog](#skills-catalog)
@@ -18,6 +21,19 @@ The main orchestrator agent for the shipment solution. It reads each incoming re
 10. [Inputs and Outputs](#inputs-and-outputs)
 11. [Extending the Orchestrator](#extending-the-orchestrator)
 12. [Troubleshooting](#troubleshooting)
+
+---
+
+## Prerequisites and permissions
+
+The exported solution does not grant connection access, Dataverse table permissions, or mailbox permissions. Configure these items in the target environment before testing:
+
+- **Dataverse MCP:** Create or select the Dataverse MCP invoker connection and bind the imported connection reference to it.
+- **Dataverse read access:** Grant the importing or runtime identity read access to the **Order**, **Package Shipment**, **Shipment Event**, and **Customer Account** tables.
+- **Dataverse write access:** Grant create/update access only where required for **Package Shipment** and **Shipment Event** records. Treat **Order** and **Customer Account** as read-only for this solution.
+- **Office 365 Outlook:** Create or select the Office 365 Outlook invoker connection and bind the imported connection reference to it.
+- **Mailbox permissions:** Ensure the runtime identity can send from the configured mailbox. The export does not grant **Send As** or **Send on Behalf** permissions; an administrator must assign them when required.
+- **Post-import validation:** Test with sample data and non-production recipients before enabling shipment writes or customer communications against live data.
 
 ---
 
@@ -92,7 +108,7 @@ Use when the user wants to **record, update, or analyze events** on a shipment.
 - "What disruptions happened on our shipments last week?"
 
 ### 3. package-shipment-management
-Use when the user wants to **create or change orders or shipment records**.
+Use when the user wants to **read an existing Order and create or update its Package Shipment records**. This skill does not create or edit Order rows and must not change unrelated records.
 - "Create a new shipment for order ORD-7781."
 - "Change the delivery address on shipment SHP-10234."
 - "What's the status of order ORD-7781?"
@@ -239,5 +255,3 @@ To add a new skill:
 | Response includes invented details | Orchestrator rewrote the skill output | Return the skill response unchanged |
 
 ---
-
-*Maintained by the Shipment Solutions team. Update this README whenever routing rules or skills change.*
