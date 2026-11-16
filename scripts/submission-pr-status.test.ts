@@ -297,13 +297,36 @@ test("content prerequisites outrank future review and CI work in a stable order"
   state.metadataProblems = [];
   assert.equal(assessEvidence(state).next.kind, "review-discussion");
   state.threads[0].resolved = true;
+  assert.equal(assessEvidence(state).next.kind, "attestation");
+  state.bodyHTML = attestedHTML;
   assert.equal(assessEvidence(state).next.kind, "branch");
   state.mergeState = "CLEAN";
   assert.equal(assessEvidence(state).next.kind, "fix-check");
   state.checks[1].state = "SUCCESS";
-  assert.equal(assessEvidence(state).next.kind, "attestation");
-  state.bodyHTML = attestedHTML;
   assert.equal(assessEvidence(state).next.kind, "authorize-ci");
+});
+
+test("missing attestations precede a routine branch update and remain visible alongside review corrections", () => {
+  const state = evidence();
+  state.bodyHTML = "";
+  state.mergeState = "BEHIND";
+  let result = assessEvidence(state);
+  assert.equal(result.next.kind, "attestation");
+  assert.deepEqual(result.labels, [QUEUE_LABELS.contributor]);
+  state.threads = [
+    { review: 1, head, resolved: false, replyByAuthor: false, url: `${url}#first` },
+    { review: 1, head, resolved: false, replyByAuthor: false, url: `${url}#second` },
+    { review: 1, head: old, resolved: false, replyByAuthor: false, url: `${url}#old` },
+  ];
+  result = assessEvidence(state);
+  const body = render(state.pr, result);
+  assert.equal(result.next.kind, "review-discussion");
+  assert.ok(body.includes(`${url}#first`));
+  assert.ok(body.includes(`${url}#second`));
+  assert.ok(!body.includes(`${url}#old`));
+  assert.match(body, /Other known contributor requirements[\s\S]*@contributor,[\s\S]*Complete the submission attestation/);
+  assert.equal(body.match(/\*\*Next:/g)?.length, 1);
+  assert.doesNotMatch(body, /Inspect and update|formal human approval/);
 });
 
 test("unanswered findings still outrank judgment on a different replied thread", () => {
@@ -493,6 +516,7 @@ test("contributor notifications ping once per action change, not per rerun or SH
   await reconcile(fixture.api, 42);
   assert.equal(notifications(fixture).length, 2);
   fixture.state.mergeState = "BEHIND";
+  fixture.state.bodyHTML = attestedHTML;
   await reconcile(fixture.api, 42);
   assert.equal(notifications(fixture).length, 2);
   assert.ok(fixture.pr.labels.some((label) => label.name === QUEUE_LABELS.maintainer));
@@ -588,6 +612,7 @@ test("failed status delivery followed by a maintainer step never reuses a notifi
   assert.equal(notifications(fixture).length, 2);
   fixture.overrides.delete(path);
   fixture.state.mergeState = "BEHIND";
+  fixture.state.bodyHTML = attestedHTML;
   await reconcile(fixture.api, 42);
   assert.equal(notifications(fixture).length, 2);
   fixture.state.mergeState = "DIRTY";
@@ -611,6 +636,34 @@ test("editing the selected review summary or finding body notifies the changed w
     await reconcile(fixture.api, 42);
     assert.equal(notifications(fixture).length, 2);
   }
+});
+
+test("contributor notifications include secondary requirements and deduplicate unchanged batches", async () => {
+  const fixture = mock();
+  fixture.state.bodyHTML = "";
+  fixture.state.threads = [{ review: 1, url, head, resolved: false, replyByAuthor: false, body: "Add a disclaimer." }];
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, 1);
+  assert.match(String(notifications(fixture)[0].body), /Other known contributor requirements[\s\S]*Complete the submission attestation/);
+  fixture.state.checks[0].state = "FAILURE";
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, 2);
+  assert.match(String(notifications(fixture)[1].body), /Guard pull request scope failed/);
+  await reconcile(fixture.api, 42);
+  assert.equal(notifications(fixture).length, 2);
+});
+
+test("secondary contributor requirements changing during assessment abort the stale batch", async () => {
+  const fixture = mock();
+  fixture.state.threads = [{ review: 1, url, head, resolved: false, replyByAuthor: false, body: "Add a disclaimer." }];
+  let reads = 0;
+  fixture.overrides.set("GET pulls/42/reviews?per_page=100&page=1", () => {
+    if (++reads === 2) fixture.state.bodyHTML = "";
+    return undefined;
+  });
+  await assert.rejects(reconcile(fixture.api, 42), /next action changed/);
+  assert.equal(notifications(fixture).length, 0);
+  assert.deepEqual(fixture.pr.labels, [{ name: QUEUE_LABELS.maintainer }]);
 });
 
 test("same-head resolved/answered findings and passing checks abort stale contributor notifications", async () => {
