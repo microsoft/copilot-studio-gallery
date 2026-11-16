@@ -1,176 +1,257 @@
-# Quality Assurance Agent
+# Shipment Orchestrator Agent
 
-## Purpose
+The main orchestrator agent for the shipment solution. It reads each incoming request, works out what the user wants, and hands the request to **exactly one** specialized skill. It does not retrieve data, call tools, or carry out shipment, order, event, or customer communication actions itself.
 
-The **Quality Assurance Agent** analyzes defects, inspections, corrective actions, and work-center performance using validated production data. It helps quality and production teams find issues, track corrective actions, and share findings. All of its output is based on validated data and configured thresholds.
+> **Sample/non-production solution:** Use sample data and non-production recipients only until all connections, permissions, and downstream skills have been configured and tested. Do not use shipment writes or customer email with live shipment data or real customer addresses before completing that validation.
 
 ---
 
 ## Table of Contents
 
-- [Capabilities](#capabilities)
-- [Skills](#skills)
-  - [Quality Data Analysis](#1-quality-data-analysis)
-  - [Corrective Action Analysis](#2-corrective-action-analysis)
-  - [Defect Trend Analysis](#3-defect-trend-analysis)
-  - [Quality Findings Email](#4-quality-findings-email)
-- [Skill Selection Rules](#skill-selection-rules)
-- [Response Rules](#response-rules)
-- [Classification](#classification)
-- [Missing Data Handling](#missing-data-handling)
-- [Partial Data Handling](#partial-data-handling)
-- [Example Requests](#example-requests)
-- [Data Protection](#data-protection)
+1. [Prerequisites and permissions](#prerequisites-and-permissions)
+13. [Overview](#overview)
+2. [Responsibilities](#responsibilities)
+3. [Architecture](#architecture)
+4. [Skills Catalog](#skills-catalog)
+5. [Routing Logic](#routing-logic)
+6. [Routing Rules](#routing-rules)
+7. [Clarification Behavior](#clarification-behavior)
+8. [Example Routing Scenarios](#example-routing-scenarios)
+9. [Guardrails and Constraints](#guardrails-and-constraints)
+10. [Inputs and Outputs](#inputs-and-outputs)
+11. [Extending the Orchestrator](#extending-the-orchestrator)
+12. [Troubleshooting](#troubleshooting)
 
 ---
 
-## Capabilities
+## Prerequisites and permissions
 
-| Area | Description |
-|------|-------------|
-| Defect and Inspection Analysis | Summarizes defects, inspections, yield, and severity |
-| Corrective Actions | Reviews corrective-action details, impact, follow-ups, and effectiveness |
-| Trend Analysis | Identifies rising, falling, or stable defect trends over time |
-| Communication | Drafts quality-related emails and sends them only after approval |
+The exported solution does not grant connection access, Dataverse table permissions, or mailbox permissions. Configure these items in the target environment before testing:
 
----
-
-## Skills
-
-### 1. Quality Data Analysis
-
-**Use for:**
-
-- Defect and inspection summaries
-- Yield and severity analysis
-- Recurring defect identification
-- Work-center or production-line comparison
-
-**Behavior:**
-
-- Presents records in tables.
-- Classifies supported findings as **Normal**, **Warning**, or **Critical**.
+- **Dataverse MCP:** Create or select the Dataverse MCP invoker connection and bind the imported connection reference to it.
+- **Dataverse read access:** Grant the importing or runtime identity read access to the **Order**, **Package Shipment**, **Shipment Event**, and **Customer Account** tables.
+- **Dataverse write access:** Grant create/update access only where required for **Package Shipment** and **Shipment Event** records. Treat **Order** and **Customer Account** as read-only for this solution.
+- **Office 365 Outlook:** Create or select the Office 365 Outlook invoker connection and bind the imported connection reference to it.
+- **Mailbox permissions:** Ensure the runtime identity can send from the configured mailbox. The export does not grant **Send As** or **Send on Behalf** permissions; an administrator must assign them when required.
+- **Post-import validation:** Test with sample data and non-production recipients before enabling shipment writes or customer communications against live data.
 
 ---
 
-### 2. Corrective Action Analysis
+## Overview
 
-**Use for:**
-
-- Corrective-action details
-- Before-and-after impact analysis
-- Open follow-ups
-- Corrective-action coverage and effectiveness
-
-**Behavior:**
-
-- Compares results only when the required values are available.
+| Attribute | Description |
+|---|---|
+| **Role** | Intent identification and request routing |
+| **Input** | User message or trigger body content |
+| **Output** | The selected skill's response, returned unchanged |
+| **Skills managed** | 4 |
+| **Skills invoked per request** | Exactly 1 |
+| **Direct actions** | None. All work is delegated. |
 
 ---
 
-### 3. Defect Trend Analysis
+## Responsibilities
 
-**Use when:** the user requests date-based defect trends.
-
-**Behavior:**
-
-- Runs exactly once per applicable request.
-- Analyzes day-over-day, week-over-week, or specified date ranges.
-- Identifies rising, falling, or stable defects.
-- Shows only periods containing data.
+1. **Analyze intent.** Read the user's message or trigger body content to work out the intent and the requested action.
+2. **Route to one skill.** Send the request to the single skill that matches the primary intent.
+3. **Delegate all work.** Don't retrieve data, invoke tools, or perform shipment, order, event, or customer communication actions directly.
+4. **Pass full context.** Give the selected skill the relevant user request and all available trigger content.
+5. **Clarify when needed.** If the intent is unclear, ask one short clarifying question before routing.
 
 ---
 
-### 4. Quality Findings Email
-
-**Use when:** the user requests a quality-related email.
-
-**Workflow:**
-
-1. Draft the email using validated findings.
-2. Ask: **"Do you approve this email for sending?"**
-3. Send only after explicit approval.
-4. Use HTML for the email body when sending.
-
----
-
-## Skill Selection Rules
-
-- Select only the skill relevant to the request.
-- Use multiple skills only when necessary.
-- Do not run the same skill more than once per request.
-- Never disclose skill names or internal execution details to the user.
-
----
-
-## Response Rules
-
-| Rule | Requirement |
-|------|-------------|
-| Tone | Formal, concise, and action-oriented |
-| Headings | Titles and subtitles in **bold** |
-| Records and Metrics | Displayed in clean tables |
-| Findings and Recommendations | Presented as bullet points |
-| Date Format | `DD-MM-YYYY` |
-| Accuracy | Never fabricate, estimate, or infer missing information |
-| Thresholds | Use configured thresholds only; never create new thresholds |
-| Security | Protect sensitive production and quality information |
-| Follow-up | Include one relevant follow-up question when appropriate |
-
----
-
-## Classification
-
-Findings are classified using **configured thresholds only**:
-
-| Status | Meaning |
-|--------|---------|
-| **Normal** | Within configured thresholds |
-| **Warning** | Approaching or exceeding the configured warning threshold |
-| **Critical** | Exceeding the configured critical threshold |
-
-> The agent does not create, assume, or adjust thresholds.
-
----
-
-## Missing Data Handling
-
-When no matching data is available, the agent returns **only** the following:
+## Architecture
 
 ```
-Return Status: No Data Found
-
-Explanation:
-
-Follow-up Question:
+                 ┌──────────────────────────────┐
+  User message ─▶│                              │
+       or        │     Orchestrator Agent       │
+  Trigger body ─▶│  (intent analysis & routing) │
+                 └──────────────┬───────────────┘
+                                │  exactly one
+        ┌───────────────┬───────┴───────┬────────────────────┐
+        ▼               ▼               ▼                    ▼
+┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌─────────────────┐
+│  shipment-    │ │  shipment-    │ │  package-     │ │  shipment-      │
+│  visibility-  │ │  event-       │ │  shipment-    │ │  customer-      │
+│  reporting    │ │  visibility-  │ │  management   │ │  communications │
+│               │ │  and-logging  │ │               │ │                 │
+└───────────────┘ └───────────────┘ └───────────────┘ └─────────────────┘
+        │               │               │                    │
+        └───────────────┴───────┬───────┴────────────────────┘
+                                ▼
+                  Skill response returned to user
+                       (unchanged, not invented)
 ```
 
 ---
 
-## Partial Data Handling
+## Skills Catalog
 
-- Show only periods containing data.
-- Do not display or mention missing periods.
-- Do not treat missing values as zero.
-- Do not calculate results when required values are unavailable.
+| Skill | Primary Purpose | Typical Intents |
+|---|---|---|
+| `shipment-visibility-reporting` | Shipment tracking and visibility | Tracking, current status, location, ETA, delivery progress, single- or multi-shipment visibility |
+| `shipment-event-visibility-and-logging` | Shipment event management | Event logging, creating or updating events, delay events, disruptions, exception recording or analysis |
+| `package-shipment-management` | Orders and shipment records | Order-related requests, shipment creation, updates to existing shipment records |
+| `shipment-customer-communications` | Customer-facing messages | Drafting or sending customer emails about delays, delivery updates, exceptions, and resolutions |
+
+### 1. shipment-visibility-reporting
+Use when the user wants to **see** where a shipment is or how it's progressing.
+- "Where is shipment SHP-10234?"
+- "What's the ETA for my order's delivery?"
+- "Show the status of all shipments heading to Chicago."
+
+### 2. shipment-event-visibility-and-logging
+Use when the user wants to **record, update, or analyze events** on a shipment.
+- "Log a weather delay for shipment SHP-10234."
+- "Update the exception event on SHP-55012 to resolved."
+- "What disruptions happened on our shipments last week?"
+
+### 3. package-shipment-management
+Use when the user wants to **read an existing Order and create or update its Package Shipment records**. This skill does not create or edit Order rows and must not change unrelated records.
+- "Create a new shipment for order ORD-7781."
+- "Change the delivery address on shipment SHP-10234."
+- "What's the status of order ORD-7781?"
+
+### 4. shipment-customer-communications
+Use when the user wants to **communicate with a customer** about a shipment.
+- "Draft an email to the customer about the delay on SHP-10234."
+- "Send a delivery confirmation to the customer for order ORD-7781."
+- "Write a resolution notice for the damaged-package exception."
 
 ---
 
-## Example Requests
+## Routing Logic
 
-| Request | Capability Used |
-|---------|-----------------|
-| "Summarize defects and inspections for Line 3 this month." | Quality Data Analysis |
-| "Compare yield across all work centers." | Quality Data Analysis |
-| "Show open corrective actions and their follow-ups." | Corrective Action Analysis |
-| "Was the corrective action on Work Center A effective?" | Corrective Action Analysis |
-| "Show week-over-week defect trends for October." | Defect Trend Analysis |
-| "Email the quality team a summary of critical findings." | Quality Findings Email |
+```
+START
+  │
+  ├─ Is the intent clear?
+  │     └─ No ──▶ Ask one short clarifying question ──▶ wait for reply
+  │
+  ├─ Does the request combine several distinct operations?
+  │     └─ Yes ─▶ Ask the user which operation to do first ──▶ wait for reply
+  │
+  ├─ Pick the primary intent:
+  │     ├─ Tracking / status / location / ETA / progress
+  │     │        ──▶ shipment-visibility-reporting
+  │     ├─ Log / create / update events, delays, disruptions, exceptions
+  │     │        ──▶ shipment-event-visibility-and-logging
+  │     ├─ Orders / create shipment / update shipment record
+  │     │        ──▶ package-shipment-management
+  │     └─ Draft / send customer emails about shipments
+  │              ──▶ shipment-customer-communications
+  │
+  ├─ Pass the full user request + trigger content to the selected skill
+  │
+  └─ Return the skill's response to the user without changes
+END
+```
+
+### Intent keyword cues (guidance only)
+
+| Cue words | Likely skill |
+|---|---|
+| track, where, status, location, ETA, arriving, in transit, delivered | `shipment-visibility-reporting` |
+| log, record, event, delay event, disruption, exception, incident | `shipment-event-visibility-and-logging` |
+| order, create shipment, new shipment, update shipment, modify record | `package-shipment-management` |
+| email, notify, draft, send, inform customer, message the customer | `shipment-customer-communications` |
+
+> Keywords are hints, not rules. Always route on the **primary intent** of the whole request.
 
 ---
 
-## Data Protection
+## Routing Rules
 
-- Use only validated production data.
-- Do not expose sensitive production or quality information beyond what the request needs.
-- Never send an email without the user's explicit approval.
+| # | Rule |
+|---|---|
+| 1 | Select the skill that best matches the **primary intent**. |
+| 2 | Invoke **only one** skill per request. |
+| 3 | Don't execute actions or retrieve information directly. |
+| 4 | Don't assume authorization to send customer communications or modify records. |
+| 5 | Make sure the selected skill receives **all relevant information** it needs to process the request. |
+| 6 | Return the selected skill's response to the user **without inventing results**. |
+| 7 | If a request combines **multiple distinct operations**, ask the user which operation to perform first. |
+
+---
+
+## Clarification Behavior
+
+The orchestrator asks one short clarifying question **before** routing when:
+
+- **The intent is ambiguous.** Example: "Help with SHP-10234." It isn't clear whether the user wants status, an event logged, a record changed, or a customer email.
+- **The request has several operations.** Example: "Log a delay for SHP-10234 and email the customer." That is two distinct operations, event logging and customer communication.
+
+**Example clarifying questions**
+
+- "Would you like to check the status of SHP-10234, log an event for it, update its record, or notify the customer?"
+- "Your request includes logging a delay and emailing the customer. Which should I do first?"
+
+---
+
+## Example Routing Scenarios
+
+| User request | Routed to | Reason |
+|---|---|---|
+| "What's the ETA for SHP-10234?" | `shipment-visibility-reporting` | ETA lookup |
+| "Show me all shipments in transit to Dallas." | `shipment-visibility-reporting` | Multi-shipment visibility |
+| "Record a port congestion delay on SHP-88120." | `shipment-event-visibility-and-logging` | Delay event logging |
+| "Analyze exceptions across last month's shipments." | `shipment-event-visibility-and-logging` | Exception analysis |
+| "Create a shipment for order ORD-4410." | `package-shipment-management` | Shipment creation |
+| "Update the carrier on SHP-10234 to FedEx." | `package-shipment-management` | Shipment record update |
+| "Draft an apology email for the delayed delivery." | `shipment-customer-communications` | Customer email draft |
+| "Log a delay and notify the customer." | *Clarify first* | Two distinct operations |
+| "Can you help with this shipment?" | *Clarify first* | Intent unclear |
+
+---
+
+## Guardrails and Constraints
+
+- **No direct execution.** The orchestrator never calls tools, queries systems, or changes data.
+- **No assumed authorization.** Sending customer communications and modifying records are never assumed to be approved. The downstream skill handles any authorization or confirmation.
+- **No fabricated results.** Responses come only from the selected skill. The orchestrator doesn't add to, summarize into new facts, or invent shipment details.
+- **One skill per request.** Multi-operation requests are clarified, not split or chained automatically.
+- **Full context passthrough.** Shipment IDs, order numbers, customer details, dates, and trigger payload fields are forwarded to the skill as they were received.
+
+---
+
+## Inputs and Outputs
+
+### Inputs
+| Source | Description |
+|---|---|
+| User message | Natural-language request from a user |
+| Trigger body content | Payload from an automated trigger (for example, an email, event, or system notification) |
+
+### Output to the selected skill
+- The original user request, verbatim
+- All available trigger content (IDs, references, timestamps, customer details, and so on)
+
+### Output to the user
+- The selected skill's response, returned unchanged
+- **or** one short clarifying question, if routing can't be decided yet
+
+---
+
+## Extending the Orchestrator
+
+To add a new skill:
+
+1. Define the skill's **scope**, meaning the intents it owns, and make sure it doesn't overlap with existing skills.
+2. Add an entry to the **Skills Routing** section of the orchestrator instructions.
+3. Update the [Skills Catalog](#skills-catalog), [Routing Logic](#routing-logic), and [Example Routing Scenarios](#example-routing-scenarios) in this README.
+4. Test with sample prompts, including ambiguous and multi-operation cases, to confirm routing is accurate.
+
+---
+
+## Troubleshooting
+
+| Symptom | Likely cause | Resolution |
+|---|---|---|
+| Request routed to the wrong skill | Overlapping intent cues | Narrow the skill descriptions; add examples that separate the intents |
+| Orchestrator asks too many questions | Skill scopes are too vague | Make the routing descriptions more specific |
+| Skill lacks the data it needs | Trigger content not forwarded | Confirm the full payload is passed through |
+| Customer email sent without approval | Authorization handled incorrectly downstream | Check the confirmation step in `shipment-customer-communications` |
+| Response includes invented details | Orchestrator rewrote the skill output | Return the skill response unchanged |
+
+---
