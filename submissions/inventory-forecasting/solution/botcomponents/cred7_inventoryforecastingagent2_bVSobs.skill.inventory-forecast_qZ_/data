@@ -95,7 +95,7 @@ content: |
   Weeks stock will last = verified stock ÷ weekly expected demand. Delivery time in weeks = lead time days ÷ 7. Flag URGENT if delivery time is longer than the weeks stock will last, or stock runs out before the window ends. If delivery time is longer than the window, say the order cannot arrive in time and suggest a transfer or expedited order.
 
   ### Step 5 – Recommend reorders
-  For each shortfall: quantity = gap rounded UP to whole units; total cost = quantity × unit cost; sales we could lose = shortfall units × unit price. Minimum order quantity and pack size are not in the data; say quantities are not adjusted for them.
+  For each shortfall: quantity = gap (including the extra cushion) rounded UP to whole units; total cost = quantity × unit cost. Sales we could lose = max(0, units we expect to sell − verified stock) × unit price. This uses unmet expected sales only, never the extra cushion, so an item whose stock covers expected sales has $0 sales we could lose even if it needs a reorder to restore the cushion. Minimum order quantity and pack size are not in the data; say quantities are not adjusted for them.
   - **Reliability** (records per SKU + condition + city; for holiday-driven items count the Holiday Sale records; first match wins): Low = 0–1 records, baseline only, or stock unverified. Medium = 2 records and verified stock. High = 3 or more records and verified stock.
   - **Risk:** High = large gap with Low or Medium reliability, or URGENT. Medium = moderate gap, or large gap with High reliability. Low = otherwise.
   - **Surplus:** Hold if up to 50% above required stock; Markdown if above 50%; Transfer if another store in the data has a shortfall for the same SKU.
@@ -106,7 +106,7 @@ content: |
   3. Stock check table: Item | SKU | Stock now | Units we expect to sell | Shortfall / Surplus | Status | Reliability.
   4. What to order table: Item | SKU | Qty | Unit cost | Total cost | Unit price | Sales we could lose.
   5. Category or season roll-up when asked: units per week, window quantity, sales potential.
-  6. Totals: total reorder cost; sales protected = sales we could lose for items whose delivery arrives within the window (items that cannot arrive in time stay listed as still at risk).
+  6. Totals: total reorder cost; sales protected = sales we could lose (calculated from unmet expected sales, without the cushion) for items whose delivery arrives within the window (items that cannot arrive in time stay listed as still at risk).
   7. Data notes: sample-data label, stock rows used/excluded and last updated date, missing history, holiday boost per item with the number of records used, a statement that the holiday boost is a general sale effect, boost cap, pooled-city stock, no upcoming events.
   8. Bundling or promotion ideas only where history supports them.
 
