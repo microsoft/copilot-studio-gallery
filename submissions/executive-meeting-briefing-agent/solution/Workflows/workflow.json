@@ -1,0 +1,211 @@
+{
+  "definition": {
+    "triggers": {
+      "manual": {
+        "type": "Request",
+        "kind": "Http",
+        "inputs": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "meetingId": {
+                "type": "string"
+              },
+              "meetingTitle": {
+                "type": "string"
+              },
+              "organizerEmail": {
+                "type": "string"
+              },
+              "scheduledTime": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "actions": {
+      "Capture_Meeting_Context": {
+        "type": "Compose",
+        "inputs": {
+          "meetingId": "@triggerBody()?['meetingId']",
+          "meetingTitle": "@triggerBody()?['meetingTitle']",
+          "organizerEmail": "@triggerBody()?['organizerEmail']",
+          "scheduledTime": "@triggerBody()?['scheduledTime']"
+        },
+        "runAfter": {}
+      },
+      "Return_Placeholder_Not_Implemented": {
+        "type": "Response",
+        "runAfter": {
+          "Capture_Meeting_Context": [
+            "Succeeded"
+          ]
+        },
+        "inputs": {
+          "statusCode": 501,
+          "body": {
+            "status": "NotImplemented",
+            "isPlaceholder": true,
+            "message": "Sample placeholder only. This workflow does not connect to live Exchange mailboxes, query Microsoft Graph APIs, or dispatch Teams Adaptive Cards. Replace this action with your own connector or Power Automate logic before use.",
+            "receivedMeeting": "@outputs('Capture_Meeting_Context')"
+          }
+        }
+      }
+    }
+  },
+  "trigger": {
+    "metadata": {
+      "associatedData": {
+        "graph": {
+          "name": "Compile executive pre-meeting briefing dossiers",
+          "nodes": [
+            {
+              "id": "node-1",
+              "name": "When meeting briefing is requested",
+              "type": "start",
+              "position": {
+                "x": 0,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "When meeting briefing is requested",
+                  "operationType": "trigger"
+                }
+              }
+            },
+            {
+              "id": "node-2",
+              "name": "Ingest upcoming calendar event and attendees",
+              "type": "agent",
+              "position": {
+                "x": 260,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "Ingest upcoming calendar event and attendees",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-3",
+              "name": "Research attendee profiles and reporting hierarchy",
+              "type": "agent",
+              "position": {
+                "x": 520,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "Research attendee profiles and reporting hierarchy",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-4",
+              "name": "Assess recent email exchanges and open threads",
+              "type": "ifElse",
+              "position": {
+                "x": 780,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "Assess recent email exchanges and open threads",
+                  "operationType": "condition"
+                }
+              }
+            },
+            {
+              "id": "node-5",
+              "name": "Synthesize unresolved blockers and risks",
+              "type": "agent",
+              "position": {
+                "x": 1040,
+                "y": -60
+              },
+              "data": {
+                "config": {
+                  "displayName": "Synthesize unresolved blockers and risks",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-6",
+              "name": "Compile standard meeting context and agenda",
+              "type": "agent",
+              "position": {
+                "x": 1040,
+                "y": 60
+              },
+              "data": {
+                "config": {
+                  "displayName": "Compile standard meeting context and agenda",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-7",
+              "name": "Deliver executive briefing dossier and card",
+              "type": "end",
+              "position": {
+                "x": 1300,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "Deliver executive briefing dossier and card",
+                  "operationType": "end"
+                }
+              }
+            }
+          ],
+          "edges": [
+            {
+              "id": "edge-1",
+              "source": "node-1",
+              "target": "node-2"
+            },
+            {
+              "id": "edge-2",
+              "source": "node-2",
+              "target": "node-3"
+            },
+            {
+              "id": "edge-3",
+              "source": "node-3",
+              "target": "node-4"
+            },
+            {
+              "id": "edge-4",
+              "source": "node-4",
+              "target": "node-5"
+            },
+            {
+              "id": "edge-5",
+              "source": "node-4",
+              "target": "node-6"
+            },
+            {
+              "id": "edge-6",
+              "source": "node-5",
+              "target": "node-7"
+            },
+            {
+              "id": "edge-7",
+              "source": "node-6",
+              "target": "node-7"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
