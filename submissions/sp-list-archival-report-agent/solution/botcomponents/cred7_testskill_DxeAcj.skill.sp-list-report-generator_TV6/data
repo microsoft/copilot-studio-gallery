@@ -1,6 +1,6 @@
 kind: InlineAgentSkill
 skillFolderName: sp-list-report-generator
-content: |
+content: |-
   ---
   name: sp-list-report-generator
   description: Use this skill whenever the user asks for an insights/archival/reporting analysis of a SharePoint list from a connected SharePoint knowledge source;
@@ -309,34 +309,91 @@ content: |
   - Use only the trusted SharePoint item URL returned by the configured connector or tool
   - Permit the link only when it uses HTTPS and its origin matches the selected SharePoint site's origin; otherwise omit it
   - Use target="_blank" and rel="noopener noreferrer"
-  ---
-
-  ## Step 7 – Save Report
-
-  After generating the HTML report:
-
-  - Generate a unique name using a sanitized list name: retain `[A-Za-z0-9_-]`, replace other runs with `_`, trim leading and trailing separators, cap the sanitized list-name portion at 80 characters, and use `SharePointList` if empty.
-
-     Report_<SanitizedListName>_<yyyyMMdd_HHmmss>.html
-
-  - Verify that the configured destination's audience is no broader than the source list and included items. If this cannot be verified, do not upload the report.
-  - Invoke the configured SharePoint **Create file** action or flow to save the report in the pre-approved SharePoint destination whose audience is no broader than the source list and included items.
-  - Capture the URL or path returned by **Create file** and use it in the response. If file creation fails or returns no URL or path, report the failure honestly and never guess a URL.
 
   ---
 
+  ### Step 7 – Save Report
+
+  After successfully generating the HTML report:
+
+  **1\. Default Behavior**
+
+  - Generate the HTML report and provide it as a downloadable file directly in the chat.
+  - Do not upload, save, or publish the report to SharePoint unless the user explicitly requests SharePoint storage.
+  - Scheduled or recurring report generation must also follow this default unless SharePoint storage was explicitly configured or authorized for that workflow.
+
+  **2\. Conditional SharePoint Storage**
+
+  Only when the user explicitly requests SharePoint storage:
+
+  - **Generate a Unique Filename**
+      - Retain only [A\-Za\-z0\-9\_\-] in the list name.
+      - Replace consecutive unsupported characters with \_.
+      - Trim leading and trailing underscores and hyphens.
+      - Limit the sanitized list\-name portion to 80 characters.
+      - Use SharePointList if empty.
+      - Apply the filename format: Report\_<SanitizedListName>\_<yyyyMMdd\_HHmmss>.html
+      - Prevent overwriting existing files.
+  - **Validate Destination Security**
+      - Use only the pre\-approved SharePoint destination.
+      - Verify that its effective audience is no broader than the source list and included items.
+      - If permissions cannot be verified or are broader, do not upload.
+  - **Upload Report**
+      - Invoke the configured SharePoint **Create file** action or flow.
+      - Save the complete HTML report to the approved destination.
+      - Capture the returned file URL or path.
+
+  **3\. Response and Error Handling**
+
+  - If SharePoint storage was not requested, return only the downloadable HTML report.
+  - If storage succeeds, provide the confirmed SharePoint URL or path.
+  - If security validation fails, skip the upload and explain why.
+  - If file creation fails, report the actual error.
+  - If no URL or path is returned, state that the location is unavailable.
+  - Never fabricate URLs or claim successful storage without confirmation.
+
+  ---
   ## Output Requirements
 
   Return:
 
-  1. Report summary.
-  2. SharePoint URL of the generated report.
-  3. Report file name.
-  4. List schema summary.
-  5. Insights summary.
-  6. Archival candidates summary: the exact criteria used (status column/value when applicable, and the inactivity threshold) and the count of qualifying items out of total records.
-  7. Storage location within the configured SharePoint destination.
-  8. When the list exceeds 1,000 items, a note that the report was generated in summary mode (overall analysis and archival report only, no full per-item data table).
+  - **Report summary:** Overview of the analyzed SharePoint list and generated report.
+  - **Downloadable HTML report:** Provide the generated HTML file directly in Copilot Chat by default.
+  - **Report file name:** Return the unique generated HTML filename.
+  - **List schema summary:** Include list metadata, column information, and relevant schema details.
+  - **Insights summary:** Present key statistics, trends, category analysis, ownership insights, and data\-quality findings.
+  - **Archival candidates summary:** Include the exact criteria used (status column/value when applicable, and inactivity threshold) and the count of qualifying items out of total records.
+  - **Report delivery status:** Indicate whether the report was delivered directly in Copilot Chat or saved to SharePoint.
+  - **SharePoint URL or storage path (conditional):** Include the confirmed SharePoint report URL or path and storage location only when SharePoint storage was explicitly requested and successfully completed.
+  - **Summary\-mode notification:** When the list exceeds 1,000 items, state that the report was generated in summary mode, containing overall analysis and the Archival Candidates section without the full per\-item data table.
+
+  ### Report Delivery Rules
+
+  **Default Delivery: Copilot Chat**
+
+  - Generate the complete interactive HTML report.
+  - Return the generated HTML file directly in Copilot Chat as a downloadable attachment.
+  - Do not invoke SharePoint Create file or upload the report unless explicitly requested.
+  - Do not require Create file capability for Chat\-only report generation.
+
+  **Optional Delivery: SharePoint Storage**
+
+  - Enable SharePoint storage only when explicitly requested by the user or authorized in a configured recurring workflow.
+  - Verify that the configured SharePoint Create file action or equivalent flow is available.
+  - Require a pre\-approved SharePoint destination.
+  - Verify that the destination's effective audience is no broader than the source list and included items.
+  - Save the generated report using the approved destination and unique filename.
+  - Return the confirmed SharePoint URL or path and storage location.
+  - Never fabricate SharePoint URLs or claim successful storage without confirmation.
+
+  **Failure Handling**
+
+  - If direct HTML attachment generation fails, report the limitation.
+  - If optional SharePoint storage is requested but Create file is unavailable, identify the missing capability.
+  - If destination security validation fails, do not upload the report.
+  - If SharePoint file creation fails, report the error without claiming successful storage.
+  - If SharePoint storage fails after successful report generation, provide the downloadable HTML file in Copilot Chat when supported.
+  - Never generate fictitious report files, URLs, or analysis results.
 
   ---
 
@@ -344,19 +401,90 @@ content: |
 
   A successful execution must:
 
+  ### 1\. SharePoint List Discovery and Validation
+
   - Detect the requested SharePoint list.
-  - Validate its existence.
-  - Suggest available lists when not found.
-  - Discover schema.
-  - Analyze data.
-  - Identify archival candidates using the confirmed or default criteria: completed/closed status plus no modification in over 30 days when a completeness field exists, or no modification in over 30 days alone when it does not — without modifying any item, and using any user-specified inactivity duration in place of the 30-day default.
-  - Generate insights.
-  - Create an interactive HTML report.
-  - Include a dedicated Archival Candidates section stating the criteria used, for every list regardless of size.
-  - For lists at or under 1,000 items, provide sortable tables, pagination, quick search, modal detail view, and Open SharePoint Item action for the full Data Table.
-  - For lists over 1,000 items, omit the full Data Table and instead provide only the overall analysis sections and the Archival Candidates report, clearly noting why per-item detail was omitted.
-  - Save the report in the pre-approved SharePoint destination whose audience is no broader than the source list and included items.
-  - Return the direct SharePoint URL of the report.
-  - Generate a unique report name.
-  - Support responsive user experience.
+  - Validate its existence using exact list\-title matching, explicit metadata aliases, or direct user selection.
+  - Suggest available lists when the requested list is not found.
+  - Never infer a list based on business terminology, column names, data values, or semantic similarity.
+
+  ### 2\. Schema Discovery and Data Analysis
+
+  - Discover the complete accessible list schema.
+  - Retrieve and analyze all accessible records through pagination, respecting connector\-enforced limits.
+  - Generate general statistics, trends, category analysis, ownership insights, and data\-quality findings.
+  - Never silently truncate or sample records.
+
+  ### 3\. Archival Candidate Identification
+
+  - Identify potential archival candidates using the confirmed or default criteria: 
+      - Completed/closed status and no modification in over 30 days when a usable completeness field exists.
+      - No modification in over 30 days when no completeness\-related field exists.
+      - Apply any user\-specified inactivity duration instead of the default 30\-day threshold.
+  - Clearly state the exact archival criteria used.
+  - Report the number of potential archival candidates out of total records.
+  - Treat all archival findings as advisory and subject to applicable retention policies, legal holds, dependencies, and organizational review.
+  - Never modify, delete, move, or archive SharePoint list items.
+
+  ### 4\. Interactive HTML Report Generation
+
+  - Generate a complete, standalone, responsive HTML report.
+  - Include an Executive Summary, analytics, interactive charts, filters, and insights.
+  - Include a dedicated Archival Candidates section for every list, regardless of size.
+  - Display counts or percentages for pie and doughnut chart segments.
+  - Apply the security and safe\-data\-rendering requirements defined in the Skill.
+
+  **For lists containing 1,000 items or fewer:**
+
+  - Provide the full per\-item Data Table.
+  - Support sorting, pagination, quick search, and column visibility controls.
+  - Support CSV export and Copy functionality.
+  - Provide a detail modal displaying all list fields.
+  - Provide the Open SharePoint Item action when a trusted item URL is available.
+
+  **For lists containing more than 1,000 items:**
+
+  - Generate the report in summary mode.
+  - Include overall analysis, interactive charts, and the Archival Candidates section.
+  - Omit the full per\-item Data Table.
+  - Clearly explain why the full per\-item table was omitted.
+
+  ### 5\. Report Delivery
+
+  **Default: Direct Download in Copilot Chat**
+
+  - Generate a unique HTML report filename.
+  - Return the generated HTML file directly in Copilot Chat as a downloadable attachment.
+  - Do not upload the report to SharePoint.
+  - Do not require SharePoint Create file capability.
+
+  **Optional: SharePoint Storage**
+
+  - Execute only when explicitly requested by the user or authorized through a configured recurring workflow.
+  - Verify the availability of the configured Create file action or equivalent flow.
+  - Validate the approved destination and its access permissions.
+  - Save the report without overwriting existing files.
+  - Return the actual SharePoint URL or path supplied by the file creation action.
+  - Never assume or fabricate storage locations or file URLs.
+
+  ### 6\. Security and Reliability
+
+  - Use only approved SharePoint knowledge sources and authorized connector actions.
+  - Validate required capabilities according to the selected report delivery mode.
+  - Follow secure HTML generation and data\-handling requirements.
+  - Never modify source SharePoint list items.
+  - Never expose report data through an unauthorized SharePoint destination.
+  - Clearly report missing capabilities, permission issues, and execution failures.
+  - Never fabricate data, generated files, or download links.
+
+  ### 7\. User Experience
+
+  - Generate a unique report filename.
+  - Support responsive layouts across desktop and mobile browsers.
+  - Provide interactive filtering, charts, and archival analysis.
+  - Clearly communicate report scope, archival criteria, and findings.
+  - Support report execution through Copilot Chat or configured recurring workflows.
+  - Apply the explicitly configured delivery mode for recurring workflows, defaulting to direct file delivery when no SharePoint storage authorization exists.
+
+  **Primary Success Condition:** Generate an accurate, secure, interactive SharePoint analytics and archival report and deliver it directly in Copilot Chat by default, with SharePoint storage available only when explicitly requested or authorized.
 authoringSource: Generated
