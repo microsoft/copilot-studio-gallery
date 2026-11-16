@@ -1,0 +1,207 @@
+{
+  "definition": {
+    "triggers": {
+      "manual": {
+        "type": "Request",
+        "kind": "Http",
+        "inputs": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "briefId": {
+                "type": "string"
+              },
+              "briefText": {
+                "type": "string"
+              },
+              "targetAudience": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "actions": {
+      "Capture_Brief_Context": {
+        "type": "Compose",
+        "inputs": {
+          "briefId": "@triggerBody()?['briefId']",
+          "briefText": "@triggerBody()?['briefText']",
+          "targetAudience": "@triggerBody()?['targetAudience']"
+        },
+        "runAfter": {}
+      },
+      "Return_Placeholder_Not_Implemented": {
+        "type": "Response",
+        "runAfter": {
+          "Capture_Brief_Context": [
+            "Succeeded"
+          ]
+        },
+        "inputs": {
+          "statusCode": 501,
+          "body": {
+            "status": "NotImplemented",
+            "isPlaceholder": true,
+            "message": "Sample placeholder only. This workflow does not generate live PowerPoint decks, format slides, or write to SharePoint. Replace this action with your own connector or Power Automate logic before use.",
+            "receivedBrief": "@outputs('Capture_Brief_Context')"
+          }
+        }
+      }
+    }
+  },
+  "trigger": {
+    "metadata": {
+      "associatedData": {
+        "graph": {
+          "name": "Generate on-brand presentation decks",
+          "nodes": [
+            {
+              "id": "node-1",
+              "name": "When presentation brief is submitted",
+              "type": "start",
+              "position": {
+                "x": 0,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "When presentation brief is submitted",
+                  "operationType": "trigger"
+                }
+              }
+            },
+            {
+              "id": "node-2",
+              "name": "Synthesize slide outline and narrative",
+              "type": "agent",
+              "position": {
+                "x": 260,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "Synthesize slide outline and narrative",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-3",
+              "name": "Select corporate template layouts",
+              "type": "agent",
+              "position": {
+                "x": 520,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "Select corporate template layouts",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-4",
+              "name": "Validate corporate brand compliance",
+              "type": "ifElse",
+              "position": {
+                "x": 780,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "Validate corporate brand compliance",
+                  "operationType": "condition"
+                }
+              }
+            },
+            {
+              "id": "node-5",
+              "name": "Draft presenter speaking notes",
+              "type": "agent",
+              "position": {
+                "x": 1040,
+                "y": -60
+              },
+              "data": {
+                "config": {
+                  "displayName": "Draft presenter speaking notes",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-6",
+              "name": "Flag layout adjustment needed",
+              "type": "agent",
+              "position": {
+                "x": 1040,
+                "y": 60
+              },
+              "data": {
+                "config": {
+                  "displayName": "Flag layout adjustment needed",
+                  "operationType": "action"
+                }
+              }
+            },
+            {
+              "id": "node-7",
+              "name": "Deliver presentation deck summary",
+              "type": "end",
+              "position": {
+                "x": 1300,
+                "y": 0
+              },
+              "data": {
+                "config": {
+                  "displayName": "Deliver presentation deck summary",
+                  "operationType": "end"
+                }
+              }
+            }
+          ],
+          "edges": [
+            {
+              "id": "edge-1",
+              "source": "node-1",
+              "target": "node-2"
+            },
+            {
+              "id": "edge-2",
+              "source": "node-2",
+              "target": "node-3"
+            },
+            {
+              "id": "edge-3",
+              "source": "node-3",
+              "target": "node-4"
+            },
+            {
+              "id": "edge-4",
+              "source": "node-4",
+              "target": "node-5"
+            },
+            {
+              "id": "edge-5",
+              "source": "node-4",
+              "target": "node-6"
+            },
+            {
+              "id": "edge-6",
+              "source": "node-5",
+              "target": "node-7"
+            },
+            {
+              "id": "edge-7",
+              "source": "node-6",
+              "target": "node-7"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
