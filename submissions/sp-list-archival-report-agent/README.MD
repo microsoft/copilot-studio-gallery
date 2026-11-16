@@ -6,6 +6,8 @@
 ## Overview
 SP List Archiv Reporting Agent discovers and validates an approved SharePoint list, retrieves its schema and all accessible items through pagination, analyzes the data, identifies potential archival candidates, and generates a secure interactive HTML report.
 
+This is a sample, not a production-ready solution. Review and validate its behavior and data handling before using it with organizational data.
+
 The agent is reporting-only. It does not delete, update, move, archive, or otherwise modify SharePoint list items.
 
 ## Primary Capabilities
@@ -17,10 +19,13 @@ The agent is reporting-only. It does not delete, update, move, archive, or other
 - Produces general statistics, trend analysis, category analysis, ownership analysis, and data-quality findings.
 - Identifies potential archival candidates without changing source records.
 - Generates a responsive, self-contained interactive HTML report.
-- Saves the report to a pre-approved SharePoint destination whose audience is no broader than the source data.
-- Returns the generated report's file name, SharePoint URL or path, schema summary, insights, and archival-candidate summary.
+- Users can extend the agent by configuring a SharePoint Create file action or equivalent flow and providing an approved SharePoint destination.
+- Returns the generated report's file name, schema summary, insights, and archival-candidate summary.
 
 ## Required Tools and Actions
+
+ This submission includes the SharePoint **Get all lists and libraries** (`GetAllTables`) connector action and the reporting skill instructions. Schema-discovery and paginated item-retrieval bindings are not included. Before using reporting, add authorized connector actions or agent flows for both capabilities and configure access to the approved source lists.
+
 Before beginning a report, the agent must verify that configured SharePoint connector actions, agent flows, or equivalent tools can:
 
 1. Enumerate approved SharePoint lists.
