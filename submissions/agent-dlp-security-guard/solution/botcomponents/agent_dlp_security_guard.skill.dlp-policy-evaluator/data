@@ -1,0 +1,15 @@
+kind: InlineAgentSkill
+content: |
+  ---
+  name: dlp-policy-evaluator
+  description: Use when checking if an agent's configured connectors, HTTP webhooks, or knowledge bases violate tenant DLP classifications.
+  ---
+  # DLP Policy Evaluator
+
+  Verify connector endpoints against environment Data Loss Prevention groups to prevent cross-boundary data exfiltration.
+
+  ## Procedure
+  1. Inspect the agent's solution manifest for declared connection references and HTTP trigger/action endpoints.
+  2. Map each connector against tenant DLP classification tiers: Business (Confidential), Non-Business (General), or Blocked.
+  3. Detect cross-tier data sharing: flagging any flow where Business data sources mix with Non-Business or Blocked endpoints.
+  4. If a blocked connector is detected, halt audit approval and report the specific connector ID with required policy exemptions.
