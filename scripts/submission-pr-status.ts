@@ -491,7 +491,7 @@ export function assess(evidence: Evidence): Assessment {
   for (const check of failures) {
     if (["FAILURE", "ERROR", "TIMED_OUT", "STARTUP_FAILURE"].includes(check.state)) {
       add("fix-check", "Contributor", "Fix the failing required check", `${check.name} failed (${check.state}).`,
-        `Fix the failing [${check.name === SCOPE_CHECK ? "contribution scope check" : "required check"}](${check.url}); ask a maintainer if this is an infrastructure or authorized-scope issue.`,
+        `Fix the failing [${check.name === SCOPE_CHECK ? "contribution scope check" : "required check"}](${check.url}). Fetch the latest upstream refs (\`git fetch upstream\`), sync your local contribution branch with your fork, and run the [local CI checks](${pr.url.replace(/\/pull\/\d+$/, "")}/blob/${encodeURIComponent(pr.baseBranch)}/CONTRIBUTING.md#reproduce-a-ci-failure) before pushing the correction. Ask a maintainer if this is an infrastructure or authorized-scope issue; routine updates against the base remain maintainer work.`,
         "After the correction is pushed and the check reruns.");
     } else {
       add("investigate-ci", "Maintainer", "Investigate the incomplete required check", `${check.name} has an incomplete or unknown result (${check.state}).`,

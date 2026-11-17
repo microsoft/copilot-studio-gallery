@@ -303,6 +303,45 @@ failure before submitting. Generated files under `src/content/solutions/`,
 `src/content/guides/`, and `public/bundles/` come from the importer; do not
 hand-edit them.
 
+### Reproduce a CI failure
+
+Open the failing GitHub check and read the first failing step. From your local
+gallery checkout, check `git remote -v`. If `upstream` is not configured, add it
+once:
+
+```bash
+git remote add upstream https://github.com/microsoft/copilot-studio-gallery.git
+```
+
+Fetch the current repository refs:
+
+```bash
+git fetch upstream
+```
+
+Stay on your contribution branch and sync it with its branch on your fork,
+including any maintainer-pushed updates. If it tracks that branch, use
+`git pull --ff-only`. If that refuses because your histories diverged, preserve
+your local work and coordinate with a maintainer; do not force-reset it.
+Fetching alone does not update the files on your local branch. Maintainers still
+own routine behind-`main` branch updates.
+
+Run `npm ci` to install the checkout's locked dependencies, then run all
+[local validation commands](#validate-locally) above. For standalone-agent
+submissions, also run the evaluation evidence check used by PR CI:
+
+```bash
+node --import tsx scripts/check-evaluation-evidence.ts upstream/main
+```
+
+The evaluation check selects submissions from committed changes against the
+merge base with `upstream/main`; it does not select newly added, uncommitted
+submissions. Commit your candidate changes locally before this check. CI scope
+labels, CLA checks, Windows-only tests, and authenticated runtime tests are not
+reproduced by these commands on every machine. Report infrastructure or
+authorized-scope issues to a maintainer instead of changing unrelated code.
+Push your correction after the relevant local checks pass.
+
 ## Test in a fresh environment
 
 Local gallery checks validate packaging and metadata, not whether the sample
