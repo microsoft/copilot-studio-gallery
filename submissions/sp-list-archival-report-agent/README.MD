@@ -1,117 +1,66 @@
 # SP List Archiv Reporting Agent
 
 ## Skill Name
+
 `sp-list-report-generator`
 
 ## Overview
-SP List Archiv Reporting Agent discovers and validates an approved SharePoint list, retrieves its schema and all accessible items through pagination, analyzes the data, identifies potential archival candidates, and generates a secure interactive HTML report.
+
+SP List Archiv Reporting Agent discovers and validates an approved SharePoint list, retrieves its schema and all accessible items through pagination, analyzes the data, identifies potential archival candidates, and generates a secure, interactive HTML report **downloadable directly in Copilot Chat**.
 
 This is a sample, not a production-ready solution. Review and validate its behavior and data handling before using it with organizational data.
 
-The agent is reporting-only. It does not delete, update, move, archive, or otherwise modify SharePoint list items.
+The agent is reporting-only. It does not delete, update, move, archive, or otherwise modify SharePoint list items. It does not save generated reports to SharePoint.
 
 ## Primary Capabilities
-- Verifies that configured tools can discover SharePoint lists and schemas, retrieve paginated items, and create a report file that returns a URL or path.
+
+- Verifies that configured tools can discover approved SharePoint lists and schemas and retrieve paginated list items.
 - Enumerates available lists before analysis.
 - Requires a case-insensitive exact list-title match, an explicit metadata alias, or direct user selection.
 - Discovers list metadata, columns, field types, required fields, indexes, lookups, choices, person fields, and managed metadata.
 - Retrieves and evaluates every accessible record within connector-enforced limits.
-- Produces general statistics, trend analysis, category analysis, ownership analysis, and data-quality findings.
+- Produces general statistics, trends, category analysis, ownership analysis, and data-quality findings.
 - Identifies potential archival candidates without changing source records.
 - Generates a responsive, self-contained interactive HTML report.
-- Users can extend the agent by configuring a SharePoint Create file action or equivalent flow and providing an approved SharePoint destination.
-- Returns the generated report's file name, schema summary, insights, and archival-candidate summary.
+- Delivers the generated HTML file directly in Copilot Chat as a downloadable attachment.
+- Returns the report filename, schema summary, insights, and archival-candidate summary.
 
 ## Required Tools and Actions
 
- This submission includes the SharePoint **Get all lists and libraries** (`GetAllTables`) connector action and the reporting skill instructions. Schema-discovery and paginated item-retrieval bindings are not included. Before using reporting, add authorized connector actions or agent flows for both capabilities and configure access to the approved source lists.
+This sample submission includes the SharePoint **Get all lists and libraries** (`GetAllTables`) connector action and the reporting skill instructions. **Schema-discovery and paginated item-retrieval bindings are not included.** Before using reporting, add authorized connector actions or agent flows for both capabilities and configure access to the approved source lists.
 
-Before beginning a report, the agent must verify that configured SharePoint connector actions, agent flows, or equivalent tools can:
+Before beginning a report, verify that configured tools can:
 
 1. Enumerate approved SharePoint lists.
-2. Retrieve list definitions and complete schemas.
+2. Retrieve list definitions and complete accessible schemas.
 3. Retrieve list items page by page and follow continuation tokens.
-4. Return a trusted SharePoint item URL for each item when available.
-5. Generating downloadable HTML files.
+4. Return trusted SharePoint item URLs when available (optional for item-link functionality).
+5. Generate a complete HTML file and return it as a downloadable attachment in Copilot Chat.
 
-A SharePoint knowledge source alone does not guarantee these capabilities. If one is unavailable, the agent stops and identifies the missing capability.
+A SharePoint knowledge source alone does not guarantee these capabilities. If a required capability is unavailable, stop and identify the missing capability. If item URLs are unavailable, omit the Open SharePoint Item action rather than blocking the entire report.
 
-Important: SharePoint Create file is optional and is not required for direct HTML delivery in Copilot Chat.
-
-
-## Optional Extension: SharePoint Create File
-
-Purpose
-The sp-list-report-generator Skill generates HTML reports but does not include a built-in SharePoint Create file action.
-Users can extend the agent with a SharePoint connector action or agent flow to save generated reports to a specified SharePoint location.
-This extension is optional and does not affect the Skill's core reporting functionality.
-Configuration Requirements
-To enable SharePoint report storage:
-
-1. Add a SharePoint Create file connector action or equivalent agent flow.
-2. Configure the required SharePoint connection.
-3. Grant the connection appropriate permissions.
-4. Allow users to provide or select an approved destination.
-5. Accept the generated HTML filename and file content as inputs.
-6. Return the created file's URL or path.
-7. Verify that the destination's audience is no broader than the source list and included items.
-8. Update the agent's delivery instructions to permit SharePoint uploads.
-
-Destination Configuration
-The user or solution owner should provide:
-
-- SharePoint site
-- Document library
-- Destination folder
-- Required access permissions
-
-The agent must not invent a destination.
-A user-provided destination must be validated before uploading.
-Optional Create File Workflow
-When SharePoint storage is explicitly requested and the extension is configured:
-
-1. Generate the HTML report using the Skill.
-2. Identify the requested SharePoint destination.
-3. Validate the destination and its permissions.
-4. Generate a unique report filename.
-5. Invoke the configured Create file action.
-6. Pass the HTML filename and complete file content.
-7. Capture the URL or path returned by the action.
-8. Return the report summary and actual SharePoint file location.
-If Create file fails or returns no URL or path, report the failure honestly.
-Never generate or guess a SharePoint file URL.
-Behavior When Create File Is Unavailable
-If Create file is not configured:
-
-- Continue supporting direct HTML report generation.
-- Return the downloadable HTML file in Copilot Chat.
-- Do not attempt SharePoint uploads.
-- Explain that SharePoint storage requires an additional configured action when requested.
-Example Requests
-Direct download:
-Generate an HTML report for the Campaign list.
-Optional SharePoint storage:
-Generate a report for the Campaign list and save it to my approved SharePoint Reports folder.
-Custom destination:
-Generate the report and save it to the SharePoint destination I specify, after verifying access permissions.
-
+**Report delivery uses downloadable HTML attachments in Copilot Chat only.** No file-storage action is needed.
 
 ## List Selection Rules
-The requested data source must map explicitly to a SharePoint list.
 
-The agent proceeds only when one of these conditions is met:
+The requested data source must map explicitly to an existing SharePoint list.
+
+Proceed only when:
+
 - The requested name exactly matches a list title, case-insensitively.
 - The user explicitly selects a list from the available lists.
 - An explicit alias in list metadata matches the request.
 
-The agent must not infer a list from business terminology, column names, data values, or semantic similarity. If no valid match exists, it returns the available lists and closest title matches, then asks the user to select one.
+Never infer a list from business terminology, column names, data values, or semantic similarity. If no valid match exists, return the available lists and closest title matches and ask the user to select one. Do not analyze data or generate a report before list confirmation.
 
 ## Schema Discovery
-For the confirmed list, the agent retrieves and summarizes:
+
+For the confirmed list, retrieve and summarize:
+
 - List title and internal name
 - Item count
 - Created and last-modified dates
-- All columns and internal names
+- All columns, display names, and internal names
 - Column types
 - Required and indexed fields
 - Lookup fields
@@ -119,44 +68,53 @@ For the confirmed list, the agent retrieves and summarizes:
 - Person fields
 - Managed metadata fields
 
+Clearly identify any schema details that are inaccessible; never invent them.
+
 ## Data Analysis
-The agent retrieves all accessible records through pagination and respects hard connector-level per-call or per-report limits. It never silently truncates or samples data.
+
+Retrieve all accessible records through pagination, following continuation tokens and respecting hard connector-level limits. Never silently truncate or sample data. If a connector-enforced limit prevents full retrieval, ask the user to narrow the scope.
 
 Analysis includes:
+
 - Total records, distinct values, missing values, and completeness score
-- Monthly, annual, and growth trends
+- Monthly, annual, and growth trends where supported by the data
 - Top categories, frequency distributions, and rankings
-- Records by owner and top contributors
+- Records by owner and top contributors where owner fields exist
 - Empty fields, duplicate values, and potential anomalies
 
-If a connector-enforced limit prevents full retrieval, the agent asks the user to narrow the scope.
+When more than 1,000 records are retrieved, still analyze **all** accessible records, but use summary mode in the HTML report.
 
 ## Archival Candidate Logic
-Archival findings are advisory. The agent identifies potential candidates for review but never archives or modifies an item.
+
+Archival findings are advisory. The agent identifies potential candidates for human review but never archives or modifies an item.
 
 ### Default rule when a usable completeness field exists
-An item is a potential archival candidate when:
-- A confirmed status-like Choice or Text field has a completed or closed value; and
-- The system `Modified` date is more than 30 days before report generation.
 
-The preferred closed value is `Completed` when that exact value exists. Other supported values may include `Done`, `Closed`, or `Resolved` when present in the schema or confirmed by the user.
+An item is a potential archival candidate when **both** conditions apply:
+
+1. A confirmed status-like Choice or Text field has a completed or closed value.
+2. The system `Modified` date is more than 30 days before report generation.
+
+Prefer `Completed` when that exact value exists. Other qualifying values may include `Done`, `Closed`, or `Resolved` when supported by the schema or confirmed by the user. If qualifying values remain ambiguous, ask the user to clarify.
 
 ### Resolving a status-like field
-The agent examines Choice and Text fields whose names suggest `Status`, `State`, `Stage`, or `Phase`, or whose choice values include a completed or closed value.
 
-- If exactly one plausible field exists, the agent uses it.
-- If multiple plausible fields exist, the agent asks the user to select the field and qualifying value or values.
-- If no plausible field exists, the agent uses inactivity only and clearly states that no completeness-related field was available.
+Examine Choice and Text fields whose names suggest `Status`, `State`, `Stage`, or `Phase`, or whose choice values include a completed or closed value.
+
+- **Exactly one plausible field:** Use it with the confirmed qualifying value or values.
+- **Multiple plausible fields:** Ask the user to choose the field and qualifying value or values.
+- **No plausible field:** Apply inactivity-only criteria and clearly state that no completeness-related field was available.
 
 ### Inactivity-only fallback
-When no completeness field exists, an item is a potential candidate when its `Modified` date is more than 30 days before report generation.
 
-These records must be described as **potential candidates based on inactivity only**, not as confirmed safe-to-archive records.
+When no completeness field exists, identify items whose `Modified` date is more than 30 days before report generation. Label these as **potential candidates based on inactivity only**, never as confirmed safe-to-archive records.
 
 ### Custom criteria
-A user-specified status field, closed value, or inactivity threshold overrides the corresponding default. The report must state the exact criteria applied.
 
-For each candidate, the agent retains:
+A user-specified status field, qualifying value, or inactivity threshold overrides the corresponding default. State the exact criteria applied.
+
+For each candidate, retain:
+
 - Item title or ID
 - Status value, when applicable
 - Modified date
@@ -164,78 +122,125 @@ For each candidate, the agent retains:
 - Trusted item URL, when available
 
 ## Interactive HTML Report
-The report is a single HTML file with embedded CSS and JavaScript. Chart.js version 4 may be loaded only from an exact versioned CDN URL with matching verified SRI metadata and `crossorigin="anonymous"`. Otherwise, the report uses embedded browser functionality.
+
+Generate a single HTML file with embedded CSS and JavaScript. Chart.js version 4 may be loaded only from an exact versioned CDN URL with matching verified SRI metadata and `crossorigin="anonymous"`. Otherwise, use embedded browser APIs. Do not use external Bootstrap, DataTables, fonts, stylesheets, scripts, or other dependencies.
 
 The report includes:
-- Executive summary and KPIs
-- Dynamic filters
-- Bar, pie, doughnut, and line charts as appropriate
-- Counts or percentages for pie and doughnut segments
-- Hover tooltips and legend controls
-- Archival Candidates section for every list
-- Responsive design
 
-For lists containing 1,000 items or fewer, the report also includes:
+- Executive summary and KPIs
+- Dynamic filters for relevant text, choice, lookup, person, and date fields
+- Bar, pie, doughnut, and line charts as appropriate
+- Counts or percentages on pie and doughnut segments
+- Hover tooltips and legend controls
+- An Archival Candidates section for every list
+- Responsive styling
+
+Filters must update relevant KPIs, charts, and tables dynamically.
+
+### Lists with 1,000 records or fewer
+
+Also include:
+
 - Full per-item data table
-- Sorting on every column
-- Quick search using `Quick search in table...`
+- Ascending and descending sorting on every column
+- Quick search with placeholder `Quick search in table...`
 - Pagination
 - Column visibility controls
-- Excel-compatible CSV export
-- Copy action
+- Excel-compatible CSV export and Copy action
 - Item-detail modal
 
-For lists containing more than 1,000 items, the report uses summary mode:
-- Overall analysis and charts remain available.
-- The Archival Candidates section remains available.
-- The full per-item data table is omitted.
-- The report clearly explains why per-item detail was omitted.
+### Lists with more than 1,000 records
+
+Use summary mode:
+
+- Keep overall analysis, charts, and the Archival Candidates section.
+- Omit the full per-item data table.
+- State clearly that all accessible records were analyzed but per-item detail was omitted because the list exceeds 1,000 items.
 
 ## Archival Candidates Section
-The report always includes a section titled **Archival Candidates** that:
-- States the exact criteria used.
-- Shows the candidate count out of total records.
+
+Always include a section titled **Archival Candidates** that:
+
+- States the exact criteria used, including any inactivity-only fallback.
+- Shows candidate count and percentage out of total records.
 - Provides a searchable, sortable, paginated candidate table.
 - Shows Title/ID, status when applicable, Modified date, and days since modification.
 - Opens the shared detail modal for candidate rows.
 - Clearly states when no records qualify.
 
+This section remains available in summary mode even when the full data table is omitted.
+
+## Detail Modal and Open SharePoint Item
+
+Selecting a row opens a responsive two-column detail modal showing **all available list fields**, their display names, internal names, and values.
+
+When a trusted item URL is available, provide **Open SharePoint Item**:
+
+- Require HTTPS and an origin matching the selected SharePoint site's origin.
+- Use `target="_blank"` and `rel="noopener noreferrer"`.
+- Omit the action when no valid trusted URL exists.
+- Never guess or construct item URLs.
+
 ## Security and Data Handling
-- Treat all SharePoint field names and values as untrusted data.
-- Serialize embedded data using a real JSON serializer.
-- Escape `<`, `>`, `&`, U+2028, and U+2029 before placing JSON inside an `application/json` script element.
-- Read embedded JSON through `textContent` and parse it.
-- Insert data using `textContent`, `document.createElement`, and safe DOM APIs, never `innerHTML`.
+
+- Treat SharePoint field names and values as untrusted.
+- Serialize embedded data with a real JSON serializer.
+- Escape `<`, `>`, `&`, U+2028, and U+2029 before embedding JSON in a `<script type="application/json">` element.
+- Read JSON through `textContent` and parse it with `JSON.parse`.
+- Insert data-driven content with `textContent`, `document.createElement`, and safe DOM APIs, never `innerHTML`.
 - Render rich text as plain text unless a trusted sanitizer is available.
 - Neutralize spreadsheet formulas in CSV by prefixing an apostrophe when the first non-whitespace or control character is `=`, `+`, `-`, or `@`.
-- Allow item links only when they use HTTPS and match the selected SharePoint site's origin.
-- Open permitted links with `target="_blank"` and `rel="noopener noreferrer"`.
-- Do not upload a report unless the destination audience is verified as no broader than the source list and included items.
+- Validate item links as described above.
+- Never modify source SharePoint list items.
+- Consider that downloaded HTML may contain sensitive list data; users must handle the attachment according to organizational data-protection requirements.
 
 ## Report Naming
-Reports use this format:
+
+Use:
 
 `Report_<SanitizedListName>_<yyyyMMdd_HHmmss>.html`
 
-The sanitized list-name portion retains only `A-Z`, `a-z`, `0-9`, `_`, and `-`; replaces other character runs with `_`; trims leading and trailing separators; and is capped at 80 characters. If empty, use `SharePointList`.
+Sanitize the list-name portion by retaining only `[A-Za-z0-9_-]`, replacing runs of other characters with `_`, trimming leading and trailing `_` or `-`, and capping the portion at 80 characters. Use `SharePointList` if empty. Ensure filenames are unique.
+
+## Report Delivery
+
+The only supported report delivery method is **direct download in Copilot Chat**.
+
+1. Generate the complete interactive HTML file.
+2. Assign a unique filename.
+3. Return the actual HTML file as a downloadable attachment in Copilot Chat.
+4. Provide a concise report summary alongside the attachment.
+5. Confirm successful delivery only when the attachment is actually available.
+
+Do not substitute pasted HTML source or an invented download link for the attachment. If generation or attachment delivery fails, explain the actual limitation without claiming success.
+
+## Execution Modes
+
+- **On demand:** Users request reports in Copilot Chat and receive downloadable HTML attachments.
+- **Recurring:** A separately configured workflow may trigger report generation only when its delivery channel supports returning the generated HTML attachment to the intended recipient. Do not claim delivery success until that file has been delivered. Recurrence alone does not provide a delivery mechanism.
 
 ## Successful Output
+
 A successful run returns:
-- Report summary
-- Direct SharePoint report URL or returned path
-- Report file name
+
+- Actual downloadable HTML report attachment in Copilot Chat
+- Unique report filename
+- Report summary and list name
 - List schema summary
 - Insights summary
-- Archival criteria and candidate count out of total records
-- SharePoint storage location
+- Exact archival criteria and candidate count out of total records
 - Summary-mode notice when the list exceeds 1,000 items
-- Confirmation that no source item was modified
+- Governance notice and confirmation that no source item was modified
+
+**Success requires actual downloadable-file delivery.** Generating report content without returning the attachment is not successful delivery.
 
 ## Example Prompts
-- Generate a report for the Campaign list.
+
+- Generate an HTML report for the Campaign list.
 - Analyze the Product Catalog list and identify archival candidates.
 - Create a report for Service Requests using Status = Resolved and an inactivity threshold of 60 days.
 - Show the available SharePoint lists so I can choose one.
 
 ## Governance Notice
+
 Status and inactivity indicate potential cleanup candidates, not legal or records-management approval. Review applicable retention policies, legal holds, dependencies, and organizational approvals before performing any archival action through a separate approved process.
