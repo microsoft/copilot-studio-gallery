@@ -545,7 +545,10 @@ action**: who acts, what to do, why, a direct review/check link, and when the
 queue reassesses. Future approval/merge work is not presented as an immediate
 task. No individual maintainer is automatically assigned.
 Site/layout, dependency, repository-maintenance, and mixed site/submission PRs
-remain outside this queue. Multi-entry submission mistakes remain visible.
+remain outside this queue. Multi-entry submission mistakes and malformed
+submission folder names remain visible as contributor corrections, not site
+changes. Rename an invalid folder to a valid slug or remove it if it is an
+accidental duplicate; do not request a site-change override for a naming error.
 
 | Queue label | Who acts next |
 | --- | --- |

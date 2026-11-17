@@ -811,7 +811,9 @@ test("site, dependency and mixed changes are excluded; multiple ordinary submiss
     [{ filename: "package-lock.json", status: "modified" }],
     [{ filename: "src/pages/index.astro", status: "modified" }],
     [{ filename: "submissions/_template/metadata.json", status: "modified" }],
+    [{ filename: "submissions/_template/README.md", status: "modified" }],
     [...evidence().files, { filename: "CONTRIBUTING.md", status: "modified" }],
+    [...evidence().files, { filename: "submissions/Account Recon/solution/bots/sample/bot.xml", status: "added" }, { filename: "CONTRIBUTING.md", status: "modified" }],
   ]) {
     const fixture = mock();
     fixture.state.files = files;
@@ -825,6 +827,33 @@ test("site, dependency and mixed changes are excluded; multiple ordinary submiss
   assert.match(await reconcile(fixture.api, 42, true), /one submission/);
   fixture.pr.labels.push({ name: "allow-metadata-changes" });
   assert.equal(await reconcile(fixture.api, 42), "Out of scope");
+});
+
+test("malformed submission folders regain a contributor label instead of leaving the queue", async () => {
+  for (const includeValidSubmission of [false, true]) {
+    const fixture = mock();
+    fixture.state.files = [
+      ...(includeValidSubmission ? fixture.state.files : []),
+      { filename: "submissions/Account Recon/solution/bots/sample/bot.xml", status: "added" },
+      { filename: "submissions/Account Recon/README.md", status: "added" },
+    ];
+    fixture.pr.changed_files = fixture.state.files.length;
+    fixture.comments.push({
+      id: 7, body: `${MARKER}\nPaused: this PR is outside ordinary contribution scope.`,
+      user: { login: "github-actions[bot]", type: "Bot" },
+    });
+    const body = await reconcile(fixture.api, 42);
+    assert.match(body, /Next: Contributor - Correct the submission folder name/);
+    assert.match(body, /submissions\/Account Recon\//);
+    assert.match(body, /remove that folder if it is an accidental duplicate/);
+    assert.doesNotMatch(body, /Paused/);
+    assert.deepEqual(fixture.pr.labels, [{ name: QUEUE_LABELS.contributor }]);
+    assert.equal(fixture.comments.filter((comment) => String(comment.body).startsWith(MARKER)).length, 1);
+    assert.equal(notifications(fixture).length, 1);
+    assert.ok(!fixture.calls.some((call) => call.path.includes("contents/submissions/Account")));
+    await reconcile(fixture.api, 42);
+    assert.equal(notifications(fixture).length, 1);
+  }
 });
 
 test("tracked PRs that become drafts or leave scope retire only coordinator labels", async () => {
