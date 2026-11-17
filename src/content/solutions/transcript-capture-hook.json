@@ -1,0 +1,323 @@
+{
+  "submissionType": "solution",
+  "name": "Capture conversation transcript at runtime",
+  "description": "A demo IT support agent powered by the Microsoft Copilot harness uses a pre-tool hook to attach an Application Insights conversation snapshot to a simulated support ticket in Microsoft 365 Copilot.",
+  "tags": [
+    "hooks",
+    "transcript",
+    "application-insights",
+    "it-support",
+    "microsoft-copilot"
+  ],
+  "category": "Agent Building",
+  "createdAt": "2026-11-12",
+  "updatedAt": "2026-11-13",
+  "featured": true,
+  "previewWorkflow": "{ed511f35-9712-c4df-d96f-8b256fa19755}",
+  "supportingFiles": [],
+  "author": "Petros Feleskouras",
+  "authors": [
+    {
+      "name": "Petros Feleskouras",
+      "url": "https://github.com/PetrosFeleskouras"
+    }
+  ],
+  "uniqueName": "msftcat_ITSupportTranscriptDemo",
+  "version": "1.0.0.0",
+  "publisher": "msftcat",
+  "bundle": "bundles/transcript-capture-hook.zip",
+  "bundleSha256": "090fc2668b5804226bf355dca8eb5395171a21c960b4fd79174846dbf44d425b",
+  "agentCount": 1,
+  "workflowCount": 2,
+  "hookCount": 1,
+  "componentCount": 2,
+  "agents": [
+    {
+      "id": "msftcat_ITSupportTranscriptDemo",
+      "schemaName": "msftcat_ITSupportTranscriptDemo",
+      "name": "IT Support Transcript Demo",
+      "model": "gpt-6-1-terra",
+      "instructions": "You are an IT support assistant. Help users troubleshoot common device, connectivity, and application issues with concise, safe steps.\n\nFor troubleshooting requests, ask for the issue summary, affected service or device, impact, and troubleshooting already attempted when needed. Never ask for passwords, tokens, or recovery codes.\n\nWhen the user explicitly asks to log or create an IT support ticket, or explicitly requests a retry of a ticket submission, immediately invoke the log-support-ticket skill using the information already available. Do not ask for additional details or confirmation before invoking the skill.\n\nDo not invoke this skill for troubleshooting alone or general questions about ticketing.",
+      "channels": [],
+      "toolCount": 1,
+      "skillCount": 1,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:msftcat_ITSupportTranscriptDemo",
+        "name": "IT Support Transcript Demo",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "gpt-6-1-terra",
+          "instructions": "You are an IT support assistant. Help users troubleshoot common device, connectivity, and application issues with concise, safe steps.\n\nFor troubleshooting requests, ask for the issue summary, affected service or device, impact, and troubleshooting already attempted when needed. Never ask for passwords, tokens, or recovery codes.\n\nWhen the user explicitly asks to log or create an IT support ticket, or explicitly requests a retry of a ticket submission, immediately invoke the log-support-ticket skill using the information already available. Do not ask for additional details or confirmation before invoking the skill.\n\nDo not invoke this skill for troubleshooting alone or general questions about ticketing.",
+          "channels": [],
+          "toolCount": 1,
+          "skillCount": 1,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:msftcat_ITSupportTranscriptDemo.skill.log-support-ticket_l0q",
+        "name": "log-support-ticket",
+        "type": "skill",
+        "position": {
+          "x": 58.00000000000003,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "msftcat_ITSupportTranscriptDemo.skill.log-support-ticket_l0q",
+          "description": "Handle an explicit request to log or create an IT support ticket, or an explicit request to retry a ticket submission. Use the Log ticket tool with the user's issue details and let its pre-tool hook supply any available conversation transcript. Do not invoke this procedure for ordinary troubleshooting or general questions about tickets."
+        }
+      },
+      {
+        "id": "tool:msftcat_ITSupportTranscriptDemo.tool.ITSupport-Logticket_hTs",
+        "name": "Log ticket",
+        "type": "tool",
+        "position": {
+          "x": -282,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "msftcat_ITSupportTranscriptDemo.tool.ITSupport-Logticket_hTs",
+          "description": "Simulate logging an IT support ticket only when the user explicitly requests it, even if transcript capture is unavailable. No real internal system is called. Fill title and description; leave transcript and conversationId empty for the Pre tool use hook. Never fabricate transcript content. Report the returned simulated ticket ID, attachment status, and message; missing capture does not prevent ticket creation."
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:msftcat_ITSupportTranscriptDemo-includes-msftcat_ITSupportTranscriptDemo.skill.log-support-ticket_l0q",
+        "source": "agent:msftcat_ITSupportTranscriptDemo",
+        "target": "skill:msftcat_ITSupportTranscriptDemo.skill.log-support-ticket_l0q",
+        "label": "includes"
+      },
+      {
+        "id": "agent:msftcat_ITSupportTranscriptDemo-uses-msftcat_ITSupportTranscriptDemo.tool.ITSupport-Logticket_hTs",
+        "source": "agent:msftcat_ITSupportTranscriptDemo",
+        "target": "tool:msftcat_ITSupportTranscriptDemo.tool.ITSupport-Logticket_hTs",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [
+    {
+      "id": "{ed511f35-9712-c4df-d96f-8b256fa19755}",
+      "name": "Capture transcript before ticket",
+      "trigger": "When an agent calls the flow",
+      "nodeCount": 4,
+      "edgeCount": 3,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-421aa2f3-aa0b-4d80-982d-28453cfb4502",
+            "name": "When an agent calls the flow",
+            "type": "start",
+            "position": {
+              "x": 250,
+              "y": 0
+            },
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When an agent calls the flow",
+              "apiName": "Skills",
+              "operationName": "When_an_agent_calls_the_flow"
+            }
+          },
+          {
+            "id": "builtinFunction-eed34c63-2030-4c6d-82ad-270ec96534bb",
+            "name": "Wait for telemetry ingestion",
+            "type": "builtinFunction",
+            "position": {
+              "x": 600,
+              "y": 0
+            },
+            "details": {
+              "category": "providers/Microsoft.ProcessSimple/operationGroups/Schedule",
+              "description": "Delay execution for a specified duration."
+            }
+          },
+          {
+            "id": "connector-d7b40fdb-3ac6-4e9e-92ab-970e5b49fa55",
+            "name": "Run query and list results",
+            "type": "connector",
+            "position": {
+              "x": 950,
+              "y": 0
+            },
+            "details": {
+              "displayName": "Azure Monitor Logs",
+              "apiName": "shared_azuremonitorlogs",
+              "operationName": "QueryDataV2",
+              "operationType": "OpenApiConnection",
+              "parameters": {
+                "subscriptions": "00000000-0000-0000-0000-000000000000",
+                "resourcegroups": "REPLACE_WITH_RESOURCE_GROUP",
+                "resourcetype": "Application Insights",
+                "resourcename": "REPLACE_WITH_APPLICATION_INSIGHTS_RESOURCE",
+                "body/timerangetype": "3",
+                "body/query": "let ConversationId = base64_decode_tostring(\"@{base64(coalesce(triggerBody()?['metadata']?['conversationId'],''))}\");\nlet HookAgentId = base64_decode_tostring(\"@{base64(coalesce(triggerBody()?['metadata']?['agentId'],''))}\");\nlet HookEvent = base64_decode_tostring(\"@{base64(coalesce(triggerBody()?['event'],''))}\");\nlet CaptureTime = todatetime(base64_decode_tostring(\"@{base64(coalesce(triggerBody("
+              }
+            }
+          },
+          {
+            "id": "builtinFunction-e033bbc6-81ee-4d7a-a346-7cc89f711a8e",
+            "name": "Respond to the agent",
+            "type": "builtinFunction",
+            "position": {
+              "x": 1300,
+              "y": 0
+            },
+            "details": {
+              "category": "request",
+              "description": "Attach an Application Insights snapshot or deny when capture is unavailable."
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-hook-start-delay",
+            "source": "start-421aa2f3-aa0b-4d80-982d-28453cfb4502",
+            "target": "builtinFunction-eed34c63-2030-4c6d-82ad-270ec96534bb"
+          },
+          {
+            "id": "edge-hook-delay-query",
+            "source": "builtinFunction-eed34c63-2030-4c6d-82ad-270ec96534bb",
+            "target": "connector-d7b40fdb-3ac6-4e9e-92ab-970e5b49fa55"
+          },
+          {
+            "id": "edge-hook-query-response",
+            "source": "connector-d7b40fdb-3ac6-4e9e-92ab-970e5b49fa55",
+            "target": "builtinFunction-e033bbc6-81ee-4d7a-a346-7cc89f711a8e"
+          }
+        ]
+      }
+    },
+    {
+      "id": "{41128a30-f372-9b9c-5f2b-05a887f7cb55}",
+      "name": "IT Support - Log ticket",
+      "trigger": "When an agent calls the flow",
+      "nodeCount": 2,
+      "edgeCount": 1,
+      "graph": {
+        "nodes": [
+          {
+            "id": "start-4eca2f3f-5b6a-44da-a782-8d715d172acc",
+            "name": "When an agent calls the flow",
+            "type": "start",
+            "position": {
+              "x": 250,
+              "y": 538
+            },
+            "details": {
+              "triggerType": "connector",
+              "displayName": "When an agent calls the flow",
+              "apiName": "Skills",
+              "operationName": "When_an_agent_calls_the_flow"
+            }
+          },
+          {
+            "id": "builtinFunction-8be7d1da-1b11-4fa8-a9ed-e82e13a9268a",
+            "name": "Respond to the agent",
+            "type": "builtinFunction",
+            "position": {
+              "x": 650,
+              "y": 538
+            },
+            "details": {
+              "category": "request",
+              "description": "Return a simulated ticket receipt. No real ticket is created."
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-start-4eca2f3f-5b6a-44da-a782-8d715d172acc-builtinFunction-8be7d1da-1b11-4fa8-a9ed-e82e13a9268a",
+            "source": "start-4eca2f3f-5b6a-44da-a782-8d715d172acc",
+            "target": "builtinFunction-8be7d1da-1b11-4fa8-a9ed-e82e13a9268a"
+          }
+        ]
+      }
+    }
+  ],
+  "connectors": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 693
+    },
+    {
+      "path": "Assets/botcomponent_workflowset.xml",
+      "category": "other",
+      "size": 544
+    },
+    {
+      "path": "botcomponents/msftcat_ITSupportTranscriptDemo.skill.log-support-ticket_l0q/botcomponent.xml",
+      "category": "component",
+      "size": 728
+    },
+    {
+      "path": "botcomponents/msftcat_ITSupportTranscriptDemo.skill.log-support-ticket_l0q/data",
+      "category": "component",
+      "size": 4500
+    },
+    {
+      "path": "botcomponents/msftcat_ITSupportTranscriptDemo.tool.Attachavailabletranscript_8gF/botcomponent.xml",
+      "category": "component",
+      "size": 375
+    },
+    {
+      "path": "botcomponents/msftcat_ITSupportTranscriptDemo.tool.Attachavailabletranscript_8gF/data",
+      "category": "component",
+      "size": 218
+    },
+    {
+      "path": "botcomponents/msftcat_ITSupportTranscriptDemo.tool.ITSupport-Logticket_hTs/botcomponent.xml",
+      "category": "component",
+      "size": 796
+    },
+    {
+      "path": "botcomponents/msftcat_ITSupportTranscriptDemo.tool.ITSupport-Logticket_hTs/data",
+      "category": "component",
+      "size": 884
+    },
+    {
+      "path": "bots/msftcat_ITSupportTranscriptDemo/bot.xml",
+      "category": "bot",
+      "size": 433
+    },
+    {
+      "path": "bots/msftcat_ITSupportTranscriptDemo/configuration.json",
+      "category": "bot",
+      "size": 1535
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 3233
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 3594
+    },
+    {
+      "path": "Workflows/Capturetranscriptbeforeticket-ED511F35-9712-C4DF-D96F-8B256FA19755.json",
+      "category": "workflow",
+      "size": 38300
+    },
+    {
+      "path": "Workflows/ITSupport-Logticket-41128A30-F372-9B9C-5F2B-05A887F7CB55.json",
+      "category": "workflow",
+      "size": 12414
+    }
+  ]
+}
