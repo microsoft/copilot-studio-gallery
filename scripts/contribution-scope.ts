@@ -15,6 +15,7 @@ const metadataPaths = new Set([
 
 export function classifyContributionFiles(files: ChangedFile[]) {
   const slugs = new Set<string>();
+  const invalidSubmissions = new Set<string>();
   const sites: string[] = [];
   const contracts: string[] = [];
   const generated: string[] = [];
@@ -31,10 +32,12 @@ export function classifyContributionFiles(files: ChangedFile[]) {
           slugs.add(submission[1]);
           if (!/^submissions\/[^/]+\/(?:metadata\.json|README\.md)$/.test(path)) payloadChanges = true;
         } else {
-          sites.push(path);
+          const folder = /^submissions\/([^/]+)\//.exec(path)?.[1];
+          if (folder && folder !== "_template") invalidSubmissions.add(folder);
+          else sites.push(path);
         }
       }
     }
   }
-  return { slugs, sites, contracts, generated, payloadChanges };
+  return { slugs, invalidSubmissions, sites, contracts, generated, payloadChanges };
 }
