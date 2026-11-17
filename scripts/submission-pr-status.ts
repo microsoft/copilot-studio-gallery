@@ -392,6 +392,11 @@ export function assess(evidence: Evidence): Assessment {
     blockers.push({ kind, owner, title, reason, instruction, reassess, ...(evidence === undefined ? {} : { evidence }) });
   };
   const scope = classifyContributionFiles(evidence.files);
+  for (const folder of scope.invalidSubmissions) {
+    add("scope", "Contributor", "Correct the submission folder name", "A submission folder does not use a valid gallery slug.",
+      `Rename \`submissions/${encodeURIComponent(folder)}/\` (folder name shown URL-encoded) to a unique slug using lowercase letters, numbers, and single hyphens, or remove that folder if it is an accidental duplicate. Keep the intended submission in one valid folder.`,
+      "After the folder is corrected or the accidental duplicate is removed.");
+  }
   for (const problem of evidence.metadataProblems) {
     add("scope", "Contributor", "Correct the submission metadata", "The submission format or required metadata cannot be validated.",
       problem, "After corrected submission files are pushed.");
@@ -708,8 +713,8 @@ export async function reconcile(api: TaskApi, number: number, dryRun = false): P
     });
     if (initial.state === "open" && (initial.count > 3000 || files.length !== initial.count)) throw new Error("Incomplete changed-file list");
     const scope = classifyContributionFiles(files);
-    const maintenance = scope.slugs.size > 1 && initial.labels.includes(scope.payloadChanges ? SITE_LABEL : METADATA_LABEL);
-    const eligible = initial.baseBranch === "main" && scope.slugs.size > 0 && scope.sites.length === 0 && scope.contracts.length === 0 && !maintenance;
+    const maintenance = scope.invalidSubmissions.size === 0 && scope.slugs.size > 1 && initial.labels.includes(scope.payloadChanges ? SITE_LABEL : METADATA_LABEL);
+    const eligible = initial.baseBranch === "main" && (scope.slugs.size > 0 || scope.invalidSubmissions.size > 0) && scope.sites.length === 0 && scope.contracts.length === 0 && !maintenance;
     const tracked = initial.labels.some((label) => Object.values<string>(QUEUE_LABELS).includes(label));
     if (!eligible && !tracked) return "Out of scope";
     tracking = true;
