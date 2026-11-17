@@ -45,7 +45,10 @@ jobs:
         if: github.event_name == 'pull_request'
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: node --import tsx scripts/check-evaluation-evidence.ts "$PR_BASE_SHA"
+          PR_BASE_REPOSITORY_URL: ${{ github.server_url }}/${{ github.repository }}.git
+        run: |
+          git fetch --no-tags "$PR_BASE_REPOSITORY_URL" "$PR_BASE_SHA"
+          node --import tsx scripts/check-evaluation-evidence.ts "$PR_BASE_SHA"
       - name: Run importer tests
         run: npm test
       - name: Import submissions

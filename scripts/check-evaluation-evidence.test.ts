@@ -49,3 +49,12 @@ test("accepts nonempty CSV without judging scores, and rejects absent, empty, or
   await writeFile(join(evaluations, "results.CSV"), "question,actualResponse,result_1\nExample,Response,Fail\n");
   assert.deepEqual(await checkEvaluationEvidence(root, paths), []);
 });
+
+test("matches the importer's case-insensitive bot paths", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "gallery-evaluations-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const bot = join(root, "submissions/sample/solution/Bots/helper");
+  await mkdir(bot, { recursive: true });
+  await writeFile(join(bot, "Bot.XML"), "<bot/>");
+  assert.equal((await checkEvaluationEvidence(root, ["submissions/sample/README.md"])).length, 1);
+});

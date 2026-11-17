@@ -20,11 +20,15 @@ export async function checkEvaluationEvidence(root: string, changedPaths: string
   const errors: string[] = [];
   for (const slug of [...slugs].sort()) {
     const submission = resolve(root, "submissions", slug);
-    const bots = await entries(resolve(submission, "solution", "bots"));
+    const solution = resolve(submission, "solution");
+    const botRoots = (await entries(solution)).filter((entry) => entry.isDirectory() && entry.name.toLowerCase() === "bots");
     let hasAgent = false;
-    for (const bot of bots.filter((entry) => entry.isDirectory())) {
-      const files = await entries(resolve(submission, "solution", "bots", bot.name));
-      if (files.some((file) => file.isFile() && file.name.toLowerCase() === "bot.xml")) hasAgent = true;
+    for (const botRoot of botRoots) {
+      const bots = await entries(resolve(solution, botRoot.name));
+      for (const bot of bots.filter((entry) => entry.isDirectory())) {
+        const files = await entries(resolve(solution, botRoot.name, bot.name));
+        if (files.some((file) => file.isFile() && file.name.toLowerCase() === "bot.xml")) hasAgent = true;
+      }
     }
     if (!hasAgent) continue;
 
