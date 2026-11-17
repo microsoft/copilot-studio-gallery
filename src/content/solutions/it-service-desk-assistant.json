@@ -1,0 +1,405 @@
+{
+  "submissionType": "solution",
+  "name": "IT Service Desk Assistant",
+  "description": "Sample agent that classifies IT support requests, guides employees through self-service troubleshooting for identity and connectivity issues, and drafts structured incident hand-offs. Includes a placeholder workflow definition with no live ticketing.",
+  "tags": [
+    "it-support",
+    "helpdesk",
+    "service-desk",
+    "troubleshooting",
+    "triage",
+    "self-service",
+    "incident-management"
+  ],
+  "category": "IT & security",
+  "createdAt": "2026-11-05",
+  "updatedAt": "2026-11-13",
+  "featured": false,
+  "previewWorkflow": "it-service-desk-triage-workflow",
+  "supportingFiles": [
+    {
+      "label": "Sample IT incidents and diagnostic catalog",
+      "filename": "sample-it-incidents.csv",
+      "path": "bundles/it-service-desk-assistant-4f928441b7549e1fc4a5acefe101c3ca71442f6df30ac75d2b6d1959926970e2-sample-it-incidents.csv",
+      "size": 1367
+    }
+  ],
+  "author": "Sapan Patel",
+  "authors": [
+    {
+      "name": "Sapan Patel",
+      "github": "sapanpatel1230",
+      "url": "https://github.com/sapanpatel1230"
+    }
+  ],
+  "uniqueName": "it_service_desk_assistant",
+  "version": "1.0.0.0",
+  "publisher": "IT Support Solutions",
+  "bundle": "bundles/it-service-desk-assistant.zip",
+  "bundleSha256": "d5fb4097b7ad0ae6b53ee2473216b94a204b5623c487e3d41beef6792d231f40",
+  "agentCount": 1,
+  "workflowCount": 1,
+  "hookCount": 0,
+  "componentCount": 2,
+  "agents": [
+    {
+      "id": "it_service_desk_assistant",
+      "schemaName": "it_service_desk_assistant",
+      "name": "IT Service Desk Assistant",
+      "model": "Auto",
+      "instructions": "You are the IT Service Desk Assistant, an intelligent support agent designed to resolve employee technology issues and streamline service desk operations.\n\n### Primary Responsibilities:\n1. **Triage & Classification**: Categorize user issues into standard IT domains (Access & Identity, Software & Licensing, Network & Connectivity, Hardware & Endpoints) and assess business impact.\n2. **Guided Self-Service Troubleshooting**: Provide clear, step-by-step diagnostic instructions for common first-contact resolutions (MFA re-registration, self-service password reset, VPN reconnects, cache clearing, Outlook sync).\n3. **Structured Ticket Escalation**: If self-service does not resolve the issue, collect affected system details, error codes, device OS, and user urgency (P1 to P4) to format an actionable hand-off ticket for IT engineering.\n\n### Operational Guidelines:\n- Always maintain a helpful, calm, and professional tone.\n- Ask focused clarifying questions one at a time.\n- Never request or expose passwords, PINs, or private API keys. Instruct users to use self-service identity portals.\n- When escalating, summarize the problem, attempted troubleshooting steps, and exact error messages.",
+      "channels": [
+        "MsTeams",
+        "Microsoft365Copilot"
+      ],
+      "toolCount": 2,
+      "skillCount": 3,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:it_service_desk_assistant",
+        "name": "IT Service Desk Assistant",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "Auto",
+          "instructions": "You are the IT Service Desk Assistant, an intelligent support agent designed to resolve employee technology issues and streamline service desk operations.\n\n### Primary Responsibilities:\n1. **Triage & Classification**: Categorize user issues into standard IT domains (Access & Identity, Software & Licensing, Network & Connectivity, Hardware & Endpoints) and assess business impact.\n2. **Guided Self-Service Troubleshooting**: Provide clear, step-by-step diagnostic instructions for common first-contact resolutions (MFA re-registration, self-service password reset, VPN reconnects, cache clearing, Outlook sync).\n3. **Structured Ticket Escalation**: If self-service does not resolve the issue, collect affected system details, error codes, device OS, and user urgency (P1 to P4) to format an actionable hand-off ticket for IT engineering.\n\n### Operational Guidelines:\n- Always maintain a helpful, calm, and professional tone.\n- Ask focused clarifying questions one at a time.\n- Never request or expose passwords, PINs, or private API keys. Instruct users to use self-service identity portals.\n- When escalating, summarize the problem, attempted troubleshooting steps, and exact error messages.",
+          "channels": [
+            "MsTeams",
+            "Microsoft365Copilot"
+          ],
+          "toolCount": 2,
+          "skillCount": 3,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:it_service_desk_assistant.skill.identity-access-resolver",
+        "name": "identity-access-resolver",
+        "type": "skill",
+        "position": {
+          "x": 568,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "it_service_desk_assistant.skill.identity-access-resolver",
+          "description": "Guides employees through self-service identity and access resolutions including account unlock, password reset, and MFA re-registration."
+        }
+      },
+      {
+        "id": "skill:it_service_desk_assistant.skill.incident-escalation-formatter",
+        "name": "incident-escalation-formatter",
+        "type": "skill",
+        "position": {
+          "x": 228,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "it_service_desk_assistant.skill.incident-escalation-formatter",
+          "description": "Structures troubleshooting history, diagnostic errors, and user impact into an engineer-ready incident payload for ITSM dispatch."
+        }
+      },
+      {
+        "id": "skill:it_service_desk_assistant.skill.vpn-network-diagnostics",
+        "name": "vpn-network-diagnostics",
+        "type": "skill",
+        "position": {
+          "x": -111.99999999999997,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "it_service_desk_assistant.skill.vpn-network-diagnostics",
+          "description": "Executes guided network and VPN connection diagnostics, including certificate checks, DNS resolution verification, and client re-authentication."
+        }
+      },
+      {
+        "id": "tool:it_service_desk_assistant.tool.DispatchITSMTicket",
+        "name": "Dispatch ITSM Ticket",
+        "type": "tool",
+        "position": {
+          "x": -452,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "it_service_desk_assistant.tool.DispatchITSMTicket",
+          "operation": "CreateIncident",
+          "description": "Dispatches an incident record to the ITSM ticketing system with structured diagnostic telemetry."
+        }
+      },
+      {
+        "id": "tool:it_service_desk_assistant.tool.ITKnowledgeBaseMCP",
+        "name": "IT Knowledge Base MCP",
+        "type": "tool",
+        "position": {
+          "x": -792,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "it_service_desk_assistant.tool.ITKnowledgeBaseMCP",
+          "operation": "InvokeMCP",
+          "description": "Searches enterprise IT knowledge base articles, standard operating procedures, and diagnostic playbooks."
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:it_service_desk_assistant-includes-it_service_desk_assistant.skill.identity-access-resolver",
+        "source": "agent:it_service_desk_assistant",
+        "target": "skill:it_service_desk_assistant.skill.identity-access-resolver",
+        "label": "includes"
+      },
+      {
+        "id": "agent:it_service_desk_assistant-includes-it_service_desk_assistant.skill.incident-escalation-formatter",
+        "source": "agent:it_service_desk_assistant",
+        "target": "skill:it_service_desk_assistant.skill.incident-escalation-formatter",
+        "label": "includes"
+      },
+      {
+        "id": "agent:it_service_desk_assistant-includes-it_service_desk_assistant.skill.vpn-network-diagnostics",
+        "source": "agent:it_service_desk_assistant",
+        "target": "skill:it_service_desk_assistant.skill.vpn-network-diagnostics",
+        "label": "includes"
+      },
+      {
+        "id": "agent:it_service_desk_assistant-uses-it_service_desk_assistant.tool.DispatchITSMTicket",
+        "source": "agent:it_service_desk_assistant",
+        "target": "tool:it_service_desk_assistant.tool.DispatchITSMTicket",
+        "label": "uses"
+      },
+      {
+        "id": "agent:it_service_desk_assistant-uses-it_service_desk_assistant.tool.ITKnowledgeBaseMCP",
+        "source": "agent:it_service_desk_assistant",
+        "target": "tool:it_service_desk_assistant.tool.ITKnowledgeBaseMCP",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [
+    {
+      "id": "it-service-desk-triage-workflow",
+      "name": "Triage and resolve IT support incidents",
+      "trigger": "When an IT support request is submitted",
+      "nodeCount": 7,
+      "edgeCount": 7,
+      "graph": {
+        "nodes": [
+          {
+            "id": "node-1",
+            "name": "When an IT support request is submitted",
+            "type": "start",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "details": {
+              "displayName": "When an IT support request is submitted",
+              "operationType": "trigger"
+            }
+          },
+          {
+            "id": "node-2",
+            "name": "Classify domain & urgency",
+            "type": "agent",
+            "position": {
+              "x": 260,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-3",
+            "name": "Search IT knowledge base & diagnostic SOPs",
+            "type": "connector",
+            "position": {
+              "x": 520,
+              "y": 0
+            },
+            "details": {
+              "displayName": "Search IT knowledge base & diagnostic SOPs",
+              "operationType": "action"
+            }
+          },
+          {
+            "id": "node-4",
+            "name": "Can issue be resolved via self-service?",
+            "type": "ifElse",
+            "position": {
+              "x": 780,
+              "y": 90
+            },
+            "details": {}
+          },
+          {
+            "id": "node-5",
+            "name": "Execute guided self-service resolution",
+            "type": "agent",
+            "position": {
+              "x": 1040,
+              "y": -70
+            },
+            "details": {}
+          },
+          {
+            "id": "node-6",
+            "name": "Escalate ticket to L2 engineer queue",
+            "type": "connector",
+            "position": {
+              "x": 1040,
+              "y": 180
+            },
+            "details": {
+              "displayName": "Escalate ticket to L2 engineer queue",
+              "operationType": "action"
+            }
+          },
+          {
+            "id": "node-7",
+            "name": "Deliver resolution confirmation & audit log",
+            "type": "end",
+            "position": {
+              "x": 1320,
+              "y": 0
+            },
+            "details": {}
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-1",
+            "source": "node-1",
+            "target": "node-2"
+          },
+          {
+            "id": "edge-2",
+            "source": "node-2",
+            "target": "node-3"
+          },
+          {
+            "id": "edge-3",
+            "source": "node-3",
+            "target": "node-4"
+          },
+          {
+            "id": "edge-4",
+            "source": "node-4",
+            "target": "node-5"
+          },
+          {
+            "id": "edge-5",
+            "source": "node-4",
+            "target": "node-6"
+          },
+          {
+            "id": "edge-6",
+            "source": "node-5",
+            "target": "node-7"
+          },
+          {
+            "id": "edge-7",
+            "source": "node-6",
+            "target": "node-7"
+          }
+        ]
+      }
+    }
+  ],
+  "connectors": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 941
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 402
+    },
+    {
+      "path": "botcomponents/it_service_desk_assistant.skill.identity-access-resolver/botcomponent.xml",
+      "category": "component",
+      "size": 523
+    },
+    {
+      "path": "botcomponents/it_service_desk_assistant.skill.identity-access-resolver/data",
+      "category": "component",
+      "size": 818
+    },
+    {
+      "path": "botcomponents/it_service_desk_assistant.skill.incident-escalation-formatter/botcomponent.xml",
+      "category": "component",
+      "size": 526
+    },
+    {
+      "path": "botcomponents/it_service_desk_assistant.skill.incident-escalation-formatter/data",
+      "category": "component",
+      "size": 987
+    },
+    {
+      "path": "botcomponents/it_service_desk_assistant.skill.vpn-network-diagnostics/botcomponent.xml",
+      "category": "component",
+      "size": 529
+    },
+    {
+      "path": "botcomponents/it_service_desk_assistant.skill.vpn-network-diagnostics/data",
+      "category": "component",
+      "size": 814
+    },
+    {
+      "path": "botcomponents/it_service_desk_assistant.tool.DispatchITSMTicket/botcomponent.xml",
+      "category": "component",
+      "size": 472
+    },
+    {
+      "path": "botcomponents/it_service_desk_assistant.tool.DispatchITSMTicket/data",
+      "category": "component",
+      "size": 226
+    },
+    {
+      "path": "botcomponents/it_service_desk_assistant.tool.ITKnowledgeBaseMCP/botcomponent.xml",
+      "category": "component",
+      "size": 481
+    },
+    {
+      "path": "botcomponents/it_service_desk_assistant.tool.ITKnowledgeBaseMCP/data",
+      "category": "component",
+      "size": 244
+    },
+    {
+      "path": "bots/it_service_desk_assistant/bot.xml",
+      "category": "bot",
+      "size": 89
+    },
+    {
+      "path": "bots/it_service_desk_assistant/configuration.json",
+      "category": "bot",
+      "size": 1606
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 230
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 510
+    },
+    {
+      "path": "Workflows/workflow.json",
+      "category": "workflow",
+      "size": 5781
+    }
+  ]
+}

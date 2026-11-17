@@ -1,0 +1,405 @@
+{
+  "submissionType": "solution",
+  "name": "Agent DLP & Security Guard",
+  "description": "Sample governance agent that reviews Copilot Studio maker configurations and prompts for DLP alignment, sensitive data exposure, unapproved HTTP connectors, and prompt injection risks, with findings for human security review. Includes a placeholder workflow definition with no live policy enforcement.",
+  "tags": [
+    "governance",
+    "security",
+    "dlp",
+    "data-loss-prevention",
+    "responsible-ai",
+    "compliance",
+    "audit"
+  ],
+  "category": "Governance",
+  "createdAt": "2026-11-05",
+  "updatedAt": "2026-11-13",
+  "featured": false,
+  "previewWorkflow": "agent-dlp-audit-workflow",
+  "supportingFiles": [
+    {
+      "label": "Sample DLP rule and pattern catalog",
+      "filename": "sample-dlp-rules.csv",
+      "path": "bundles/agent-dlp-security-guard-29736a381d311910f1547a0a535bc7a6ac8a6d19a50478d846e5fb0fd884ce24-sample-dlp-rules.csv",
+      "size": 966
+    }
+  ],
+  "author": "Sapan Patel",
+  "authors": [
+    {
+      "name": "Sapan Patel",
+      "github": "sapanpatel1230",
+      "url": "https://github.com/sapanpatel1230"
+    }
+  ],
+  "uniqueName": "agent_dlp_security_guard",
+  "version": "1.0.0.0",
+  "publisher": "Security and Governance Solutions",
+  "bundle": "bundles/agent-dlp-security-guard.zip",
+  "bundleSha256": "5ecb8d357a8eb82b7f7d037ff4856d70581a1b9624db93f12b155a12cb0e65a9",
+  "agentCount": 1,
+  "workflowCount": 1,
+  "hookCount": 0,
+  "componentCount": 2,
+  "agents": [
+    {
+      "id": "agent_dlp_security_guard",
+      "schemaName": "agent_dlp_security_guard",
+      "name": "Agent DLP & Security Guard",
+      "model": "Auto",
+      "instructions": "You are the Agent DLP & Security Guard, an autonomous governance auditor for Microsoft Copilot Studio.\n\n### Primary Responsibilities:\n1. **DLP Policy Inspection**: Review agent connectors, HTTP actions, and knowledge sources to confirm compliance with Power Platform Data Loss Prevention (DLP) environment boundaries.\n2. **Sensitive Content & Secret Detection**: Audit system instructions and topics for exposed credentials, API keys, tokens, or unredacted PII patterns (SSNs, credit card numbers).\n3. **Prompt Injection Testing**: Verify that agent instructions maintain strict grounding, enforce delimiter safety, and reject user attempts to override system rules.\n4. **Compliance Reporting**: Produce structured, clear audit scorecards with actionable remediation steps for makers and compliance records for CoE administrators.\n\n### Operational Rules:\n- Be objective, precise, and security-focused.\n- Differentiate severity levels: Critical (must block publication), High (requires security admin sign-off), Medium (warning/advisory), Low (best practice recommendation).\n- Never output or reflect live secrets or sensitive data found during audits.",
+      "channels": [
+        "MsTeams",
+        "Microsoft365Copilot"
+      ],
+      "toolCount": 2,
+      "skillCount": 3,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:agent_dlp_security_guard",
+        "name": "Agent DLP & Security Guard",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "Auto",
+          "instructions": "You are the Agent DLP & Security Guard, an autonomous governance auditor for Microsoft Copilot Studio.\n\n### Primary Responsibilities:\n1. **DLP Policy Inspection**: Review agent connectors, HTTP actions, and knowledge sources to confirm compliance with Power Platform Data Loss Prevention (DLP) environment boundaries.\n2. **Sensitive Content & Secret Detection**: Audit system instructions and topics for exposed credentials, API keys, tokens, or unredacted PII patterns (SSNs, credit card numbers).\n3. **Prompt Injection Testing**: Verify that agent instructions maintain strict grounding, enforce delimiter safety, and reject user attempts to override system rules.\n4. **Compliance Reporting**: Produce structured, clear audit scorecards with actionable remediation steps for makers and compliance records for CoE administrators.\n\n### Operational Rules:\n- Be objective, precise, and security-focused.\n- Differentiate severity levels: Critical (must block publication), High (requires security admin sign-off), Medium (warning/advisory), Low (best practice recommendation).\n- Never output or reflect live secrets or sensitive data found during audits.",
+          "channels": [
+            "MsTeams",
+            "Microsoft365Copilot"
+          ],
+          "toolCount": 2,
+          "skillCount": 3,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:agent_dlp_security_guard.skill.compliance-scorecard-generator",
+        "name": "compliance-scorecard-generator",
+        "type": "skill",
+        "position": {
+          "x": 568,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "agent_dlp_security_guard.skill.compliance-scorecard-generator",
+          "description": "Produces structured compliance scorecards, audit verdicts, and actionable remediation steps for maker and admin review."
+        }
+      },
+      {
+        "id": "skill:agent_dlp_security_guard.skill.dlp-policy-evaluator",
+        "name": "dlp-policy-evaluator",
+        "type": "skill",
+        "position": {
+          "x": 228,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "agent_dlp_security_guard.skill.dlp-policy-evaluator",
+          "description": "Evaluates agent connectors and data sources against active Power Platform Data Loss Prevention (DLP) environment policies."
+        }
+      },
+      {
+        "id": "skill:agent_dlp_security_guard.skill.prompt-injection-scanner",
+        "name": "prompt-injection-scanner",
+        "type": "skill",
+        "position": {
+          "x": -111.99999999999997,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "agent_dlp_security_guard.skill.prompt-injection-scanner",
+          "description": "Scans agent instructions, fallback behaviors, and topic schemas for prompt injection weaknesses and sensitive pattern leakage."
+        }
+      },
+      {
+        "id": "tool:agent_dlp_security_guard.tool.AdminPolicyChecker",
+        "name": "Admin Policy Checker",
+        "type": "tool",
+        "position": {
+          "x": -452,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "agent_dlp_security_guard.tool.AdminPolicyChecker",
+          "operation": "GetEnvironmentDlpPolicy",
+          "description": "Queries environment DLP policy groups and connector restrictions from the Power Platform Admin service."
+        }
+      },
+      {
+        "id": "tool:agent_dlp_security_guard.tool.DataverseAuditLogMCP",
+        "name": "Dataverse Audit Log MCP",
+        "type": "tool",
+        "position": {
+          "x": -792,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "agent_dlp_security_guard.tool.DataverseAuditLogMCP",
+          "operation": "InvokeMCP",
+          "description": "Records security audit trails, maker attestations, and compliance clearance events in Dataverse."
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:agent_dlp_security_guard-includes-agent_dlp_security_guard.skill.compliance-scorecard-generator",
+        "source": "agent:agent_dlp_security_guard",
+        "target": "skill:agent_dlp_security_guard.skill.compliance-scorecard-generator",
+        "label": "includes"
+      },
+      {
+        "id": "agent:agent_dlp_security_guard-includes-agent_dlp_security_guard.skill.dlp-policy-evaluator",
+        "source": "agent:agent_dlp_security_guard",
+        "target": "skill:agent_dlp_security_guard.skill.dlp-policy-evaluator",
+        "label": "includes"
+      },
+      {
+        "id": "agent:agent_dlp_security_guard-includes-agent_dlp_security_guard.skill.prompt-injection-scanner",
+        "source": "agent:agent_dlp_security_guard",
+        "target": "skill:agent_dlp_security_guard.skill.prompt-injection-scanner",
+        "label": "includes"
+      },
+      {
+        "id": "agent:agent_dlp_security_guard-uses-agent_dlp_security_guard.tool.AdminPolicyChecker",
+        "source": "agent:agent_dlp_security_guard",
+        "target": "tool:agent_dlp_security_guard.tool.AdminPolicyChecker",
+        "label": "uses"
+      },
+      {
+        "id": "agent:agent_dlp_security_guard-uses-agent_dlp_security_guard.tool.DataverseAuditLogMCP",
+        "source": "agent:agent_dlp_security_guard",
+        "target": "tool:agent_dlp_security_guard.tool.DataverseAuditLogMCP",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [
+    {
+      "id": "agent-dlp-audit-workflow",
+      "name": "Audit agent DLP and security compliance",
+      "trigger": "When agent is submitted for publication",
+      "nodeCount": 7,
+      "edgeCount": 7,
+      "graph": {
+        "nodes": [
+          {
+            "id": "node-1",
+            "name": "When agent is submitted for publication",
+            "type": "start",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "details": {
+              "displayName": "When agent is submitted for publication",
+              "operationType": "trigger"
+            }
+          },
+          {
+            "id": "node-2",
+            "name": "Extract connectors and endpoints",
+            "type": "agent",
+            "position": {
+              "x": 260,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-3",
+            "name": "Evaluate DLP policy boundaries",
+            "type": "connector",
+            "position": {
+              "x": 520,
+              "y": 0
+            },
+            "details": {
+              "displayName": "Evaluate DLP policy boundaries",
+              "operationType": "action"
+            }
+          },
+          {
+            "id": "node-4",
+            "name": "Are all endpoints DLP compliant?",
+            "type": "ifElse",
+            "position": {
+              "x": 780,
+              "y": 90
+            },
+            "details": {}
+          },
+          {
+            "id": "node-5",
+            "name": "Scan prompts for injection & PII leakage",
+            "type": "agent",
+            "position": {
+              "x": 1040,
+              "y": -70
+            },
+            "details": {}
+          },
+          {
+            "id": "node-6",
+            "name": "Block publication & notify security admin",
+            "type": "connector",
+            "position": {
+              "x": 1040,
+              "y": 180
+            },
+            "details": {
+              "displayName": "Block publication & notify security admin",
+              "operationType": "action"
+            }
+          },
+          {
+            "id": "node-7",
+            "name": "Log compliance certificate in Dataverse",
+            "type": "end",
+            "position": {
+              "x": 1320,
+              "y": 0
+            },
+            "details": {}
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-1",
+            "source": "node-1",
+            "target": "node-2"
+          },
+          {
+            "id": "edge-2",
+            "source": "node-2",
+            "target": "node-3"
+          },
+          {
+            "id": "edge-3",
+            "source": "node-3",
+            "target": "node-4"
+          },
+          {
+            "id": "edge-4",
+            "source": "node-4",
+            "target": "node-5"
+          },
+          {
+            "id": "edge-5",
+            "source": "node-4",
+            "target": "node-6"
+          },
+          {
+            "id": "edge-6",
+            "source": "node-5",
+            "target": "node-7"
+          },
+          {
+            "id": "edge-7",
+            "source": "node-6",
+            "target": "node-7"
+          }
+        ]
+      }
+    }
+  ],
+  "connectors": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 936
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 418
+    },
+    {
+      "path": "botcomponents/agent_dlp_security_guard.skill.compliance-scorecard-generator/botcomponent.xml",
+      "category": "component",
+      "size": 516
+    },
+    {
+      "path": "botcomponents/agent_dlp_security_guard.skill.compliance-scorecard-generator/data",
+      "category": "component",
+      "size": 1098
+    },
+    {
+      "path": "botcomponents/agent_dlp_security_guard.skill.dlp-policy-evaluator/botcomponent.xml",
+      "category": "component",
+      "size": 499
+    },
+    {
+      "path": "botcomponents/agent_dlp_security_guard.skill.dlp-policy-evaluator/data",
+      "category": "component",
+      "size": 876
+    },
+    {
+      "path": "botcomponents/agent_dlp_security_guard.skill.prompt-injection-scanner/botcomponent.xml",
+      "category": "component",
+      "size": 511
+    },
+    {
+      "path": "botcomponents/agent_dlp_security_guard.skill.prompt-injection-scanner/data",
+      "category": "component",
+      "size": 940
+    },
+    {
+      "path": "botcomponents/agent_dlp_security_guard.tool.AdminPolicyChecker/botcomponent.xml",
+      "category": "component",
+      "size": 477
+    },
+    {
+      "path": "botcomponents/agent_dlp_security_guard.tool.AdminPolicyChecker/data",
+      "category": "component",
+      "size": 270
+    },
+    {
+      "path": "botcomponents/agent_dlp_security_guard.tool.DataverseAuditLogMCP/botcomponent.xml",
+      "category": "component",
+      "size": 475
+    },
+    {
+      "path": "botcomponents/agent_dlp_security_guard.tool.DataverseAuditLogMCP/data",
+      "category": "component",
+      "size": 243
+    },
+    {
+      "path": "bots/agent_dlp_security_guard/bot.xml",
+      "category": "bot",
+      "size": 93
+    },
+    {
+      "path": "bots/agent_dlp_security_guard/configuration.json",
+      "category": "bot",
+      "size": 1564
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 223
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 511
+    },
+    {
+      "path": "Workflows/workflow.json",
+      "category": "workflow",
+      "size": 5667
+    }
+  ]
+}
