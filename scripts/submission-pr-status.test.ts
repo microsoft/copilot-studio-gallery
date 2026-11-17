@@ -306,6 +306,21 @@ test("content prerequisites outrank future review and CI work in a stable order"
   assert.equal(assessEvidence(state).next.kind, "authorize-ci");
 });
 
+test("failed-check messages explain upstream fetch and local reproduction as primary and secondary actions", () => {
+  const state = evidence();
+  state.checks[1].state = "FAILURE";
+  for (const missingAttestation of [false, true]) {
+    state.bodyHTML = missingAttestation ? "" : attestedHTML;
+    const result = assessEvidence(state);
+    const body = render(state.pr, result);
+    assert.equal(result.next.kind, missingAttestation ? "attestation" : "fix-check");
+    assert.match(body, /git fetch upstream/);
+    assert.match(body, /sync your local contribution branch with your fork/);
+    assert.ok(body.includes("https://github.com/owner/repo/blob/main/CONTRIBUTING.md#reproduce-a-ci-failure"));
+    assert.match(body, /routine updates against the base remain maintainer work/);
+  }
+});
+
 test("missing attestations precede a routine branch update and remain visible alongside review corrections", () => {
   const state = evidence();
   state.bodyHTML = "";
