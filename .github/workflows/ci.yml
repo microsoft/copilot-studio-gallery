@@ -41,6 +41,11 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Require evaluation CSV for changed standalone agents
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: node --import tsx scripts/check-evaluation-evidence.ts "$PR_BASE_SHA"
       - name: Run importer tests
         run: npm test
       - name: Import submissions
