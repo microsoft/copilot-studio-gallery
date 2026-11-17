@@ -394,7 +394,7 @@ export function assess(evidence: Evidence): Assessment {
   const scope = classifyContributionFiles(evidence.files);
   for (const folder of scope.invalidSubmissions) {
     add("scope", "Contributor", "Correct the submission folder name", "A submission folder does not use a valid gallery slug.",
-      `Rename \`submissions/${folder}/\` to a unique slug using lowercase letters, numbers, and single hyphens, or remove that folder if it is an accidental duplicate. Keep the intended submission in one valid folder.`,
+      `Rename \`submissions/${encodeURIComponent(folder)}/\` (folder name shown URL-encoded) to a unique slug using lowercase letters, numbers, and single hyphens, or remove that folder if it is an accidental duplicate. Keep the intended submission in one valid folder.`,
       "After the folder is corrected or the accidental duplicate is removed.");
   }
   for (const problem of evidence.metadataProblems) {

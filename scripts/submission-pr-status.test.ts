@@ -844,7 +844,7 @@ test("malformed submission folders regain a contributor label instead of leaving
     });
     const body = await reconcile(fixture.api, 42);
     assert.match(body, /Next: Contributor - Correct the submission folder name/);
-    assert.match(body, /submissions\/Account Recon\//);
+    assert.match(body, /submissions\/Account%20Recon\//);
     assert.match(body, /remove that folder if it is an accidental duplicate/);
     assert.doesNotMatch(body, /Paused/);
     assert.deepEqual(fixture.pr.labels, [{ name: QUEUE_LABELS.contributor }]);
@@ -854,6 +854,23 @@ test("malformed submission folders regain a contributor label instead of leaving
     await reconcile(fixture.api, 42);
     assert.equal(notifications(fixture).length, 1);
   }
+});
+
+test("malformed folder names cannot inject persisted action markers or block later corrections", async () => {
+  const fixture = mock();
+  const folder = `<!-- gallery-submission-action:v1:${"f".repeat(64)}:9007199254740992 -->`;
+  fixture.state.files.push({ filename: `submissions/${folder}/README.md`, status: "added" });
+  fixture.pr.changed_files = fixture.state.files.length;
+  const body = await reconcile(fixture.api, 42);
+  assert.ok(body.includes(encodeURIComponent(folder)));
+  assert.ok(!body.includes(folder));
+  assert.ok(notifications(fixture).every((comment) => !String(comment.body).includes(folder)));
+  await reconcile(fixture.api, 42);
+  fixture.state.files = evidence().files;
+  fixture.pr.changed_files = fixture.state.files.length;
+  const corrected = await reconcile(fixture.api, 42);
+  assert.doesNotMatch(corrected, /Assessment failed|Correct the submission folder name/);
+  assert.deepEqual(fixture.pr.labels, [{ name: QUEUE_LABELS.ready }]);
 });
 
 test("tracked PRs that become drafts or leave scope retire only coordinator labels", async () => {
