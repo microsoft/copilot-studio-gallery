@@ -1,0 +1,161 @@
+﻿"# Test set name: Evaluate Account Payables Agent"
+"# Test methods: TextSimilarity, GeneralQuality"
+"#"
+"question","expectedResponse"
+"List all Vendor mismatch Invoices details .","Here are all invoices with a Vendor mismatch
+
+Invoice Number: INV-90001
+PO Number: 10001
+Vendor (Invoice / PO): Microsoft / ABC Supplies
+Item: Laptop
+Qty Ordered (PO): 50
+Qty Received (sum of GRs): 50
+Qty Invoiced: 50
+Unit Price (PO / Invoice): $750 / $750
+Invoice Total: $37,500
+Status/Exception: Exception — Vendor Mismatch
+Notes/Recommended Action: Vendor on the invoice does not match the PO vendor. Quantities and unit price align. Correct the vendor on the invoice or route for vendor master/PO review before payment."
+"List all invoices which have no PO found","ummary: I found 3 invoices where the referenced Purchase Order is missing from the PO dataset. Each is classified as Error – PO Not Found. Where available, I included related GR references to aid investigation.
+
+Invoice INV-90016
+
+Vendor Name: RandomVendor
+Invoice Date: 2025-02-07
+PO Number (from invoice): 0
+Item/Description (PO): N/A
+Qty Ordered (PO): N/A
+Qty Received (GR total): 160 (via GR 50016 tied to PO 10006)
+Qty Invoiced (Invoice): 10
+Unit Price (PO/Invoice): PO: N/A; Invoice: $50
+Invoice Total: $500
+Status/Exception: Error – PO Not Found
+Notes: GR 50016 references PO 10006 (exists) with 160 received; invoice has no valid PO.
+Invoice INV-90010
+
+Vendor Name: ABC Supplies
+Invoice Date: 2025-02-03
+PO Number (from invoice): 10010
+Item/Description (PO): N/A
+Qty Ordered (PO): N/A
+Qty Received (GR total): 50 (via GR 50010 tied to PO 10007)
+Qty Invoiced (Invoice): 30
+Unit Price (PO/Invoice): PO: N/A; Invoice: $155
+Invoice Total: $4,650
+Status/Exception: Error – PO Not Found
+Notes: GR 5"
+"Get PO details for 10002 ","PO Number: 10002
+Vendor: TechLine
+Item: Mouse
+Quantity Ordered: 200
+Unit Price: $15
+Total PO Value: $3,000
+Currency: USD
+PO Date: 2025-01-09T18:30:00Z"
+"Draft vendor emails for the exceptions",
+"Get Invoices associated to with same PO.
+","Summary: Found 9 POs with multiple invoices (total 18 invoices). Listed below are the PO groups and their associated invoices with key details.
+
+PO 10002 (Vendor: TechLine | PO Date: 2025-01-09 | Currency: US Dollar | PO Total/Unit: $3,000 / $15) — Invoice count: 2
+
+INV-90002 | Date: 2025-01-12 | GR: 50002 | Qty: 200 | Unit: $15 | Total: $3,000 | ID: 95fe0730-cf55-429c-b5f4-5d80d05d2321
+INV-90011 | Date: 2025-02-04 | GR: 50011 | Qty: 210 | Unit: $15 | Total: $3,150 | ID: 5f6a7198-0bee-4a8a-9bd2-a6b24cebbad6
+PO 10003 (Vendor: ABC Supplies | PO Date: 2025-01-14 | Currency: US Dollar | PO Total/Unit: $9,600 / $120) — Invoice count: 2
+
+INV-90017 | Date: 2025-02-07 | GR: 50017 | Qty: 80 | Unit: $120 | Total: $9,600 | ID: 3ab227f8-592e-4187-b4c5-1fd1a0cf6095
+INV-90003 | Date: 2025-01-19 | GR: 50003 | Qty: 80 | Unit: $120 | Total: $9,600 | ID: 5503798d-e8d9-4721-a667-69c89c06d26c
+PO 10004 (Vendor: OfficePlus | PO Date: 2025-01-17 | Currency: US Dollar | PO Total/Unit: $4,000 / $200) — Invoice"
+"Summarize the AP match result for PO 10004","Summary: For PO 10004 (OfficePlus, Printer), total GR received equals the PO quantity: 20 units via GR 50005 (18) and GR 50006 (2). Two related invoices were found. INV-90004 is a perfect match. INV-90012 has a price variance ($205 invoiced vs $200 on PO). No duplicates, reversals, or over-receipts detected. Invoice totals are mathematically correct.
+
+Invoice INV-90004
+
+PO Number: 10004
+PO Vendor / Item: OfficePlus / Printer
+Qty Ordered (PO): 20
+Qty Received (GR total): 20
+GR Details: 50005 (18), 50006 (2)
+Invoice Vendor / Date: OfficePlus / 2025-01-20
+Qty Invoiced: 20
+Unit Price (PO/Invoice): $200 / $200
+Invoice Total: $4,000
+Status/Exception: Matched
+Notes: Vendor, quantity, and unit price exactly match PO and GR.
+Invoice INV-90012
+
+PO Number: 10004
+PO Vendor / Item: OfficePlus / Printer
+Qty Ordered (PO): 20
+Qty Received (GR total): 20
+GR Details: 50005 (18), 50006 (2)
+Invoice Vendor / Date: OfficePlus / 2025-02-05
+Qty Invoiced: 20
+Unit Price (PO/Invoice): $200 / $205
+Invoice Total:"
+"Show three-way match summary for all invoices.","Paragraph summary A complete three-way match was performed across all available invoices against their Purchase Orders and Goods Receipts. 4 invoices are a perfect match. 3 invoices are classified as errors due to missing POs. 13 invoices have exceptions, mostly quantity mismatches (invoiced > PO or not equal to GR), two price mismatches, and one vendor mismatch. Several POs show GR over-receipts (GR > PO), and GR 50013 is referenced by multiple invoices across different POs, indicating data quality issues.
+
+Per-invoice three-way match results
+
+Invoice Number: INV-90001
+
+PO Number: 10001
+Vendor (Invoice/PO): Microsoft / ABC Supplies
+Item: Laptop
+Qty Ordered (PO): 50
+Qty Received (all GRs): 50
+Qty Invoiced: 50
+Unit Price (PO/Invoice): $750 / $750
+Invoice Total: $37,500
+Status/Exception: bold Exception — Vendor Mismatch
+Notes/Recommended Action: Vendor on invoice does not match PO vendor; quantities and price match. Correct vendor master or route for review.
+Invoice Number: INV-90002
+
+PO"
+"List all invoices we have.",
+"Get all the records which have difference in Invoice Unit price vs PO unit price.
+","Paragraph summary 2 invoices show a price mismatch between the invoice and the PO. INV-90018 (PO 10008) is invoiced above the PO unit price (+$5, +4.55%), and INV-90012 (PO 10004) is also invoiced above the PO unit price (+$5, +2.50%). Recommend price clarification, credit note or PO amendment, and routing for approval before payment.
+
+Price mismatch records
+
+Invoice Number: INV-90018
+
+PO Number: 10008
+Vendor (Invoice/PO): MegaWare / MegaWare
+Item: Router
+Qty Ordered (PO): 40
+Qty Received (sum of GRs): 40
+Qty Invoiced: 40
+Unit Price (PO / Invoice): $110 / $115
+Invoice Total: $4,600
+GR numbers and received qty: 50011: 40
+Status/Exception: Exception — Price Mismatch
+Notes/Recommended Action: Invoice unit price $115 differs from PO $110 (+$5, +4.55%). Request vendor credit or amend PO; route for approval before payment.
+Invoice Number: INV-90012
+
+PO Number: 10004
+Vendor (Invoice/PO): OfficePlus / OfficePlus
+Item: Printer
+Qty Ordered (PO): 20
+Qty Received (sum of GRs): 20
+Qty Invoiced: 20"
+"Find duplicate invoice submissions for same PO.","Paragraph summary I identified potential duplicate invoice submissions for the same PO by grouping invoices per PO with identical commercial attributes (Vendor, Qty Invoiced, Unit Price, Currency). Result: 2 duplicate groups involving 4 invoices. No exact duplicate invoice numbers were found; all duplicates are commercially identical pairs for their respective POs.
+
+Duplicate groups detected
+
+PO Number: 10003
+
+Vendor: ABC Supplies
+Item: Monitor 24""
+Qty Ordered (PO): 80
+Qty Received (sum of GRs): 150
+Status/Exception: Exception — Duplicate Invoice
+Invoices in this duplicate group:
+Invoice Number: INV-90003
+Qty Invoiced: 80
+Unit Price (PO/Invoice): $120 / $120
+Invoice Total: $9,600
+Invoice Date: 2025-01-19
+Invoice Number: INV-90017
+Qty Invoiced: 80
+Unit Price (PO/Invoice): $120 / $120
+Invoice Total: $9,600
+Invoice Date: 2025-02-07
+Notes: Invoices have different numbers but are commercially identical (same vendor, qty, price, currency, total) for PO 10003. Related data flag: GR over‑recei"
