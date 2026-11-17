@@ -360,8 +360,8 @@ export interface Assessment {
 }
 // Fix prerequisite content before spending another review/CI cycle; approve last.
 const ACTION_PRIORITY: Record<ActionKind, number> = {
-  scope: 10, "review-changes": 20, "review-discussion": 21, branch: 30,
-  "fix-check": 40, attestation: 50, "authorize-ci": 60, "investigate-ci": 61,
+  scope: 10, "review-changes": 20, "review-discussion": 21, attestation: 29, branch: 30,
+  "fix-check": 40, "authorize-ci": 60, "investigate-ci": 61,
   "judge-reply": 25, "wait-ci": 65, "request-review": 70, "wait-review": 71, "confirm-review": 75, "investigate-state": 85,
   approve: 90, "investigate-merge": 95, merge: 100,
 };
@@ -441,11 +441,12 @@ export function assess(evidence: Evidence): Assessment {
   const copilot = open.filter((thread) => thread.review !== null && copilotIds.has(thread.review));
   const human = open.filter((thread) => thread.review === null || !copilotIds.has(thread.review));
   if (copilot.length && currentCopilot) {
-    const awaitingAuthor = copilot.find((thread) => !thread.replyByAuthor && (thread.head === null || thread.head === pr.head));
-    if (awaitingAuthor) add("review-discussion", "Contributor", "Address the outstanding review finding",
-      "A current Copilot finding has no contributor response.",
-      `Address or discuss the [unresolved Copilot finding](${awaitingAuthor.url}), push the agreed correction, and report verification there. Do not repeat already supplied fixes.`,
-      "After a correction is pushed or a response is posted.", awaitingAuthor.body);
+    for (const awaitingAuthor of copilot.filter((thread) => !thread.replyByAuthor && (thread.head === null || thread.head === pr.head))) {
+      add("review-discussion", "Contributor", "Address the outstanding review finding",
+        "A current Copilot finding has no contributor response.",
+        `Address or discuss the [unresolved Copilot finding](${awaitingAuthor.url}), push the agreed correction, and report verification there. Do not repeat already supplied fixes.`,
+        "After a correction is pushed or a response is posted.", awaitingAuthor.body);
+    }
     const followup = copilot.find((thread) => thread.head === pr.head && thread.replyByAuthor)
       ?? copilot.find((thread) => thread.replyByAuthor || (thread.head !== null && thread.head !== pr.head));
     if (followup) add(followup.head === pr.head && followup.replyByAuthor ? "judge-reply" : "confirm-review", "Maintainer", "Judge the response to the review finding",
@@ -460,8 +461,7 @@ export function assess(evidence: Evidence): Assessment {
       "A contributor reply or new revision needs human confirmation.",
       `Review the contributor's reply/new revision against the [open human discussion](${followup.url}) and resolve it only if addressed.`,
       "After the discussion is resolved or specific remaining work is identified.");
-    const awaitingAuthor = human.find((thread) => !thread.replyByAuthor && (thread.head === null || thread.head === pr.head));
-    if (awaitingAuthor) {
+    for (const awaitingAuthor of human.filter((thread) => !thread.replyByAuthor && (thread.head === null || thread.head === pr.head))) {
       add("review-discussion", "Contributor", "Respond to the review discussion", "A current human review discussion has no contributor response.",
         `Respond to the [open human review discussion](${awaitingAuthor.url}) with a fix or clarification and report verification.`,
         "After a correction is pushed or a response is posted.", awaitingAuthor.body);
@@ -564,10 +564,27 @@ Assessed head \`${pr.head}\` against base \`${pr.base}\`. Informational only: Gi
 ${next.reason}
 
 ${next.owner === "Contributor" ? `@${pr.author}, ` : ""}${next.instruction}
+${otherContributorRequirements(pr, assessment)}
 
 **Reassessed:** ${next.reassess}
 
-This comment is updated in place and shows only the next step; later prerequisites remain tracked. CI authorization, formal approval, and merge stay manual. Checked attestations are contributor statements, not automated certification.
+This comment is updated in place and shows one next step plus other known contributor requirements, so they can be addressed together. Later maintainer actions remain tracked. CI authorization, formal approval, and merge stay manual. Checked attestations are contributor statements, not automated certification.
+`;
+}
+
+function contributorRequirements(assessment: Assessment): NextAction[] {
+  return assessment.blockers.filter((action) => action.owner === "Contributor")
+    .sort((a, b) => ACTION_PRIORITY[a.kind] - ACTION_PRIORITY[b.kind]);
+}
+
+function otherContributorRequirements(pr: Pull, assessment: Assessment): string {
+  const others = contributorRequirements(assessment).filter((action) => action !== assessment.next);
+  if (!others.length) return "";
+  return `\n### Other known contributor requirements
+
+@${pr.author}, address these together where possible; only attest after completing the required test/review.
+
+${others.map((action) => `- **${action.title}:** ${action.reason} ${action.instruction}`).join("\n")}
 `;
 }
 
@@ -609,6 +626,10 @@ function actionKey(pr: Pull, assessment: Assessment) {
   return createHash("sha256").update(JSON.stringify([
     pr.author, next.kind, next.owner, next.title, next.instruction, next.reassess,
     next.kind === "fix-check" ? next.reason : "", next.evidence ?? "",
+    contributorRequirements(assessment).map((action) => [
+      action.kind, action.title, action.instruction, action.reassess,
+      action.kind === "fix-check" ? action.reason : "", action.evidence ?? "",
+    ]),
   ])).digest("hex");
 }
 
@@ -633,6 +654,7 @@ async function notifyContributor(api: TaskApi, pr: Pull, assessment: Assessment,
 ${assessment.next.reason}
 
 ${assessment.next.instruction}
+${otherContributorRequirements(pr, assessment)}
 
 **Reassessed:** ${assessment.next.reassess}
 
