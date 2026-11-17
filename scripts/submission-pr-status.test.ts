@@ -306,6 +306,21 @@ test("content prerequisites outrank future review and CI work in a stable order"
   assert.equal(assessEvidence(state).next.kind, "authorize-ci");
 });
 
+test("failed-check messages explain upstream fetch and local reproduction as primary and secondary actions", () => {
+  const state = evidence();
+  state.checks[1].state = "FAILURE";
+  for (const missingAttestation of [false, true]) {
+    state.bodyHTML = missingAttestation ? "" : attestedHTML;
+    const result = assessEvidence(state);
+    const body = render(state.pr, result);
+    assert.equal(result.next.kind, missingAttestation ? "attestation" : "fix-check");
+    assert.match(body, /git fetch upstream/);
+    assert.match(body, /sync your local contribution branch with your fork/);
+    assert.ok(body.includes("https://github.com/owner/repo/blob/main/CONTRIBUTING.md#reproduce-a-ci-failure"));
+    assert.match(body, /routine updates against the base remain maintainer work/);
+  }
+});
+
 test("missing attestations precede a routine branch update and remain visible alongside review corrections", () => {
   const state = evidence();
   state.bodyHTML = "";
@@ -796,7 +811,9 @@ test("site, dependency and mixed changes are excluded; multiple ordinary submiss
     [{ filename: "package-lock.json", status: "modified" }],
     [{ filename: "src/pages/index.astro", status: "modified" }],
     [{ filename: "submissions/_template/metadata.json", status: "modified" }],
+    [{ filename: "submissions/_template/README.md", status: "modified" }],
     [...evidence().files, { filename: "CONTRIBUTING.md", status: "modified" }],
+    [...evidence().files, { filename: "submissions/Account Recon/solution/bots/sample/bot.xml", status: "added" }, { filename: "CONTRIBUTING.md", status: "modified" }],
   ]) {
     const fixture = mock();
     fixture.state.files = files;
@@ -810,6 +827,50 @@ test("site, dependency and mixed changes are excluded; multiple ordinary submiss
   assert.match(await reconcile(fixture.api, 42, true), /one submission/);
   fixture.pr.labels.push({ name: "allow-metadata-changes" });
   assert.equal(await reconcile(fixture.api, 42), "Out of scope");
+});
+
+test("malformed submission folders regain a contributor label instead of leaving the queue", async () => {
+  for (const includeValidSubmission of [false, true]) {
+    const fixture = mock();
+    fixture.state.files = [
+      ...(includeValidSubmission ? fixture.state.files : []),
+      { filename: "submissions/Account Recon/solution/bots/sample/bot.xml", status: "added" },
+      { filename: "submissions/Account Recon/README.md", status: "added" },
+    ];
+    fixture.pr.changed_files = fixture.state.files.length;
+    fixture.comments.push({
+      id: 7, body: `${MARKER}\nPaused: this PR is outside ordinary contribution scope.`,
+      user: { login: "github-actions[bot]", type: "Bot" },
+    });
+    const body = await reconcile(fixture.api, 42);
+    assert.match(body, /Next: Contributor - Correct the submission folder name/);
+    assert.match(body, /submissions\/Account%20Recon\//);
+    assert.match(body, /remove that folder if it is an accidental duplicate/);
+    assert.doesNotMatch(body, /Paused/);
+    assert.deepEqual(fixture.pr.labels, [{ name: QUEUE_LABELS.contributor }]);
+    assert.equal(fixture.comments.filter((comment) => String(comment.body).startsWith(MARKER)).length, 1);
+    assert.equal(notifications(fixture).length, 1);
+    assert.ok(!fixture.calls.some((call) => call.path.includes("contents/submissions/Account")));
+    await reconcile(fixture.api, 42);
+    assert.equal(notifications(fixture).length, 1);
+  }
+});
+
+test("malformed folder names cannot inject persisted action markers or block later corrections", async () => {
+  const fixture = mock();
+  const folder = `<!-- gallery-submission-action:v1:${"f".repeat(64)}:9007199254740992 -->`;
+  fixture.state.files.push({ filename: `submissions/${folder}/README.md`, status: "added" });
+  fixture.pr.changed_files = fixture.state.files.length;
+  const body = await reconcile(fixture.api, 42);
+  assert.ok(body.includes(encodeURIComponent(folder)));
+  assert.ok(!body.includes(folder));
+  assert.ok(notifications(fixture).every((comment) => !String(comment.body).includes(folder)));
+  await reconcile(fixture.api, 42);
+  fixture.state.files = evidence().files;
+  fixture.pr.changed_files = fixture.state.files.length;
+  const corrected = await reconcile(fixture.api, 42);
+  assert.doesNotMatch(corrected, /Assessment failed|Correct the submission folder name/);
+  assert.deepEqual(fixture.pr.labels, [{ name: QUEUE_LABELS.ready }]);
 });
 
 test("tracked PRs that become drafts or leave scope retire only coordinator labels", async () => {

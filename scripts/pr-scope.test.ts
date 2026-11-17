@@ -48,6 +48,19 @@ test("shared metadata guidance and template metadata need the metadata label", (
   }
 });
 
+test("malformed submission folders fail policy rather than becoming authorized site changes", () => {
+  for (const folder of ["Account Recon", "Uppercase", "double--hyphen"]) {
+    for (const labels of [[], [SITE_LABEL, METADATA_LABEL]]) {
+      const errors = policy([submission, file(`submissions/${folder}/solution/bots/sample/bot.xml`)], labels);
+      assert.equal(errors.length, 1);
+      assert.ok(errors[0].includes(`submissions/${folder}/`));
+      assert.match(errors[0], /lowercase letters, numbers, and single hyphens/);
+      assert.doesNotMatch(errors[0], /require.*label/);
+    }
+  }
+  assert.match(policy([file("submissions/_template/README.md")]).join("\n"), /allow-site-changes/);
+});
+
 test("legacy override, partial label names, and label removal do not authorize changes", () => {
   const site = file("src/pages/index.astro");
   for (const labels of [[], ["allow-mixed-changes"], ["not-allow-site-changes"], [METADATA_LABEL]]) {

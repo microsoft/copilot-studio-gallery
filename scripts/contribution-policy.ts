@@ -24,7 +24,10 @@ export function checkContributionPolicy(
   const errors: string[] = [];
   const metadataAllowed = labels.includes(METADATA_LABEL);
   const siteAllowed = labels.includes(SITE_LABEL);
-  const { slugs, sites, contracts, generated, payloadChanges } = classifyContributionFiles(files);
+  const { slugs, invalidSubmissions, sites, contracts, generated, payloadChanges } = classifyContributionFiles(files);
+  for (const folder of invalidSubmissions) {
+    errors.push(`Invalid submission folder \`submissions/${folder}/\`: use lowercase letters, numbers, and single hyphens, or remove this folder if it is an accidental duplicate.`);
+  }
   if (contracts.length && !metadataAllowed) {
     errors.push(`Metadata contract changes require the maintainer label ${METADATA_LABEL}: ${[...new Set(contracts)].join(", ")}`);
   }
