@@ -6,85 +6,144 @@ content: |+
   description: Use this skill whenever the user asks for an insights/archival/reporting analysis of a SharePoint list from a connected SharePoint knowledge source;
   ---
   <!-- bic:source=generated -->
-  <!-- bic:source=upload -->
-  Before starting, verify that configured SharePoint connector actions, agent flows, or equivalent tools can discover approved lists and their schemas, retrieve list items page by page. A SharePoint knowledge source alone does not guarantee these capabilities. If any capability is unavailable, stop and name the missing capability.
+  # SP List Archiv Reporting Agent
 
-  ## Step 1 – Identify the Target List
+  ## Skill Name
 
-  1. Read the user request and identify the requested SharePoint list name.
-  2. Inspect the selected SharePoint knowledge source.
-  3. Retrieve all available SharePoint lists.
-  4. Perform a case-insensitive exact match on list title (and any explicit aliases in list metadata).
-  5. Proceed only on an exact match or an explicit user selection; otherwise stop and prompt the user to choose from the available lists.
+  sp\-list\-report\-generator
 
-  ### Validation Logic
-  Before performing any analysis, enumerate all SharePoint lists available in the selected knowledge source.
+  ## Overview
 
-    The requested data source must be explicitly mapped to an existing SharePoint list.
+  Generate secure, interactive HTML analytics and archival\-candidate reports from approved SharePoint lists.
 
-    Allowed conditions to continue:
-    - Exact list name match.
-    - User explicitly selects a list from the available lists.
-    - Alias defined in list metadata.
+  The Skill discovers and validates SharePoint lists, retrieves their schemas and accessible records, performs analytics, identifies potential archival candidates, and generates downloadable HTML reports.
 
-    Forbidden behavior:
-    - Do not infer lists from business terminology.
-    - Do not infer lists from column names.
-    - Do not infer lists from data values.
-    - Do not infer lists from semantic similarity.
-    - Do not select a list because it appears related.
+  **Report Delivery:** All generated reports must be delivered directly in Copilot Chat as downloadable HTML attachments.
 
-    Examples:
-
-    User request:
-    Create a report for Campaign
-
-    Available lists:
-    - Campaign
-    - Product Catalog
-
-    Result:
-    Proceed with Campaign.
-
-    User request:
-    Create a report for sales data
-
-    Available lists:
-    - Campaign
-    - Product Catalog
-
-    Result:
-    Stop.
-    Return available lists.
-    Ask the user to select one.
-
-    User request:
-    Create a report for quarterly revenue
-
-    Available lists:
-    - Campaign
-    - Product Catalog
-
-    Result:
-    Stop.
-    Do not select Campaign.
-
-  ### If the requested list does not exist:
-
-  - Stop the process immediately.
-  - Do not analyze data.
-  - Do not generate a report.
-  - Return all available SharePoint lists.
-  - Return closest matching list names.
-
-  Proceed only if the requested list exists.
-  For example: if the user requests "sales" and only a "Product" list exists that happens to contain sales-related data, stop and ask the user to choose an existing list from the knowledge source.
+  The Skill operates in read\-only mode for SharePoint data. It must never modify, delete, move, or archive source list items.
 
   ---
 
-  ## Step 2 – Discover List Structure
+  # Preflight Validation
 
-  Retrieve:
+  Before starting report generation, verify that configured SharePoint connector actions, agent flows, or equivalent tools can:
+
+  1. Discover approved SharePoint lists.
+  2. Retrieve list metadata and schemas.
+  3. Retrieve list items through pagination.
+  4. Follow continuation tokens until all accessible records within the confirmed scope have been retrieved.
+  5. Provide the data required for analytics and archival evaluation.
+  6. Generate a complete HTML report.
+  7. Return the generated HTML file as a downloadable attachment in Copilot Chat.
+
+  A SharePoint knowledge source alone does not guarantee list discovery, schema retrieval, or paginated item retrieval.
+
+  If any required capability is unavailable, stop and clearly identify the missing capability.
+
+  **No SharePoint file\-storage actions are required for report generation or delivery.**
+
+  ---
+
+  # Step 1 – Identify the Target List
+
+  Read the user request and identify the requested SharePoint list name.
+
+  Inspect the selected SharePoint knowledge source.
+
+  Retrieve all available SharePoint lists.
+
+  Perform a case\-insensitive exact match against list titles and explicitly defined aliases in list metadata.
+
+  Proceed only when an exact match or explicit user selection exists.
+
+  ## Validation Logic
+
+  Before performing any analysis, enumerate all SharePoint lists available through the selected knowledge source and authorized tools.
+
+  The requested data source must explicitly map to an existing SharePoint list.
+
+  ### Allowed Conditions
+
+  Proceed only when:
+
+  - The requested name exactly matches a list title, case\-insensitively.
+  - The user explicitly selects a list from the available lists.
+  - An explicitly defined alias in list metadata matches the request.
+
+  ### Forbidden Behavior
+
+  Never select a SharePoint list based on:
+
+  - Business terminology
+  - Column names
+  - Data values
+  - Semantic similarity
+  - Assumed relationships
+  - Related business context
+
+  ### Example 1
+
+  User request:
+
+  Create a report for Campaign.
+
+  Available lists:
+
+  - Campaign
+  - Product Catalog
+
+  Result:
+
+  Proceed with Campaign.
+
+  ### Example 2
+
+  User request:
+
+  Create a report for sales data.
+
+  Available lists:
+
+  - Campaign
+  - Product Catalog
+
+  Result:
+
+  Stop and ask the user to select an available list.
+
+  ### Example 3
+
+  User request:
+
+  Create a report for quarterly revenue.
+
+  Available lists:
+
+  - Campaign
+  - Product Catalog
+
+  Result:
+
+  Stop. Do not infer that Campaign contains quarterly revenue information.
+
+  ## Missing List Handling
+
+  If the requested list does not exist:
+
+  1. Stop immediately.
+  2. Do not analyze data.
+  3. Do not generate a report.
+  4. Return the available SharePoint list names.
+  5. Suggest the closest matching list titles when applicable.
+  6. Ask the user to select an existing list.
+
+  Never automatically select a semantically related list.
+
+  ---
+
+  # Step 2 – Discover List Structure
+
+  For the confirmed SharePoint list, retrieve:
 
   - List title
   - Internal name
@@ -92,145 +151,306 @@ content: |+
   - Created date
   - Last modified date
   - All columns
+  - Column display names
+  - Column internal names
   - Column types
   - Required fields
   - Indexed fields
   - Lookup fields
-  - Choice fields
+  - Choice fields and available values
   - Person fields
   - Managed metadata fields
 
-  Generate a schema summary.
+  Generate a schema summary describing the list structure.
+
+  Preserve internal column names for accurate field mapping.
+
+  If required schema information cannot be retrieved, clearly identify the limitation rather than inventing metadata.
 
   ---
 
-  ## Step 3 – Analyze Data
+  # Step 3 – Analyze Data
 
-  Analyze all accessible records within the confirmed scope, retrieving them page by page through the configured tool and following its continuation tokens. Respect any hard per-call or per-report limit enforced by the configured tool itself; if that connector-level limit would be exceeded, ask the user to narrow the scope. Never silently truncate or sample records.
+  Retrieve all accessible records within the confirmed scope.
 
-  Retrieve and analyze every accessible record regardless of total item count — full retrieval is required for accurate statistics, insights, and archival-candidate evaluation. When the total number of retrieved items exceeds 1,000, keep this full retrieval and evaluation, but record that the list is large: Step 6 renders the report in summary mode for lists over that size (overall analysis plus the Archival Candidates report, with the full per-item data table omitted) instead of asking the user to narrow the scope.
+  Use the configured SharePoint connector or equivalent tool to retrieve records page by page.
 
-  Generate:
+  Follow continuation tokens until all accessible records have been retrieved.
 
-  ### General Statistics
+  Respect hard connector\-level limits.
+
+  If a connector\-enforced limit prevents complete retrieval, ask the user to narrow the scope.
+
+  Never silently truncate, sample, or omit records from the analysis.
+
+  ## Large\-List Handling
+
+  Retrieve and analyze every accessible record regardless of total item count, subject to connector\-enforced limits.
+
+  When the retrieved record count exceeds 1,000:
+
+  - Continue full data retrieval.
+  - Analyze all retrieved records.
+  - Evaluate archival eligibility for every retrieved record.
+  - Mark the report for Large\-List Summary Mode.
+  - Omit the full per\-item Data Table from the final HTML report.
+  - Retain overall analytics and the Archival Candidates section.
+
+  The 1,000\-item threshold controls report presentation, not data retrieval.
+
+  ## General Statistics
+
+  Calculate:
 
   - Total records
   - Distinct values
   - Missing values
   - Data completeness score
 
-  ### Trend Analysis
+  ## Trend Analysis
+
+  Calculate relevant:
 
   - Monthly trends
   - Annual trends
   - Growth trends
 
-  ### Category Analysis
+  Use available date fields and valid historical data.
+
+  Do not fabricate trends when sufficient data is unavailable.
+
+  ## Category Analysis
+
+  Calculate:
 
   - Top categories
-  - Frequency distribution
+  - Frequency distributions
   - Ranking statistics
 
-  ### Ownership Analysis
+  ## Ownership Analysis
+
+  Calculate:
 
   - Records by owner
   - Top contributors
 
-  ### Quality Analysis
+  Use available ownership and person\-related fields.
+
+  If ownership fields are unavailable, indicate that ownership analysis could not be performed.
+
+  ## Quality Analysis
+
+  Identify:
 
   - Empty fields
+  - Missing values
   - Duplicate values
   - Potential anomalies
+  - Data completeness issues
 
   ---
 
-  ## Step 4 – Identify Archival Candidates
+  # Step 4 – Identify Archival Candidates
 
+  Identify potential archival candidates for human review.
 
-  Flag potential archival candidates for human review, never confirmed safe-to-archive records. When only inactivity is used, explicitly label them as potential candidates based on inactivity only. Include a notice in the report that status and inactivity do not establish archival approval and that applicable retention policies, legal holds, dependencies, and organizational approvals must be reviewed before any archival action through a separate approved process. This step only identifies and reports candidates — never delete, update, move, or otherwise modify any list item.
+  Archival analysis is advisory only.
 
-  ### Default Archival Criteria
+  Never classify records as confirmed safe to archive based solely on status and inactivity.
 
-  When the list has a usable completeness-style field (see "Resolving the Status-like Field" below), an item qualifies as an archival candidate when **both** of the following are true:
+  Never delete, update, move, or archive SharePoint list items.
 
-  - Its status-like field (a Choice or Text column such as `Status`, `State`, `Stage`, or similar, matched case-insensitively) is set to a completed/closed value — `Completed` if that exact choice exists, otherwise an equivalent closed value such as `Done`, `Closed`, or `Resolved`.
-  - Its `Modified` (last modified) date is more than 30 days before the date the report is generated.
+  ## Default Archival Criteria
 
-  For example, an item with Status = Completed and a Modified date 40 days before report generation qualifies. An item with Status = Completed but modified 10 days ago does not qualify, and an item last modified 45 days ago but with Status = In Progress does not qualify either.
+  When a usable completeness\-related field exists, an item qualifies as a potential archival candidate when both conditions are satisfied:
 
-  When the list has **no** column relevant to completeness at all (no Choice/Text column whose name or available values suggest a status/state/phase/stage concept — see "Resolving the Status-like Field"), do not require a status condition the list cannot express. Instead limit the archival criterion to inactivity alone: an item qualifies as an archival candidate solely because its `Modified` date is more than 30 days before the report generation date. State in the report that completeness-based criteria were unavailable for this list and that only inactivity was used.
+  1. The confirmed status\-like field contains a completed or closed value.
+  2. The system Modified date is more than 30 days before report generation.
 
-  ### Resolving the Status-like Field
+  Supported closed values may include:
 
-  1. From the Step 2 schema summary, find Choice or Text columns whose name suggests a status/state concept (`Status`, `State`, `Stage`, `Phase`) or whose available choice values include a closed/done-sounding value (`Completed`, `Done`, `Closed`, `Resolved`).
-  2. If exactly one such column exists, use it together with its completed/closed value, combined with the inactivity threshold (see Default Archival Criteria).
-  3. If more than one plausible column exists, ask the user which column and which value(s) represent "completed/closed" before generating the archival section — never guess silently.
-  4. If no plausible status/phase/stage-like column exists anywhere in the schema, do not ask the user to pick or invent one. Fall back automatically to the inactivity-only criterion described above (30 days by default, or the user-specified duration — see Custom Criteria).
-  5. Remember the confirmed column and value (or the fact that no completeness field applies) plus the threshold for the rest of this report so the archival view reflects exactly what was confirmed or used.
+  - Completed
+  - Done
+  - Closed
+  - Resolved
 
-  ### Custom Criteria
+  Prefer Completed when that exact value exists.
 
-  If the user specifies a different inactivity threshold (for example "unmodified for 60 days") or a different status/value, use their criteria instead of the 30-day/Completed default, and state the exact criteria actually used in the report. This applies whether or not a completeness field is available: when the list has no completeness field, apply the user-specified duration to the inactivity-only criterion; when a completeness field is available, apply the user-specified duration alongside it.
+  ### Example
 
-  ### Computing Results
+  | Status | Days Since Modified | Potential Candidate |
+  | --- | --- | --- |
+  | Completed | 40 | Yes |
+  | Completed | 10 | No |
+  | In Progress | 45 | No |
+  | Closed | 60 | Yes |
 
-  For every record retrieved in Step 3, evaluate the applicable criteria — both the status condition and the inactivity condition when a completeness field is available, or the inactivity condition alone when it is not — and build a list of qualifying items, each carrying: the item's title/ID, the status value (when applicable), the Modified date, and the number of days since Modified. Keep this list available for Step 6's Archival Candidates section and for the Output Requirements summary.
+  The table illustrates the default logic, assuming Completed and Closed are confirmed qualifying values.
 
-  ---
+  ## Resolving the Status\-like Field
 
-  ## Step 5 – Generate Insights
+  Examine Choice and Text columns whose names suggest:
 
-  Create business-oriented insights.
+  - Status
+  - State
+  - Stage
+  - Phase
+
+  Also examine Choice columns whose available values include completed or closed terminology.
+
+  ### One Plausible Column
+
+  If exactly one plausible status\-like column exists, use it with the applicable completed or closed value.
+
+  If multiple qualifying values are plausible and the intended closed value cannot be determined unambiguously, request clarification.
+
+  ### Multiple Plausible Columns
+
+  If multiple status\-like columns exist:
+
+  - Ask the user to select the appropriate column.
+  - Ask which value or values represent completion.
+  - Do not guess silently.
+
+  ### No Completeness\-related Column
+
+  If no suitable completeness\-related field exists:
+
+  - Apply inactivity\-only criteria.
+  - Identify items whose Modified date is more than 30 days before report generation.
+  - Clearly label results as potential candidates based on inactivity only.
+  - Explain that no completeness\-related field was available.
+
+  ## Custom Archival Criteria
+
+  If the user specifies custom criteria, apply them instead of the corresponding defaults.
 
   Examples:
 
-  - Most used categories
-  - Fastest growing areas
-  - Data quality issues
-  - Process bottlenecks
-  - Trends and anomalies
-  - Share of records that qualify as archival candidates, and what that implies for list cleanup
+  - Unmodified for 60 days
+  - Status = Resolved
+  - Status = Closed and unmodified for 90 days
 
-  Prioritize actionable recommendations.
+  Use the confirmed status column and values.
+
+  Apply the user\-specified inactivity threshold.
+
+  State the exact criteria used in the generated report.
+
+  ## Candidate Evaluation
+
+  Evaluate every retrieved record.
+
+  For each qualifying candidate, retain:
+
+  - Item title or ID
+  - Status value, when applicable
+  - Modified date
+  - Days since last modification
+  - Trusted SharePoint item URL, when available
+
+  Use the actual report generation date as the reference for inactivity calculations.
+
+  ## Archival Governance
+
+  Include the following notice in the generated report:
+
+  **Archival Assessment Notice**
+
+  Potential archival candidates are identified using status and inactivity criteria for review purposes only.
+
+  These criteria do not establish that an item is legally, operationally, or organizationally approved for archival.
+
+  Applicable retention policies, legal holds, dependencies, and organizational approvals must be reviewed before any archival action through a separate approved process.
 
   ---
 
-  ## Step 6 – Build Interactive HTML Report
+  # Step 5 – Generate Insights
 
-  Produce a single HTML file with all CSS and JavaScript embedded inline, except that Chart.js (version 4) may be loaded from an exact versioned CDN URL with matching SRI `integrity` metadata and `crossorigin="anonymous"` as the only permitted external dependency. If the exact version and matching SRI cannot be verified, do not load the CDN asset and use embedded browser APIs instead. Do not use external Bootstrap, DataTables, fonts, stylesheets, scripts, or other CDN resources. Implement table filtering, sorting, pagination, and responsive styling using embedded CSS and JavaScript.
+  Generate actionable business\-oriented insights using the retrieved data.
 
-  Treat SharePoint field names and values as untrusted data. Use a real JSON serializer; before embedding serialized data in a `<script type="application/json">` element, escape `<`, `>`, `&`, U+2028, and U+2029, then read it via `textContent` and parse it. Insert data-driven content using `textContent`, `document.createElement`, and other safe DOM APIs, never `innerHTML`. Render rich-text fields as plain text unless a trusted sanitizer is available.
+  Include relevant findings such as:
 
-  ### Technologies
+  - Most frequently used categories
+  - Fastest\-growing categories
+  - Monthly and annual trends
+  - Data\-quality issues
+  - Missing or incomplete information
+  - Process bottlenecks
+  - Ownership distributions
+  - Potential anomalies
+  - Percentage of records identified as archival candidates
+  - Opportunities for data cleanup
+
+  Prioritize actionable recommendations supported by the analyzed data.
+
+  Clearly distinguish observed findings from recommendations.
+
+  Do not fabricate business insights or unsupported conclusions.
+
+  ---
+
+  # Step 6 – Build Interactive HTML Report
+
+  Generate a complete, standalone, interactive HTML report.
+
+  All CSS and JavaScript must be embedded directly in the HTML file, except for the explicitly permitted Chart.js dependency.
+
+  ## Technology Requirements
 
   Use:
-  - Chart.js
 
-  Use only libraries that can be used safely in a browser.
+  - HTML5
+  - CSS3
+  - JavaScript
+  - Chart.js version 4, when safely available
 
-  ### Large-List Summary Mode (over 1,000 items)
+  Chart.js may be loaded only from an exact versioned CDN URL with matching verified SRI integrity metadata and crossorigin="anonymous".
 
-  When Step 3 recorded that the list's total item count exceeds 1,000, build the report in summary mode:
+  If the exact version and matching SRI cannot be verified, do not load the CDN asset.
 
-  - Include the Executive Summary, Interactive Charts, and Archival Candidates sections as normal — they are aggregate/filtered views, not a full per-item dump.
-  - Omit the full per-item Data Table section described below entirely.
-  - Near the top of the report, state plainly that the list has more than 1,000 items, that per-item detail was omitted for this reason, and that the report instead provides overall analysis and the archival report.
+  Instead, implement charts using embedded browser APIs.
 
-  For lists at or under 1,000 items, build the full report including the Data Table section below.
+  Do not use external:
 
-  ### Executive Summary
+  - Bootstrap
+  - DataTables
+  - Fonts
+  - Stylesheets
+  - Scripts
+  - Other CDN dependencies
+
+  Implement interactive functionality using embedded CSS and JavaScript.
+
+  ## Secure Data Rendering
+
+  Treat all SharePoint field names and values as untrusted data.
+
+  Requirements:
+
+  - Serialize report data using a real JSON serializer.
+  - Before embedding serialized data in a script element with type="application/json", escape <, >, &, U\+2028, and U\+2029.
+  - Read embedded JSON using textContent.
+  - Parse the data using JSON.parse.
+  - Insert data\-driven content using safe DOM APIs such as textContent and document.createElement.
+  - Never use innerHTML for data\-driven content.
+  - Render rich\-text fields as plain text unless a trusted sanitizer is available.
+
+  ## Executive Summary
 
   Display:
 
-  - List name
-  - Record count
+  - SharePoint list name
+  - Total record count
   - Column count
   - Last update date
   - Top insights
+  - Potential archival candidate count
+  - Archival candidate percentage
 
-  ### Interactive Filters
+  ## Interactive Filters
 
-  Provide filters for:
+  Provide relevant filters for:
 
   - Text fields
   - Choice fields
@@ -238,11 +458,18 @@ content: |+
   - Person fields
   - Date fields
 
-  Filters must update charts, KPIs and tables dynamically.
+  Filters must dynamically update:
 
-  ### Interactive Charts
+  - KPIs
+  - Charts
+  - Tables
+  - Relevant summary metrics
 
-  Generate appropriate charts automatically.
+  Ensure that displayed counts accurately reflect the selected filter scope.
+
+  ## Interactive Charts
+
+  Automatically generate appropriate charts based on available data.
 
   Support:
 
@@ -251,263 +478,442 @@ content: |+
   - Doughnut charts
   - Line charts
 
+  For pie and doughnut charts, display either:
 
-  For every colored segment in the pie or doughnut chart, display either:
-  - The number of records/items for each category
-  - The percentage share of the total for each category
+  - Category record counts
+  - Category percentages
 
+  Provide:
 
-  Provide hover tooltips and legend controls.
+  - Hover tooltips
+  - Legend controls
+  - Responsive chart layouts
+  - Dynamic updates when filters change
 
-  ### Data Table
+  Do not generate charts that cannot be supported by the available data.
 
-  Only build this section for lists at or under 1,000 items (see "Large-List Summary Mode" above). When built, it must meet these requirements:
+  ---
 
-  - Sort on every column
-  - Ascending and descending sorting
-  - Search box with placeholder:
-    Quick search in table...
-  - Pagination
-  - Column visibility controls
-  - Export buttons:
-    - CSV (Excel-compatible)
-    - Copy
+  ## Large\-List Summary Mode
 
-  For CSV export, neutralize spreadsheet formulas by prefixing an apostrophe when a cell's first non-whitespace or control character is `=`, `+`, `-`, or `@`.
+  When the retrieved record count exceeds 1,000, generate the report in summary mode.
 
-  ### Archival Candidates Section
+  Include:
 
-  Add a dedicated section (a separate tab or a clearly labeled panel) titled "Archival Candidates" that:
+  - Executive Summary
+  - General Statistics
+  - Trend Analysis
+  - Category Analysis
+  - Ownership Analysis
+  - Data Quality Analysis
+  - Interactive Charts
+  - Archival Candidates
 
-  - States the exact criteria used in plain language at the top (for example, "Status = Completed and not modified in over 30 days", or, when no completeness field exists, "Not modified in over 30 days (no completeness-related field was available on this list)").
-  - Shows a KPI count of qualifying items out of total records.
-  - Lists qualifying items, from Step 4, in a sortable, searchable, paginated table with columns: Title/ID, status value (when applicable), Modified date, and days since last modification.
-  - Reuses the same Detail Modal Popup and Open SharePoint Item button behavior described below for each row.
-  - If no items qualify, states that clearly instead of leaving an empty table unexplained.
-  - Always include this section, including for lists over 1,000 items — it is unaffected by Large-List Summary Mode.
+  Omit the full per\-item Data Table.
 
-  ### Detail Modal Popup
+  Near the top of the report, display a notice explaining:
 
-  Selecting a row must open a modal displaying:
+  - The list contains more than 1,000 records.
+  - All accessible records were analyzed.
+  - The full per\-item table was omitted to keep the report manageable.
+  - Overall analytics and archival candidates remain available.
 
-  - All list fields
-  - Display names
-  - Internal names
-  - Values
+  For lists containing 1,000 records or fewer, generate the full report.
 
-  Use a responsive two-column layout.
+  ---
 
-  ### Open SharePoint Item Button
+  ## Data Table
 
-  Inside the modal popup provide:
-
-  Open SharePoint Item
+  Include the full Data Table only when the retrieved record count is 1,000 or fewer.
 
   Requirements:
 
-  - Open in a new browser tab
-  - Use only the trusted SharePoint item URL returned by the configured connector or tool
-  - Permit the link only when it uses HTTPS and its origin matches the selected SharePoint site's origin; otherwise omit it
-  - Use target="_blank" and rel="noopener noreferrer"
+  - Display all accessible records.
+  - Support sorting on every column.
+  - Support ascending and descending sorting.
+  - Provide pagination.
+  - Provide column visibility controls.
+  - Support interactive filtering.
+  - Provide a quick search box.
+
+  Search placeholder:
+
+  Quick search in table...
+
+  ### Export Functions
+
+  Provide:
+
+  - CSV export
+  - Copy functionality
+
+  CSV exports must be Excel\-compatible.
+
+  Neutralize spreadsheet formulas by prefixing an apostrophe when a cell's first non\-whitespace or control character is:
+
+  - =
+  - \+
+  - \-
+  - @
+
+  Apply this protection to every exported cell.
 
   ---
 
-  ### Step 7 – Save Report
+  ## Archival Candidates Section
 
-  After successfully generating the HTML report:
+  Always include a dedicated section titled:
 
-  **1\. Default Behavior**
+  **Archival Candidates**
 
-  - Generate the HTML report and provide it as a downloadable file directly in the chat.
-  - Do not upload, save, or publish the report to SharePoint unless the user explicitly requests SharePoint storage.
-  - Scheduled or recurring report generation must also follow this default unless SharePoint storage was explicitly configured or authorized for that workflow.
+  This section must appear for every list, regardless of size.
 
-  **2\. Conditional SharePoint Storage**
+  ### Archival Criteria
 
-  Only when the user explicitly requests SharePoint storage:
+  Display the exact criteria used.
 
-  - **Generate a Unique Filename**
-      - Retain only [A\-Za\-z0\-9\_\-] in the list name.
-      - Replace consecutive unsupported characters with \_.
-      - Trim leading and trailing underscores and hyphens.
-      - Limit the sanitized list\-name portion to 80 characters.
-      - Use SharePointList if empty.
-      - Apply the filename format: Report\_<SanitizedListName>\_<yyyyMMdd\_HHmmss>.html
-      - Prevent overwriting existing files.
-  - **Validate Destination Security**
-      - Use only the pre\-approved SharePoint destination.
-      - Verify that its effective audience is no broader than the source list and included items.
-      - If permissions cannot be verified or are broader, do not upload.
-  - **Upload Report**
-      - Invoke the configured SharePoint **Create file** action or flow.
-      - Save the complete HTML report to the approved destination.
-      - Capture the returned file URL or path.
+  Examples:
 
-  **3\. Response and Error Handling**
+  **Status\-based:**
 
-  - If SharePoint storage was not requested, return only the downloadable HTML report.
-  - If storage succeeds, provide the confirmed SharePoint URL or path.
-  - If security validation fails, skip the upload and explain why.
-  - If file creation fails, report the actual error.
-  - If no URL or path is returned, state that the location is unavailable.
-  - Never fabricate URLs or claim successful storage without confirmation.
-  ---
-  ## Output Requirements
+  Status = Completed and not modified in over 30 days.
 
-  Return the following for every successfully generated report:
+  **Inactivity\-only:**
 
-  - **Report summary:** Overview of the analyzed SharePoint list and generated report.
-  - **Report file name:** Unique generated HTML filename.
-  - **List schema summary:** List metadata, column information, and relevant schema details.
-  - **Insights summary:** Key statistics, trends, category analysis, ownership insights, and data\-quality findings.
-  - **Archival candidates summary:** Exact criteria used, including status column/value when applicable, inactivity threshold, and qualifying candidate count out of total records.
-  - **Report delivery status:** Indicate the selected delivery method and its execution outcome.
-  - **Summary\-mode notification:** When the list exceeds 1,000 items, explain that the report contains overall analysis and archival candidates but omits the full per\-item data table.
-  - **Governance notice:** State that archival candidates require retention, legal\-hold, dependency, and organizational review before any archival action.
+  Not modified in over 30 days. No completeness\-related field was available.
 
-  ### Delivery\-Specific Outputs
+  ### Archival KPIs
 
-  **Default: Copilot Chat**
+  Display:
 
-  When SharePoint storage has not been explicitly requested or authorized:
+  - Total records analyzed
+  - Potential archival candidate count
+  - Percentage of records qualifying as candidates
+  - Inactivity threshold
+  - Status criteria, when applicable
 
-  - Return the generated HTML file directly in Copilot Chat as a downloadable attachment.
-  - Provide the generated report filename.
-  - Do not invoke SharePoint Create file.
-  - Do not require or return a SharePoint report URL or storage location.
-  - Consider delivery successful when the downloadable HTML file is available to the user.
+  ### Candidate Table
 
-  **Optional: SharePoint Storage**
+  Provide a searchable, sortable, paginated table.
 
-  Only when SharePoint storage is explicitly requested or authorized for the execution:
+  Columns:
 
-  - Verify that the configured Create file action or equivalent flow is available.
-  - Obtain and validate the approved destination.
-  - Verify that the destination's effective audience is no broader than the source list and included items.
-  - Upload the generated HTML report.
-  - Return the actual SharePoint URL or path supplied by Create file.
-  - Include the confirmed SharePoint storage location and filename.
-  - Never fabricate URLs or claim successful storage without confirmation.
+  - Title/ID
+  - Status, when applicable
+  - Modified date
+  - Days since last modification
 
-  ### Failure Handling
+  Support:
 
-  - If report generation fails, identify the missing capability or actual error.
-  - If Chat attachment delivery fails, report the limitation.
-  - If optional SharePoint storage fails, explain the error and provide the downloadable HTML file in Copilot Chat when supported.
-  - If destination permissions cannot be verified, do not upload.
-  - Never claim successful delivery unless the selected delivery method completes successfully.
+  - Sorting
+  - Quick search
+  - Pagination
+  - Detail modal
+  - Open SharePoint Item action when a trusted URL is available
+
+  If no records qualify, display:
+
+  **No potential archival candidates were identified using the selected criteria.**
+
+  Do not display an unexplained empty table.
+
+  For lists exceeding 1,000 items, the Archival Candidates table remains available even though the full Data Table is omitted.
 
   ---
 
-  ## Success Criteria
+  ## Detail Modal Popup
+
+  Selecting a row in either the Data Table or Archival Candidates table must open a detail modal.
+
+  Display:
+
+  - All available list fields
+  - Field display names
+  - Field internal names
+  - Field values
+
+  Use a responsive two\-column layout.
+
+  Provide a clear Close action.
+
+  Ensure the modal remains usable on desktop and mobile browsers.
+
+  ---
+
+  ## Open SharePoint Item
+
+  Inside the detail modal, provide an action labeled:
+
+  **Open SharePoint Item**
+
+  Requirements:
+
+  - Open the selected item in a new browser tab.
+  - Use only the trusted SharePoint item URL returned by the configured connector or tool.
+  - Require HTTPS.
+  - Verify that the URL origin matches the selected SharePoint site's origin.
+  - Use target="\_blank" and rel="noopener noreferrer".
+  - Omit the action if no valid trusted URL is available.
+
+  Never construct or guess SharePoint item URLs.
+
+  This action is for viewing source records only.
+
+  ---
+
+  # Step 7 – Generate and Deliver HTML Report
+
+  After successfully generating the HTML report, deliver it directly in Copilot Chat.
+
+  ## 1\. Generate a Unique Filename
+
+  Sanitize the SharePoint list name using these rules:
+
+  - Retain only [A\-Za\-z0\-9\_\-].
+  - Replace consecutive unsupported characters with \_.
+  - Remove leading and trailing underscores and hyphens.
+  - Limit the sanitized list\-name portion to 80 characters.
+  - Use SharePointList if the sanitized name is empty.
+
+  Use the filename format:
+
+  Report\_<SanitizedListName>\_<yyyyMMdd\_HHmmss>.html
+
+  Ensure filename uniqueness to prevent collisions.
+
+  ## 2\. Generate the Downloadable HTML File
+
+  Create a complete HTML file containing:
+
+  - Executive Summary
+  - Analytics and KPIs
+  - Interactive charts
+  - Dynamic filters
+  - Full Data Table when applicable
+  - Archival Candidates section
+  - Detail modal
+  - Secure SharePoint item links when available
+  - Embedded CSS
+  - Embedded JavaScript
+
+  Verify that the generated HTML file is valid and complete.
+
+  Ensure the file can be opened in a supported browser.
+
+  ## 3\. Deliver Through Copilot Chat
+
+  Return the generated HTML file directly in Copilot Chat as a downloadable attachment.
+
+  The downloadable file is the primary output of the Skill.
+
+  Provide the actual generated file rather than HTML source code pasted into the conversation.
+
+  Never fabricate file attachments or download links.
+
+  ## 4\. Delivery Failure Handling
+
+  If HTML generation fails:
+
+  - Identify the actual error.
+  - Do not claim that the report was generated successfully.
+
+  If downloadable attachment delivery fails:
+
+  - Clearly explain the limitation.
+  - Do not claim successful delivery.
+  - Preserve accurate reporting of any completed analysis.
+
+  If required capabilities are unavailable:
+
+  - Stop the affected operation.
+  - Identify the missing capability.
+  - Do not fabricate report results.
+
+  ---
+
+  # Output Requirements
+
+  For every successfully generated and delivered report, return:
+
+  ## 1\. Downloadable HTML Report
+
+  Provide the actual HTML file as a downloadable attachment in Copilot Chat.
+
+  ## 2\. Report Summary
+
+  Include:
+
+  - SharePoint list name
+  - Total records analyzed
+  - Total columns
+  - Report generation date
+  - Report mode: Full or Summary
+
+  ## 3\. Report Filename
+
+  Return the unique generated HTML filename.
+
+  ## 4\. List Schema Summary
+
+  Include:
+
+  - List metadata
+  - Column information
+  - Relevant field types
+  - Important schema observations
+
+  ## 5\. Insights Summary
+
+  Provide:
+
+  - Key statistics
+  - Trends
+  - Category insights
+  - Ownership insights
+  - Data\-quality findings
+  - Actionable recommendations
+
+  ## 6\. Archival Candidates Summary
+
+  Include:
+
+  - Exact archival criteria used
+  - Confirmed status column, when applicable
+  - Qualifying status values, when applicable
+  - Inactivity threshold
+  - Total potential archival candidates
+  - Candidate percentage out of total records
+
+  ## 7\. Summary Mode Notification
+
+  When the list exceeds 1,000 records, state that:
+
+  - All accessible records were analyzed.
+  - The report was generated in summary mode.
+  - The full per\-item Data Table was omitted.
+  - Overall analytics and the Archival Candidates section remain available.
+
+  ## 8\. Governance Notice
+
+  State that archival candidates are advisory and require applicable retention, legal\-hold, dependency, and organizational review.
+
+  ## 9\. Delivery Status
+
+  Confirm successful delivery only when the actual downloadable HTML attachment is available in Copilot Chat.
+
+  ---
+
+  # Success Criteria
 
   A successful execution must satisfy the following requirements.
 
-  ### 1\. SharePoint List Discovery and Validation
+  ## 1\. SharePoint List Discovery and Validation
 
   - Detect the requested SharePoint list.
-  - Validate its existence using exact list\-title matching, explicit metadata aliases, or direct user selection.
+  - Validate its existence through exact list\-title matching, explicit metadata aliases, or direct user selection.
   - Suggest available lists when no valid match exists.
-  - Never infer a list from business terminology, column names, data values, or semantic similarity.
+  - Never infer a list based on business terminology, column names, data values, or semantic similarity.
 
-  ### 2\. Schema Discovery and Data Analysis
+  ## 2\. Schema Discovery and Data Analysis
 
   - Discover the complete accessible list schema.
-  - Retrieve and analyze all accessible records through pagination, respecting connector\-enforced limits.
-  - Generate statistics, trends, category analysis, ownership insights, and data\-quality findings.
+  - Retrieve and analyze all accessible records through pagination.
+  - Respect connector\-enforced limits.
   - Never silently truncate or sample records.
+  - Generate statistics, trends, category analysis, ownership insights, and data\-quality findings.
 
-  ### 3\. Archival Candidate Identification
+  ## 3\. Archival Candidate Identification
 
-  - Identify potential archival candidates using confirmed or default criteria: 
-      - Completed/closed status and no modification in over 30 days when a usable completeness field exists.
-      - No modification in over 30 days when no completeness\-related field exists.
-      - Apply user\-specified inactivity thresholds when provided.
-  - State the exact criteria used.
-  - Report the number of qualifying candidates out of total records.
-  - Clearly identify inactivity\-only findings as potential candidates based on inactivity.
-  - Include a governance notice requiring applicable retention, legal\-hold, dependency, and organizational review.
-  - Never modify, delete, move, or archive source SharePoint list items.
+  - Identify potential archival candidates using confirmed or default criteria.
+  - Apply completed/closed status and inactivity criteria when a usable completeness field exists.
+  - Apply inactivity\-only criteria when no completeness\-related field exists.
+  - Use the default 30\-day threshold unless the user specifies another duration.
+  - Clearly state the exact criteria used.
+  - Report candidate counts and percentages.
+  - Include the archival governance notice.
+  - Never modify, delete, move, or archive source SharePoint items.
 
-  ### 4\. Interactive HTML Report Generation
+  ## 4\. Interactive HTML Report Generation
 
-  - Generate a complete, responsive, interactive HTML report.
-  - Include Executive Summary, analytics, interactive charts, filters, and insights.
-  - Include a dedicated Archival Candidates section for every list.
-  - Follow the Skill's secure HTML generation requirements.
+  - Generate a complete, standalone, responsive HTML report.
+  - Include Executive Summary, analytics, charts, filters, and insights.
+  - Include an Archival Candidates section for every list.
+  - Apply secure HTML generation requirements.
+  - Provide interactive functionality using embedded CSS and JavaScript.
 
-  **For lists containing 1,000 items or fewer:**
+  ### Lists Containing 1,000 Records or Fewer
 
-  - Include the full per\-item Data Table.
-  - Support sorting, pagination, quick search, and column visibility controls.
-  - Provide CSV export and Copy functionality.
+  - Include the full Data Table.
+  - Support sorting on every column.
+  - Provide pagination.
+  - Provide quick search.
+  - Provide column visibility controls.
+  - Support CSV export and Copy.
   - Provide an item\-detail modal.
-  - Include Open SharePoint Item when a trusted item URL is available.
+  - Provide Open SharePoint Item when a trusted URL is available.
 
-  **For lists containing more than 1,000 items:**
+  ### Lists Containing More Than 1,000 Records
 
   - Generate the report in summary mode.
-  - Include overall analysis, interactive charts, and archival candidates.
+  - Include overall analysis and interactive charts.
+  - Include the Archival Candidates section.
   - Omit the full per\-item Data Table.
-  - Clearly explain why the detailed table was omitted.
+  - Explain why the detailed table was omitted.
 
-  ### 5\. Report Delivery Success Criteria
+  ## 5\. HTML Report Delivery
 
-  **Default: Copilot Chat Delivery**
-
-  A Chat\-only execution is successful when:
+  A report delivery is successful when:
 
   - The HTML report is generated successfully.
-  - A unique report filename is assigned.
-  - The generated HTML file is returned as a downloadable attachment in Copilot Chat.
-  - The report summary, insights, schema information, and archival findings are provided.
-  - No SharePoint upload is performed.
+  - A unique filename is assigned.
+  - The complete HTML file is returned as a downloadable attachment in Copilot Chat.
+  - The user can access the generated attachment.
+  - The report summary, schema information, insights, and archival findings are provided.
 
-  **SharePoint Create file, SharePoint URL, and storage location are NOT required for Chat\-only success.**
+  The Skill must not claim successful delivery if the downloadable attachment was not generated or returned.
 
-  **Optional: SharePoint Storage**
-
-  When SharePoint storage is explicitly requested or authorized, successful SharePoint delivery additionally requires:
-
-  - Availability of the configured Create file action or equivalent flow.
-  - A validated, approved SharePoint destination.
-  - Verification that destination access is no broader than the source list and included items.
-  - Successful creation of the HTML report file.
-  - Confirmation that the file was saved without overwriting existing files.
-  - Retrieval of the actual SharePoint URL or path returned by Create file.
-  - Inclusion of the confirmed storage location in the response.
-
-  If SharePoint storage fails, do not mark SharePoint delivery as successful. Direct HTML delivery may still succeed independently when supported.
-
-  ### 6\. Security and Reliability
+  ## 6\. Security and Reliability
 
   - Use only approved SharePoint knowledge sources and authorized tools.
-  - Validate capabilities required for the selected delivery method.
-  - Do not require Create file capability for Chat\-only executions.
-  - Follow secure HTML generation and data\-handling requirements.
+  - Validate required capabilities before execution.
+  - Treat SharePoint data as untrusted when generating HTML.
+  - Prevent script injection and unsafe data rendering.
+  - Neutralize spreadsheet formulas in CSV exports.
+  - Validate SharePoint item URLs before displaying links.
   - Never modify source SharePoint list items.
-  - Never expose report data through unauthorized storage.
-  - Clearly report missing capabilities and execution failures.
-  - Never fabricate data, reports, URLs, or download links.
+  - Clearly report missing capabilities, permission issues, and execution failures.
+  - Never fabricate data, reports, or download links.
 
-  ### 7\. User Experience
+  ## 7\. User Experience
 
   - Generate unique report filenames.
-  - Support responsive layouts across desktop and mobile browsers.
-  - Provide interactive filtering, charts, and archival analysis.
+  - Provide responsive layouts across desktop and mobile browsers.
+  - Support interactive filtering, charts, and archival analysis.
   - Clearly communicate report scope, archival criteria, and findings.
-  - Support on\-demand execution through Copilot Chat and configured recurring workflows.
-  - Follow the explicitly authorized delivery configuration for each execution.
-  - Never assume SharePoint storage authorization from the existence of a recurring schedule.
+  - Support on\-demand execution through Copilot Chat.
+  - Support recurring execution only through explicitly configured workflows with a supported delivery channel.
+  - For recurring workflows, verify that the configured delivery mechanism can return the generated HTML file to its intended recipients.
+  - Do not mark recurring execution successful until the configured file delivery has completed.
 
-  ### Primary Success Condition
+  ---
 
-  Successfully generate an accurate, secure, interactive SharePoint analytics and archival report and deliver it through the authorized delivery method.
+  # Primary Success Condition
 
-  **Default success:** Downloadable HTML report delivered in Copilot Chat.
+  Successfully generate an accurate, secure, interactive SharePoint analytics and archival report and return the complete HTML file directly in Copilot Chat as a downloadable attachment.
 
-  **Optional SharePoint success:** HTML report successfully saved to an approved SharePoint destination, with the actual returned URL or path.
+  The Skill must:
 
-  SharePoint storage is optional and must never be treated as a mandatory requirement for successful Chat\-only report generation.
+  1. Validate the requested SharePoint list.
+  2. Discover its schema.
+  3. Retrieve and analyze accessible records.
+  4. Identify potential archival candidates.
+  5. Generate business\-oriented insights.
+  6. Build the interactive HTML report.
+  7. Generate a unique filename.
+  8. Return the downloadable HTML attachment.
+  9. Provide a concise report and archival summary.
+  10. Preserve all source SharePoint data without modification.
+
+  **A successful execution requires the actual downloadable HTML report to be delivered, not merely generated.**
 
 authoringSource: Generated
