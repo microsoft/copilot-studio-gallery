@@ -1,0 +1,475 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_agentnode": {
+        "api": {
+          "name": "shared_agentnode"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedagentnode_faa82aa6"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "86b4390547c64bf0b5e74096f3228bc0"
+      },
+      "shared_teams": {
+        "api": {
+          "name": "shared_teams"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedteams_0ff1c"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-teams-5407ad99-402c-4df1-9bda-cd7b454b6253"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "Recurrence": {
+          "type": "Recurrence",
+          "recurrence": {
+            "frequency": "Week",
+            "interval": 1
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "Quality Summary Flow New",
+                "nodes": [
+                  {
+                    "id": "start-cab96434-038b-4914-90c3-71a8f806c500",
+                    "name": "Recurrence",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 250,
+                      "y": 314.90908813476563
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "recurrence",
+                        "recurrence": {
+                          "frequency": "Week",
+                          "interval": 1
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "triggerTime": {
+                                "type": "string",
+                                "description": "ISO timestamp when the recurrence triggered"
+                              },
+                              "scheduledTime": {
+                                "type": "string",
+                                "description": "The scheduled time for this occurrence"
+                              }
+                            },
+                            "required": [
+                              "triggerTime",
+                              "scheduledTime"
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "agent-27d4e823-b881-4667-bc00-3e84d7e41e62",
+                    "name": "Agent",
+                    "type": "agent",
+                    "version": 1,
+                    "position": {
+                      "x": 566,
+                      "y": 315
+                    },
+                    "data": {
+                      "config": {
+                        "mode": "invoke",
+                        "instructions": "Detailed Consolidated Summary of existing recent Last month. Please provide suggestions and recommendations. Don't mention it in table format.",
+                        "botSchemaName": "cred7_qualityassuranceagentnew_BWc7Vr",
+                        "isHitlEscalationEnabled": false,
+                        "webSearchEnabled": false,
+                        "inlineInstructions": "",
+                        "outputMode": "text",
+                        "inlineModel": "claude-opus-5-5",
+                        "connectionName": "shared_agentnode",
+                        "instructionsRich": {
+                          "segments": [
+                            {
+                              "type": "static",
+                              "value": "Detailed Consolidated Summary of existing recent Last month. Please provide suggestions and recommendations. Don't mention it in table format."
+                            }
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "result": {
+                                "type": "string",
+                                "description": "The agent response text"
+                              },
+                              "status": {
+                                "type": "string",
+                                "description": "The completion status (e.g., Completed)"
+                              },
+                              "conversationId": {
+                                "type": "string",
+                                "description": "Unique identifier for the conversation"
+                              }
+                            },
+                            "required": [
+                              "result",
+                              "conversationId"
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "connector-5588b30d-46a6-4727-ade9-fe0ad9c88862",
+                    "name": "Post message in a chat or channel",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 882,
+                      "y": 315
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_teams",
+                        "displayName": "Microsoft Teams",
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1812/1.0.1812.4744/teams/icon.png",
+                        "brandColor": "#5558AF",
+                        "operationName": "PostMessageToConversation",
+                        "operationType": "OpenApiConnection",
+                        "parameters": {
+                          "poster": "Flow bot",
+                          "location": "Channel",
+                          "body/messageBody": "<div>@{body('agent-27d4e823-b881-4667-bc00-3e84d7e41e62')?['result']}</div>",
+                          "body/recipient/groupId": "e7c57b66-22ec-49c6-8293-46d3fe31886e",
+                          "body/recipient/channelId": "19:f76e0603d7834c109294bd2a9c481a9d@thread.tacv2"
+                        },
+                        "parametersSchema": {
+                          "type": "object",
+                          "properties": {
+                            "poster": {
+                              "type": "string",
+                              "title": "Post as",
+                              "description": "Select an option",
+                              "default": "Flow bot",
+                              "enum": [
+                                "Power Virtual Agents",
+                                "Flow bot",
+                                "User"
+                              ],
+                              "minLength": 1,
+                              "x-ms-enum-values": [
+                                {
+                                  "displayName": "User",
+                                  "value": "User"
+                                },
+                                {
+                                  "displayName": "Flow bot",
+                                  "value": "Flow bot"
+                                },
+                                {
+                                  "displayName": "Microsoft Copilot Studio agent",
+                                  "value": "Power Virtual Agents"
+                                }
+                              ],
+                              "x-ms-property-name-alias": "poster"
+                            },
+                            "location": {
+                              "type": "string",
+                              "title": "Post in",
+                              "x-ms-dynamic-list": {
+                                "operationId": "GetMessageLocations",
+                                "parameters": {
+                                  "messageType": {
+                                    "value": "ParentMessage"
+                                  },
+                                  "poster": {
+                                    "parameterReference": "poster",
+                                    "required": true
+                                  }
+                                },
+                                "itemsPath": "value",
+                                "itemValuePath": "id",
+                                "itemTitlePath": "displayName"
+                              },
+                              "description": "Select an option",
+                              "minLength": 1,
+                              "x-ms-property-name-alias": "location"
+                            },
+                            "body": {
+                              "type": "object",
+                              "title": "Post message request",
+                              "x-ms-dynamic-properties": {
+                                "operationId": "GetUnifiedActionSchema",
+                                "parameters": {
+                                  "actionType": {
+                                    "value": "Message"
+                                  },
+                                  "poster": {
+                                    "parameterReference": "poster",
+                                    "required": true
+                                  },
+                                  "recipientType": {
+                                    "parameterReference": "location",
+                                    "required": true
+                                  }
+                                },
+                                "itemValuePath": "schema"
+                              },
+                              "description": "The post message request",
+                              "x-ms-property-name-alias": "body"
+                            }
+                          },
+                          "required": [
+                            "body",
+                            "location",
+                            "poster"
+                          ]
+                        },
+                        "connectionName": "shared_teams",
+                        "resolvedDynamicSchemas": {
+                          "body": {
+                            "type": "object",
+                            "properties": {
+                              "recipient": {
+                                "type": "object",
+                                "properties": {
+                                  "groupId": {
+                                    "type": "string",
+                                    "title": "Team",
+                                    "x-ms-dynamic-list": {
+                                      "operationId": "GetAllTeams",
+                                      "itemsPath": "value",
+                                      "itemValuePath": "id",
+                                      "itemTitlePath": "displayName"
+                                    },
+                                    "description": "Add team ID",
+                                    "x-ms-visibility": "important",
+                                    "x-ms-property-name-alias": "recipient/groupId"
+                                  },
+                                  "channelId": {
+                                    "type": "string",
+                                    "title": "Channel",
+                                    "x-ms-dynamic-list": {
+                                      "operationId": "GetChannelsForGroup",
+                                      "parameters": {
+                                        "groupId": {
+                                          "parameterReference": "body/recipient/groupId",
+                                          "required": true
+                                        }
+                                      },
+                                      "itemsPath": "value",
+                                      "itemValuePath": "id",
+                                      "itemTitlePath": "displayName"
+                                    },
+                                    "description": "Add channel ID",
+                                    "x-ms-visibility": "important",
+                                    "x-ms-property-name-alias": "recipient/channelId"
+                                  }
+                                },
+                                "required": [
+                                  "channelId",
+                                  "groupId"
+                                ],
+                                "x-ms-visibility": "important",
+                                "x-ms-property-name-alias": "recipient"
+                              },
+                              "messageBody": {
+                                "type": "string",
+                                "title": "Message",
+                                "format": "html",
+                                "description": "Add message",
+                                "x-ms-property-name-alias": "messageBody"
+                              }
+                            },
+                            "required": [
+                              "messageBody",
+                              "recipient"
+                            ]
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "body": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "title": "Message ID",
+                                    "description": "Unique message ID",
+                                    "x-ms-property-name-alias": "body/id"
+                                  },
+                                  "messageLink": {
+                                    "type": "string",
+                                    "title": "Message link",
+                                    "description": "Link to the message in Microsoft Teams",
+                                    "x-ms-property-name-alias": "body/messageLink"
+                                  },
+                                  "conversationId": {
+                                    "type": "string",
+                                    "title": "Conversation ID",
+                                    "description": "The chat's unique identifier",
+                                    "x-ms-property-name-alias": "body/conversationId"
+                                  }
+                                },
+                                "required": [],
+                                "x-ms-property-name-alias": "body"
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 292,
+                      "height": 66
+                    },
+                    "selected": true
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-cab96434-038b-4914-90c3-71a8f806c500-agent-27d4e823-b881-4667-bc00-3e84d7e41e62",
+                    "source": "start-cab96434-038b-4914-90c3-71a8f806c500",
+                    "target": "agent-27d4e823-b881-4667-bc00-3e84d7e41e62"
+                  },
+                  {
+                    "id": "edge-agent-27d4e823-b881-4667-bc00-3e84d7e41e62-connector-5588b30d-46a6-4727-ade9-fe0ad9c88862",
+                    "source": "agent-27d4e823-b881-4667-bc00-3e84d7e41e62",
+                    "target": "connector-5588b30d-46a6-4727-ade9-fe0ad9c88862"
+                  }
+                ],
+                "connectionReferences": {
+                  "shared_agentnode": {
+                    "api": {
+                      "name": "shared_agentnode"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedagentnode_faa82aa6"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "86b4390547c64bf0b5e74096f3228bc0"
+                  },
+                  "shared_teams": {
+                    "api": {
+                      "name": "shared_teams"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedteams_0ff1c"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-teams-5407ad99-402c-4df1-9bda-cd7b454b6253"
+                  }
+                }
+              },
+              "nodeActionMapping": {
+                "agent-27d4e823-b881-4667-bc00-3e84d7e41e62": [
+                  "Agent"
+                ],
+                "connector-5588b30d-46a6-4727-ade9-fe0ad9c88862": [
+                  "Post_message_in_a_chat_or_channel"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "actions": {
+        "Agent": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "body/prompt": "Detailed Consolidated Summary of existing recent Last month. Please provide suggestions and recommendations. Don't mention it in table format.",
+              "body/agentId": "cred7_qualityassuranceagentnew_BWc7Vr"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
+              "connectionName": "shared_agentnode",
+              "operationId": "InvokeAgent"
+            }
+          },
+          "metadata": {
+            "description": "Agent",
+            "nodeId": "agent-27d4e823-b881-4667-bc00-3e84d7e41e62"
+          }
+        },
+        "Post_message_in_a_chat_or_channel": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "poster": "Flow bot",
+              "location": "Channel",
+              "body/messageBody": "<div>@{body('Agent')?['result']}</div>",
+              "body/recipient/groupId": "e7c57b66-22ec-49c6-8293-46d3fe31886e",
+              "body/recipient/channelId": "19:f76e0603d7834c109294bd2a9c481a9d@thread.tacv2"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams",
+              "connectionName": "shared_teams",
+              "operationId": "PostMessageToConversation"
+            }
+          },
+          "runAfter": {
+            "Agent": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Post message in a chat or channel",
+            "nodeId": "connector-5588b30d-46a6-4727-ade9-fe0ad9c88862"
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "telemetryMetadata": {
+          "creationSource": "WorkflowDesigner",
+          "modifiedSources": "WorkflowDesigner"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
