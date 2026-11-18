@@ -267,6 +267,12 @@ or edit counters in `metadata.json`; see [Gallery analytics](docs/analytics.md#r
 `README.md` becomes the Overview tab and stays outside the downloadable source
 or solution ZIP.
 
+For either format, embed up to five PNG screenshots using relative paths such
+as `![Task details](screenshots/task-details.png)`. Images must be regular files
+no larger than 2 MiB and 4096 x 4096 pixels. The importer publishes referenced
+images separately and rewrites their links; screenshots stay outside the source
+or solution ZIP.
+
 | Format | README requirement | What to explain |
 | --- | --- | --- |
 | Managed app | Required; screenshots strongly recommended | Purpose, usage, exact data structures, permissions, limitations, and customization; use the shared guide for installation |
@@ -434,11 +440,12 @@ behavior**, not just file presence or a checked box:
   execution evidence; otherwise qualify them as mocked, manual, or untested.
 
 CI requires a nonempty `.csv` file directly under `evaluations/` for each changed
-submission containing a standalone agent. Unchanged existing submissions are
-not retroactively blocked. CI does not judge scores or semantic coverage:
-Copilot and maintainers review the content. Evaluation evidence supplements
-rather than replaces fresh-environment testing and does not certify runtime
-correctness.
+submission containing a standalone agent, unless maintainers approve the
+evaluation limitation and alternative evidence described on the PR. Unchanged
+existing submissions are not retroactively blocked. CI does not judge scores or
+semantic coverage: Copilot and maintainers review the content. Evaluation
+evidence supplements rather than replaces fresh-environment testing and does
+not certify runtime correctness.
 
 ## Open a pull request
 

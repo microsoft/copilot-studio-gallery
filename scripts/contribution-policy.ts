@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { z } from "astro/zod";
 import { CATEGORIES, submissionMetadataFields } from "../src/lib/submissionMetadata";
 import { classifyContributionFiles, METADATA_LABEL, SITE_LABEL, type ChangedFile } from "./contribution-scope";
+import { evaluationWaiver } from "./evaluation-waiver";
 
 export { METADATA_LABEL, SITE_LABEL, type ChangedFile } from "./contribution-scope";
 
@@ -20,8 +21,9 @@ export function checkContributionPolicy(
   files: ChangedFile[],
   labels: string[],
   metadata: MetadataChange[],
+  body = "",
 ): string[] {
-  const errors: string[] = [];
+  const errors: string[] = evaluationWaiver(labels, body).errors;
   const metadataAllowed = labels.includes(METADATA_LABEL);
   const siteAllowed = labels.includes(SITE_LABEL);
   const { slugs, invalidSubmissions, sites, contracts, generated, payloadChanges } = classifyContributionFiles(files);
@@ -63,6 +65,7 @@ const prSchema = z.object({
   state: z.literal("open"),
   changed_files: z.number().int().nonnegative().max(3000),
   labels: z.array(z.object({ name: z.string() })),
+  body: z.string().nullable().optional(),
   base: z.object({ sha: shaSchema }),
   head: z.object({ sha: shaSchema }),
 });
@@ -135,10 +138,11 @@ export async function inspectPullRequest(api: GitHubPolicyApi, number: number, e
   const labels = pr.labels.map((label) => label.name).sort();
   const live = prSchema.parse(await api.get(`pulls/${number}`));
   if (live.base.sha !== pr.base.sha || live.head.sha !== pr.head.sha
-    || JSON.stringify(live.labels.map((label) => label.name).sort()) !== JSON.stringify(labels)) {
-    throw new Error("PR revisions or labels changed while checking; rerun the policy check.");
+    || JSON.stringify(live.labels.map((label) => label.name).sort()) !== JSON.stringify(labels)
+    || live.body !== pr.body) {
+    throw new Error("PR revisions or labels changed, or the body changed while checking; rerun the policy check.");
   }
-  return checkContributionPolicy(files, labels, metadata);
+  return checkContributionPolicy(files, labels, metadata, pr.body ?? "");
 }
 
 async function main(): Promise<void> {

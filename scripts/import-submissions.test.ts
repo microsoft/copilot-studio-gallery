@@ -113,6 +113,25 @@ test("publishes supporting downloads for solutions without changing the solution
   assert.ok((await readFile(join(workspace, "src/content/guides/demo-agent.md"), "utf8")).includes(`/copilot-studio-gallery/${record.supportingFiles[0].path}`));
 });
 
+test("publishes solution README screenshots separately and validates referenced PNGs", async () => {
+  await importSubmissions({ root: workspace });
+  const archive = await readFile(join(workspace, "public/bundles/demo-agent.zip"));
+  const submission = join(workspace, "submissions/demo-agent");
+  await mkdir(join(submission, "screenshots"));
+  const image = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZlWQAAAAASUVORK5CYII=", "base64");
+  await writeFile(join(submission, "screenshots/tasks.png"), image);
+  await writeFile(join(submission, "README.md"), '# Sample\n\n![Parallel tasks](./screenshots/tasks.png "Task details")\n');
+  await importSubmissions({ root: workspace });
+  const guide = await readFile(join(workspace, "src/content/guides/demo-agent.md"), "utf8");
+  const imagePath = guide.match(/\/copilot-studio-gallery\/(bundles\/demo-agent-[a-f0-9]+\.png)/)?.[1];
+  assert.ok(imagePath);
+  assert.ok(guide.includes(`![Parallel tasks](/copilot-studio-gallery/${imagePath} "Task details")`));
+  assert.deepEqual(await readFile(join(workspace, "public", imagePath)), image);
+  assert.deepEqual(await readFile(join(workspace, "public/bundles/demo-agent.zip")), archive);
+  await writeFile(join(submission, "screenshots/tasks.png"), "<svg/>");
+  await assert.rejects(importSubmissions({ root: workspace }), /screenshot must be a PNG/);
+});
+
 test("derives unique owned AgentHook counts without guessing from names or trusting metadata", async () => {
   const submission = join(workspace, "submissions/demo-agent");
   const metadataPath = join(submission, "metadata.json");
