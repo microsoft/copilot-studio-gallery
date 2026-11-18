@@ -309,6 +309,45 @@ failure before submitting. Generated files under `src/content/solutions/`,
 `src/content/guides/`, and `public/bundles/` come from the importer; do not
 hand-edit them.
 
+### Reproduce a CI failure
+
+Open the failing GitHub check and read the first failing step. From your local
+gallery checkout, check `git remote -v`. If `upstream` is not configured, add it
+once:
+
+```bash
+git remote add upstream https://github.com/microsoft/copilot-studio-gallery.git
+```
+
+Fetch the current repository refs:
+
+```bash
+git fetch upstream
+```
+
+Stay on your contribution branch and sync it with its branch on your fork,
+including any maintainer-pushed updates. If it tracks that branch, use
+`git pull --ff-only`. If that refuses because your histories diverged, preserve
+your local work and coordinate with a maintainer; do not force-reset it.
+Fetching alone does not update the files on your local branch. Maintainers still
+own routine behind-`main` branch updates.
+
+Run `npm ci` to install the checkout's locked dependencies, then run all
+[local validation commands](#validate-locally) above. For standalone-agent
+submissions, also run the evaluation evidence check used by PR CI:
+
+```bash
+node --import tsx scripts/check-evaluation-evidence.ts upstream/main
+```
+
+The evaluation check selects submissions from committed changes against the
+merge base with `upstream/main`; it does not select newly added, uncommitted
+submissions. Commit your candidate changes locally before this check. CI scope
+labels, CLA checks, Windows-only tests, and authenticated runtime tests are not
+reproduced by these commands on every machine. Report infrastructure or
+authorized-scope issues to a maintainer instead of changing unrelated code.
+Push your correction after the relevant local checks pass.
+
 ## Test in a fresh environment
 
 Local gallery checks validate packaging and metadata, not whether the sample
@@ -401,11 +440,12 @@ behavior**, not just file presence or a checked box:
   execution evidence; otherwise qualify them as mocked, manual, or untested.
 
 CI requires a nonempty `.csv` file directly under `evaluations/` for each changed
-submission containing a standalone agent. Unchanged existing submissions are
-not retroactively blocked. CI does not judge scores or semantic coverage:
-Copilot and maintainers review the content. Evaluation evidence supplements
-rather than replaces fresh-environment testing and does not certify runtime
-correctness.
+submission containing a standalone agent, unless maintainers approve the
+evaluation limitation and alternative evidence described on the PR. Unchanged
+existing submissions are not retroactively blocked. CI does not judge scores or
+semantic coverage: Copilot and maintainers review the content. Evaluation
+evidence supplements rather than replaces fresh-environment testing and does
+not certify runtime correctness.
 
 ## Open a pull request
 
@@ -512,7 +552,10 @@ action**: who acts, what to do, why, a direct review/check link, and when the
 queue reassesses. Future approval/merge work is not presented as an immediate
 task. No individual maintainer is automatically assigned.
 Site/layout, dependency, repository-maintenance, and mixed site/submission PRs
-remain outside this queue. Multi-entry submission mistakes remain visible.
+remain outside this queue. Multi-entry submission mistakes and malformed
+submission folder names remain visible as contributor corrections, not site
+changes. Rename an invalid folder to a valid slug or remove it if it is an
+accidental duplicate; do not request a site-change override for a naming error.
 
 | Queue label | Who acts next |
 | --- | --- |
