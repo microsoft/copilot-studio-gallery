@@ -1079,7 +1079,7 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
     const description = error instanceof Error ? error.message : String(error);
     throw new Error(`invalid metadata.json: ${description}`);
   }
-  const supporting = await buildSupportingFiles(submissionPath, slug, metadata.supportingFiles);
+  const supporting = await buildSupportingFiles(submissionPath, slug, metadata.supportingFiles, metadata.featured);
   if (metadata.submissionType === "managed-app") {
     return buildManagedApp(submissionPath, slug, metadata, supporting);
   }
@@ -1131,36 +1131,20 @@ async function buildSubmission(repositoryRoot: string, slug: string): Promise<Bu
   } catch {
     // README is optional.
   }
-  const guideBody = rewriteSupportingLinks(body.trim().replace(/^#\s+.+?(?:\r?\n){1,2}/, ""), supporting.links);
+  const images = await buildReadmeImages(submissionPath, slug, body);
+  const guideBody = rewriteSupportingLinks(images.body.trim().replace(/^#\s+.+?(?:\r?\n){1,2}/, ""), supporting.links);
   const guide = matter.stringify(`${guideBody}\n`, { title: metadata.name, slug, solution: derived.uniqueName });
-  return { slug, record, guide, bundle, assets: supporting.assets };
+  return { slug, record, guide, bundle, assets: [...supporting.assets, ...images.assets] };
 }
 
-async function buildManagedApp(submissionPath: string, slug: string, metadata: SubmissionMetadata, supporting: Awaited<ReturnType<typeof buildSupportingFiles>>): Promise<BuiltSubmission> {
-  if (!metadata.app) throw new Error("managed-app requires app setup metadata");
-  try {
-    await lstat(join(submissionPath, "solution"));
-    throw new Error("managed-app must not also contain a solution/ payload");
-  } catch (error) {
-    if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) throw error;
-  }
-  const appRoot = join(submissionPath, "app");
-  const { files } = await collectAppSource(appRoot);
-  const { version } = await inspectAppPackage(files);
-  const bundle = deterministicZip(files, appRoot);
-  const hash = createHash("sha256").update(bundle).digest("hex");
-  const assets: NonNullable<BuiltSubmission["assets"]> = [...supporting.assets];
-  const template = `github:microsoft/copilot-studio-gallery/submissions/${slug}/app#main`;
-  appInstallInputs(template, metadata.app);
-  const readme = matter(await readFile(join(submissionPath, "README.md"), "utf8")).content.trim();
-  if (!readme) throw new Error("managed-app requires a nonempty README.md describing the app and its data requirements");
-  if (readme.includes("**SETUP INCOMPLETE:**")) throw new Error("complete the preparation helper's unresolved connection setup before submitting");
+async function buildReadmeImages(submissionPath: string, slug: string, readme: string, primary?: SubmissionMetadata["screenshot"]) {
+  const assets: NonNullable<BuiltSubmission["assets"]> = [];
   const imagePattern = /(!\[[^\]]*\]\()(?:\.\/)?(screenshots\/[a-z0-9][a-z0-9-]*\.png)(\s*(?:"[^"]*")?\))/g;
   const imagePaths = new Set([
-    ...(metadata.screenshot ? [metadata.screenshot.path] : []),
+    ...(primary ? [primary.path] : []),
     ...Array.from(readme.matchAll(imagePattern), (match) => match[2]!),
   ]);
-  if (imagePaths.size > 5) throw new Error("managed-app supports at most five PNG screenshots");
+  if (imagePaths.size > 5) throw new Error("submission supports at most five PNG screenshots");
   const imageLinks = new Map<string, string>();
   let screenshot: { path: string; alt: string } | undefined;
   for (const imagePath of imagePaths) {
@@ -1182,25 +1166,47 @@ async function buildManagedApp(submissionPath: string, slug: string, metadata: S
     const name = `${slug}-${createHash("sha256").update(image).digest("hex")}.png`;
     const path = `bundles/${name}`;
     imageLinks.set(imagePath, publicAssetPath(path));
-    if (metadata.screenshot?.path === imagePath) {
-      screenshot = { path, alt: metadata.screenshot.alt };
+    if (primary?.path === imagePath) {
+      screenshot = { path, alt: primary.alt };
     }
     assets.push({ name, content: image });
   }
+  const body = readme.replace(imagePattern, (_match, prefix: string, path: string, suffix: string) => `${prefix}${imageLinks.get(path)!}${suffix}`);
+  return { body, assets, screenshot };
+}
+
+async function buildManagedApp(submissionPath: string, slug: string, metadata: SubmissionMetadata, supporting: Awaited<ReturnType<typeof buildSupportingFiles>>): Promise<BuiltSubmission> {
+  if (!metadata.app) throw new Error("managed-app requires app setup metadata");
+  try {
+    await lstat(join(submissionPath, "solution"));
+    throw new Error("managed-app must not also contain a solution/ payload");
+  } catch (error) {
+    if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) throw error;
+  }
+  const appRoot = join(submissionPath, "app");
+  const { files } = await collectAppSource(appRoot);
+  const { version } = await inspectAppPackage(files);
+  const bundle = deterministicZip(files, appRoot);
+  const hash = createHash("sha256").update(bundle).digest("hex");
+  const template = `github:microsoft/copilot-studio-gallery/submissions/${slug}/app#main`;
+  appInstallInputs(template, metadata.app);
+  const readme = matter(await readFile(join(submissionPath, "README.md"), "utf8")).content.trim();
+  if (!readme) throw new Error("managed-app requires a nonempty README.md describing the app and its data requirements");
+  if (readme.includes("**SETUP INCOMPLETE:**")) throw new Error("complete the preparation helper's unresolved connection setup before submitting");
+  const images = await buildReadmeImages(submissionPath, slug, readme, metadata.screenshot);
   const { app: _app, screenshot: _screenshot, previewWorkflow: _preview, ...common } = metadata;
   const record: GalleryRecord = {
     ...common, submissionType: "managed-app", version,
     app: metadata.app, bundle: `bundles/${slug}-${hash}.zip`,
     bundleSha256: hash,
     template,
-    ...(screenshot ? { screenshot } : {}),
+    ...(images.screenshot ? { screenshot: images.screenshot } : {}),
     files: files.map((file) => ({ path: file.path, size: file.size, category: "source" })),
     supportingFiles: supporting.files,
   };
-  const guideBody = readme.replace(/^#\s+.+?(?:\r?\n){1,2}/, "")
-    .replace(imagePattern, (_match, prefix: string, path: string, suffix: string) => `${prefix}${imageLinks.get(path)!}${suffix}`);
+  const guideBody = images.body.replace(/^#\s+.+?(?:\r?\n){1,2}/, "");
   const guide = matter.stringify(`${rewriteSupportingLinks(guideBody, supporting.links)}\n`, { title: metadata.name, slug });
-  return { slug, record, guide, bundle, assets };
+  return { slug, record, guide, bundle, assets: [...supporting.assets, ...images.assets] };
 }
 
 async function existingSlugs(directory: string, extension: string): Promise<string[]> {

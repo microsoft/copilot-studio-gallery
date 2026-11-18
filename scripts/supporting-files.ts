@@ -51,13 +51,15 @@ function validateCsv(text: string): void {
   if (rows.some((item) => item.length !== headers.length)) throw new Error("CSV rows must match the header column count");
 }
 
-export async function buildSupportingFiles(submissionPath: string, slug: string, declarations: SubmissionMetadata["supportingFiles"]) {
+export async function buildSupportingFiles(submissionPath: string, slug: string, declarations: SubmissionMetadata["supportingFiles"], featured = false) {
   const files: SupportingFile[] = [];
   const assets: Array<{ name: string; content: Buffer }> = [];
   const links = new Map<string, string>();
   let total = 0;
   for (const declaration of declarations) {
     const item = supportingFileMetadataSchema.parse(declaration);
+    const spreadsheet = extname(item.path) === ".xlsx";
+    if (spreadsheet && !featured) throw new Error(`${item.path}: XLSX supporting files are limited to Built by Microsoft submissions`);
     const directory = await lstat(join(submissionPath, "supporting"));
     if (!directory.isDirectory() || directory.isSymbolicLink()) throw new Error("supporting/ must be a directory, not a symbolic link");
     const path = join(submissionPath, item.path);
@@ -68,17 +70,19 @@ export async function buildSupportingFiles(submissionPath: string, slug: string,
     if (!content.length || content.length > MAX_FILE_BYTES) throw new Error(`${item.path}: supporting file must be nonempty and at most 512 KiB`);
     total += content.length;
     if (total > MAX_TOTAL_BYTES) throw new Error("supporting files must total at most 2 MiB");
-    let text: string;
-    try { text = new TextDecoder("utf-8", { fatal: true }).decode(content); }
-    catch { throw new Error(`${item.path}: supporting files must contain valid UTF-8 text`); }
-    if (!text.trim() || /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(text)) {
-      throw new Error(`${item.path}: supporting files must contain nonempty text without binary/control characters`);
-    }
-    try {
-      if (extname(item.path) === ".json") JSON.parse(text);
-      if (extname(item.path) === ".csv") validateCsv(text);
-    } catch (error) {
-      throw new Error(`${item.path}: ${error instanceof Error ? error.message : String(error)}`);
+    if (!spreadsheet) {
+      let text: string;
+      try { text = new TextDecoder("utf-8", { fatal: true }).decode(content); }
+      catch { throw new Error(`${item.path}: supporting files must contain valid UTF-8 text`); }
+      if (!text.trim() || /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(text)) {
+        throw new Error(`${item.path}: supporting files must contain nonempty text without binary/control characters`);
+      }
+      try {
+        if (extname(item.path) === ".json") JSON.parse(text);
+        if (extname(item.path) === ".csv") validateCsv(text);
+      } catch (error) {
+        throw new Error(`${item.path}: ${error instanceof Error ? error.message : String(error)}`);
+      }
     }
     const filename = basename(item.path);
     const name = `${slug}-${createHash("sha256").update(content).digest("hex")}-${filename}`;
