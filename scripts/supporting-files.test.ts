@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
+import AdmZip from "adm-zip";
 import { submissionMetadataSchema } from "../src/lib/schema";
 import { buildSupportingFiles, rewriteSupportingLinks } from "./supporting-files";
 
@@ -18,11 +19,40 @@ test("supporting metadata permits only explicit, bounded, unique CSV/JSON/TXT pa
   for (const name of ["ideas.csv", "reference.json", "notes.txt"]) {
     assert.equal(submissionMetadataSchema.parse({ ...metadata, supportingFiles: [declaration(name)] }).supportingFiles.length, 1);
   }
-  for (const path of ["../private.csv", "supporting/../private.csv", "supporting/nested/file.csv", "supporting/CON.txt", "supporting/con.csv", "supporting/file.ps1", "supporting/file.sh", "supporting/file.html", "supporting/file.svg", "supporting/file.zip", "supporting/file.exe.csv", "supporting/file.CSV", "https://example.com/data.csv"]) {
+  for (const path of ["../private.csv", "supporting/../private.csv", "supporting/nested/file.csv", "supporting/CON.txt", "supporting/con.csv", "supporting/file.ps1", "supporting/file.sh", "supporting/file.html", "supporting/file.svg", "supporting/file.zip", "supporting/file.xls", "supporting/file.xlsm", "supporting/file.exe.csv", "supporting/file.CSV", "https://example.com/data.csv"]) {
     assert.throws(() => submissionMetadataSchema.parse({ ...metadata, supportingFiles: [{ ...declaration(), path }] }), path);
   }
   assert.throws(() => submissionMetadataSchema.parse({ ...metadata, supportingFiles: [declaration(), declaration()] }), /unique/);
   assert.throws(() => submissionMetadataSchema.parse({ ...metadata, supportingFiles: Array.from({ length: 6 }, (_, index) => declaration(`data-${index}.txt`)) }));
+});
+
+test("XLSX declarations require the maintainer-controlled Microsoft designation, not an author name", () => {
+  const supportingFiles = [declaration("study.xlsx")];
+  assert.throws(() => submissionMetadataSchema.parse({ ...metadata, supportingFiles }), /Built by Microsoft/);
+  assert.throws(() => submissionMetadataSchema.parse({ ...metadata, author: "Microsoft", featured: false, supportingFiles }), /Built by Microsoft/);
+  assert.equal(submissionMetadataSchema.parse({ ...metadata, featured: true, supportingFiles }).supportingFiles.length, 1);
+});
+
+test("publishes unchanged XLSX bytes only for Microsoft submissions", async () => {
+  const root = await fixture();
+  try {
+    const zip = new AdmZip();
+    zip.addFile("[Content_Types].xml", Buffer.from('<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml"/><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>'));
+    zip.addFile("_rels/.rels", Buffer.from('<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'));
+    zip.addFile("xl/workbook.xml", Buffer.from('<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Study" sheetId="1" r:id="rId1"/></sheets></workbook>'));
+    zip.addFile("xl/_rels/workbook.xml.rels", Buffer.from('<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>'));
+    zip.addFile("xl/worksheets/sheet1.xml", Buffer.from('<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="1"><c r="A1"><v>15</v></c></row></sheetData></worksheet>'));
+    const content = zip.toBuffer();
+    const declarations = [declaration("study.xlsx")];
+    await writeFile(join(root, declarations[0].path), content);
+    await assert.rejects(buildSupportingFiles(root, "sample", declarations), /Built by Microsoft/);
+    const built = await buildSupportingFiles(root, "sample", declarations, true);
+    assert.deepEqual(built.assets[0].content, content);
+    assert.deepEqual(await buildSupportingFiles(root, "sample", declarations, true), built);
+    assert.equal(built.files[0].filename, "study.xlsx");
+    assert.equal(built.files[0].size, content.length);
+    assert.match(rewriteSupportingLinks("[Study](supporting/study.xlsx)", built.links), /\[Study\]\(.*\.xlsx\)/);
+  } finally { await rm(root, { recursive: true, force: true }); }
 });
 
 test("publishes exact deterministic text bytes and rewrites only declared inline download links", async () => {

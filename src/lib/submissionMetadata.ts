@@ -50,7 +50,7 @@ export const screenshotSchema = z.object({
   alt: z.string().trim().min(1).max(240),
 }).strict();
 
-const supportingFilenamePattern = /^(?!(?:con|prn|aux|nul|com[1-9]|lpt[1-9])\.)[a-z0-9][a-z0-9-]*\.(?:csv|json|txt)$/;
+const supportingFilenamePattern = /^(?!(?:con|prn|aux|nul|com[1-9]|lpt[1-9])\.)[a-z0-9][a-z0-9-]*\.(?:csv|json|txt|xlsx)$/;
 export const supportingFileMetadataSchema = z.object({
   path: z.string().refine((path) => path.startsWith("supporting/") && supportingFilenamePattern.test(path.slice("supporting/".length)), {
     message: "supporting files must be named supporting/<lowercase-name>.csv, .json, or .txt",
@@ -62,7 +62,7 @@ const supportingFilesMetadataSchema = z.array(supportingFileMetadataSchema).max(
   { message: "supporting file paths must be unique" },
 );
 export const supportingFileSchema = supportingFileMetadataSchema.extend({
-  path: z.string().regex(/^bundles\/[a-z0-9-]+\.(?:csv|json|txt)$/),
+  path: z.string().regex(/^bundles\/[a-z0-9-]+\.(?:csv|json|txt|xlsx)$/),
   filename: z.string().regex(supportingFilenamePattern),
   size: z.number().int().positive(),
 });
@@ -95,6 +95,9 @@ export const submissionMetadataFields = {
 
 export const submissionMetadataSchema = z.object(submissionMetadataFields).strict()
   .superRefine((metadata, ctx) => {
+    if (!metadata.featured && metadata.supportingFiles.some((file) => file.path.endsWith(".xlsx"))) {
+      ctx.addIssue({ code: "custom", path: ["supportingFiles"], message: "XLSX supporting files are limited to Built by Microsoft submissions" });
+    }
     if (metadata.submissionType === "managed-app" && (!metadata.app || metadata.previewWorkflow)) {
       ctx.addIssue({ code: "custom", path: ["app"], message: "managed-app requires app setup metadata and must omit previewWorkflow" });
     }
