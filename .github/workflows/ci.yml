@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Validate, test, and build
@@ -41,7 +45,7 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Require evaluation CSV for changed standalone agents
+      - name: Require evaluation CSV or maintainer waiver for changed standalone agents
         if: github.event_name == 'pull_request'
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}

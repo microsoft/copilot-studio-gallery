@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { execFileSync } from "node:child_process";
 import test from "node:test";
 import { parse } from "yaml";
+import { EVALUATION_WAIVER_LABEL } from "./evaluation-waiver";
 import {
   checkContributionPolicy,
   GitHubPolicyApi,
@@ -116,6 +117,13 @@ test("unknown categories and metadata fields cannot be self-authorized", () => {
   }
 });
 
+test("trusted policy rejects incomplete waivers and does not waive other contribution requirements", () => {
+  const body = "## Evaluation waiver\nReason: Attachments unsupported.\nAlternative evidence: Link to actual run.\n";
+  assert.match(checkContributionPolicy([submission], [EVALUATION_WAIVER_LABEL], []).join("\n"), /Evaluation waiver/);
+  assert.deepEqual(checkContributionPolicy([submission], [EVALUATION_WAIVER_LABEL], [], body), []);
+  assert.match(checkContributionPolicy([file("scripts/example.ts")], [EVALUATION_WAIVER_LABEL], [], body).join("\n"), /allow-site-changes/);
+});
+
 const baseSha = "a".repeat(40);
 const headSha = "b".repeat(40);
 const pr = (count: number, labels: string[] = []) => ({
@@ -148,6 +156,17 @@ test("GitHub policy paginates actual PR files and compares base/head metadata", 
   assert.ok(calls.some((path) => path.endsWith("page=2")));
 });
 
+test("trusted policy validates the live PR waiver label and body together", async () => {
+  for (const [body, valid] of [
+    [null, false],
+    ["## Evaluation waiver\nReason: Unsupported.\n", false],
+    ["## Evaluation waiver\nReason: Unsupported.\nAlternative evidence: https://example.com/demo\n", true],
+  ] as const) {
+    const api = apiWith((path) => path === "pulls/1" ? { ...pr(0, [EVALUATION_WAIVER_LABEL]), body } : []);
+    assert.equal((await inspectPullRequest(api, 1)).length === 0, valid);
+  }
+});
+
 test("policy fails closed on API errors, truncated files, stale revisions, and changing labels", async () => {
   const failed = apiWith(() => new Response("denied", { status: 403 }));
   await assert.rejects(() => inspectPullRequest(failed, 1), /GitHub API 403/);
@@ -158,6 +177,9 @@ test("policy fails closed on API errors, truncated files, stale revisions, and c
   let reads = 0;
   const relabeled = apiWith((path) => path === "pulls/1" ? pr(0, ++reads === 1 ? [SITE_LABEL] : []) : []);
   await assert.rejects(() => inspectPullRequest(relabeled, 1), /labels changed/);
+  let bodyReads = 0;
+  const edited = apiWith((path) => path === "pulls/1" ? { ...pr(0), body: ++bodyReads === 1 ? "before" : "after" } : []);
+  await assert.rejects(() => inspectPullRequest(edited, 1), /body changed/);
   await assert.rejects(() => inspectPullRequest(stale, 0), /Invalid PR number/);
 });
 
@@ -208,6 +230,15 @@ test("fork CI regenerates build inputs without committing to forks", () => {
   assert.equal(detect.if, "github.event.pull_request.head.repo.full_name == github.repository");
   assert.equal(detect.env.PR_BASE_SHA, "${{ github.event.pull_request.base.sha }}");
   assert.equal(steps[0].with["fetch-depth"], 0);
+});
+
+test("waiver changes rerun CI and cancel checks using an older PR event", () => {
+  const ci = parse(readFileSync(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8"));
+  for (const event of ["synchronize", "edited", "labeled", "unlabeled"]) {
+    assert.ok(ci.on.pull_request.types.includes(event));
+  }
+  assert.equal(ci.concurrency.group, "ci-${{ github.event.pull_request.number || github.ref }}");
+  assert.equal(ci.concurrency["cancel-in-progress"], true);
 });
 
 test("CI commits generated content only when the PR changes submission source", () => {
