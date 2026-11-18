@@ -1,7 +1,9 @@
 import { execFileSync } from "node:child_process";
-import { lstat, readdir } from "node:fs/promises";
+import { lstat, readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { z } from "astro/zod";
+import { evaluationWaiver } from "./evaluation-waiver";
 
 async function entries(path: string) {
   try {
@@ -12,7 +14,7 @@ async function entries(path: string) {
   }
 }
 
-export async function checkEvaluationEvidence(root: string, changedPaths: string[]): Promise<string[]> {
+export async function checkEvaluationEvidence(root: string, changedPaths: string[], waived = false): Promise<string[]> {
   const slugs = new Set(changedPaths.flatMap((path) => {
     const match = /^submissions\/([a-z0-9]+(?:-[a-z0-9]+)*)\//.exec(path);
     return match ? [match[1]] : [];
@@ -38,7 +40,7 @@ export async function checkEvaluationEvidence(root: string, changedPaths: string
       const info = await lstat(resolve(submission, "evaluations", file.name));
       if (info.size > 0) hasCsv = true;
     }
-    if (!hasCsv) {
+    if (!hasCsv && !waived) {
       errors.push(`${slug}: a standalone agent requires a nonempty results CSV in submissions/${slug}/evaluations/. Redact all sensitive data before uploading. See CONTRIBUTING.md#evaluation-evidence-for-published-agents.`);
     }
   }
@@ -53,9 +55,24 @@ async function main() {
   const base = execFileSync("git", ["rev-parse", "--verify", "--end-of-options", `${baseRef}^{commit}`], { encoding: "utf8" }).trim();
   const paths = execFileSync("git", ["diff", "--name-only", "--no-renames", "-z", `${base}...HEAD`, "--", "submissions/"], { encoding: "utf8" })
     .split("\0").filter(Boolean);
-  const errors = await checkEvaluationEvidence(process.cwd(), paths);
+  let waived = false;
+  if (process.env.GITHUB_EVENT_NAME === "pull_request") {
+    if (!process.env.GITHUB_EVENT_PATH) throw new Error("Missing GITHUB_EVENT_PATH");
+    const event = z.object({
+      pull_request: z.object({
+        labels: z.array(z.object({ name: z.string() })),
+        body: z.string().nullable(),
+      }),
+    }).parse(JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH, "utf8")));
+    const waiver = evaluationWaiver(event.pull_request.labels.map((label) => label.name), event.pull_request.body ?? "");
+    if (waiver.errors.length) throw new Error(waiver.errors.join("\n"));
+    waived = waiver.approved;
+  }
+  const errors = await checkEvaluationEvidence(process.cwd(), paths, waived);
   if (errors.length) throw new Error(errors.join("\n"));
-  console.log("Evaluation CSV presence check passed for changed submissions. Content coverage is reviewed by Copilot and maintainers.");
+  console.log(waived
+    ? "Evaluation CSV requirement waived for this PR by maintainer label. Reason and alternative evidence are recorded in the PR body; other checks still apply."
+    : "Evaluation CSV presence check passed for changed submissions. Content coverage is reviewed by Copilot and maintainers.");
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

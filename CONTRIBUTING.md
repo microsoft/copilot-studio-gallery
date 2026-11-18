@@ -434,11 +434,12 @@ behavior**, not just file presence or a checked box:
   execution evidence; otherwise qualify them as mocked, manual, or untested.
 
 CI requires a nonempty `.csv` file directly under `evaluations/` for each changed
-submission containing a standalone agent. Unchanged existing submissions are
-not retroactively blocked. CI does not judge scores or semantic coverage:
-Copilot and maintainers review the content. Evaluation evidence supplements
-rather than replaces fresh-environment testing and does not certify runtime
-correctness.
+submission containing a standalone agent, unless maintainers approve the
+evaluation limitation and alternative evidence described on the PR. Unchanged
+existing submissions are not retroactively blocked. CI does not judge scores or
+semantic coverage: Copilot and maintainers review the content. Evaluation
+evidence supplements rather than replaces fresh-environment testing and does
+not certify runtime correctness.
 
 ## Open a pull request
 
