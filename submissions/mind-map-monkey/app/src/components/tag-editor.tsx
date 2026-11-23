@@ -1,7 +1,7 @@
 import { useId, useState, type KeyboardEvent } from "react";
 import { X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { MAX_TAGS_PER_NODE, normalizeTags } from "@/lib/mindmap-data";
+import { MAX_TAGS_PER_NODE, normalizeTag, normalizeTags } from "@/lib/mindmap-data";
 
 interface TagEditorProps {
   tags: string[];
@@ -33,13 +33,14 @@ export function TagEditor({ tags, suggestions, onChange, onFind }: TagEditorProp
 
   const add = (raw: string) => {
     if (!raw.trim()) return;
-    const next = normalizeTags([...tags, ...raw.split(",")]);
-    const added = next.filter((tag) => !tags.includes(tag));
+    const added = [...new Set(raw.split(",").map(normalizeTag))]
+      .filter((tag): tag is string => tag !== null && !tags.includes(tag))
+      .slice(0, Math.max(0, MAX_TAGS_PER_NODE - tags.length));
     if (added.length === 0) {
       say(full ? `This node already has ${MAX_TAGS_PER_NODE} tags.` : "No new tag: it is already on this node or has no letters or digits.");
       return;
     }
-    onChange(next);
+    onChange(normalizeTags([...tags, ...added]));
     say(`Added ${added.map((tag) => `#${tag}`).join(", ")}.`);
   };
 

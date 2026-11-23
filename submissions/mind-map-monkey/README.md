@@ -16,6 +16,9 @@ OneDrive. New nodes open in the editor so you can name them immediately. You
 can import Mermaid code or a file, export Mermaid or a PNG, and use the built-in
 help map to explore the editor.
 
+Each node supports up to 24 tags. When adding several at once, only new,
+distinct tags that fit the remaining capacity are added; existing tags are kept.
+
 The app can copy a link to a map. Recipients need access to both the app and
 the OneDrive file; copying the link does not grant access.
 
