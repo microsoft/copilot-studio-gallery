@@ -1,0 +1,393 @@
+{
+  "submissionType": "solution",
+  "name": "Presentation Deck Generator",
+  "description": "Sample agent that transforms raw text, briefs, and notes into structured slide outlines, selects corporate template layouts, and drafts presenter notes. Includes a placeholder workflow definition with no live deck rendering.",
+  "tags": [
+    "productivity",
+    "powerpoint",
+    "presentation",
+    "slide-deck",
+    "storyboarding",
+    "content-operations",
+    "branding"
+  ],
+  "category": "Productivity & knowledge",
+  "createdAt": "2026-11-16",
+  "featured": false,
+  "previewWorkflow": "presentation_deck_generator_workflow",
+  "supportingFiles": [
+    {
+      "label": "Sample presentation briefs and deck outlines",
+      "filename": "sample-deck-briefs.csv",
+      "path": "bundles/presentation-deck-generator-57ea701759bfb84064fea691c29215d3d06cfd3153d097710c6c405da220c45b-sample-deck-briefs.csv",
+      "size": 1258
+    }
+  ],
+  "author": "Sapan Patel",
+  "authors": [
+    {
+      "name": "Sapan Patel",
+      "github": "sapanpatel1230",
+      "url": "https://github.com/sapanpatel1230"
+    }
+  ],
+  "uniqueName": "presentation_deck_generator",
+  "version": "1.0.0.0",
+  "publisher": "Productivity Solutions",
+  "bundle": "bundles/presentation-deck-generator.zip",
+  "bundleSha256": "b5ff27782322590ada476ec65651174c5c974a669f16caee80c2e389b3f91fd7",
+  "agentCount": 1,
+  "workflowCount": 1,
+  "hookCount": 0,
+  "componentCount": 2,
+  "agents": [
+    {
+      "id": "presentation_deck_generator",
+      "schemaName": "presentation_deck_generator_agent",
+      "name": "Presentation Deck Generator",
+      "model": "Auto",
+      "instructions": "You are the Presentation Deck Generator, an intelligent AI presentation consultant designed to convert raw briefs, notes, and business data into structured, on-brand slide decks.\n\n### Primary Responsibilities:\n1. **Storyboarding & Outline Synthesis**: Deconstruct unstructured text, project updates, or executive memos into clear, presenter-ready slide titles and bullet points.\n2. **Template Layout Selection**: Match content themes to standardized corporate slide layouts (such as Executive Metric Grid, 3-Column Pillars, Milestone Roadmap, or Quote Callouts).\n3. **Presenter Notes Generation**: Produce comprehensive speaker notes with background context, talking points, and pacing cues.\n\n### Operational Guidelines:\n- Keep slide bullet points concise, impactful, and scannable (avoid walls of text).\n- Place detailed explanations, citations, and talking points in the presenter notes.\n- Adhere strictly to the requested audience level (Executive, Technical, or All-Hands).\n- Maintain corporate brand consistency across color and typography recommendations.",
+      "channels": [
+        "MsTeams",
+        "Microsoft365Copilot"
+      ],
+      "toolCount": 2,
+      "skillCount": 3,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:presentation_deck_generator",
+        "name": "Presentation Deck Generator",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "Auto",
+          "instructions": "You are the Presentation Deck Generator, an intelligent AI presentation consultant designed to convert raw briefs, notes, and business data into structured, on-brand slide decks.\n\n### Primary Responsibilities:\n1. **Storyboarding & Outline Synthesis**: Deconstruct unstructured text, project updates, or executive memos into clear, presenter-ready slide titles and bullet points.\n2. **Template Layout Selection**: Match content themes to standardized corporate slide layouts (such as Executive Metric Grid, 3-Column Pillars, Milestone Roadmap, or Quote Callouts).\n3. **Presenter Notes Generation**: Produce comprehensive speaker notes with background context, talking points, and pacing cues.\n\n### Operational Guidelines:\n- Keep slide bullet points concise, impactful, and scannable (avoid walls of text).\n- Place detailed explanations, citations, and talking points in the presenter notes.\n- Adhere strictly to the requested audience level (Executive, Technical, or All-Hands).\n- Maintain corporate brand consistency across color and typography recommendations.",
+          "channels": [
+            "MsTeams",
+            "Microsoft365Copilot"
+          ],
+          "toolCount": 2,
+          "skillCount": 3,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:presentation_deck_generator.skill.presenter-notes-generator",
+        "name": "presenter-notes-generator",
+        "type": "skill",
+        "position": {
+          "x": 568,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "presentation_deck_generator.skill.presenter-notes-generator"
+        }
+      },
+      {
+        "id": "skill:presentation_deck_generator.skill.slide-outline-synthesizer",
+        "name": "slide-outline-synthesizer",
+        "type": "skill",
+        "position": {
+          "x": 228,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "presentation_deck_generator.skill.slide-outline-synthesizer"
+        }
+      },
+      {
+        "id": "skill:presentation_deck_generator.skill.template-layout-selector",
+        "name": "template-layout-selector",
+        "type": "skill",
+        "position": {
+          "x": -111.99999999999997,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "presentation_deck_generator.skill.template-layout-selector"
+        }
+      },
+      {
+        "id": "tool:presentation_deck_generator.tool.PowerPointGeneratorConnector",
+        "name": "PowerPointGeneratorConnector",
+        "type": "tool",
+        "position": {
+          "x": -452,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "presentation_deck_generator.tool.PowerPointGeneratorConnector",
+          "operation": "CreatePresentation"
+        }
+      },
+      {
+        "id": "tool:presentation_deck_generator.tool.SharePointTemplateMCP",
+        "name": "SharePointTemplateMCP",
+        "type": "tool",
+        "position": {
+          "x": -792,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "presentation_deck_generator.tool.SharePointTemplateMCP",
+          "operation": "InvokeMCP"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:presentation_deck_generator-includes-presentation_deck_generator.skill.presenter-notes-generator",
+        "source": "agent:presentation_deck_generator",
+        "target": "skill:presentation_deck_generator.skill.presenter-notes-generator",
+        "label": "includes"
+      },
+      {
+        "id": "agent:presentation_deck_generator-includes-presentation_deck_generator.skill.slide-outline-synthesizer",
+        "source": "agent:presentation_deck_generator",
+        "target": "skill:presentation_deck_generator.skill.slide-outline-synthesizer",
+        "label": "includes"
+      },
+      {
+        "id": "agent:presentation_deck_generator-includes-presentation_deck_generator.skill.template-layout-selector",
+        "source": "agent:presentation_deck_generator",
+        "target": "skill:presentation_deck_generator.skill.template-layout-selector",
+        "label": "includes"
+      },
+      {
+        "id": "agent:presentation_deck_generator-uses-presentation_deck_generator.tool.PowerPointGeneratorConnector",
+        "source": "agent:presentation_deck_generator",
+        "target": "tool:presentation_deck_generator.tool.PowerPointGeneratorConnector",
+        "label": "uses"
+      },
+      {
+        "id": "agent:presentation_deck_generator-uses-presentation_deck_generator.tool.SharePointTemplateMCP",
+        "source": "agent:presentation_deck_generator",
+        "target": "tool:presentation_deck_generator.tool.SharePointTemplateMCP",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [
+    {
+      "id": "presentation_deck_generator_workflow",
+      "name": "Generate on-brand presentation decks",
+      "trigger": "When presentation brief is submitted",
+      "nodeCount": 7,
+      "edgeCount": 7,
+      "graph": {
+        "nodes": [
+          {
+            "id": "node-1",
+            "name": "When presentation brief is submitted",
+            "type": "start",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "details": {
+              "displayName": "When presentation brief is submitted",
+              "operationType": "trigger"
+            }
+          },
+          {
+            "id": "node-2",
+            "name": "Synthesize slide outline and narrative",
+            "type": "agent",
+            "position": {
+              "x": 260,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-3",
+            "name": "Select corporate template layouts",
+            "type": "agent",
+            "position": {
+              "x": 520,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-4",
+            "name": "Validate corporate brand compliance",
+            "type": "ifElse",
+            "position": {
+              "x": 780,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-5",
+            "name": "Draft presenter speaking notes",
+            "type": "agent",
+            "position": {
+              "x": 1040,
+              "y": -60
+            },
+            "details": {}
+          },
+          {
+            "id": "node-6",
+            "name": "Flag layout adjustment needed",
+            "type": "agent",
+            "position": {
+              "x": 1040,
+              "y": 60
+            },
+            "details": {}
+          },
+          {
+            "id": "node-7",
+            "name": "Deliver presentation deck summary",
+            "type": "end",
+            "position": {
+              "x": 1300,
+              "y": 0
+            },
+            "details": {}
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-1",
+            "source": "node-1",
+            "target": "node-2"
+          },
+          {
+            "id": "edge-2",
+            "source": "node-2",
+            "target": "node-3"
+          },
+          {
+            "id": "edge-3",
+            "source": "node-3",
+            "target": "node-4"
+          },
+          {
+            "id": "edge-4",
+            "source": "node-4",
+            "target": "node-5"
+          },
+          {
+            "id": "edge-5",
+            "source": "node-4",
+            "target": "node-6"
+          },
+          {
+            "id": "edge-6",
+            "source": "node-5",
+            "target": "node-7"
+          },
+          {
+            "id": "edge-7",
+            "source": "node-6",
+            "target": "node-7"
+          }
+        ]
+      }
+    }
+  ],
+  "connectors": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 962
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 46
+    },
+    {
+      "path": "botcomponents/presentation_deck_generator.skill.presenter-notes-generator/botcomponent.xml",
+      "category": "component",
+      "size": 173
+    },
+    {
+      "path": "botcomponents/presentation_deck_generator.skill.presenter-notes-generator/data",
+      "category": "component",
+      "size": 717
+    },
+    {
+      "path": "botcomponents/presentation_deck_generator.skill.slide-outline-synthesizer/botcomponent.xml",
+      "category": "component",
+      "size": 173
+    },
+    {
+      "path": "botcomponents/presentation_deck_generator.skill.slide-outline-synthesizer/data",
+      "category": "component",
+      "size": 765
+    },
+    {
+      "path": "botcomponents/presentation_deck_generator.skill.template-layout-selector/botcomponent.xml",
+      "category": "component",
+      "size": 171
+    },
+    {
+      "path": "botcomponents/presentation_deck_generator.skill.template-layout-selector/data",
+      "category": "component",
+      "size": 881
+    },
+    {
+      "path": "botcomponents/presentation_deck_generator.tool.PowerPointGeneratorConnector/botcomponent.xml",
+      "category": "component",
+      "size": 178
+    },
+    {
+      "path": "botcomponents/presentation_deck_generator.tool.PowerPointGeneratorConnector/data",
+      "category": "component",
+      "size": 244
+    },
+    {
+      "path": "botcomponents/presentation_deck_generator.tool.SharePointTemplateMCP/botcomponent.xml",
+      "category": "component",
+      "size": 164
+    },
+    {
+      "path": "botcomponents/presentation_deck_generator.tool.SharePointTemplateMCP/data",
+      "category": "component",
+      "size": 241
+    },
+    {
+      "path": "bots/presentation_deck_generator/bot.xml",
+      "category": "bot",
+      "size": 99
+    },
+    {
+      "path": "bots/presentation_deck_generator/configuration.json",
+      "category": "bot",
+      "size": 1474
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 232
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 523
+    },
+    {
+      "path": "Workflows/workflow.json",
+      "category": "workflow",
+      "size": 5686
+    }
+  ]
+}
