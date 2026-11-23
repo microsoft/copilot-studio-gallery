@@ -1,0 +1,393 @@
+{
+  "submissionType": "solution",
+  "name": "Executive Meeting Briefing Agent",
+  "description": "Sample agent that compiles personalized pre-meeting briefing dossiers by analyzing upcoming calendar events, summarizing recent email exchanges, and synthesizing attendee bios. Includes a placeholder workflow definition with no live mailbox access.",
+  "tags": [
+    "productivity",
+    "executive",
+    "meeting-prep",
+    "briefing",
+    "calendar",
+    "teams",
+    "dossier"
+  ],
+  "category": "Productivity & knowledge",
+  "createdAt": "2026-11-16",
+  "featured": false,
+  "previewWorkflow": "executive_meeting_briefing_workflow",
+  "supportingFiles": [
+    {
+      "label": "Sample meeting schedules and participant context briefs",
+      "filename": "sample-meeting-schedules.csv",
+      "path": "bundles/executive-meeting-briefing-agent-7d75eacfc531064115d931830753734619b27eab6d21354b3284c4074c2af52d-sample-meeting-schedules.csv",
+      "size": 2067
+    }
+  ],
+  "author": "Sapan Patel",
+  "authors": [
+    {
+      "name": "Sapan Patel",
+      "github": "sapanpatel1230",
+      "url": "https://github.com/sapanpatel1230"
+    }
+  ],
+  "uniqueName": "executive_meeting_briefing_agent",
+  "version": "1.0.0.0",
+  "publisher": "Productivity Solutions",
+  "bundle": "bundles/executive-meeting-briefing-agent.zip",
+  "bundleSha256": "5b4a59e41efd11a838c24b99872c551343f159c43a968cae5974b14ec4c0e073",
+  "agentCount": 1,
+  "workflowCount": 1,
+  "hookCount": 0,
+  "componentCount": 2,
+  "agents": [
+    {
+      "id": "executive_meeting_briefing_agent",
+      "schemaName": "executive_meeting_briefing_agent",
+      "name": "Executive Meeting Briefing Agent",
+      "model": "Auto",
+      "instructions": "You are the Executive Meeting Briefing Agent, an intelligent AI executive assistant designed to prepare high-level leaders for upcoming calendar commitments by analyzing participant backgrounds, past interactions, and strategic objectives.\n\n### Primary Responsibilities:\n1. **Calendar & Agenda Discovery**: Ingest upcoming meeting invites, extracting titles, attendees, duration, and stated goals.\n2. **Attendee Background Synthesis**: Research participant roles, departmental reporting lines, and stakeholder priorities to provide comprehensive context.\n3. **Email & Communication Summarization**: Distill recent email threads, shared attachments, and Teams discussions to surface critical open items and blockers.\n4. **Executive Dossier Generation**: Compile structured, skimmable briefing dossiers featuring participant snapshots, key objectives, recommended questions, and risk alerts.\n\n### Operational Guidelines:\n- Keep briefings highly structured, executive-ready, and actionable (bulleted takeaways over lengthy paragraphs).\n- Explicitly distinguish between confirmed facts and inferred background.\n- Flag high-priority blockers, contentious decisions, or open action items prominently at the top of the dossier.\n- Respect enterprise data privacy, strictly maintaining tenant boundary protections.",
+      "channels": [
+        "MsTeams",
+        "Microsoft365Copilot"
+      ],
+      "toolCount": 2,
+      "skillCount": 3,
+      "connectedAgentCount": 0
+    }
+  ],
+  "agentGraph": {
+    "nodes": [
+      {
+        "id": "agent:executive_meeting_briefing_agent",
+        "name": "Executive Meeting Briefing Agent",
+        "type": "agent",
+        "position": {
+          "x": -112,
+          "y": -36
+        },
+        "details": {
+          "model": "Auto",
+          "instructions": "You are the Executive Meeting Briefing Agent, an intelligent AI executive assistant designed to prepare high-level leaders for upcoming calendar commitments by analyzing participant backgrounds, past interactions, and strategic objectives.\n\n### Primary Responsibilities:\n1. **Calendar & Agenda Discovery**: Ingest upcoming meeting invites, extracting titles, attendees, duration, and stated goals.\n2. **Attendee Background Synthesis**: Research participant roles, departmental reporting lines, and stakeholder priorities to provide comprehensive context.\n3. **Email & Communication Summarization**: Distill recent email threads, shared attachments, and Teams discussions to surface critical open items and blockers.\n4. **Executive Dossier Generation**: Compile structured, skimmable briefing dossiers featuring participant snapshots, key objectives, recommended questions, and risk alerts.\n\n### Operational Guidelines:\n- Keep briefings highly structured, executive-ready, and actionable (bulleted takeaways over lengthy paragraphs).\n- Explicitly distinguish between confirmed facts and inferred background.\n- Flag high-priority blockers, contentious decisions, or open action items prominently at the top of the dossier.\n- Respect enterprise data privacy, strictly maintaining tenant boundary protections.",
+          "channels": [
+            "MsTeams",
+            "Microsoft365Copilot"
+          ],
+          "toolCount": 2,
+          "skillCount": 3,
+          "connectedAgentCount": 0
+        }
+      },
+      {
+        "id": "skill:executive_meeting_briefing_agent.skill.attendee-profile-researcher",
+        "name": "attendee-profile-researcher",
+        "type": "skill",
+        "position": {
+          "x": 568,
+          "y": 323.99999999999994
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "executive_meeting_briefing_agent.skill.attendee-profile-researcher"
+        }
+      },
+      {
+        "id": "skill:executive_meeting_briefing_agent.skill.email-thread-summarizer",
+        "name": "email-thread-summarizer",
+        "type": "skill",
+        "position": {
+          "x": 228,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "executive_meeting_briefing_agent.skill.email-thread-summarizer"
+        }
+      },
+      {
+        "id": "skill:executive_meeting_briefing_agent.skill.executive-dossier-builder",
+        "name": "executive-dossier-builder",
+        "type": "skill",
+        "position": {
+          "x": -111.99999999999997,
+          "y": 324
+        },
+        "details": {
+          "kind": "skill",
+          "schemaName": "executive_meeting_briefing_agent.skill.executive-dossier-builder"
+        }
+      },
+      {
+        "id": "tool:executive_meeting_briefing_agent.tool.MicrosoftGraphCalendarMCP",
+        "name": "MicrosoftGraphCalendarMCP",
+        "type": "tool",
+        "position": {
+          "x": -452,
+          "y": 324
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "executive_meeting_briefing_agent.tool.MicrosoftGraphCalendarMCP",
+          "operation": "InvokeMCP"
+        }
+      },
+      {
+        "id": "tool:executive_meeting_briefing_agent.tool.TeamsAdaptiveCardDispatcher",
+        "name": "TeamsAdaptiveCardDispatcher",
+        "type": "tool",
+        "position": {
+          "x": -792,
+          "y": 324.00000000000006
+        },
+        "details": {
+          "kind": "tool",
+          "schemaName": "executive_meeting_briefing_agent.tool.TeamsAdaptiveCardDispatcher",
+          "operation": "PostCard"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "agent:executive_meeting_briefing_agent-includes-executive_meeting_briefing_agent.skill.attendee-profile-researcher",
+        "source": "agent:executive_meeting_briefing_agent",
+        "target": "skill:executive_meeting_briefing_agent.skill.attendee-profile-researcher",
+        "label": "includes"
+      },
+      {
+        "id": "agent:executive_meeting_briefing_agent-includes-executive_meeting_briefing_agent.skill.email-thread-summarizer",
+        "source": "agent:executive_meeting_briefing_agent",
+        "target": "skill:executive_meeting_briefing_agent.skill.email-thread-summarizer",
+        "label": "includes"
+      },
+      {
+        "id": "agent:executive_meeting_briefing_agent-includes-executive_meeting_briefing_agent.skill.executive-dossier-builder",
+        "source": "agent:executive_meeting_briefing_agent",
+        "target": "skill:executive_meeting_briefing_agent.skill.executive-dossier-builder",
+        "label": "includes"
+      },
+      {
+        "id": "agent:executive_meeting_briefing_agent-uses-executive_meeting_briefing_agent.tool.MicrosoftGraphCalendarMCP",
+        "source": "agent:executive_meeting_briefing_agent",
+        "target": "tool:executive_meeting_briefing_agent.tool.MicrosoftGraphCalendarMCP",
+        "label": "uses"
+      },
+      {
+        "id": "agent:executive_meeting_briefing_agent-uses-executive_meeting_briefing_agent.tool.TeamsAdaptiveCardDispatcher",
+        "source": "agent:executive_meeting_briefing_agent",
+        "target": "tool:executive_meeting_briefing_agent.tool.TeamsAdaptiveCardDispatcher",
+        "label": "uses"
+      }
+    ]
+  },
+  "workflows": [
+    {
+      "id": "executive_meeting_briefing_workflow",
+      "name": "Compile executive pre-meeting briefing dossiers",
+      "trigger": "When meeting briefing is requested",
+      "nodeCount": 7,
+      "edgeCount": 7,
+      "graph": {
+        "nodes": [
+          {
+            "id": "node-1",
+            "name": "When meeting briefing is requested",
+            "type": "start",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "details": {
+              "displayName": "When meeting briefing is requested",
+              "operationType": "trigger"
+            }
+          },
+          {
+            "id": "node-2",
+            "name": "Ingest upcoming calendar event and attendees",
+            "type": "agent",
+            "position": {
+              "x": 260,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-3",
+            "name": "Research attendee profiles and reporting hierarchy",
+            "type": "agent",
+            "position": {
+              "x": 520,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-4",
+            "name": "Assess recent email exchanges and open threads",
+            "type": "ifElse",
+            "position": {
+              "x": 780,
+              "y": 0
+            },
+            "details": {}
+          },
+          {
+            "id": "node-5",
+            "name": "Synthesize unresolved blockers and risks",
+            "type": "agent",
+            "position": {
+              "x": 1040,
+              "y": -60
+            },
+            "details": {}
+          },
+          {
+            "id": "node-6",
+            "name": "Compile standard meeting context and agenda",
+            "type": "agent",
+            "position": {
+              "x": 1040,
+              "y": 60
+            },
+            "details": {}
+          },
+          {
+            "id": "node-7",
+            "name": "Deliver executive briefing dossier and card",
+            "type": "end",
+            "position": {
+              "x": 1300,
+              "y": 0
+            },
+            "details": {}
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-1",
+            "source": "node-1",
+            "target": "node-2"
+          },
+          {
+            "id": "edge-2",
+            "source": "node-2",
+            "target": "node-3"
+          },
+          {
+            "id": "edge-3",
+            "source": "node-3",
+            "target": "node-4"
+          },
+          {
+            "id": "edge-4",
+            "source": "node-4",
+            "target": "node-5"
+          },
+          {
+            "id": "edge-5",
+            "source": "node-4",
+            "target": "node-6"
+          },
+          {
+            "id": "edge-6",
+            "source": "node-5",
+            "target": "node-7"
+          },
+          {
+            "id": "edge-7",
+            "source": "node-6",
+            "target": "node-7"
+          }
+        ]
+      }
+    }
+  ],
+  "connectors": [],
+  "files": [
+    {
+      "path": "[Content_Types].xml",
+      "category": "other",
+      "size": 991
+    },
+    {
+      "path": "Assets/botcomponent_connectionreferenceset.xml",
+      "category": "other",
+      "size": 46
+    },
+    {
+      "path": "botcomponents/executive_meeting_briefing_agent.skill.attendee-profile-researcher/botcomponent.xml",
+      "category": "component",
+      "size": 182
+    },
+    {
+      "path": "botcomponents/executive_meeting_briefing_agent.skill.attendee-profile-researcher/data",
+      "category": "component",
+      "size": 733
+    },
+    {
+      "path": "botcomponents/executive_meeting_briefing_agent.skill.email-thread-summarizer/botcomponent.xml",
+      "category": "component",
+      "size": 174
+    },
+    {
+      "path": "botcomponents/executive_meeting_briefing_agent.skill.email-thread-summarizer/data",
+      "category": "component",
+      "size": 677
+    },
+    {
+      "path": "botcomponents/executive_meeting_briefing_agent.skill.executive-dossier-builder/botcomponent.xml",
+      "category": "component",
+      "size": 178
+    },
+    {
+      "path": "botcomponents/executive_meeting_briefing_agent.skill.executive-dossier-builder/data",
+      "category": "component",
+      "size": 823
+    },
+    {
+      "path": "botcomponents/executive_meeting_briefing_agent.tool.MicrosoftGraphCalendarMCP/botcomponent.xml",
+      "category": "component",
+      "size": 177
+    },
+    {
+      "path": "botcomponents/executive_meeting_briefing_agent.tool.MicrosoftGraphCalendarMCP/data",
+      "category": "component",
+      "size": 232
+    },
+    {
+      "path": "botcomponents/executive_meeting_briefing_agent.tool.TeamsAdaptiveCardDispatcher/botcomponent.xml",
+      "category": "component",
+      "size": 181
+    },
+    {
+      "path": "botcomponents/executive_meeting_briefing_agent.tool.TeamsAdaptiveCardDispatcher/data",
+      "category": "component",
+      "size": 223
+    },
+    {
+      "path": "bots/executive_meeting_briefing_agent/bot.xml",
+      "category": "bot",
+      "size": 103
+    },
+    {
+      "path": "bots/executive_meeting_briefing_agent/configuration.json",
+      "category": "bot",
+      "size": 1719
+    },
+    {
+      "path": "customizations.xml",
+      "category": "solution",
+      "size": 242
+    },
+    {
+      "path": "solution.xml",
+      "category": "solution",
+      "size": 531
+    },
+    {
+      "path": "Workflows/workflow.json",
+      "category": "workflow",
+      "size": 6025
+    }
+  ]
+}
