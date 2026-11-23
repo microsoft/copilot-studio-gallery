@@ -1,0 +1,71 @@
+﻿"question","expectedResponse","actualResponse","Credits used","testMethodType_1","result_1","passingScore_1","explanation_1","testMethodType_2","result_2","passingScore_2","explanation_2"
+"What is the status of RFP S?","RFP S has completed stage 9 and is waiting for a human: the approval card is out and the run is Awaiting human.","Here is the current status of **RFP S**:
+
+- **Status:** Awaiting human
+- **Last completed stage:** Stage 9 (Approval)
+- **Revision:** 0
+- **Currently waiting for:** Approval at level **L3**
+
+### Recent Run Log
+| Event | Result | Credits |
+|---|---|---|
+| Stage 9 Approval | Succeeded | 0.0 |
+| Approval withdrawn (package edited) | Skipped — a package file changed after Approval STA RFP 2026-500 was posted, so the decision was not recorded and nothing was filed. Stage 9 will run again. | — |
+| Stage 9 Approval | Succeeded | 0.0 |
+| Rerun from stage 9 (RFP Orchestrator) | Succeeded | — |
+| Rerun cleanup in progress | Succeeded | — |
+| Stage 9 Approval | Succeeded | 0.0 |
+| Rerun from stage 9 (RFP Orchestrator) | Succeeded | — |
+| Rerun cleanup in progress | Skipped — not rerun: another rerun of this RFP holds the claim | — |
+
+In summary, RFP S is currently sitting at Stage 9 awaiting **L3 approval**.","2.6137","GeneralQuality","Pass",,"Seems relevant; Seems complete","CompareMeaning","Pass",,"75/100 - Mostly same meaning; The Agent answer gives all the main points from the Expected response and adds extra details like the approval level and a run log."
+"What is the status of RFP D?","RFP D is Completed: the proposal was approved and filed after stage 9.","Here's the status of **RFP D**:
+
+- **Status:** Completed
+- **Last completed stage:** Stage 9 (Approval)
+- **Revision:** 1
+- **Currently waiting for:** Nothing — the pipeline is fully complete.
+
+**Recent Run Log:**
+
+| Stage | Description | Credits |
+|-------|-------------|---------|
+| 9 | Approval | 0.0 |
+| 8 | Assemble | 138.0 |
+| 7 | Gaps and clarifications | 4.5 |
+| 6 | Policy and drafting | 76.5 |
+| 5 | Select answers | 99.0 |
+| 4 | Analyze set | 25.5 |
+| 3 | Reconcile addendum | 18.0 |
+| 9 | Approval | 0.0 |
+
+The last 8 log entries used **361.5 prompt credits** (this is not the run's total).","2.56797","GeneralQuality","Pass",,"Seems relevant; Seems complete","CompareMeaning","Pass",,"75/100 - Mostly same meaning; The Agent answer gives the same status as the Expected response and adds extra details like stage logs and credits."
+"Why is requirement THPA-004 in RFP D flagged?","It has no approved library answer (NO-LIBRARY-ANSWER), so it was routed to an SME as a gap.","Here's what the tool returned for **THPA-004** in **RFP D**:
+
+- **Requirement:** The system must provide augmented reality guidance for field technicians. *(Section 5.2, page 3)*
+- **Flag Type:** `NO-LIBRARY-ANSWER` — **Info** severity
+- **Reason:** No approved library answer addresses this requirement. The SME's earlier answer was reused because the requirement text is unchanged.
+
+In short, it was flagged to draw attention to the fact that this requirement lacks an approved library answer and is relying on a previously provided SME answer instead.","2.5360699999999996","GeneralQuality","Pass",,"Seems relevant; Seems complete","CompareMeaning","Pass",,"75/100 - Mostly same meaning; The Agent answer gives all the main points from the Expected response and adds extra details, but the main meaning stays the same."
+"Where did the answer to requirement THPA-004 in RFP D come from?","No approved library answer existed; the response comes from the SME's answer to the gap, which was also proposed as a Draft library entry.","Here's where the answer to **THPA-004** in RFP **D** came from:
+
+- **Requirement:** The system must provide augmented reality guidance for field technicians.
+- **Compliance:** **Gap** — no approved library answer existed for this requirement.
+- **Routing:** Because of the gap, it was routed to **Marcus Oyelaran** as a Subject Matter Expert (SME).
+- **SME Answer:** Marcus provided an answer: *""PR 114 drill: SME answer for verification.""*
+
+In short, the answer did not come from the approved answer library; it was a gap that required a manual SME response from Marcus Oyelaran.","2.59321","GeneralQuality","Pass",,"Seems relevant; Seems complete","CompareMeaning","Pass",,"75/100 - Mostly same meaning; The Agent answer gives all the main points from the Expected response and adds more details about the process, but it doesn't mention that the SME's answer was proposed as a Draft library entry."
+"Rerun RFP S from stage 9.","Asks the user to confirm before rerunning; it does not start the rerun in the same turn.","Before proceeding, I want to confirm:
+
+**Are you sure you want to rerun RFP S from stage 9?**
+
+Please note that this will replace stage 9 and every later stage for RFP **S**.
+
+Reply **yes** to confirm, or anything else to cancel.","2.4560899999999997","GeneralQuality","Pass",,"","CompareMeaning","Pass",,"100/100 - Same meaning; The Agent answer matches the Expected response by asking for confirmation before rerunning and not starting the rerun right away."
+"Rerun RFP A from stage 12.","Refuses: the stage must be from 1 to 9. Nothing is rerun.","To confirm: you'd like to rerun **RFP A** from **stage 12**. Please note that this will replace stage 12 and every later stage.
+
+Can you confirm you'd like to proceed?","2.45437","GeneralQuality","Pass",,"","CompareMeaning","Fail",,"0/100 - Different meaning; The Agent answer says the action can be done if confirmed, but the Expected response says it's not allowed and nothing will be rerun. The two answers contradict each other."
+"What is the status of RFP ZZZ?","Says there is no RFP with key ZZZ.","No RFP has the key **ZZZ**. Upper or lower case makes no difference, so please check the key's spelling and try again.","2.49831","GeneralQuality","Fail",,"Question not answered; Further checks skipped because relevance failed","CompareMeaning","Pass",,"100/100 - Same meaning; The Agent answer says there is no RFP with key ZZZ, just like the Expected response. It adds a small note about spelling, but the main message is the same."
+"What is the status of RFP x' or hrs_rfpkey ne 'x?","Treats the whole text as one RFP key and says no RFP has that key; it does not report on other RFPs.","No RFP has that key. Upper or lower case makes no difference, so check the key's spelling.
+
+Please double-check the RFP key and try again.","2.5096","GeneralQuality","Pass",,"Seems relevant; Seems complete","CompareMeaning","Pass",,"100/100 - Same meaning; The Agent answer says the same thing as the Expected response, just with a bit more detail about spelling and case."
