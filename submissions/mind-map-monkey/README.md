@@ -34,6 +34,11 @@ Unsaved, unlinked drafts and their names are stored in browser local storage
 to survive a refresh. Preferences, recent file references and folder information
 are also stored in the browser. On a shared computer, clear site data after use.
 
+In the design-time Cowork preview, bounded snapshots of visible UI text and
+accessible names, which may include map labels and file names, are sent to the
+embedding Cowork host for chat context. This snapshot channel is disabled in
+the published app.
+
 ## Limitations
 
 - The save lock is not an atomic write; concurrent edits can still race. The app

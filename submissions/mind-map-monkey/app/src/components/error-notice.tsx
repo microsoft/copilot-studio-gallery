@@ -37,7 +37,7 @@ export function ErrorNotice({ title, description, file, details, onRetry, retryL
   const descriptionId = `${id}-description`;
 
   useEffect(() => {
-    returnTo.current = document.activeElement;
+    if (document.activeElement !== ref.current) returnTo.current = document.activeElement;
     ref.current?.focus();
   }, []);
 
