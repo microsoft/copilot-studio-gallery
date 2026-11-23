@@ -1,0 +1,50 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRedirect
+  id: main
+  actions:
+    - kind: InvokeFlowAction
+      id: callSettings
+      input:
+        binding:
+          aadObjectId: =System.User.Id
+          displayName: =System.User.DisplayName
+          upn: =System.User.PrincipalName
+
+      output:
+        binding:
+          card: Topic.Card
+          message: Topic.Message
+
+      flowId: a84655fa-4ec7-f111-a05a-000d3ad895be
+
+    - kind: ConditionGroup
+      id: checkCard
+      conditions:
+        - id: noCard
+          condition: =IsBlank(Topic.Card)
+          actions:
+            - kind: SendActivity
+              id: sendError
+              activity: "{Topic.Message}"
+
+            - kind: EndDialog
+              id: endNoCard
+
+    - kind: AdaptiveCardPrompt
+      id: askPreferences
+      card: =Topic.Card
+      output:
+        binding:
+          action: Topic.CardAction
+
+      outputType:
+        properties:
+          action: String
+
+    - kind: BeginDialog
+      id: goSavePreferences
+      dialog: ait_RoadmapWatcherforMicrosoft365.topic.SavePreferences
+
+inputType: {}
+outputType: {}

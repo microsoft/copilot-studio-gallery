@@ -1,0 +1,65 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRedirect
+  id: main
+  actions:
+    - kind: SetVariable
+      id: setDayIndex
+      variable: init:Topic.DayIndex
+      value: |-
+        =With({ d: Last(Split(Lower(Topic.Args), " ")).Value },
+          If(d in ["monday", "mon"], 0, d in ["tuesday", "tue"], 1, d in ["wednesday", "wed"], 2, d in ["thursday", "thu"], 3,
+             d in ["friday", "fri"], 4, d in ["saturday", "sat"], 5, d in ["sunday", "sun"], 6, -1))
+
+    - kind: SetVariable
+      id: setFrequency
+      variable: init:Topic.Frequency
+      value: |-
+        =With({ w: Split(Lower(Topic.Args), " ") },
+          With({ f: First(w).Value, n: CountRows(w) },
+            If(f = "daily" && n = 1, "Daily",
+               f = "monthly" && n = 1, "Monthly",
+               f = "weekly" && n = 2 && Topic.DayIndex >= 0, "Weekly",
+               "")))
+
+    - kind: ConditionGroup
+      id: checkArgs
+      conditions:
+        - id: badArgs
+          condition: =Topic.Frequency = ""
+          actions:
+            - kind: SendActivity
+              id: usage
+              activity: "Usage: /frequency daily, `/frequency weekly <day>` or /frequency monthly. Example: /frequency weekly monday"
+
+            - kind: EndDialog
+              id: endBadArgs
+
+    - kind: InvokeFlowAction
+      id: callSetFrequency
+      input:
+        binding:
+          aadObjectId: =System.User.Id
+          displayName: =System.User.DisplayName
+          frequency: =Topic.Frequency
+          upn: =System.User.PrincipalName
+          weekday: =Topic.DayIndex
+
+      output:
+        binding:
+          message: Topic.Message
+
+      flowId: c9f65cf4-4ec7-f111-a05a-000d3ad895be
+
+    - kind: SendActivity
+      id: sendResult
+      activity: "{Topic.Message}"
+
+inputType:
+  properties:
+    Args:
+      displayName: Args
+      description: Text after /frequency
+      type: String
+
+outputType: {}

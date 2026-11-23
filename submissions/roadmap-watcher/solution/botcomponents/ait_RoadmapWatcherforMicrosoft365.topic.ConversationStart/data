@@ -1,0 +1,39 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnConversationStart
+  id: main
+  actions:
+    - kind: SendActivity
+      id: sendIntro
+      activity: Hi, I'm Roadmap Watcher. I send you a digest of Microsoft 365 roadmap items and Azure updates for the products you follow, with Critical items first, then deprecations, then new features.
+
+    - kind: ConditionGroup
+      id: checkUser
+      conditions:
+        - id: hasUser
+          condition: =!IsBlank(System.User.Id)
+          actions:
+            - kind: InvokeFlowAction
+              id: callWelcome
+              input:
+                binding:
+                  aadObjectId: =System.User.Id
+                  displayName: =System.User.DisplayName
+                  upn: =System.User.PrincipalName
+
+              output:
+                binding:
+                  message: Topic.Message
+
+              flowId: d24655fa-4ec7-f111-a05a-000d3ad895be
+
+            - kind: SendActivity
+              id: sendSetup
+              activity: "{Topic.Message}"
+
+    - kind: SendActivity
+      id: sendStart
+      activity: To start, type /packs to see the product packs, then follow one, for example /add security. Type /help for all commands.
+
+inputType: {}
+outputType: {}

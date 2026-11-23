@@ -1,0 +1,25 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRedirect
+  id: main
+  actions:
+    - kind: InvokeFlowAction
+      id: callMySubs
+      input:
+        binding:
+          aadObjectId: =System.User.Id
+          displayName: =System.User.DisplayName
+          upn: =System.User.PrincipalName
+
+      output:
+        binding:
+          message: Topic.Message
+
+      flowId: 84f65cf4-4ec7-f111-a05a-000d3ad895be
+
+    - kind: SendActivity
+      id: sendMySubs
+      activity: "{Topic.Message}"
+
+inputType: {}
+outputType: {}

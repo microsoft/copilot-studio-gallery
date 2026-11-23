@@ -1,0 +1,162 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "ait_Dataverse"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "type": "Object",
+          "defaultValue": {}
+        },
+        "$authentication": {
+          "type": "SecureObject",
+          "defaultValue": {}
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "args": {
+                  "title": "args",
+                  "type": "string",
+                  "description": "Filter text; empty lists all products",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "Query_text": {
+          "runAfter": {},
+          "type": "Compose",
+          "inputs": "@replace(trim(coalesce(triggerBody()?['args'], '')), '''', '''''')"
+        },
+        "Get_products": {
+          "runAfter": {
+            "Query_text": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "ait_products",
+              "$select": "ait_name,ait_aliases,ait_source",
+              "$filter": "@{if(empty(outputs('Query_text')), 'ait_isactive eq true', if(equals(toLower(outputs('Query_text')), 'azure'), 'ait_isactive eq true and ait_source eq 748120001', concat('ait_isactive eq true and (contains(ait_name,''', outputs('Query_text'), ''') or contains(ait_displayname,''', outputs('Query_text'), ''') or contains(ait_aliases,''', outputs('Query_text'), '''))')))}",
+              "$orderby": "ait_name asc"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Product_lines": {
+          "runAfter": {
+            "Get_products": [
+              "Succeeded"
+            ]
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@body('Get_products')?['value']",
+            "select": "@concat('- ', item()?['ait_name'], if(equals(item()?['ait_source'], 748120001), ' (Azure)', ''), if(empty(item()?['ait_aliases']), '', concat(' · ', item()?['ait_aliases'])))"
+          }
+        },
+        "Reply": {
+          "runAfter": {
+            "Product_lines": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": {
+            "message": "@{if(empty(body('Product_lines')), concat('No products match ''', trim(coalesce(triggerBody()?['args'], '')), '''. Try a shorter word, or type /packs.'), concat('**', length(body('Product_lines')), if(empty(outputs('Query_text')), ' products', concat(' products match ''', trim(triggerBody()?['args']), '''')), '** (name · aliases)', decodeUriComponent('%0A%0A'), join(body('Product_lines'), decodeUriComponent('%0A')), decodeUriComponent('%0A%0A'), 'Follow one with `/add <name or alias>`, for example /add teams. Type /products azure for the Azure list.'))}"
+          }
+        },
+        "Respond_to_the_agent": {
+          "runAfter": {
+            "Reply": [
+              "Succeeded"
+            ]
+          },
+          "type": "Response",
+          "kind": "Skills",
+          "inputs": {
+            "statusCode": 200,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "title": "message",
+                  "description": "",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "additionalProperties": {}
+            },
+            "body": {
+              "message": "@{outputs('Reply')?['message']}"
+            }
+          }
+        },
+        "Respond_with_error": {
+          "runAfter": {
+            "Reply": [
+              "Failed",
+              "Skipped",
+              "TimedOut"
+            ]
+          },
+          "type": "Response",
+          "kind": "Skills",
+          "inputs": {
+            "statusCode": 200,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "title": "message",
+                  "description": "",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "additionalProperties": {}
+            },
+            "body": {
+              "message": "Sorry, something went wrong on my side. Please try again in a few minutes."
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

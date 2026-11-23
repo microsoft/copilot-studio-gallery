@@ -1,0 +1,29 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRedirect
+  id: main
+  actions:
+    - kind: SendActivity
+      id: sendWorking
+      activity: Building your digest. This can take a few seconds.
+
+    - kind: InvokeFlowAction
+      id: callDigestNow
+      input:
+        binding:
+          aadObjectId: =System.User.Id
+          displayName: =System.User.DisplayName
+          upn: =System.User.PrincipalName
+
+      output:
+        binding:
+          message: Topic.Message
+
+      flowId: fe6c391b-19c8-f111-a05a-000d3ad895be
+
+    - kind: SendActivity
+      id: sendDigestResult
+      activity: "{Topic.Message}"
+
+inputType: {}
+outputType: {}

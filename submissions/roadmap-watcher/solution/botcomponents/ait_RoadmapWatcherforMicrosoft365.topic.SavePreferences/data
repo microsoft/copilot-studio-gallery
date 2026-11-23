@@ -1,0 +1,78 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRedirect
+  id: main
+  actions:
+    - kind: ParseValue
+      id: parseSubmit
+      variable: Topic.Submit
+      valueType:
+        kind: Record
+        properties:
+          action: String
+          azurePacks: String
+          azureProducts: String
+          critical: String
+          frequency: String
+          lookahead: String
+          packs: String
+          paused: String
+          products: String
+          sendEmpty: String
+          stamp: String
+          weekday: String
+
+      value: =System.Activity.Value
+
+    - kind: SetVariable
+      id: setAction
+      variable: init:Topic.Action
+      value: =Coalesce(Topic.Submit.action, "")
+
+    - kind: ConditionGroup
+      id: route
+      conditions:
+        - id: isDigestNow
+          condition: =Topic.Action = "digestNow"
+          actions:
+            - kind: BeginDialog
+              id: goDigest
+              dialog: ait_RoadmapWatcherforMicrosoft365.topic.DigestNow
+
+        - id: isSave
+          condition: =Topic.Action = "savePreferences"
+          actions:
+            - kind: InvokeFlowAction
+              id: callSavePreferences
+              input:
+                binding:
+                  aadObjectId: =System.User.Id
+                  critical: =Topic.Submit.critical
+                  displayName: =System.User.DisplayName
+                  frequency: =Topic.Submit.frequency
+                  lookahead: =Topic.Submit.lookahead
+                  packs: =Topic.Submit.packs & "," & Topic.Submit.azurePacks
+                  paused: =Topic.Submit.paused
+                  products: =Topic.Submit.products & "," & Topic.Submit.azureProducts
+                  sendEmpty: =Topic.Submit.sendEmpty
+                  stamp: =Topic.Submit.stamp
+                  upn: =System.User.PrincipalName
+                  weekday: =Topic.Submit.weekday
+
+              output:
+                binding:
+                  message: Topic.Message
+
+              flowId: fee6d1b4-d0c8-f111-a05a-000d3ad895be
+
+            - kind: SendActivity
+              id: sendSaved
+              activity: "{Topic.Message}"
+
+      elseActions:
+        - kind: SendActivity
+          id: unknownCard
+          activity: I couldn't read that card. Type /mysettings to open a new one.
+
+inputType: {}
+outputType: {}

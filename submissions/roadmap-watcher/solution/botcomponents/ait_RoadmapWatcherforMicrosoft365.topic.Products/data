@@ -1,0 +1,29 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRedirect
+  id: main
+  actions:
+    - kind: InvokeFlowAction
+      id: callProducts
+      input:
+        binding:
+          args: =Topic.Args
+
+      output:
+        binding:
+          message: Topic.Message
+
+      flowId: adf65cf4-4ec7-f111-a05a-000d3ad895be
+
+    - kind: SendActivity
+      id: sendProducts
+      activity: "{Topic.Message}"
+
+inputType:
+  properties:
+    Args:
+      displayName: Args
+      description: Filter text after /products; may be empty
+      type: String
+
+outputType: {}

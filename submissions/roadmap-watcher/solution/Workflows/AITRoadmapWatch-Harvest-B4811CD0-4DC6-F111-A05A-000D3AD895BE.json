@@ -1,0 +1,986 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "ait_Dataverse"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "type": "Object",
+          "defaultValue": {}
+        },
+        "$authentication": {
+          "type": "SecureObject",
+          "defaultValue": {}
+        }
+      },
+      "triggers": {
+        "Recurrence": {
+          "type": "Recurrence",
+          "recurrence": {
+            "frequency": "Day",
+            "interval": 1,
+            "timeZone": "UTC",
+            "schedule": {
+              "hours": [
+                "6"
+              ],
+              "minutes": [
+                0
+              ]
+            }
+          },
+          "runtimeConfiguration": {
+            "concurrency": {
+              "runs": 1
+            }
+          }
+        }
+      },
+      "actions": {
+        "Get_settings": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "environmentvariabledefinitions",
+              "$select": "schemaname,defaultvalue",
+              "$filter": "startswith(schemaname, 'ait_')",
+              "$expand": "environmentvariabledefinition_environmentvariablevalue($select=value)"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Select_settings": {
+          "runAfter": {
+            "Get_settings": [
+              "Succeeded"
+            ]
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@body('Get_settings')?['value']",
+            "select": "@concat('\"', item()?['schemaname'], '\":\"', replace(replace(coalesce(first(item()?['environmentvariabledefinition_environmentvariablevalue'])?['value'], item()?['defaultvalue'], ''), '\\', '\\\\'), '\"', '\\\"'), '\"')"
+          }
+        },
+        "Settings": {
+          "runAfter": {
+            "Select_settings": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": "@json(concat('{', join(body('Select_settings'), ','), '}'))"
+        },
+        "Stop_if_disabled": {
+          "runAfter": {
+            "Harvest_input": [
+              "Succeeded"
+            ]
+          },
+          "type": "If",
+          "expression": "@not(equals(outputs('Harvest_input')?['enabled'], true))",
+          "actions": {
+            "Stop_disabled": {
+              "runAfter": {},
+              "type": "Terminate",
+              "inputs": {
+                "runStatus": "Succeeded"
+              }
+            }
+          },
+          "else": {
+            "actions": {}
+          }
+        },
+        "Get_last_harvest": {
+          "runAfter": {
+            "Stop_if_disabled": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "ait_runlogs",
+              "$select": "ait_watermark",
+              "$filter": "ait_runtype eq 748120000 and ait_runstatus eq 748120001 and ait_watermark ne null and @{outputs('Harvest_input')?['sourceFilter']}",
+              "$orderby": "ait_watermark desc",
+              "$top": 1
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Init_watermark": {
+          "runAfter": {
+            "Get_last_harvest": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Watermark",
+                "type": "string",
+                "value": "@{if(empty(body('Get_last_harvest')?['value']), formatDateTime(addDays(utcNow(), -90), 'yyyy-MM-ddTHH:mm:ssZ'), formatDateTime(first(body('Get_last_harvest')?['value'])?['ait_watermark'], 'yyyy-MM-ddTHH:mm:ssZ'))}"
+              }
+            ]
+          }
+        },
+        "Init_max_modified": {
+          "runAfter": {
+            "Init_watermark": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Max_modified",
+                "type": "string",
+                "value": ""
+              }
+            ]
+          }
+        },
+        "Init_skip": {
+          "runAfter": {
+            "Init_max_modified": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Skip",
+                "type": "integer",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "Init_has_more": {
+          "runAfter": {
+            "Init_skip": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Has_more",
+                "type": "boolean",
+                "value": true
+              }
+            ]
+          }
+        },
+        "Init_ids": {
+          "runAfter": {
+            "Init_has_more": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Ids",
+                "type": "array",
+                "value": []
+              }
+            ]
+          }
+        },
+        "Init_ai_checks": {
+          "runAfter": {
+            "Init_ids": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Ai_checks",
+                "type": "integer",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "Init_processed": {
+          "runAfter": {
+            "Init_ai_checks": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Processed",
+                "type": "integer",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "Init_ai_result": {
+          "runAfter": {
+            "Init_processed": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Ai_result",
+                "type": "object",
+                "value": {}
+              }
+            ]
+          }
+        },
+        "Init_ai_status": {
+          "runAfter": {
+            "Init_ai_result": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Ai_status",
+                "type": "string",
+                "value": ""
+              }
+            ]
+          }
+        },
+        "Init_current_id": {
+          "runAfter": {
+            "Init_ai_status": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Current_id",
+                "type": "string",
+                "value": ""
+              }
+            ]
+          }
+        },
+        "Create_run_log": {
+          "runAfter": {
+            "Init_current_id": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "CreateRecord",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "ait_runlogs",
+              "item/ait_name": "@{outputs('Harvest_input')?['runName']} @{utcNow('yyyy-MM-dd HH:mm')} UTC from @{variables('Watermark')}",
+              "item/ait_runtype": 748120000,
+              "item/ait_runstatus": 748120000,
+              "item/ait_startedon": "@utcNow()",
+              "item/ait_source": "@outputs('Harvest_input')?['sourceOption']"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Try": {
+          "runAfter": {
+            "Create_run_log": [
+              "Succeeded"
+            ]
+          },
+          "type": "Scope",
+          "actions": {
+            "Get_rules": {
+              "runAfter": {},
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "ait_classificationrules",
+                  "$select": "ait_flag,ait_phrase,ait_field",
+                  "$filter": "ait_isactive eq true"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            },
+            "Prepare_rules": {
+              "runAfter": {
+                "Get_rules": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Select",
+              "inputs": {
+                "from": "@body('Get_rules')?['value']",
+                "select": {
+                  "flag": "@if(equals(item()?['ait_flag'], 748120000), 'Security', if(equals(item()?['ait_flag'], 748120001), 'Action required', 'Retirement'))",
+                  "phrase": "@item()?['ait_phrase']",
+                  "needle": "@concat(' ', trim(concat(' ', replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(toLower(coalesce(item()?['ait_phrase'], '')), '.', ' '), ',', ' '), ';', ' '), ':', ' '), '!', ' '), '?', ' '), '(', ' '), ')', ' '), '[', ' '), ']', ' '), '{', ' '), '}', ' '), '\"', ' '), '''', ' '), '/', ' '), '\\', ' '), '-', ' '), '_', ' '), '|', ' '), '<', ' '), '>', ' '), '*', ' '), '#', ' '), '`', ' '), decodeUriComponent('%0D'), ' '), decodeUriComponent('%0A'), ' '), decodeUriComponent('%09'), ' '), '–', ' '), '—', ' '), '‘', ' '), '’', ' '), '“', ' '), '”', ' '), '  ', ' '), '  ', ' '), '  ', ' '), '  ', ' '), ' ')))",
+                  "field": "@if(equals(item()?['ait_field'], 748120000), 'Title', if(equals(item()?['ait_field'], 748120001), 'Description', 'Both'))"
+                }
+              }
+            },
+            "Rules": {
+              "runAfter": {
+                "Prepare_rules": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Query",
+              "inputs": {
+                "from": "@body('Prepare_rules')",
+                "where": "@not(and(equals(outputs('Harvest_input')?['azure'], true), equals(item()?['flag'], 'Retirement')))"
+              }
+            },
+            "Page_loop": {
+              "runAfter": {
+                "Rules": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Until",
+              "expression": "@equals(variables('Has_more'), false)",
+              "limit": {
+                "count": 200,
+                "timeout": "PT1H"
+              },
+              "actions": {
+                "Call_list": {
+                  "runAfter": {},
+                  "type": "Http",
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "@outputs('Settings')?['ait_McpServerUrl']",
+                    "headers": {
+                      "Content-Type": "application/json",
+                      "Accept": "application/json, text/event-stream"
+                    },
+                    "body": {
+                      "jsonrpc": "2.0",
+                      "id": 1,
+                      "method": "tools/call",
+                      "params": {
+                        "name": "@{outputs('Harvest_input')?['listTool']}",
+                        "arguments": {
+                          "filter": "modified gt @{variables('Watermark')}@{outputs('Harvest_input')?['cloudFilter']}",
+                          "skip": "@variables('Skip')"
+                        }
+                      }
+                    },
+                    "retryPolicy": {
+                      "type": "exponential",
+                      "count": 4,
+                      "interval": "PT10S"
+                    }
+                  }
+                },
+                "Page": {
+                  "runAfter": {
+                    "Call_list": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose",
+                  "inputs": "@json(json(trim(substring(string(body('Call_list')), add(indexOf(string(body('Call_list')), 'data:'), 5))))?['result']?['content'][0]?['text'])"
+                },
+                "Page_ids": {
+                  "runAfter": {
+                    "Page": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Select",
+                  "inputs": {
+                    "from": "@coalesce(outputs('Page')?['items'], json('[]'))",
+                    "select": "@string(item()?['id'])"
+                  }
+                },
+                "All_ids": {
+                  "runAfter": {
+                    "Page_ids": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose",
+                  "inputs": "@union(variables('Ids'), body('Page_ids'))"
+                },
+                "Set_ids": {
+                  "runAfter": {
+                    "All_ids": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "Ids",
+                    "value": "@outputs('All_ids')"
+                  }
+                },
+                "Set_has_more": {
+                  "runAfter": {
+                    "Set_ids": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "Has_more",
+                    "value": "@equals(outputs('Page')?['hasMore'], true)"
+                  }
+                },
+                "Next_page": {
+                  "runAfter": {
+                    "Set_has_more": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "IncrementVariable",
+                  "inputs": {
+                    "name": "Skip",
+                    "value": 50
+                  }
+                }
+              }
+            },
+            "Each_item": {
+              "runAfter": {
+                "Page_loop": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Foreach",
+              "foreach": "@variables('Ids')",
+              "runtimeConfiguration": {
+                "concurrency": {
+                  "repetitions": 1
+                }
+              },
+              "actions": {
+                "Set_current_id": {
+                  "runAfter": {},
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "Current_id",
+                    "value": "@{items('Each_item')}"
+                  }
+                },
+                "Call_item": {
+                  "runAfter": {
+                    "Set_current_id": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Http",
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "@outputs('Settings')?['ait_McpServerUrl']",
+                    "headers": {
+                      "Content-Type": "application/json",
+                      "Accept": "application/json, text/event-stream"
+                    },
+                    "body": {
+                      "jsonrpc": "2.0",
+                      "id": 1,
+                      "method": "tools/call",
+                      "params": {
+                        "name": "@{outputs('Harvest_input')?['itemTool']}",
+                        "arguments": {
+                          "id": "@{items('Each_item')}"
+                        }
+                      }
+                    },
+                    "retryPolicy": {
+                      "type": "exponential",
+                      "count": 4,
+                      "interval": "PT10S"
+                    }
+                  }
+                },
+                "Item": {
+                  "runAfter": {
+                    "Call_item": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose",
+                  "inputs": "@json(json(trim(substring(string(body('Call_item')), add(indexOf(string(body('Call_item')), 'data:'), 5))))?['result']?['content'][0]?['text'])"
+                },
+                "Title_text": {
+                  "runAfter": {
+                    "Item": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose",
+                  "inputs": "@concat(' ', replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(toLower(coalesce(outputs('Item')?['title'], '')), '.', ' '), ',', ' '), ';', ' '), ':', ' '), '!', ' '), '?', ' '), '(', ' '), ')', ' '), '[', ' '), ']', ' '), '{', ' '), '}', ' '), '\"', ' '), '''', ' '), '/', ' '), '\\', ' '), '-', ' '), '_', ' '), '|', ' '), '<', ' '), '>', ' '), '*', ' '), '#', ' '), '`', ' '), decodeUriComponent('%0D'), ' '), decodeUriComponent('%0A'), ' '), decodeUriComponent('%09'), ' '), '–', ' '), '—', ' '), '‘', ' '), '’', ' '), '“', ' '), '”', ' '), '  ', ' '), '  ', ' '), '  ', ' '), '  ', ' '), ' ')"
+                },
+                "Description_text": {
+                  "runAfter": {
+                    "Title_text": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose",
+                  "inputs": "@concat(' ', replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(toLower(coalesce(outputs('Item')?['description'], '')), '.', ' '), ',', ' '), ';', ' '), ':', ' '), '!', ' '), '?', ' '), '(', ' '), ')', ' '), '[', ' '), ']', ' '), '{', ' '), '}', ' '), '\"', ' '), '''', ' '), '/', ' '), '\\', ' '), '-', ' '), '_', ' '), '|', ' '), '<', ' '), '>', ' '), '*', ' '), '#', ' '), '`', ' '), decodeUriComponent('%0D'), ' '), decodeUriComponent('%0A'), ' '), decodeUriComponent('%09'), ' '), '–', ' '), '—', ' '), '‘', ' '), '’', ' '), '“', ' '), '”', ' '), '  ', ' '), '  ', ' '), '  ', ' '), '  ', ' '), ' ')"
+                },
+                "Hits": {
+                  "runAfter": {
+                    "Description_text": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Query",
+                  "inputs": {
+                    "from": "@body('Rules')",
+                    "where": "@or(and(not(equals(item()?['field'], 'Description')), contains(outputs('Title_text'), item()?['needle'])), and(not(equals(item()?['field'], 'Title')), contains(outputs('Description_text'), item()?['needle'])))"
+                  }
+                },
+                "Hit_flags": {
+                  "runAfter": {
+                    "Hits": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Select",
+                  "inputs": {
+                    "from": "@body('Hits')",
+                    "select": "@item()?['flag']"
+                  }
+                },
+                "Hit_text": {
+                  "runAfter": {
+                    "Hit_flags": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Select",
+                  "inputs": {
+                    "from": "@body('Hits')",
+                    "select": "@concat(item()?['flag'], ' ''', item()?['phrase'], '''')"
+                  }
+                },
+                "Tag_retirement": {
+                  "runAfter": {
+                    "Hit_text": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose",
+                  "inputs": "@and(equals(outputs('Harvest_input')?['azure'], true), contains(coalesce(outputs('Item')?['tags'], json('[]')), 'Retirements'))"
+                },
+                "Retirement_rings": {
+                  "runAfter": {
+                    "Tag_retirement": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Query",
+                  "inputs": {
+                    "from": "@coalesce(outputs('Item')?['availabilities'], json('[]'))",
+                    "where": "@equals(item()?['ring'], 'Retirement')"
+                  }
+                },
+                "Ring_month": {
+                  "runAfter": {
+                    "Retirement_rings": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose",
+                  "inputs": "@{if(empty(body('Retirement_rings')), '', concat(string(first(body('Retirement_rings'))?['year']), '-', coalesce(json('{\"January\":\"01\",\"February\":\"02\",\"March\":\"03\",\"April\":\"04\",\"May\":\"05\",\"June\":\"06\",\"July\":\"07\",\"August\":\"08\",\"September\":\"09\",\"October\":\"10\",\"November\":\"11\",\"December\":\"12\"}')?[string(first(body('Retirement_rings'))?['month'])], '')))}"
+                },
+                "Needs_ai_check": {
+                  "runAfter": {
+                    "Ring_month": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "If",
+                  "expression": "@and(greater(length(body('Hits')), 0), contains(createArray('yes', 'true', '1'), toLower(string(outputs('Settings')?['ait_AiVerification']))), less(variables('Ai_checks'), int(coalesce(outputs('Settings')?['ait_MaxAiChecksPerRun'], '50'))))",
+                  "actions": {
+                    "Count_ai_check": {
+                      "runAfter": {},
+                      "type": "IncrementVariable",
+                      "inputs": {
+                        "name": "Ai_checks",
+                        "value": 1
+                      }
+                    },
+                    "Run_prompt": {
+                      "runAfter": {
+                        "Count_ai_check": [
+                          "Succeeded"
+                        ]
+                      },
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "host": {
+                          "connectionName": "shared_commondataserviceforapps",
+                          "operationId": "aibuilderpredict_customprompt",
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                        },
+                        "parameters": {
+                          "recordId": "e12683b2-2e51-42dd-ad08-1d6394ab2533",
+                          "item/requestv2/Title": "@{outputs('Item')?['title']}",
+                          "item/requestv2/Description": "@{outputs('Item')?['description']}",
+                          "item/requestv2/Products": "@{join(coalesce(outputs('Item')?['products'], json('[]')), ' | ')}",
+                          "item/requestv2/Dates": "Status: @{coalesce(outputs('Item')?['status'], 'unknown')}; GA: @{coalesce(outputs('Item')?['generalAvailabilityDate'], 'none')}; Preview: @{coalesce(outputs('Item')?['previewAvailabilityDate'], 'none')}",
+                          "item/requestv2/KeywordHits": "@{join(body('Hit_text'), ', ')}"
+                        },
+                        "authentication": "@parameters('$authentication')"
+                      }
+                    },
+                    "Set_ai_result": {
+                      "runAfter": {
+                        "Run_prompt": [
+                          "Succeeded"
+                        ]
+                      },
+                      "type": "SetVariable",
+                      "inputs": {
+                        "name": "Ai_result",
+                        "value": "@coalesce(body('Run_prompt')?['responsev2']?['predictionOutput']?['structuredOutput'], json(body('Run_prompt')?['responsev2']?['predictionOutput']?['text']))"
+                      }
+                    },
+                    "Set_ai_ok": {
+                      "runAfter": {
+                        "Set_ai_result": [
+                          "Succeeded"
+                        ]
+                      },
+                      "type": "SetVariable",
+                      "inputs": {
+                        "name": "Ai_status",
+                        "value": "ok"
+                      }
+                    },
+                    "Set_ai_failed": {
+                      "runAfter": {
+                        "Set_ai_ok": [
+                          "Skipped"
+                        ]
+                      },
+                      "type": "SetVariable",
+                      "inputs": {
+                        "name": "Ai_status",
+                        "value": "failed"
+                      }
+                    }
+                  },
+                  "else": {
+                    "actions": {
+                      "Set_ai_skipped": {
+                        "runAfter": {},
+                        "type": "SetVariable",
+                        "inputs": {
+                          "name": "Ai_status",
+                          "value": "@{if(greater(length(body('Hits')), 0), if(contains(createArray('yes', 'true', '1'), toLower(string(outputs('Settings')?['ait_AiVerification']))), 'limit', 'off'), 'none')}"
+                        }
+                      }
+                    }
+                  }
+                },
+                "Flags": {
+                  "runAfter": {
+                    "Needs_ai_check": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose",
+                  "inputs": {
+                    "sec": "@and(contains(body('Hit_flags'), 'Security'), or(not(equals(variables('Ai_status'), 'ok')), equals(variables('Ai_result')?['isSecurity'], true)))",
+                    "act": "@and(contains(body('Hit_flags'), 'Action required'), or(not(equals(variables('Ai_status'), 'ok')), equals(variables('Ai_result')?['isActionRequired'], true)))",
+                    "ret": "@if(equals(outputs('Harvest_input')?['azure'], true), outputs('Tag_retirement'), and(contains(body('Hit_flags'), 'Retirement'), or(not(equals(variables('Ai_status'), 'ok')), equals(variables('Ai_result')?['isRetirement'], true))))"
+                  }
+                },
+                "Ai_month": {
+                  "runAfter": {
+                    "Flags": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose",
+                  "inputs": "@{if(equals(variables('Ai_status'), 'ok'), string(coalesce(variables('Ai_result')?['retirementMonth'], '')), '')}"
+                },
+                "Retirement_month": {
+                  "runAfter": {
+                    "Ai_month": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose",
+                  "inputs": "@{if(not(outputs('Flags')?['ret']), '', if(equals(outputs('Harvest_input')?['azure'], true), if(equals(length(outputs('Ring_month')), 7), outputs('Ring_month'), coalesce(outputs('Item')?['generalAvailabilityDate'], outputs('Item')?['previewAvailabilityDate'], '')), if(and(equals(length(outputs('Ai_month')), 7), equals(indexOf(outputs('Ai_month'), '-'), 4)), outputs('Ai_month'), coalesce(outputs('Item')?['generalAvailabilityDate'], outputs('Item')?['previewAvailabilityDate'], ''))))}"
+                },
+                "Flag_reason": {
+                  "runAfter": {
+                    "Retirement_month": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose",
+                  "inputs": "@{trim(concat(if(outputs('Tag_retirement'), concat('Tag: Retirements', if(equals(length(outputs('Ring_month')), 7), concat(' (', outputs('Ring_month'), ')'), ''), '. '), ''), if(equals(length(body('Hits')), 0), '', concat('Keywords: ', join(body('Hit_text'), ', '), '.', if(equals(variables('Ai_status'), 'ok'), concat(' AI: ', string(variables('Ai_result')?['reason'])), if(equals(variables('Ai_status'), 'limit'), ' AI check skipped: per-run limit reached.', if(equals(variables('Ai_status'), 'failed'), ' AI check failed.', '')))))))}"
+                },
+                "Find_existing": {
+                  "runAfter": {
+                    "Flag_reason": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connectionName": "shared_commondataserviceforapps",
+                      "operationId": "ListRecords",
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                    },
+                    "parameters": {
+                      "entityName": "ait_roadmapitems",
+                      "$select": "ait_roadmapitemid",
+                      "$filter": "ait_roadmapid eq '@{outputs('Harvest_input')?['idPrefix']}@{replace(items('Each_item'), '''', '''''')}'",
+                      "$top": 1
+                    },
+                    "authentication": "@parameters('$authentication')"
+                  }
+                },
+                "Upsert_item": {
+                  "runAfter": {
+                    "Find_existing": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connectionName": "shared_commondataserviceforapps",
+                      "operationId": "UpdateRecord",
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                    },
+                    "parameters": {
+                      "entityName": "ait_roadmapitems",
+                      "recordId": "@{coalesce(first(body('Find_existing')?['value'])?['ait_roadmapitemid'], guid())}",
+                      "item/ait_roadmapid": "@{outputs('Harvest_input')?['idPrefix']}@{items('Each_item')}",
+                      "item/ait_title": "@{take(coalesce(outputs('Item')?['title'], ''), 500)}",
+                      "item/ait_description": "@{take(coalesce(outputs('Item')?['description'], ''), 100000)}",
+                      "item/ait_products": "@{take(join(coalesce(outputs('Item')?['products'], json('[]')), '|'), 2000)}",
+                      "item/ait_status": "@{coalesce(outputs('Item')?['status'], '')}",
+                      "item/ait_gamonth": "@if(empty(outputs('Item')?['generalAvailabilityDate']), null, concat(outputs('Item')?['generalAvailabilityDate'], '-01'))",
+                      "item/ait_previewmonth": "@if(empty(outputs('Item')?['previewAvailabilityDate']), null, concat(outputs('Item')?['previewAvailabilityDate'], '-01'))",
+                      "item/ait_createdon_src": "@outputs('Item')?['created']",
+                      "item/ait_modifiedon_src": "@outputs('Item')?['modified']",
+                      "item/ait_url": "@{outputs('Harvest_input')?['urlBase']}@{encodeUriComponent(items('Each_item'))}",
+                      "item/ait_issecurity": "@outputs('Flags')?['sec']",
+                      "item/ait_isactionrequired": "@outputs('Flags')?['act']",
+                      "item/ait_isretirement": "@outputs('Flags')?['ret']",
+                      "item/ait_retirementmonth": "@if(empty(outputs('Retirement_month')), null, concat(outputs('Retirement_month'), '-01'))",
+                      "item/ait_flagreason": "@{take(outputs('Flag_reason'), 2000)}",
+                      "item/ait_source": "@outputs('Harvest_input')?['sourceOption']"
+                    },
+                    "authentication": "@parameters('$authentication')"
+                  }
+                },
+                "New_max_modified": {
+                  "runAfter": {
+                    "Upsert_item": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose",
+                  "inputs": "@{if(or(empty(variables('Max_modified')), greater(ticks(outputs('Item')?['modified']), ticks(variables('Max_modified')))), outputs('Item')?['modified'], variables('Max_modified'))}"
+                },
+                "Set_max_modified": {
+                  "runAfter": {
+                    "New_max_modified": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "Max_modified",
+                    "value": "@{outputs('New_max_modified')}"
+                  }
+                },
+                "Count_processed": {
+                  "runAfter": {
+                    "Set_max_modified": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "IncrementVariable",
+                  "inputs": {
+                    "name": "Processed",
+                    "value": 1
+                  }
+                }
+              }
+            },
+            "Complete_run_log": {
+              "runAfter": {
+                "Each_item": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "UpdateRecord",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "ait_runlogs",
+                  "recordId": "@{body('Create_run_log')?['ait_runlogid']}",
+                  "item/ait_runstatus": 748120001,
+                  "item/ait_endedon": "@utcNow()",
+                  "item/ait_itemcount": "@variables('Processed')",
+                  "item/ait_watermark": "@{if(empty(variables('Max_modified')), variables('Watermark'), formatDateTime(addSeconds(variables('Max_modified'), 1), 'yyyy-MM-ddTHH:mm:ssZ'))}",
+                  "item/ait_name": "@{body('Create_run_log')?['ait_name']}: @{variables('Processed')} items, @{variables('Ai_checks')} AI checks"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            }
+          }
+        },
+        "Catch": {
+          "runAfter": {
+            "Try": [
+              "Failed",
+              "TimedOut"
+            ]
+          },
+          "type": "Scope",
+          "actions": {
+            "Failed_actions": {
+              "runAfter": {},
+              "type": "Query",
+              "inputs": {
+                "from": "@result('Try')",
+                "where": "@equals(item()?['status'], 'Failed')"
+              }
+            },
+            "Error_text": {
+              "runAfter": {
+                "Failed_actions": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Select",
+              "inputs": {
+                "from": "@body('Failed_actions')",
+                "select": "@concat(item()?['name'], ': ', coalesce(item()?['error']?['message'], string(item()?['outputs']?['body']), 'failed'))"
+              }
+            },
+            "Fail_run_log": {
+              "runAfter": {
+                "Error_text": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "UpdateRecord",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "ait_runlogs",
+                  "recordId": "@{body('Create_run_log')?['ait_runlogid']}",
+                  "item/ait_runstatus": 748120002,
+                  "item/ait_endedon": "@utcNow()",
+                  "item/ait_itemcount": "@variables('Processed')",
+                  "item/ait_error": "@{take(concat('Last roadmap id: ', variables('Current_id'), '. ', join(body('Error_text'), ' | '), ' See the flow run history for details.'), 100000)}"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            },
+            "Stop_failed": {
+              "runAfter": {
+                "Fail_run_log": [
+                  "Succeeded",
+                  "Failed"
+                ]
+              },
+              "type": "Terminate",
+              "inputs": {
+                "runStatus": "Failed",
+                "runError": {
+                  "code": "HarvestFailed",
+                  "message": "Harvest failed. The watermark was not advanced. See ait_runlog."
+                }
+              }
+            }
+          }
+        },
+        "Harvest_input": {
+          "runAfter": {
+            "Settings": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": {
+            "enabled": true,
+            "azure": false,
+            "runName": "Harvest",
+            "listTool": "get_recent_m365_roadmaps",
+            "itemTool": "get_m365_roadmap_by_id",
+            "cloudFilter": " and cloudInstances/any(ci: ci eq '@{outputs('Settings')?['ait_CloudInstance']}')",
+            "idPrefix": "",
+            "urlBase": "https://www.microsoft.com/microsoft-365/roadmap?id=",
+            "sourceOption": 748120000,
+            "sourceFilter": "(ait_source eq 748120000 or ait_source eq null)"
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

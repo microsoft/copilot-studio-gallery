@@ -1,0 +1,324 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "ait_Dataverse"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "type": "Object",
+          "defaultValue": {}
+        },
+        "$authentication": {
+          "type": "SecureObject",
+          "defaultValue": {}
+        }
+      },
+      "triggers": {
+        "Recurrence": {
+          "type": "Recurrence",
+          "recurrence": {
+            "frequency": "Day",
+            "interval": 1,
+            "timeZone": "UTC",
+            "schedule": {
+              "hours": [
+                "7"
+              ],
+              "minutes": [
+                0
+              ]
+            }
+          },
+          "runtimeConfiguration": {
+            "concurrency": {
+              "runs": 1
+            }
+          }
+        }
+      },
+      "actions": {
+        "Init_variables": {
+          "runAfter": {},
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Sent",
+                "type": "integer",
+                "value": 0
+              },
+              {
+                "name": "Items",
+                "type": "integer",
+                "value": 0
+              },
+              {
+                "name": "Failures",
+                "type": "array",
+                "value": []
+              }
+            ]
+          }
+        },
+        "Create_run_log": {
+          "runAfter": {
+            "Init_variables": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "CreateRecord",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "ait_runlogs",
+              "item/ait_name": "Digest @{utcNow('yyyy-MM-dd HH:mm')} UTC",
+              "item/ait_runtype": 748120002,
+              "item/ait_runstatus": 748120000,
+              "item/ait_startedon": "@utcNow()"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Try": {
+          "runAfter": {
+            "Create_run_log": [
+              "Succeeded"
+            ]
+          },
+          "type": "Scope",
+          "actions": {
+            "List_due": {
+              "runAfter": {},
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "ait_subscribers",
+                  "$select": "ait_subscriberid,ait_displayname",
+                  "$filter": "ait_ispaused ne true and (ait_nextdueon eq null or ait_nextdueon lt @{formatDateTime(addDays(startOfDay(utcNow()), 1), 'yyyy-MM-ddTHH:mm:ssZ')})"
+                },
+                "authentication": "@parameters('$authentication')"
+              },
+              "runtimeConfiguration": {
+                "paginationPolicy": {
+                  "minimumItemCount": 100000
+                }
+              }
+            },
+            "Each_due": {
+              "runAfter": {
+                "List_due": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Foreach",
+              "foreach": "@body('List_due')?['value']",
+              "runtimeConfiguration": {
+                "concurrency": {
+                  "repetitions": 1
+                }
+              },
+              "actions": {
+                "Send_digest": {
+                  "runAfter": {},
+                  "type": "Workflow",
+                  "inputs": {
+                    "host": {
+                      "workflowReferenceName": "f06c391b-19c8-f111-a05a-000d3ad895be"
+                    },
+                    "body": {
+                      "text": "@items('Each_due')?['ait_subscriberid']",
+                      "boolean": true
+                    }
+                  }
+                },
+                "Check_result": {
+                  "runAfter": {
+                    "Send_digest": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Switch",
+                  "expression": "@body('Send_digest')?['status']",
+                  "cases": {
+                    "Sent": {
+                      "case": "sent",
+                      "actions": {
+                        "Count_sent": {
+                          "runAfter": {},
+                          "type": "IncrementVariable",
+                          "inputs": {
+                            "name": "Sent",
+                            "value": 1
+                          }
+                        },
+                        "Count_items": {
+                          "runAfter": {
+                            "Count_sent": [
+                              "Succeeded"
+                            ]
+                          },
+                          "type": "IncrementVariable",
+                          "inputs": {
+                            "name": "Items",
+                            "value": "@int(body('Send_digest')?['itemcount'])"
+                          }
+                        }
+                      }
+                    },
+                    "Failed": {
+                      "case": "failed",
+                      "actions": {
+                        "Record_failure": {
+                          "runAfter": {},
+                          "type": "AppendToArrayVariable",
+                          "inputs": {
+                            "name": "Failures",
+                            "value": "@{items('Each_due')?['ait_displayname']}: @{body('Send_digest')?['message']}"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "default": {
+                    "actions": {}
+                  }
+                },
+                "Record_child_failure": {
+                  "runAfter": {
+                    "Send_digest": [
+                      "Failed",
+                      "TimedOut"
+                    ]
+                  },
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "Failures",
+                    "value": "@{items('Each_due')?['ait_displayname']}: Send Digest did not finish (see its run history)."
+                  }
+                }
+              }
+            },
+            "Complete_run_log": {
+              "runAfter": {
+                "Each_due": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "UpdateRecord",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "ait_runlogs",
+                  "recordId": "@{body('Create_run_log')?['ait_runlogid']}",
+                  "item/ait_runstatus": "@if(empty(variables('Failures')), 748120001, 748120002)",
+                  "item/ait_endedon": "@utcNow()",
+                  "item/ait_itemcount": "@variables('Items')",
+                  "item/ait_name": "@{body('Create_run_log')?['ait_name']}: @{length(body('List_due')?['value'])} due, @{variables('Sent')} digests, @{variables('Items')} items, @{length(variables('Failures'))} failed",
+                  "item/ait_error": "@{if(empty(variables('Failures')), '', take(join(variables('Failures'), ' | '), 100000))}"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            }
+          }
+        },
+        "Catch": {
+          "runAfter": {
+            "Try": [
+              "Failed",
+              "TimedOut"
+            ]
+          },
+          "type": "Scope",
+          "actions": {
+            "Failed_actions": {
+              "runAfter": {},
+              "type": "Query",
+              "inputs": {
+                "from": "@result('Try')",
+                "where": "@equals(item()?['status'], 'Failed')"
+              }
+            },
+            "Error_text": {
+              "runAfter": {
+                "Failed_actions": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Select",
+              "inputs": {
+                "from": "@body('Failed_actions')",
+                "select": "@concat(item()?['name'], ': ', coalesce(item()?['error']?['message'], string(item()?['outputs']?['body']), 'failed'))"
+              }
+            },
+            "Fail_run_log": {
+              "runAfter": {
+                "Error_text": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "UpdateRecord",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "ait_runlogs",
+                  "recordId": "@{body('Create_run_log')?['ait_runlogid']}",
+                  "item/ait_runstatus": 748120002,
+                  "item/ait_endedon": "@utcNow()",
+                  "item/ait_itemcount": "@variables('Items')",
+                  "item/ait_error": "@{take(concat(join(variables('Failures'), ' | '), ' ', join(body('Error_text'), ' | '), ' See the flow run history for details.'), 100000)}"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            },
+            "Stop_failed": {
+              "runAfter": {
+                "Fail_run_log": [
+                  "Succeeded",
+                  "Failed"
+                ]
+              },
+              "type": "Terminate",
+              "inputs": {
+                "runStatus": "Failed",
+                "runError": {
+                  "code": "DigestFailed",
+                  "message": "The digest run failed. See ait_runlog."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
