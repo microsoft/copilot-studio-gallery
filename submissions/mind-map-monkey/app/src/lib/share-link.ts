@@ -163,11 +163,11 @@ let publishedAddress: Promise<string | null> | null = null;
 /**
  * The published app's address, from the app context the hosting runtime reports.
  * Resolved once per session; null when the host doesn't answer in time or reports
- * no usable app id, so callers fall back to the page's own address.
+ * no usable app id. Sharing then requires a custom app address.
  */
 export function resolvePublishedAddress(): Promise<string | null> {
   publishedAddress ??= (async () => {
-    // No host to ask in local mode; the page's own address stands in.
+    // No host to ask in local mode; sharing requires a custom app address.
     if (STANDALONE) return null;
     try {
       const context = await loadHostContext();

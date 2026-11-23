@@ -1,16 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useHref } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
 import type { DriveFileRef } from "@/lib/onedrive-files";
 import { buildShareLink, copyText, resolvePublishedAddress } from "@/lib/share-link";
 import { useAppStore } from "@/lib/store";
 
 /**
  * The address a share link opens: the user's own choice when set, otherwise the
- * published app's address once the host reports it, otherwise this page's root.
+ * published app's address once the host reports it. No page URL fallback.
  */
 export function useAppAddress() {
-  const rootHref = useHref("/");
-  const ownAddress = useMemo(() => new URL(rootHref, window.location.href).toString(), [rootHref]);
   const customAddress = useAppStore((s) => s.customAddress);
   const setCustomAddress = useAppStore((s) => s.setCustomAddress);
   const publishedAddress = useAppStore((s) => s.publishedAddress);
@@ -28,7 +25,7 @@ export function useAppAddress() {
   }, [publishedAddress, setPublishedAddress]);
 
   const resolving = publishedAddress === undefined;
-  const defaultAddress = resolving ? null : (publishedAddress ?? ownAddress);
+  const defaultAddress = publishedAddress ?? null;
   return { address: customAddress ?? defaultAddress, defaultAddress, customAddress, setCustomAddress, resolving };
 }
 

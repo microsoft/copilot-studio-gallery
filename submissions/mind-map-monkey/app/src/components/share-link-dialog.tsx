@@ -80,7 +80,8 @@ export function ShareLinkDialog({ target, onClose }: { target: ShareTarget | nul
           <p role="status" className={cn("text-xs", status === "failed" ? "text-destructive" : "text-muted-foreground")}>
             {status === "copied" && "The link is on your clipboard."}
             {status === "failed" && "Copying is blocked here. Select the link and copy it manually."}
-            {status === "pending" && resolving && (
+            {!address && !resolving && "An app address is needed to share this map. Set a custom app address below."}
+            {status === "pending" && !address && resolving && (
               <span className="flex items-center gap-1.5">
                 <LoaderCircle aria-hidden="true" className="size-3.5 animate-spin motion-reduce:animate-none" />
                 Looking up the app address…
@@ -93,7 +94,7 @@ export function ShareLinkDialog({ target, onClose }: { target: ShareTarget | nul
           <CollapsibleTrigger asChild>
             <Button variant="ghost" className="h-auto w-full justify-between gap-2 whitespace-normal px-3 py-2 text-left font-normal">
               <span className="min-w-0 break-all">
-                App address: <span className="font-medium">{address ? hostOf(address) : "…"}</span>
+                App address: <span className="font-medium">{address ? hostOf(address) : resolving ? "…" : "Needed"}</span>
                 {customAddress && <span className="text-muted-foreground"> (custom)</span>}
               </span>
               <ChevronDown aria-hidden="true" className={cn("size-4 shrink-0 transition-transform", addressOpen && "rotate-180")} />
@@ -133,7 +134,7 @@ export function ShareLinkDialog({ target, onClose }: { target: ShareTarget | nul
               </p>
             )}
             <p id="app-address-help" className="text-xs text-muted-foreground">
-              Change this if the copied link doesn't open the app where your collaborators use it. The address is remembered in this browser.
+              Enter the app address your collaborators use. Sharing is disabled until a published or custom app address is available. The address is remembered in this browser.
             </p>
           </CollapsibleContent>
         </Collapsible>

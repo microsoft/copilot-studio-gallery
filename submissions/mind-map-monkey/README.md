@@ -21,6 +21,10 @@ distinct tags that fit the remaining capacity are added; existing tags are kept.
 
 The app can copy a link to a map. Recipients need access to both the app and
 the OneDrive file; copying the link does not grant access.
+Links use the published app address or a custom app address remembered in this
+browser. If the published address cannot be resolved, set a custom app address
+in the share dialog before copying a link; the current preview URL is never
+used automatically.
 
 ## Data and permissions
 
