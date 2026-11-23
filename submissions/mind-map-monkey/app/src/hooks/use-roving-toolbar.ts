@@ -16,7 +16,7 @@ export function useRovingToolbar(count: number) {
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (!count) return;
+    if (!count || !items.current.includes(event.target as HTMLElement)) return;
     let next: number;
     switch (event.key) {
       case "ArrowRight":
