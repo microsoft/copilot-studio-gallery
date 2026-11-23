@@ -17,12 +17,21 @@ interface MapThumbnailProps {
 function fitLabel(label: string, width: number, font: TextFont): string {
   const text = label.trim().replace(/\s+/g, " ");
   if (measureTextWidth(text, font) <= width) return text;
-  let kept = text;
-  while (kept.length > 1) {
-    kept = kept.slice(0, -1).trimEnd();
-    if (measureTextWidth(`${kept}…`, font) <= width) return `${kept}…`;
+  const characters = Array.from(text);
+  let low = 1;
+  let high = characters.length - 1;
+  let best = "";
+  while (low <= high) {
+    const middle = Math.floor((low + high) / 2);
+    const prefix = characters.slice(0, middle).join("").trimEnd();
+    if (measureTextWidth(`${prefix}…`, font) <= width) {
+      best = prefix;
+      low = middle + 1;
+    } else {
+      high = middle - 1;
+    }
   }
-  return "…";
+  return best ? `${best}…` : "…";
 }
 
 /**
