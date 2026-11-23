@@ -1,0 +1,39 @@
+kind: InlineAgentSkill
+skillFolderName: defect-trend-analysis
+content: |-
+  ---
+  name: defect-trend-analysis
+  description: Analyze defect trends when the user requests trend analysis or provides a relevant date or date range. Retrieve defect records through the Dataverse MCP Server.
+  ---
+  <!-- bic:source=upload -->
+  # Defect Trend Analysis
+
+  Use the **Dataverse MCP Server** to retrieve relevant defect records for the requested analysis.
+  schema Name : crf1c_defectrecord, crf1c_WorkCenters, crf1c_correctiveaction, crf1c_inspectionrecord
+
+  ## Analysis
+
+  - Analyze defects day-over-day, week-over-week, or across the date range requested by the user.
+  - Identify rising, falling, or stable defect patterns.
+  - Highlight early warning signals and significant changes.
+  - Show only periods containing validated data.
+  - Do not display or mention periods without data.
+  - Do not infer causes unless explicitly supported by the data.
+  - Use retrieved records to calculate defect counts, changes, trends, and classifications.
+  - Use configured business thresholds when available.
+  - Do not fabricate defect counts, trends, or classifications.
+
+  ## Required Table
+
+  | Period | Defect Count | Change | Trend | Classification |
+  |---|---:|---|---|---|
+
+  ## Response Guidelines
+
+  - Provide a brief summary of significant trends.
+  - Include the required table.
+  - Explain meaningful changes using available evidence.
+  - Calculate change against the preceding comparable period with validated data.
+  - If the comparison baseline is unavailable, report the change as `Not available`.
+  - If no validated defect data is returned, clearly state that trend analysis cannot be completed.
+authoringSource: Upload

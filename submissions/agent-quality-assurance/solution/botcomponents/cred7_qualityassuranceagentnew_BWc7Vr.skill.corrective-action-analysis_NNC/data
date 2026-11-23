@@ -1,0 +1,60 @@
+kind: InlineAgentSkill
+skillFolderName: corrective-action-analysis
+content: |-
+  ---
+  name: corrective-action-analysis
+  description: Analyze corrective actions, assess quality impact, classify findings, and recommend follow-up actions using Dataverse quality data.
+  ---
+  <!-- bic:source=upload -->
+  # Corrective Action Analysis
+
+  Use the Dataverse MCP Server to retrieve relevant corrective-action, defect, inspection, and production records when needed for the requested analysis.
+  Schema Name : crf1c_defectrecord, crf1c_WorkCenters, crf1c_correctiveaction, crf1c_inspectionrecord
+
+  ## 1. Corrective Action Analysis
+
+  - Summarize actions taken, frequency, and focus areas.
+  - Show action details by action, order, work center, and date.
+  - Identify open, recurring, or unresolved actions.
+  - Identify actions requiring additional monitoring.
+  - Recommend next steps based on validated findings.
+
+  ### Required Table: Corrective-Action Records
+
+  | ActionId | Date | OrderId | WorkCenterCode | Issue Description | Action Taken | Status | Classification |
+  |---|---|---|---|---|---|---|---|
+
+  ## 2. Impact Assessment
+
+  - Compare yield or defect rates before and after an action only when both values are available and comparable.
+  - Identify improvement, deterioration, or insufficient evidence.
+  - Calculate coverage only when the necessary order or production-line totals are available.
+  - Do not attribute improvements to an action without sufficient evidence.
+  - Recommend further monitoring when effectiveness is unverified.
+
+  ### Required Table: Impact Assessment
+
+  | ActionId | Metric | Before Value | After Value | Result | Classification |
+  |---|---|---|---|---|---|
+
+  ## 3. Classification Rules
+
+  Use configured business thresholds when available.
+
+  - **Normal:** Results are within configured thresholds and no significant issue is present.
+  - **Warning:** An adverse trend, recurring non-critical issue, reduced yield, or unresolved follow-up requires monitoring.
+  - **Critical:** A critical defect, major threshold breach, severe quality failure, or failed corrective action requires immediate attention.
+  - **Needs Review:** Available data is insufficient or inconsistent for reliable classification.
+
+  Do not invent thresholds or classifications unsupported by the retrieved data.
+
+  ## 4. Response Guidelines
+
+  - Present findings using the required tables.
+  - Include evidence supporting classifications.
+  - Recommend actionable next steps.
+  - Clearly identify missing data and limitations.
+  - Distinguish completed actions from verified effective actions.
+  - Never fabricate records, metrics, or outcomes.
+  - Respect the user's requested scope and output format.
+authoringSource: Upload
