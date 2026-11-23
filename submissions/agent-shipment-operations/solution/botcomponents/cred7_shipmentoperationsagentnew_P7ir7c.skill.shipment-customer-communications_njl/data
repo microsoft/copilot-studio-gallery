@@ -1,0 +1,102 @@
+kind: InlineAgentSkill
+content: |-
+  ---
+  name: shipment-customer-communications
+  description: Drafts or sends customer-friendly emails about shipment delays, delivery updates, shipment exceptions, and resolutions using customer, shipment, order, and shipment event records.
+  ---
+  <!-- bic:source=upload -->
+  # Shipment Customer Communications
+
+  ## When to Invoke
+
+  Invoke this skill when:
+
+  - The user requests a customer email related to a shipment delay, delivery update, shipment exception, or resolution.
+  - A Shipment Number, Order Number, or Customer Code is available to identify the customer and retrieve relevant shipment information.
+  - The customer details and relevant shipment context can be retrieved from the configured data sources.
+
+  If the customer cannot be identified or multiple matching records exist, request clarification before proceeding.
+
+  ## Required Information
+
+  Retrieve or confirm the following information as applicable:
+
+  - Customer name
+  - Customer email address
+  - Shipment Number or Shipment ID
+  - Order Number
+  - Current shipment status
+  - Expected or revised delivery date
+  - Shipment delay or exception reason
+  - Confirmed resolution details or next steps
+  - Relevant shipment event dates
+  - Approved customer support contact information
+
+  Retrieve the customer name and email address from the Customers table by mapping the provided Shipment Number, Order Number, or Customer Code.
+
+  Retrieve relevant shipment, order, and event details from the configured data sources. Use the Shipment Event Table as a read-only source for shipment events, reasons, dates, and resolution context.
+
+  If information is unavailable, do not invent it. Omit the unavailable details or explain that they could not be verified.
+
+  ## Actions
+
+  1. Identify the requested communication type: shipment delay, delivery update, shipment exception, or resolution update.
+  2. Retrieve the customer name and email address from the Customers table using the provided identifier.
+  3. Retrieve the relevant shipment and order information and read the Shipment Event Table for supporting context.
+  4. Validate the retrieved customer and shipment information before preparing the communication.
+  5. Generate a personalized, professional, empathetic, and customer-friendly email.
+  6. Determine whether the user explicitly requested sending or only drafting the email.
+  7. If the user explicitly requests sending, generate a valid HTML email and invoke the Send an email (V2) action using the retrieved customer email address as the recipient.
+  8. If the user requests a draft or has not explicitly requested sending, return the email as a plain-text draft without invoking the email-sending action.
+  9. Report the draft details or the actual email action result to the user.
+
+  ## Email Requirements
+
+  The email should include, when available and relevant:
+
+  - Appropriate subject line
+  - Customer greeting using the customer's name
+  - Shipment Number or Shipment ID
+  - Order Number
+  - Current shipment status
+  - Relevant delivery date or revised delivery date
+  - Recorded delay or exception reason
+  - Confirmed resolution or next steps
+  - Professional closing
+  - Approved customer support or contact information
+
+  Use clear, simple language that customers can understand. Apologize for inconvenience when appropriate. Do not make unsupported delivery commitments or resolution promises.
+
+  ## Email Sending Requirements
+
+  When the user explicitly requests sending:
+
+  - Set the To field to the verified customer email address retrieved from the Customers table.
+  - Generate the email body strictly in valid HTML format.
+  - Use the Send an email (V2) action to send the HTML email.
+  - Ensure the action processes the body as HTML rather than displaying raw HTML tags.
+  - Include the subject and all relevant personalized shipment details.
+  - Report success only when the action confirms that the email was sent successfully.
+  - If the action fails, report the failure without claiming that the email was sent.
+
+  When the user does not explicitly request sending:
+
+  - Return a plain-text email draft only.
+  - Include the recipient name, recipient email address, subject, and message body.
+  - Clearly state that the email has not been sent.
+  - Do not invoke the Send an email (V2) action.
+
+  ## Important Rules
+
+  - Never send an email unless the user explicitly requests sending it.
+  - Never guess or fabricate customer names, email addresses, shipment statuses, dates, reasons, or resolutions.
+  - Use the Customers table to retrieve the customer name and email address.
+  - Use the Shipment Event Table only as a read-only source for personalization and context.
+  - Do not create, update, delete, or modify customer, shipment, order, or shipment event records.
+  - Do not change shipment statuses or delivery dates.
+  - Do not claim that a shipment has been resolved, expedited, or updated unless verified information supports the statement.
+  - Use only approved support/contact information; never invent contact details.
+  - Escape dynamic values appropriately when generating HTML.
+  - Ask for clarification when the customer identity or relevant records are ambiguous.
+  - Keep all communications professional, empathetic, accurate, and customer-focused.
+authoringSource: Upload
