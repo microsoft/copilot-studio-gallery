@@ -772,7 +772,7 @@
                         "brandColor": "#8c6cff",
                         "parameters": {
                           "from": "@coalesce(body('List_existing_plan_tasks')?['value'], json('[]'))",
-                          "where": "{\n  \"and\": [\n    {\n      \"contains\": [\n        \"@coalesce(item()?['title'], '')\",\n        \"@concat(items('For_each_message')?['id'], ' - ')\"\n      ]\n    }\n  ]\n}"
+                          "where": "{\n  \"and\": [\n    {\n      \"startsWith\": [\n        \"@coalesce(item()?['title'], '')\",\n        \"@concat('Review ', items('For_each_message')?['id'], ' - ')\"\n      ]\n    }\n  ]\n}"
                         },
                         "description": "Filter an array based on a condition.",
                         "parametersSchema": {
