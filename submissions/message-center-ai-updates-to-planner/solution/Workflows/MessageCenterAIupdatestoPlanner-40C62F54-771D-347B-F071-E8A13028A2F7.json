@@ -3704,7 +3704,7 @@
                   "type": "Query",
                   "inputs": {
                     "from": "@coalesce(body('List_existing_plan_tasks')?['value'], json('[]'))",
-                    "where": "@and(contains(coalesce(item()?['title'], ''), concat(items('For_each_message')?['id'], ' - ')))"
+                    "where": "@startsWith(coalesce(item()?['title'], ''), concat('Review ', items('For_each_message')?['id'], ' - '))"
                   },
                   "runAfter": {
                     "Find_bucket_for_area": [
