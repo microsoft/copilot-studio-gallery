@@ -1102,7 +1102,7 @@
                         },
                         "parameters": {
                           "id": "@coalesce(first(body('Find_existing_task_for_this_MC_ID'))?['id'], '')",
-                          "body/title": "Review @{item()?['id']} - @{item()?['title']}",
+                          "body/title": "@take(concat('Review ', item()?['id'], ' - ', item()?['title']), 255)",
                           "body/dueDateTime": "@if(greater(ticks(coalesce(item()?['actionRequiredByDateTime'],'1900-01-01T00:00:00Z')), ticks(utcNow())), item()?['actionRequiredByDateTime'], null)",
                           "body/bucketId": "@first(body('Find_bucket_for_area'))?['id']"
                         },
@@ -2003,7 +2003,7 @@
                         "parameters": {
                           "body/groupId": "@variables('Config')?['plannerGroupId']",
                           "body/planId": "@variables('Config')?['plannerPlanId']",
-                          "body/title": "Review @{item()?['id']} - @{item()?['title']}",
+                          "body/title": "@take(concat('Review ', item()?['id'], ' - ', item()?['title']), 255)",
                           "body/dueDateTime": "@if(greater(ticks(coalesce(item()?['actionRequiredByDateTime'],'1900-01-01T00:00:00Z')), ticks(utcNow())), item()?['actionRequiredByDateTime'], null)",
                           "body/assignments": "@coalesce(first(body('Match_area_for_this_message')), last(variables('AreaOwners')))?['owner']",
                           "body/bucketId": "@first(body('Find_bucket_for_area'))?['id']",
@@ -3734,7 +3734,7 @@
                       "inputs": {
                         "parameters": {
                           "id": "@coalesce(first(body('Find_existing_task_for_this_MC_ID'))?['id'], '')",
-                          "body/title": "Review @{item()?['id']} - @{item()?['title']}",
+                          "body/title": "@take(concat('Review ', item()?['id'], ' - ', item()?['title']), 255)",
                           "body/dueDateTime": "@if(greater(ticks(coalesce(item()?['actionRequiredByDateTime'],'1900-01-01T00:00:00Z')), ticks(utcNow())), item()?['actionRequiredByDateTime'], null)",
                           "body/bucketId": "@first(body('Find_bucket_for_area'))?['id']"
                         },
