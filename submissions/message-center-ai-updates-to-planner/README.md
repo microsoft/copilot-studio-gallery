@@ -30,6 +30,8 @@ The gallery preview shows the **Agent** variant.
 
 ## How the workflows work
 
+The workflow runs once a day on a **Recurrence** trigger.
+
 1. **Set configuration** holds every environment-specific value in one `Config`
    object: tenant ID, app client ID, Key Vault secret name, Microsoft 365 group
    ID and Planner plan ID.
@@ -108,10 +110,12 @@ canvas. Open the workflow in the designer to read them.
 
 4. Open **Set area owners**. Replace the `@contoso.com` owners with real users,
    and adjust the areas, services and title keywords to match your buckets.
-5. Run the workflow manually once and check the plan.
-6. For production, replace the manual trigger with a **Recurrence** trigger
-   (for example daily). Keep the lookback in *Get Message Center posts*
-   (`addDays(utcNow(), -1)`) equal to the recurrence interval.
+5. Test the workflow once from the designer (**Test** / **Run now**) and check
+   the plan.
+6. Both workflows run **daily** on a **Recurrence** trigger. If you change the
+   frequency or interval, keep the lookback in *Get Message Center posts*
+   (`addDays(utcNow(), -1)`) equal to it. Turn off the variant you don't use,
+   and don't leave a workflow on before its configuration is filled in.
 
 ### Keeping the secret step running
 

@@ -36,14 +36,15 @@
         }
       },
       "triggers": {
-        "manual": {
-          "type": "Request",
-          "kind": "Button",
-          "inputs": {
-            "schema": {
-              "type": "object",
-              "properties": {},
-              "required": []
+        "Recurrence": {
+          "recurrence": {
+            "frequency": "Day",
+            "interval": 1
+          },
+          "type": "Recurrence",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "runs": 1
             }
           },
           "metadata": {
@@ -53,7 +54,7 @@
                 "nodes": [
                   {
                     "id": "start-7b658283-d0fb-42e0-b089-92e70453fbba",
-                    "name": "Start",
+                    "name": "Recurrence",
                     "type": "start",
                     "version": 1,
                     "position": {
@@ -62,19 +63,25 @@
                     },
                     "data": {
                       "config": {
-                        "triggerType": "manual"
+                        "triggerType": "recurrence",
+                        "recurrence": {
+                          "frequency": "Day",
+                          "interval": 1
+                        }
                       },
                       "outcomes": [
                         {
                           "id": "default",
-                          "label": "Default",
-                          "outcomeSchema": {
-                            "type": "object",
-                            "properties": {},
-                            "required": []
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runtimeConfiguration": {
+                          "concurrency": {
+                            "runs": 1
                           }
                         }
-                      ]
+                      }
                     },
                     "measured": {
                       "width": 240,
@@ -2862,7 +2869,7 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Trigger**\n\nManual for testing. For production replace it with a Recurrence trigger (e.g. daily) and keep the lookback in *Get Message Center posts* (addDays(utcNow(),-1)) equal to the recurrence interval.",
+                        "markdown": "**CUSTOMIZE - Trigger**\n\nRuns daily (Recurrence). Change the frequency/interval in the start node and keep the lookback in *Get Message Center posts* (addDays(utcNow(),-1)) equal to the recurrence interval. To test, use Test / Run now in the designer.",
                         "color": "yellow"
                       },
                       "outcomes": []
