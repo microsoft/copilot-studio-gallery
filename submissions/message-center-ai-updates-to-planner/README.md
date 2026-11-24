@@ -151,5 +151,11 @@ for it as well.
   task always links to the original post. Check it before you act.
 - Priority is set when a task is created and is not changed on update, so
   manual changes are kept.
+- Each run looks back a fixed window equal to the recurrence interval (1 day).
+  If a run is missed or fails, posts changed in that gap are not picked up
+  again unless they change later. Tasks are created or updated by MC ID, so to
+  catch up you can run once with a wider lookback (for example
+  `addDays(utcNow(), -7)`) and then set it back. A production version should
+  store the last successful cutoff and read from it.
 - The sample was built and run in its source environment. No fresh-environment
   import has been verified yet.
