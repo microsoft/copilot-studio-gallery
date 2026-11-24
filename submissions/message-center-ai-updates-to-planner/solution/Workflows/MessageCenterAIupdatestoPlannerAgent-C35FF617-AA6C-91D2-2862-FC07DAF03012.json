@@ -1,0 +1,1422 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_agentnode": {
+        "api": {
+          "name": "shared_agentnode"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedagentnode_50374135"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "6330ddb618034d1182719bcdc4fc0625"
+      },
+      "planner": {
+        "api": {
+          "name": "shared_planner"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedplanner_7a66dcdc"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-planner-af872f3e-6537-472b-bc78-77937cc42fc7"
+      },
+      "shared_keyvault": {
+        "api": {
+          "name": "shared_keyvault"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedkeyvault_mcplanner"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-keyvault-mcplanner"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "Message Center AI updates to Planner (Agent)",
+                "nodes": [
+                  {
+                    "id": "start-7b658283-d0fb-42e0-b089-92e70453fbba",
+                    "name": "Start",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 100,
+                      "y": 400.5
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "manual"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "required": []
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa",
+                    "name": "Get Message Center posts",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1232,
+                      "y": 400.5
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "httpaction",
+                        "operationName": "httpaction",
+                        "displayName": "HTTP",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/Http",
+                        "categoryDisplayName": "HTTP",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/http.svg",
+                        "brandColor": "#709727",
+                        "parameters": {
+                          "method": "GET",
+                          "uri": "https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/messages",
+                          "queries": {
+                            "$filter": "lastModifiedDateTime ge @{formatDateTime(addDays(utcNow(),-1),'yyyy-MM-ddTHH:mm:ssZ')}"
+                          },
+                          "authentication": {
+                            "type": "ActiveDirectoryOAuth",
+                            "authority": "https://login.microsoftonline.com",
+                            "tenant": "@variables('Config')?['tenantId']",
+                            "audience": "https://graph.microsoft.com",
+                            "clientId": "@variables('Config')?['clientId']",
+                            "secret": "@body('Get_client_secret_from_Key_Vault')?['value']"
+                          }
+                        },
+                        "description": "Make an HTTP request to any endpoint.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "method",
+                            "uri"
+                          ],
+                          "properties": {
+                            "method": {
+                              "type": "string",
+                              "title": "Method",
+                              "description": "HTTP method",
+                              "enum": [
+                                "GET",
+                                "POST",
+                                "PUT",
+                                "PATCH",
+                                "DELETE",
+                                "HEAD",
+                                "OPTIONS"
+                              ],
+                              "default": "GET"
+                            },
+                            "uri": {
+                              "type": "string",
+                              "title": "URI",
+                              "description": "Request URL"
+                            },
+                            "headers": {
+                              "type": "object",
+                              "title": "Headers",
+                              "description": "Request headers"
+                            },
+                            "queries": {
+                              "type": "object",
+                              "title": "Queries",
+                              "description": "Query parameters"
+                            },
+                            "body": {
+                              "title": "Body",
+                              "description": "Request body"
+                            },
+                            "authentication": {
+                              "type": "object",
+                              "title": "Authentication",
+                              "description": "Authentication configuration"
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ],
+                      "settings": {
+                        "secureInputs": {
+                          "isSupported": true,
+                          "value": true
+                        }
+                      }
+                    },
+                    "measured": {
+                      "width": 243,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "name": "For each message",
+                    "type": "loop",
+                    "version": 1,
+                    "position": {
+                      "x": 1519,
+                      "y": 300
+                    },
+                    "width": 886,
+                    "height": 267,
+                    "style": {
+                      "width": 886,
+                      "height": 267
+                    },
+                    "data": {
+                      "config": {
+                        "loopType": "foreach",
+                        "foreach": "@body('Get_Message_Center_posts')?['value']",
+                        "foreachRich": {
+                          "segments": [
+                            {
+                              "type": "static",
+                              "value": "@body('Get_Message_Center_posts')?['value']"
+                            }
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 603,
+                      "height": 267
+                    }
+                  },
+                  {
+                    "id": "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42",
+                    "name": "Is it about AI / LLMs?",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 60,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "6ac01c79-db90-48d1-add3-8eebfa42f345",
+                            "name": "If",
+                            "expression": "{\n  \"or\": [\n    {\n      \"greater\": [\n        \"@length(intersection(coalesce(item()?['services'],createArray()), variables('AiServices')))\",\n        0\n      ]\n    },\n    {\n      \"contains\": [\n        \"@concat(' ', toLower(item()?['title']), ' ')\",\n        \"copilot\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@concat(' ', toLower(item()?['title']), ' ')\",\n        \" ai \"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@concat(' ', toLower(item()?['title']), ' ')\",\n        \"ai-\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@concat(' ', toLower(item()?['title']), ' ')\",\n        \"ai model\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@concat(' ', toLower(item()?['title']), ' ')\",\n        \"language model\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@concat(' ', toLower(item()?['title']), ' ')\",\n        \"llm\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@concat(' ', toLower(item()?['title']), ' ')\",\n        \"gpt\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@concat(' ', toLower(item()?['title']), ' ')\",\n        \"openai\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@concat(' ', toLower(item()?['title']), ' ')\",\n        \"anthropic\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@concat(' ', toLower(item()?['title']), ' ')\",\n        \"claude\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@concat(' ', toLower(item()?['title']), ' ')\",\n        \"mistral\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@concat(' ', toLower(item()?['title']), ' ')\",\n        \"grok\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@concat(' ', toLower(item()?['title']), ' ')\",\n        \"subprocessor\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@concat(' ', toLower(item()?['title']), ' ')\",\n        \"agent\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@concat(' ', toLower(item()?['title']), ' ')\",\n        \"prompt\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@toLower(coalesce(item()?['body']?['content'],''))\",\n        \"language model\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@toLower(coalesce(item()?['body']?['content'],''))\",\n        \"llm\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@toLower(coalesce(item()?['body']?['content'],''))\",\n        \"gpt-\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@toLower(coalesce(item()?['body']?['content'],''))\",\n        \"openai\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@toLower(coalesce(item()?['body']?['content'],''))\",\n        \"anthropic\"\n      ]\n    },\n    {\n      \"contains\": [\n        \"@toLower(coalesce(item()?['body']?['content'],''))\",\n        \"subprocessor\"\n      ]\n    }\n  ]\n}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:6ac01c79-db90-48d1-add3-8eebfa42f345",
+                          "label": "If"
+                        },
+                        {
+                          "id": "else",
+                          "label": "Else"
+                        }
+                      ]
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "measured": {
+                      "width": 240,
+                      "height": 167
+                    },
+                    "selected": false,
+                    "dragging": false
+                  },
+                  {
+                    "id": "variable-1cf5cd84-67a1-4031-9176-dc30956fed47",
+                    "name": "Set configuration",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 383,
+                      "y": 400.5
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "9283930d-ab2c-4813-bdfe-57092d373ca7",
+                            "variableName": "Config",
+                            "mode": "initialize",
+                            "type": "object",
+                            "value": "{\n  \"tenantId\": \"<your-tenant-id>\",\n  \"clientId\": \"<your-app-client-id>\",\n  \"keyVaultSecretName\": \"<your-key-vault-secret-name>\",\n  \"plannerGroupId\": \"<your-m365-group-id>\",\n  \"plannerPlanId\": \"<your-planner-plan-id>\"\n}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "description": "Variables set by this node"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2",
+                    "name": "Set area owners",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 666,
+                      "y": 400.5
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "7eaa8fee-ad00-41b1-afaf-f60527a73a68",
+                            "variableName": "AreaOwners",
+                            "mode": "initialize",
+                            "type": "array",
+                            "value": "[\n  {\n    \"area\": \"Copilot Cowork\",\n    \"titleKeyword\": \"cowork\",\n    \"services\": [],\n    \"owner\": \"cowork-owner@contoso.com\"\n  },\n  {\n    \"area\": \"Copilot Autopilot\",\n    \"titleKeyword\": \"autopilot\",\n    \"services\": [\n      \"Microsoft Copilot (Microsoft 365)\",\n      \"Microsoft 365 Copilot Chat\"\n    ],\n    \"owner\": \"autopilot-owner@contoso.com\"\n  },\n  {\n    \"area\": \"Power Platform & Copilot Studio\",\n    \"titleKeyword\": \"\",\n    \"services\": [\n      \"Microsoft Copilot (Power Platform)\",\n      \"Power Platform\",\n      \"Power Apps\",\n      \"Microsoft Power Automate\",\n      \"Microsoft Dataverse\",\n      \"Dynamics 365 Apps\",\n      \"Power BI\"\n    ],\n    \"owner\": \"powerplatform-owner@contoso.com\"\n  },\n  {\n    \"area\": \"Microsoft 365 Copilot\",\n    \"titleKeyword\": \"\",\n    \"services\": [\n      \"Microsoft Copilot (Microsoft 365)\",\n      \"Microsoft 365 Copilot Chat\"\n    ],\n    \"owner\": \"m365copilot-owner@contoso.com\"\n  }\n]"
+                          },
+                          {
+                            "id": "b7e1c0d2-5a7f-4c1e-9a3b-6d2f8e4a1c90",
+                            "variableName": "AiServices",
+                            "mode": "initialize",
+                            "type": "array",
+                            "value": "[\n  \"Microsoft Copilot (Microsoft 365)\",\n  \"Microsoft 365 Copilot Chat\",\n  \"Microsoft Copilot (Power Platform)\"\n]"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "description": "Variables set by this node"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-19c480e9-b144-4a99-aeed-f3966d8b068b",
+                    "name": "Match area for this message",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 323,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "query",
+                        "operationName": "query",
+                        "displayName": "Filter array",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/compose.svg",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@variables('AreaOwners')",
+                          "where": "{\n  \"and\": [\n    {\n      \"equals\": [\n        \"@if(empty(coalesce(item()?['titleKeyword'],'')), greater(length(intersection(coalesce(items('For_each_message')?['services'],createArray()), coalesce(item()?['services'],createArray()))),0), and(contains(toLower(coalesce(items('For_each_message')?['title'],'')), toLower(coalesce(item()?['titleKeyword'],''))), or(equals(length(coalesce(item()?['services'],createArray())),0), greater(length(intersection(coalesce(items('For_each_message')?['services'],createArray()), coalesce(item()?['services'],createArray()))),0))))\",\n        true\n      ]\n    }\n  ]\n}"
+                        },
+                        "description": "Filter an array based on a condition.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "from",
+                            "where"
+                          ],
+                          "properties": {
+                            "from": {
+                              "type": "array",
+                              "title": "From",
+                              "description": "Array to filter"
+                            },
+                            "where": {
+                              "type": "string",
+                              "x-ms-editor": "condition",
+                              "title": "Where",
+                              "description": "Filter condition"
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "measured": {
+                      "width": 257,
+                      "height": 66
+                    },
+                    "selected": false,
+                    "dragging": false
+                  },
+                  {
+                    "id": "agent-41d9f125-184a-47d1-a5e7-5233955f7463",
+                    "name": "Agent",
+                    "type": "agent",
+                    "version": 1,
+                    "position": {
+                      "x": 606,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "mode": "inline",
+                        "instructions": "",
+                        "botSchemaName": "",
+                        "isHitlEscalationEnabled": false,
+                        "webSearchEnabled": false,
+                        "inlineInstructions": "You turn one Microsoft 365 Message Center post into one Planner task. Use ONLY information in the post. Never invent dates, impact, owners or actions.\n\nToday (UTC): @{utcNow('yyyy-MM-dd')}\n\nPlanner target (CUSTOMIZE: replace with your own group and plan ids): groupId = @{variables('Config')?['plannerGroupId']}, planId = @{variables('Config')?['plannerPlanId']}\n\nArea owners (JSON). \"area\" is the exact name of a bucket in the plan, \"services\" are exact Message Center service names, \"titleKeyword\" (optional) is a word to look for in the post title, \"owner\" is the assignee email:\n@{variables('AreaOwners')}\n\nMessage Center post (JSON):\n@{items('For_each_message')}\n\nSteps:\n1. Area (already computed by the workflow, use exactly as given, do NOT re-derive): area = @{coalesce(first(body('Match_area_for_this_message')), last(variables('AreaOwners')))?['area']}, owner = @{coalesce(first(body('Match_area_for_this_message')), last(variables('AreaOwners')))?['owner']}.\n2. Bucket: call List buckets with the groupId and planId and use the id of the bucket whose name equals the area.\n3. Deadlines: read the WHOLE post body, including tables and lists, plus actionRequiredByDateTime. A deadline is a date by which someone must act, or after which something stops working, is removed, retired, migrated or enforced (e.g. retirement, end of support, deprecation, migration date, \"before ...\", \"by ...\", \"no later than ...\", enforcement or opt-out date). Rollout start/end, preview, general availability (GA) and \"available from\" dates are NEVER deadlines. A date on which Microsoft itself replaces, upgrades or moves something while the organization has nothing to do is not a deadline either: if no action is needed, set no due date. If a date only gives a month, use the first day of that month. If dates differ per item (e.g. per model in a table), consider all of them.\n   - Due date = the earliest deadline that is today or later. If there is none, do not set a due date.\n   - If deadlines exist but all are before today, do not set a due date but report them as passed in the description.\n4. Priority (Planner number), based ONLY on the post's own severity and isMajorChange fields: 1 (Urgent) if severity is critical; else 3 (Important) if severity is high or isMajorChange is true; else 5 (Medium). Do not change priority because of dates, category or wording.\n5. Call List tasks with the groupId and planId. The task already exists if a title contains the post id (e.g. MC1234567).\n6. If it does not exist, call Create a task with title \"Review <id> - <post title>\", groupId, planId, bucketId, the owner email as assignment, priority and due date (if any). If it exists, call Update a task on that task with the same title, bucketId and due date (if any); priority is only set on create.\n7. Call Update task details on the task with a SHORT plain-text description (about 120 words max; the full details stay in the post, do not copy it):\nPosted: <startDateTime yyyy-MM-dd> | Last updated: <lastModifiedDateTime yyyy-MM-dd>\nWhat is announced: <one sentence>\nWhat it impacts: <one short sentence>\nWhat needs to be done: <one or two short sentences, or \"No action required\">\nDeadline: <yyyy-MM-dd - what happens then> | or \"PASSED <yyyy-MM-dd> - what happened, check it was handled\" | or \"None\"\nMajor change: <Yes/No> | Category: <category> | Severity: <severity>\nServices: <services>\nAdmin center: https://admin.microsoft.com/Adminportal/Home#/MessageCenter/:/messages/<id>\n8. Reply with one line: Created or Updated, task id, area, due date.",
+                        "outputMode": "text",
+                        "fileOutputFormat": "binary-envelope-v2",
+                        "inlineModel": "GPT56ReasoningTerra",
+                        "inlineTools": [
+                          {
+                            "id": "ed966bb2-7824-492e-922b-f4f7e0cc4c80",
+                            "connectorId": "shared_planner",
+                            "operationId": "CreateTask_V4",
+                            "displayName": "Create a task",
+                            "description": "Create a new task in Planner.",
+                            "connectionReferenceName": "new_sharedplanner_7a66dcdc",
+                            "connectionId": "shared-planner-af872f3e-6537-472b-bc78-77937cc42fc7",
+                            "authMode": "invoker",
+                            "isMcp": false,
+                            "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1825/1.0.1825.4855/planner/icon.png",
+                            "brandColor": "#0078D4"
+                          },
+                          {
+                            "id": "fda054f0-05a7-409b-8b03-ff8a7f4f5cd8",
+                            "connectorId": "shared_planner",
+                            "operationId": "UpdateTask_V3",
+                            "displayName": "Update a task",
+                            "description": "Update an existing Planner task.",
+                            "connectionReferenceName": "new_sharedplanner_7a66dcdc",
+                            "connectionId": "shared-planner-af872f3e-6537-472b-bc78-77937cc42fc7",
+                            "authMode": "invoker",
+                            "isMcp": false,
+                            "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1825/1.0.1825.4855/planner/icon.png",
+                            "brandColor": "#0078D4"
+                          },
+                          {
+                            "id": "df72459a-cbd1-4605-8fa0-b0d8f05ff9e5",
+                            "connectorId": "shared_planner",
+                            "operationId": "ListTasks_V3",
+                            "displayName": "List tasks",
+                            "description": "List the tasks in a plan.",
+                            "connectionReferenceName": "new_sharedplanner_7a66dcdc",
+                            "connectionId": "shared-planner-af872f3e-6537-472b-bc78-77937cc42fc7",
+                            "authMode": "invoker",
+                            "isMcp": false,
+                            "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1825/1.0.1825.4855/planner/icon.png",
+                            "brandColor": "#0078D4"
+                          },
+                          {
+                            "id": "ff91f788-ff5b-44e5-a7b8-a464da9c5f6e",
+                            "connectorId": "shared_planner",
+                            "operationId": "UpdateTaskDetails_V2",
+                            "displayName": "Update task details",
+                            "description": "Update the task details for an existing task.",
+                            "connectionReferenceName": "new_sharedplanner_7a66dcdc",
+                            "connectionId": "shared-planner-af872f3e-6537-472b-bc78-77937cc42fc7",
+                            "authMode": "invoker",
+                            "isMcp": false,
+                            "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1825/1.0.1825.4855/planner/icon.png",
+                            "brandColor": "#0078D4"
+                          },
+                          {
+                            "id": "3f711970-a813-4952-8831-3eb3b0fee5ee",
+                            "connectorId": "shared_planner",
+                            "operationId": "ListBuckets_V3",
+                            "displayName": "List buckets",
+                            "description": "List the buckets in a plan.",
+                            "connectionReferenceName": "new_sharedplanner_7a66dcdc",
+                            "connectionId": "shared-planner-af872f3e-6537-472b-bc78-77937cc42fc7",
+                            "authMode": "invoker",
+                            "isMcp": false,
+                            "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1825/1.0.1825.4855/planner/icon.png",
+                            "brandColor": "#0078D4"
+                          }
+                        ],
+                        "connectionName": "shared_agentnode"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "type": "string",
+                                "title": "Agent Response",
+                                "description": "The agent response text"
+                              },
+                              "activities": {
+                                "type": "array",
+                                "description": "Bot response activities (typing, message, and event types)"
+                              }
+                            },
+                            "required": [
+                              "activities"
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "selected": false,
+                    "dragging": false
+                  },
+                  {
+                    "id": "canvasNote-c90e5e14-5536-4e93-ae20-cec2d5dc2fed",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 60,
+                      "y": 140
+                    },
+                    "width": 280,
+                    "height": 190,
+                    "style": {
+                      "width": 280,
+                      "height": 190
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**CUSTOMIZE - Trigger**\n\nManual for testing. For production replace it with a Recurrence trigger (e.g. daily) and keep the lookback in *Get Message Center posts* (addDays(utcNow(),-1)) equal to the recurrence interval.",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 280,
+                      "height": 190
+                    }
+                  },
+                  {
+                    "id": "canvasNote-5f8b6fd2-acf6-4448-be2c-64a65584ff07",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 656,
+                      "y": 140
+                    },
+                    "width": 280,
+                    "height": 300,
+                    "style": {
+                      "width": 280,
+                      "height": 300
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**CUSTOMIZE - Area owners & AI services**\n\n*AreaOwners*: one row per bucket, checked TOP-DOWN (first match wins):\n- `area` = EXACT bucket name in your plan\n- `services` = EXACT Message Center service names (e.g. \"Microsoft Copilot (Power Platform)\")\n- `titleKeyword` (optional) = match on the post TITLE instead, for products that are not an MC service (e.g. Cowork, Autopilot). If `services` is also set, the post must ALSO have one of them (that's how Windows Autopilot is kept out).\n- `owner` = a person's email (Planner can't assign groups/DLs)\n\nThe LAST row is the fallback for AI posts that match no other row (e.g. Copilot in PowerPoint/Teams/Clipchamp). Add/rename rows freely (e.g. an \"Agent 365\" row with titleKeyword \"agent 365\") - just create a bucket with the same name.\n\n*AiServices*: services that are always treated as AI/LLM.",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 280,
+                      "height": 190
+                    }
+                  },
+                  {
+                    "id": "canvasNote-0ff718f5-c00e-4e80-b29a-2358b2135554",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 1232,
+                      "y": 140
+                    },
+                    "width": 280,
+                    "height": 190,
+                    "style": {
+                      "width": 280,
+                      "height": 190
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**CUSTOMIZE - Graph call**\n\nUses an Entra app registration with ServiceMessage.Read.All (application). Tenant and client id come from *Config*. The client secret is read from Azure Key Vault (vault set on the connection, secret name in *Config*) with secure inputs/outputs - rotate it in Key Vault, never paste it here. `$filter` lookback: change -1 to match how often the workflow runs. Paging is on (Graph returns max 100 posts per page).",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 280,
+                      "height": 190
+                    }
+                  },
+                  {
+                    "id": "canvasNote-7a9a7e16-31d8-4622-88a9-7241922f5b39",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 1579,
+                      "y": 620
+                    },
+                    "width": 280,
+                    "height": 300,
+                    "style": {
+                      "width": 280,
+                      "height": 300
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**CUSTOMIZE - AI/LLM filter**\n\n1) Primary: the post's services include any of *AiServices*.\n2) Fallback: the title contains a keyword (copilot, ai, ai model, llm, gpt, openai, anthropic, claude, mistral, grok, subprocessor, agent, prompt).\n3) Last resort: the body contains a strong term (language model, llm, gpt-, openai, anthropic, subprocessor).\nKeywords are matched lowercase. You can also filter on other post properties: `category` (planForChange / preventOrFixIssue / stayInformed), `isMajorChange`, `tags` (e.g. Retirement, Admin impact), `severity`.",
+                        "color": "blue"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 280,
+                      "height": 190
+                    }
+                  },
+                  {
+                    "id": "canvasNote-db109268-320d-4778-8d9f-7176f1100baa",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 2189,
+                      "y": 620
+                    },
+                    "width": 340,
+                    "height": 300,
+                    "style": {
+                      "width": 340,
+                      "height": 300
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**CUSTOMIZE - Agent**\n\nGroup and plan ids come from *Config*. Area and owner are computed by *Match area for this message* (same AreaOwners rule as the deterministic workflow) and passed to the agent; the agent only resolves the bucket id by name with List buckets. The rules for priority, deadlines (read from the whole post incl. tables) and the summary format live in the instructions - edit them there. Model: GPT-5.6 Terra (change it in the Agent node model picker). Uses its own plan so it doesn't overwrite tasks from the deterministic workflow. Each matching post is one agent run and consumes Copilot credits.",
+                        "color": "green"
+                      },
+                      "outcomes": []
+                    },
+                    "measured": {
+                      "width": 340,
+                      "height": 230
+                    }
+                  },
+                  {
+                    "id": "connector-02876510-9ebd-4212-bfff-dce7caa35a2d",
+                    "name": "Get client secret from Key Vault",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 949,
+                      "y": 400.5
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_keyvault",
+                        "displayName": "Get secret",
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1819/1.0.1819.4795/keyvault/icon.png",
+                        "brandColor": "#0072C6",
+                        "operationName": "GetSecret",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "secretName"
+                          ],
+                          "properties": {
+                            "secretName": {
+                              "type": "string",
+                              "title": "Name of the secret"
+                            }
+                          }
+                        },
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_keyvault",
+                        "parameters": {
+                          "secretName": "@variables('Config')?['keyVaultSecretName']"
+                        },
+                        "initializedParameterDefaults": [],
+                        "operationId": "GetSecret"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "canvasNote-0ad11d93-86d1-41d6-9ca1-87cd72a5d275",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 919,
+                      "y": 510.5
+                    },
+                    "width": 320,
+                    "height": 420,
+                    "style": {
+                      "width": 320,
+                      "height": 420
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**CUSTOMIZE - Key Vault connection (production)**\n\nDefault: the connection signs in as a user. If that user's sign-in expires or is blocked (e.g. passkey/FIDO policy, MFA, password reset), runs fail with **401** here.\n\nLong-term options:\n1. **Best:** replace this step with a Key Vault-backed **Secret environment variable** (Power Platform reads it with its own identity; no user sign-in). This changes the design: delete this step and use the variable in the Graph call.\n2. **App registration:** create a new Key Vault connection with *service principal* authentication (app with *Key Vault Secrets User* on the vault). Breaks only when the app secret or certificate expires.\n3. **Service account:** a dedicated user account (excluded from passkey-only policy) owns the connection.\n\nFor 2 and 3 only the connection changes: switch the Key Vault connection reference; the workflow stays the same. The **Planner** connection also runs as a user; only a service account (member of the group) removes that risk. Granting vault access needs Owner or User Access Administrator.",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    }
+                  },
+                  {
+                    "id": "canvasNote-d3da733e-6e29-4bb4-a870-8d99bfc67f80",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 343,
+                      "y": 140
+                    },
+                    "width": 280,
+                    "height": 300,
+                    "style": {
+                      "width": 280,
+                      "height": 300
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**CUSTOMIZE - Configuration (fill in first)**\n\nAll environment-specific values live in *Config*:\n- `tenantId` - your Entra tenant id\n- `clientId` - app registration with Graph *ServiceMessage.Read.All* (application)\n- `keyVaultSecretName` - Key Vault secret holding that app's client secret\n- `plannerGroupId` - Microsoft 365 group that owns the plan\n- `plannerPlanId` - the Planner plan id\n\nThe vault name is set on the Key Vault connection. Owners are set in *Set area owners*.",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-loop-49cc1e78-beb8-47cd-ae39-24625f467aec-internal-source-ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42",
+                    "source": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "target": "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42",
+                    "sourceHandle": "internal-source"
+                  },
+                  {
+                    "id": "edge-variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2-connector-02876510-9ebd-4212-bfff-dce7caa35a2d",
+                    "source": "variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2",
+                    "target": "connector-02876510-9ebd-4212-bfff-dce7caa35a2d"
+                  },
+                  {
+                    "id": "edge-builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa-loop-49cc1e78-beb8-47cd-ae39-24625f467aec-external-input",
+                    "source": "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa",
+                    "target": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "targetHandle": "external-input"
+                  },
+                  {
+                    "id": "edge-agent-41d9f125-184a-47d1-a5e7-5233955f7463-loop-49cc1e78-beb8-47cd-ae39-24625f467aec-internal-target",
+                    "source": "agent-41d9f125-184a-47d1-a5e7-5233955f7463",
+                    "target": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42-else-loop-49cc1e78-beb8-47cd-ae39-24625f467aec-internal-target",
+                    "source": "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42",
+                    "target": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "sourceHandle": "else",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-connector-02876510-9ebd-4212-bfff-dce7caa35a2d-builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa",
+                    "source": "connector-02876510-9ebd-4212-bfff-dce7caa35a2d",
+                    "target": "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa"
+                  },
+                  {
+                    "id": "edge-ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42-condition:6ac01c79-db90-48d1-add3-8eebfa42f345-builtinFunction-19c480e9-b144-4a99-aeed-f3966d8b068b",
+                    "source": "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42",
+                    "target": "builtinFunction-19c480e9-b144-4a99-aeed-f3966d8b068b",
+                    "sourceHandle": "condition:6ac01c79-db90-48d1-add3-8eebfa42f345"
+                  },
+                  {
+                    "id": "edge-builtinFunction-19c480e9-b144-4a99-aeed-f3966d8b068b-agent-41d9f125-184a-47d1-a5e7-5233955f7463",
+                    "source": "builtinFunction-19c480e9-b144-4a99-aeed-f3966d8b068b",
+                    "target": "agent-41d9f125-184a-47d1-a5e7-5233955f7463"
+                  },
+                  {
+                    "id": "edge-start-7b658283-d0fb-42e0-b089-92e70453fbba-variable-1cf5cd84-67a1-4031-9176-dc30956fed47",
+                    "source": "start-7b658283-d0fb-42e0-b089-92e70453fbba",
+                    "target": "variable-1cf5cd84-67a1-4031-9176-dc30956fed47"
+                  },
+                  {
+                    "id": "edge-variable-1cf5cd84-67a1-4031-9176-dc30956fed47-variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2",
+                    "source": "variable-1cf5cd84-67a1-4031-9176-dc30956fed47",
+                    "target": "variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2"
+                  }
+                ],
+                "connectionReferences": {
+                  "shared_agentnode": {
+                    "api": {
+                      "name": "shared_agentnode"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedagentnode_50374135"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "6330ddb618034d1182719bcdc4fc0625"
+                  },
+                  "planner": {
+                    "api": {
+                      "name": "shared_planner"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedplanner_7a66dcdc"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-planner-af872f3e-6537-472b-bc78-77937cc42fc7"
+                  },
+                  "shared_keyvault": {
+                    "api": {
+                      "name": "shared_keyvault"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedkeyvault_mcplanner"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-keyvault-mcplanner"
+                  }
+                },
+                "parameters": {
+                  "$authentication": {
+                    "type": "SecureObject",
+                    "defaultValue": {}
+                  },
+                  "$connections": {
+                    "type": "Object",
+                    "defaultValue": {}
+                  }
+                }
+              },
+              "nodeActionMapping": {
+                "variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2": [
+                  "Set_area_owners"
+                ],
+                "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa": [
+                  "Get_Message_Center_posts"
+                ],
+                "agent-41d9f125-184a-47d1-a5e7-5233955f7463": [
+                  "Agent"
+                ],
+                "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42": [
+                  "Is_it_about_AI___LLMs_"
+                ],
+                "loop-49cc1e78-beb8-47cd-ae39-24625f467aec": [
+                  "For_each_message"
+                ],
+                "connector-02876510-9ebd-4212-bfff-dce7caa35a2d": [
+                  "Get_client_secret_from_Key_Vault"
+                ]
+              },
+              "canvasOrientation": "horizontal"
+            }
+          }
+        }
+      },
+      "actions": {
+        "Set_configuration": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Config",
+                "type": "Object",
+                "value": {
+                  "tenantId": "<your-tenant-id>",
+                  "clientId": "<your-app-client-id>",
+                  "keyVaultSecretName": "<your-key-vault-secret-name>",
+                  "plannerGroupId": "<your-m365-group-id>",
+                  "plannerPlanId": "<your-planner-plan-id>"
+                }
+              }
+            ]
+          },
+          "metadata": {
+            "description": "Set configuration",
+            "nodeId": "variable-1cf5cd84-67a1-4031-9176-dc30956fed47"
+          }
+        },
+        "Set_area_owners": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "AreaOwners",
+                "type": "Array",
+                "value": [
+                  {
+                    "area": "Copilot Cowork",
+                    "titleKeyword": "cowork",
+                    "services": [],
+                    "owner": "cowork-owner@contoso.com"
+                  },
+                  {
+                    "area": "Copilot Autopilot",
+                    "titleKeyword": "autopilot",
+                    "services": [
+                      "Microsoft Copilot (Microsoft 365)",
+                      "Microsoft 365 Copilot Chat"
+                    ],
+                    "owner": "autopilot-owner@contoso.com"
+                  },
+                  {
+                    "area": "Power Platform & Copilot Studio",
+                    "titleKeyword": "",
+                    "services": [
+                      "Microsoft Copilot (Power Platform)",
+                      "Power Platform",
+                      "Power Apps",
+                      "Microsoft Power Automate",
+                      "Microsoft Dataverse",
+                      "Dynamics 365 Apps",
+                      "Power BI"
+                    ],
+                    "owner": "powerplatform-owner@contoso.com"
+                  },
+                  {
+                    "area": "Microsoft 365 Copilot",
+                    "titleKeyword": "",
+                    "services": [
+                      "Microsoft Copilot (Microsoft 365)",
+                      "Microsoft 365 Copilot Chat"
+                    ],
+                    "owner": "m365copilot-owner@contoso.com"
+                  }
+                ]
+              },
+              {
+                "name": "AiServices",
+                "type": "Array",
+                "value": [
+                  "Microsoft Copilot (Microsoft 365)",
+                  "Microsoft 365 Copilot Chat",
+                  "Microsoft Copilot (Power Platform)"
+                ]
+              }
+            ]
+          },
+          "metadata": {
+            "description": "Set area owners",
+            "nodeId": "variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2"
+          },
+          "runAfter": {
+            "Set_configuration": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Get_client_secret_from_Key_Vault": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "secretName": "@variables('Config')?['keyVaultSecretName']"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_keyvault",
+              "connectionName": "shared_keyvault",
+              "operationId": "GetSecret"
+            }
+          },
+          "runAfter": {
+            "Set_area_owners": [
+              "Succeeded"
+            ]
+          },
+          "runtimeConfiguration": {
+            "secureData": {
+              "properties": [
+                "inputs",
+                "outputs"
+              ]
+            }
+          },
+          "metadata": {
+            "description": "Get client secret from Key Vault",
+            "nodeId": "connector-02876510-9ebd-4212-bfff-dce7caa35a2d"
+          }
+        },
+        "Get_Message_Center_posts": {
+          "type": "Http",
+          "inputs": {
+            "method": "GET",
+            "uri": "https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/messages",
+            "queries": {
+              "$filter": "lastModifiedDateTime ge @{formatDateTime(addDays(utcNow(),-1),'yyyy-MM-ddTHH:mm:ssZ')}"
+            },
+            "authentication": {
+              "type": "ActiveDirectoryOAuth",
+              "authority": "https://login.microsoftonline.com",
+              "tenant": "@variables('Config')?['tenantId']",
+              "audience": "https://graph.microsoft.com",
+              "clientId": "@variables('Config')?['clientId']",
+              "secret": "@body('Get_client_secret_from_Key_Vault')?['value']"
+            }
+          },
+          "runAfter": {
+            "Get_client_secret_from_Key_Vault": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Get Message Center posts",
+            "nodeId": "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa"
+          },
+          "runtimeConfiguration": {
+            "paginationPolicy": {
+              "minimumItemCount": 5000
+            }
+          }
+        },
+        "For_each_message": {
+          "type": "Foreach",
+          "foreach": "@coalesce(body('Get_Message_Center_posts')?['value'], json('[]'))",
+          "actions": {
+            "Is_it_about_AI___LLMs_": {
+              "type": "If",
+              "expression": {
+                "or": [
+                  {
+                    "greater": [
+                      "@length(intersection(coalesce(item()?['services'],createArray()), variables('AiServices')))",
+                      0
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@concat(' ', toLower(item()?['title']), ' ')",
+                      "copilot"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@concat(' ', toLower(item()?['title']), ' ')",
+                      " ai "
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@concat(' ', toLower(item()?['title']), ' ')",
+                      "ai-"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@concat(' ', toLower(item()?['title']), ' ')",
+                      "ai model"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@concat(' ', toLower(item()?['title']), ' ')",
+                      "language model"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@concat(' ', toLower(item()?['title']), ' ')",
+                      "llm"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@concat(' ', toLower(item()?['title']), ' ')",
+                      "gpt"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@concat(' ', toLower(item()?['title']), ' ')",
+                      "openai"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@concat(' ', toLower(item()?['title']), ' ')",
+                      "anthropic"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@concat(' ', toLower(item()?['title']), ' ')",
+                      "claude"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@concat(' ', toLower(item()?['title']), ' ')",
+                      "mistral"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@concat(' ', toLower(item()?['title']), ' ')",
+                      "grok"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@concat(' ', toLower(item()?['title']), ' ')",
+                      "subprocessor"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@concat(' ', toLower(item()?['title']), ' ')",
+                      "agent"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@concat(' ', toLower(item()?['title']), ' ')",
+                      "prompt"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@toLower(coalesce(item()?['body']?['content'],''))",
+                      "language model"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@toLower(coalesce(item()?['body']?['content'],''))",
+                      "llm"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@toLower(coalesce(item()?['body']?['content'],''))",
+                      "gpt-"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@toLower(coalesce(item()?['body']?['content'],''))",
+                      "openai"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@toLower(coalesce(item()?['body']?['content'],''))",
+                      "anthropic"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@toLower(coalesce(item()?['body']?['content'],''))",
+                      "subprocessor"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Match_area_for_this_message": {
+                  "type": "Query",
+                  "inputs": {
+                    "from": "@variables('AreaOwners')",
+                    "where": "@and(equals(if(empty(coalesce(item()?['titleKeyword'],'')), greater(length(intersection(coalesce(items('For_each_message')?['services'],createArray()), coalesce(item()?['services'],createArray()))),0), and(contains(toLower(coalesce(items('For_each_message')?['title'],'')), toLower(coalesce(item()?['titleKeyword'],''))), or(equals(length(coalesce(item()?['services'],createArray())),0), greater(length(intersection(coalesce(items('For_each_message')?['services'],createArray()), coalesce(item()?['services'],createArray()))),0)))), true))"
+                  },
+                  "metadata": {
+                    "description": "Match area for this message",
+                    "nodeId": "builtinFunction-19c480e9-b144-4a99-aeed-f3966d8b068b"
+                  }
+                },
+                "Agent": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "body/definition": {
+                        "components": [
+                          {
+                            "diagnostics": [],
+                            "schemaName": "shared_planner_CreateTask_V4",
+                            "displayName": "Create a task",
+                            "description": "Create a new task in Planner.",
+                            "dialog": {
+                              "toolInputs": [],
+                              "toolOutputs": [],
+                              "diagnostics": [],
+                              "connectorId": "/providers/Microsoft.PowerApps/apis/shared_planner",
+                              "authMode": "Maker",
+                              "connectionReference": "new_sharedplanner_7a66dcdc",
+                              "operationId": "CreateTask_V4",
+                              "$kind": "ConnectorTool"
+                            },
+                            "$kind": "DialogComponent"
+                          },
+                          {
+                            "diagnostics": [],
+                            "schemaName": "shared_planner_UpdateTask_V3",
+                            "displayName": "Update a task",
+                            "description": "Update an existing Planner task.",
+                            "dialog": {
+                              "toolInputs": [],
+                              "toolOutputs": [],
+                              "diagnostics": [],
+                              "connectorId": "/providers/Microsoft.PowerApps/apis/shared_planner",
+                              "authMode": "Maker",
+                              "connectionReference": "new_sharedplanner_7a66dcdc",
+                              "operationId": "UpdateTask_V3",
+                              "$kind": "ConnectorTool"
+                            },
+                            "$kind": "DialogComponent"
+                          },
+                          {
+                            "diagnostics": [],
+                            "schemaName": "shared_planner_ListTasks_V3",
+                            "displayName": "List tasks",
+                            "description": "List the tasks in a plan.",
+                            "dialog": {
+                              "toolInputs": [],
+                              "toolOutputs": [],
+                              "diagnostics": [],
+                              "connectorId": "/providers/Microsoft.PowerApps/apis/shared_planner",
+                              "authMode": "Maker",
+                              "connectionReference": "new_sharedplanner_7a66dcdc",
+                              "operationId": "ListTasks_V3",
+                              "$kind": "ConnectorTool"
+                            },
+                            "$kind": "DialogComponent"
+                          },
+                          {
+                            "diagnostics": [],
+                            "schemaName": "shared_planner_UpdateTaskDetails_V2",
+                            "displayName": "Update task details",
+                            "description": "Update the task details for an existing task.",
+                            "dialog": {
+                              "toolInputs": [],
+                              "toolOutputs": [],
+                              "diagnostics": [],
+                              "connectorId": "/providers/Microsoft.PowerApps/apis/shared_planner",
+                              "authMode": "Maker",
+                              "connectionReference": "new_sharedplanner_7a66dcdc",
+                              "operationId": "UpdateTaskDetails_V2",
+                              "$kind": "ConnectorTool"
+                            },
+                            "$kind": "DialogComponent"
+                          },
+                          {
+                            "diagnostics": [],
+                            "schemaName": "shared_planner_ListBuckets_V3",
+                            "displayName": "List buckets",
+                            "description": "List the buckets in a plan.",
+                            "dialog": {
+                              "toolInputs": [],
+                              "toolOutputs": [],
+                              "diagnostics": [],
+                              "connectorId": "/providers/Microsoft.PowerApps/apis/shared_planner",
+                              "authMode": "Maker",
+                              "connectionReference": "new_sharedplanner_7a66dcdc",
+                              "operationId": "ListBuckets_V3",
+                              "$kind": "ConnectorTool"
+                            },
+                            "$kind": "DialogComponent"
+                          }
+                        ],
+                        "environmentVariables": [],
+                        "flows": [],
+                        "dataverseTableSearchs": [],
+                        "dataverseTableSearchGlossaryConfigurations": [],
+                        "dataverseTableSearchEntityConfigurations": [],
+                        "dataverseTableSearchEntityColumnSynonyms": [],
+                        "connectionReferences": [
+                          {
+                            "diagnostics": [],
+                            "connectionReferenceLogicalName": "new_sharedplanner_7a66dcdc",
+                            "connectionId": "@last(split(parameters('$connections')['planner']['connectionId'], '/'))",
+                            "connectorId": "/providers/Microsoft.PowerApps/apis/shared_planner",
+                            "$kind": "ConnectionReference"
+                          }
+                        ],
+                        "connectorDefinitions": [],
+                        "aIModelDefinitions": [],
+                        "aIPluginOperations": [],
+                        "connectedAgentDefinitions": [],
+                        "componentCollections": [],
+                        "connectedBots": [],
+                        "diagnostics": [],
+                        "entity": {
+                          "authorizedSecurityGroupIds": [],
+                          "supportedLanguages": [],
+                          "diagnostics": [],
+                          "schemaName": "workflow_agentnode",
+                          "language": 1033,
+                          "accessControlPolicy": "Any",
+                          "authenticationMode": "Integrated",
+                          "authenticationTrigger": "Always",
+                          "synchronizationStatus": {
+                            "graphDriveItems": [],
+                            "diagnostics": [],
+                            "lastPublishedDetails": {
+                              "diagnosticDetails": [],
+                              "diagnostics": [],
+                              "authenticationMode": "Integrated",
+                              "$kind": "SuccessfulPublishResultDetails"
+                            },
+                            "$kind": "BotSynchronizationDetails"
+                          },
+                          "configuration": {
+                            "categories": [],
+                            "channels": [],
+                            "settings": {},
+                            "memoryParameters": [],
+                            "diagnostics": [],
+                            "recognizer": {
+                              "diagnostics": [],
+                              "$kind": "CLICopilotRecognizer"
+                            },
+                            "agentSettings": {
+                              "conversationStarters": [],
+                              "diagnostics": [],
+                              "model": {
+                                "diagnostics": [],
+                                "series": "GPT56ReasoningTerra",
+                                "$kind": "ModelConfig"
+                              },
+                              "instructions": {
+                                "segments": [],
+                                "diagnostics": [],
+                                "$kind": "Instructions"
+                              },
+                              "$kind": "AgentSettings"
+                            },
+                            "$kind": "BotConfiguration"
+                          },
+                          "$kind": "BotEntity"
+                        },
+                        "$kind": "BotDefinition"
+                      },
+                      "body/message": "You turn one Microsoft 365 Message Center post into one Planner task. Use ONLY information in the post. Never invent dates, impact, owners or actions.\n\nToday (UTC): @{utcNow('yyyy-MM-dd')}\n\nPlanner target (CUSTOMIZE: replace with your own group and plan ids): groupId = @{variables('Config')?['plannerGroupId']}, planId = @{variables('Config')?['plannerPlanId']}\n\nArea owners (JSON). \"area\" is the exact name of a bucket in the plan, \"services\" are exact Message Center service names, \"titleKeyword\" (optional) is a word to look for in the post title, \"owner\" is the assignee email:\n@{variables('AreaOwners')}\n\nMessage Center post (JSON):\n@{items('For_each_message')}\n\nSteps:\n1. Area (already computed by the workflow, use exactly as given, do NOT re-derive): area = @{coalesce(first(body('Match_area_for_this_message')), last(variables('AreaOwners')))?['area']}, owner = @{coalesce(first(body('Match_area_for_this_message')), last(variables('AreaOwners')))?['owner']}.\n2. Bucket: call List buckets with the groupId and planId and use the id of the bucket whose name equals the area.\n3. Deadlines: read the WHOLE post body, including tables and lists, plus actionRequiredByDateTime. A deadline is a date by which someone must act, or after which something stops working, is removed, retired, migrated or enforced (e.g. retirement, end of support, deprecation, migration date, \"before ...\", \"by ...\", \"no later than ...\", enforcement or opt-out date). Rollout start/end, preview, general availability (GA) and \"available from\" dates are NEVER deadlines. A date on which Microsoft itself replaces, upgrades or moves something while the organization has nothing to do is not a deadline either: if no action is needed, set no due date. If a date only gives a month, use the first day of that month. If dates differ per item (e.g. per model in a table), consider all of them.\n   - Due date = the earliest deadline that is today or later. If there is none, do not set a due date.\n   - If deadlines exist but all are before today, do not set a due date but report them as passed in the description.\n4. Priority (Planner number), based ONLY on the post's own severity and isMajorChange fields: 1 (Urgent) if severity is critical; else 3 (Important) if severity is high or isMajorChange is true; else 5 (Medium). Do not change priority because of dates, category or wording.\n5. Call List tasks with the groupId and planId. The task already exists if a title contains the post id (e.g. MC1234567).\n6. If it does not exist, call Create a task with title \"Review <id> - <post title>\", groupId, planId, bucketId, the owner email as assignment, priority and due date (if any). If it exists, call Update a task on that task with the same title, bucketId and due date (if any); priority is only set on create.\n7. Call Update task details on the task with a SHORT plain-text description (about 120 words max; the full details stay in the post, do not copy it):\nPosted: <startDateTime yyyy-MM-dd> | Last updated: <lastModifiedDateTime yyyy-MM-dd>\nWhat is announced: <one sentence>\nWhat it impacts: <one short sentence>\nWhat needs to be done: <one or two short sentences, or \"No action required\">\nDeadline: <yyyy-MM-dd - what happens then> | or \"PASSED <yyyy-MM-dd> - what happened, check it was handled\" | or \"None\"\nMajor change: <Yes/No> | Category: <category> | Severity: <severity>\nServices: <services>\nAdmin center: https://admin.microsoft.com/Adminportal/Home#/MessageCenter/:/messages/<id>\n8. Reply with one line: Created or Updated, task id, area, due date."
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
+                      "connectionName": "shared_agentnode",
+                      "operationId": "InvokeDefinition"
+                    }
+                  },
+                  "metadata": {
+                    "description": "Agent",
+                    "nodeId": "agent-41d9f125-184a-47d1-a5e7-5233955f7463"
+                  },
+                  "runAfter": {
+                    "Match_area_for_this_message": [
+                      "Succeeded"
+                    ]
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "metadata": {
+                "description": "Is it about AI / LLMs?",
+                "nodeId": "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42"
+              }
+            }
+          },
+          "metadata": {
+            "description": "For each message",
+            "nodeId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+          },
+          "runAfter": {
+            "Get_Message_Center_posts": [
+              "Succeeded"
+            ]
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "telemetryMetadata": {
+          "creationSource": "WorkflowDesigner",
+          "modifiedSources": "WorkflowDesigner"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
