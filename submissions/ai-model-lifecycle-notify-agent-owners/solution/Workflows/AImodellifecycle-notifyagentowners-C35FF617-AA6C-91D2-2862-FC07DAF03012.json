@@ -1,0 +1,3753 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_keyvault": {
+        "api": {
+          "name": "shared_keyvault"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedkeyvault_mcplanner"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-keyvault-mcplanner"
+      },
+      "shared_agentnode": {
+        "api": {
+          "name": "shared_agentnode"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedagentnode_50374135"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "6330ddb618034d1182719bcdc4fc0625"
+      },
+      "shared_powerplatformadminv2": {
+        "api": {
+          "name": "shared_powerplatformadminv2"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedpowerplatformadminv2_aimodel"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-powerplatforma-aimodellifecycle"
+      },
+      "shared_office365": {
+        "api": {
+          "name": "shared_office365"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedoffice365_aimodel"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "4db2ffd6772146cbbc9b41d0d0f06c53"
+      },
+      "shared_office365users": {
+        "api": {
+          "name": "shared_office365users"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedoffice365users_aimodel"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-office365user-6a678d3e-8e07-4d8b-9c1f-2c68d2f900d3"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "Recurrence": {
+          "recurrence": {
+            "frequency": "Day",
+            "interval": 1
+          },
+          "type": "Recurrence",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "runs": 1
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "AI model lifecycle - notify agent owners",
+                "nodes": [
+                  {
+                    "id": "start-7b658283-d0fb-42e0-b089-92e70453fbba",
+                    "name": "Recurrence",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 100,
+                      "y": 400.5
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "recurrence",
+                        "recurrence": {
+                          "frequency": "Day",
+                          "interval": 1
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runtimeConfiguration": {
+                          "concurrency": {
+                            "runs": 1
+                          }
+                        }
+                      }
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "variable-1cf5cd84-67a1-4031-9176-dc30956fed47",
+                    "name": "Set configuration",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 383,
+                      "y": 400.5
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "9283930d-ab2c-4813-bdfe-57092d373ca7",
+                            "variableName": "Config",
+                            "mode": "initialize",
+                            "type": "object",
+                            "value": "{\n  \"tenantId\": \"<your-tenant-id>\",\n  \"clientId\": \"<your-app-client-id>\",\n  \"keyVaultSecretName\": \"<your-key-vault-secret-name>\",\n  \"adminEmail\": \"ai-governance@contoso.com\",\n  \"contactText\": \"your Power Platform environment admins\",\n  \"lookbackDays\": 1,\n  \"testMode\": true,\n  \"testModeMaxEmails\": 3,\n  \"maxOwnerEmailsPerPost\": 100,\n  \"environmentIds\": []\n}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "description": "Variables set by this node"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2",
+                    "name": "Set model lifecycle filter",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 666,
+                      "y": 400.5
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "b7e1c0d2-5a7f-4c1e-9a3b-6d2f8e4a1c90",
+                            "variableName": "ModelServices",
+                            "mode": "initialize",
+                            "type": "array",
+                            "value": "[\n  \"Microsoft Copilot (Power Platform)\",\n  \"Microsoft Copilot Studio\",\n  \"Power Platform\",\n  \"Power Apps\",\n  \"Microsoft Power Automate\"\n]"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "description": "Variables set by this node"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "connector-02876510-9ebd-4212-bfff-dce7caa35a2d",
+                    "name": "Get client secret from Key Vault",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 949,
+                      "y": 400.5
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_keyvault",
+                        "displayName": "Get secret",
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1819/1.0.1819.4795/keyvault/icon.png",
+                        "brandColor": "#0072C6",
+                        "operationName": "GetSecret",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "secretName"
+                          ],
+                          "properties": {
+                            "secretName": {
+                              "type": "string",
+                              "title": "Name of the secret"
+                            }
+                          }
+                        },
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_keyvault",
+                        "parameters": {
+                          "secretName": "@variables('Config')?['keyVaultSecretName']"
+                        },
+                        "initializedParameterDefaults": [],
+                        "operationId": "GetSecret"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa",
+                    "name": "Get Message Center posts",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1232,
+                      "y": 400.5
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "httpaction",
+                        "operationName": "httpaction",
+                        "displayName": "HTTP",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/Http",
+                        "categoryDisplayName": "HTTP",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/http.svg",
+                        "brandColor": "#709727",
+                        "parameters": {
+                          "method": "GET",
+                          "uri": "https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/messages",
+                          "queries": {
+                            "$filter": "lastModifiedDateTime ge @{formatDateTime(addDays(utcNow(), mul(-1, int(coalesce(variables('Config')?['lookbackDays'], 1)))),'yyyy-MM-ddTHH:mm:ssZ')}"
+                          },
+                          "authentication": {
+                            "type": "ActiveDirectoryOAuth",
+                            "authority": "https://login.microsoftonline.com",
+                            "tenant": "@variables('Config')?['tenantId']",
+                            "audience": "https://graph.microsoft.com",
+                            "clientId": "@variables('Config')?['clientId']",
+                            "secret": "@body('Get_client_secret_from_Key_Vault')?['value']"
+                          }
+                        },
+                        "description": "Make an HTTP request to any endpoint.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "method",
+                            "uri"
+                          ],
+                          "properties": {
+                            "method": {
+                              "type": "string",
+                              "title": "Method",
+                              "description": "HTTP method",
+                              "enum": [
+                                "GET",
+                                "POST",
+                                "PUT",
+                                "PATCH",
+                                "DELETE",
+                                "HEAD",
+                                "OPTIONS"
+                              ],
+                              "default": "GET"
+                            },
+                            "uri": {
+                              "type": "string",
+                              "title": "URI",
+                              "description": "Request URL"
+                            },
+                            "headers": {
+                              "type": "object",
+                              "title": "Headers",
+                              "description": "Request headers"
+                            },
+                            "queries": {
+                              "type": "object",
+                              "title": "Queries",
+                              "description": "Query parameters"
+                            },
+                            "body": {
+                              "title": "Body",
+                              "description": "Request body"
+                            },
+                            "authentication": {
+                              "type": "object",
+                              "title": "Authentication",
+                              "description": "Authentication configuration"
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ],
+                      "settings": {
+                        "secureInputs": {
+                          "isSupported": true,
+                          "value": true
+                        }
+                      }
+                    },
+                    "measured": {
+                      "width": 243,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "connector-5b1f3c2a-8e4d-4a7b-9c61-2f0d7e3a9b14",
+                    "name": "Get model summary",
+                    "type": "connector",
+                    "version": 1,
+                    "data": {
+                      "config": {
+                        "apiName": "shared_powerplatformadminv2",
+                        "displayName": "Query Power Platform resources",
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1835/1.0.1835.5096/powerplatformadminv2/icon.png",
+                        "brandColor": "#000000",
+                        "operationName": "QueryResources",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "api-version",
+                            "body"
+                          ],
+                          "properties": {
+                            "api-version": {
+                              "type": "string",
+                              "title": "Api-version",
+                              "default": "2024-10-01"
+                            },
+                            "body": {
+                              "type": "object",
+                              "title": "Query",
+                              "properties": {
+                                "TableName": {
+                                  "type": "string"
+                                },
+                                "Clauses": {
+                                  "type": "array"
+                                },
+                                "Options": {
+                                  "type": "object"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_powerplatformadminv2",
+                        "parameters": {
+                          "api-version": "2024-10-01",
+                          "body": {
+                            "TableName": "PowerPlatformResources",
+                            "Clauses": [
+                              {
+                                "$type": "where",
+                                "FieldName": "type",
+                                "Operator": "==",
+                                "Values": [
+                                  "'microsoft.copilotstudio/agents'"
+                                ]
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "model",
+                                "Expression": "tostring(properties.model)"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "harness",
+                                "Expression": "tostring(properties.harness)"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "environmentId",
+                                "Expression": "tostring(properties.environmentId)"
+                              },
+                              {
+                                "$type": "where",
+                                "FieldName": "@{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'type', 'environmentId')}",
+                                "Operator": "in~",
+                                "Values": "@if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), createArray('''microsoft.copilotstudio/agents'''), split(concat('''', join(coalesce(variables('Config')?['environmentIds'], json('[]')), ''';;'''), ''''), ';;'))"
+                              },
+                              {
+                                "$type": "where",
+                                "FieldName": "model",
+                                "Operator": "!in",
+                                "Values": [
+                                  "''",
+                                  "'Microsoft 365 Copilot'",
+                                  "'Copilot Studio default'"
+                                ]
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "key",
+                                "Expression": "strcat(model, '|', harness)"
+                              },
+                              {
+                                "$type": "summarize",
+                                "SummarizeClauseExpression": {
+                                  "OperatorName": "count",
+                                  "OperatorFieldName": "",
+                                  "FieldList": [
+                                    "key",
+                                    "model",
+                                    "harness"
+                                  ]
+                                }
+                              }
+                            ],
+                            "Options": {
+                              "Top": 1000
+                            }
+                          }
+                        },
+                        "initializedParameterDefaults": [],
+                        "operationId": "QueryResources"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "position": {
+                      "x": 1515,
+                      "y": 400.5
+                    }
+                  },
+                  {
+                    "id": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "name": "For each message",
+                    "type": "loop",
+                    "version": 1,
+                    "position": {
+                      "x": 1798,
+                      "y": 250
+                    },
+                    "width": 4700,
+                    "height": 820,
+                    "style": {
+                      "width": 4700,
+                      "height": 820
+                    },
+                    "data": {
+                      "config": {
+                        "loopType": "foreach",
+                        "foreach": "@body('Get_Message_Center_posts')?['value']",
+                        "foreachRich": {
+                          "segments": [
+                            {
+                              "type": "static",
+                              "value": "@body('Get_Message_Center_posts')?['value']"
+                            }
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 4700,
+                      "height": 820
+                    }
+                  },
+                  {
+                    "id": "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42",
+                    "name": "Is it about AI model lifecycle?",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 40,
+                      "y": 100
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "6ac01c79-db90-48d1-add3-8eebfa42f345",
+                            "name": "If",
+                            "expression": "{\n  \"and\": [\n    {\n      \"greater\": [\n        \"@length(intersection(coalesce(items('For_each_message')?['services'],json('[]')), variables('ModelServices')))\",\n        0\n      ]\n    },\n    {\n      \"or\": [\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"ai model\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"models\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"harness\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"gpt\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"claude\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"anthropic\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"openai\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"mistral\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"grok\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"llm\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['body']?['content'],''))\",\n            \"retiring model\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['body']?['content'],''))\",\n            \"replacement model\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['body']?['content'],''))\",\n            \"model retirement\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['body']?['content'],''))\",\n            \"model deprecation\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['body']?['content'],''))\",\n            \"end of support for selected ai models\"\n          ]\n        }\n      ]\n    }\n  ]\n}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:6ac01c79-db90-48d1-add3-8eebfa42f345",
+                          "label": "If"
+                        },
+                        {
+                          "id": "else",
+                          "label": "Else"
+                        }
+                      ]
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "measured": {
+                      "width": 240,
+                      "height": 167
+                    }
+                  },
+                  {
+                    "id": "agent-41d9f125-184a-47d1-a5e7-5233955f7463",
+                    "name": "Identify impacted models",
+                    "type": "agent",
+                    "version": 1,
+                    "position": {
+                      "x": 340,
+                      "y": 100
+                    },
+                    "data": {
+                      "config": {
+                        "mode": "inline",
+                        "instructions": "",
+                        "botSchemaName": "",
+                        "isHitlEscalationEnabled": false,
+                        "webSearchEnabled": false,
+                        "inlineInstructions": "You read ONE Microsoft 365 Message Center post and decide which AI models used by Copilot Studio agents in this tenant it affects. You do NOT send emails - the workflow does that from your structured output. Use ONLY the post and the inventory summary. Never invent models, dates or replacements.\n\nToday (UTC): @{utcNow('yyyy-MM-dd')}\n\nMessage Center post (JSON):\n@{items('For_each_message')}\n\nInventory summary - one row per model + harness combination used by agents in this tenant (key, model, harness, count_ = number of agents):\n@{coalesce(body('Get_model_summary')?['data'], json('[]'))}\n\nRules:\n1. Read the WHOLE post body, including tables and lists. Find every model that is retired, reaches end of support, is deprecated, is automatically migrated/upgraded, or changes behavior. Ignore models that are only announced as new or newly available.\n2. If the change only applies to prompts (AI Builder), Microsoft 365 Copilot Chat or other products - not to Copilot Studio agents - nothing is impacted.\n3. Match affected models to inventory rows. Compare model names ignoring case, spaces, hyphens, dots and underscores (\"GPT-5 Chat\" = \"gpt-5-chat\" = \"GPT5Chat\"). Versions must match exactly: GPT-5 is NOT GPT-5.2, Claude Sonnet 4.6 is NOT Claude Sonnet 4.5.\n4. Harness: \"Microsoft Copilot harness\" or \"GitHub Copilot harness\" = harness \"GitHub Copilot\"; \"standard harness\" / \"standard orchestration\" = \"Standard\"; \"classic\" / \"conversational\" = \"Conversational AI\". If the post does not restrict the harness, include every harness row of that model. If you are not sure a row is affected, leave it out and mention it in reason.\n\nOutput:\n- inventoryKeys: the `key` values of the matched inventory rows, copied EXACTLY, separated by \";;\" (e.g. \"GPT-5 Chat|Standard;;GPT-5 Chat|GitHub Copilot\"). Empty string if nothing in the inventory is affected.\n- impacts: one item per matched key: model, harness, change (Retirement, End of support, Deprecation, Automatic migration, Upgrade or Behavior change), replacement (\"\" if none), date (yyyy-MM-dd; if only a month is given use its first day; \"\" if none).\n- actionBy: the earliest impacts date (yyyy-MM-dd), or \"\".\n- headline: one plain-text sentence (max 300 characters) for agent owners explaining what changes and when.\n- reason: one line explaining why agents are or are not affected (mention uncertain matches here).",
+                        "outputMode": "structured-simple",
+                        "fileOutputFormat": "binary-envelope-v2",
+                        "inlineModel": "GPT56ReasoningTerra",
+                        "inlineTools": [],
+                        "connectionName": "shared_agentnode",
+                        "simpleProperties": [
+                          {
+                            "id": "f65db367-f926-51a6-9514-8f3b72b5d580",
+                            "name": "inventoryKeys",
+                            "type": "string",
+                            "description": "Matched inventory keys separated by ;; (empty if none)"
+                          },
+                          {
+                            "id": "29d90ce5-d04e-5003-a4b8-36919c70a1b4",
+                            "name": "actionBy",
+                            "type": "string",
+                            "description": "Earliest date yyyy-MM-dd, empty if none"
+                          },
+                          {
+                            "id": "868873bb-05e2-579b-945f-370058d87f4b",
+                            "name": "headline",
+                            "type": "string",
+                            "description": "One sentence for agent owners"
+                          },
+                          {
+                            "id": "bdcfef51-c549-58f6-8bc2-e60d815f987b",
+                            "name": "reason",
+                            "type": "string",
+                            "description": "Why agents are or are not affected"
+                          },
+                          {
+                            "id": "f78596bb-7c7a-522a-887e-361bdfd6b049",
+                            "name": "impacts",
+                            "type": "list",
+                            "description": "One item per matched inventory key",
+                            "listItems": [
+                              {
+                                "id": "da2001d2-8f0c-529a-9d37-4f1c1b3427df",
+                                "name": "model",
+                                "type": "string",
+                                "description": "Affected model (as in the inventory)"
+                              },
+                              {
+                                "id": "1f56f770-ac88-58f7-b5bc-185ab10e3a1f",
+                                "name": "harness",
+                                "type": "string",
+                                "description": "Harness (as in the inventory)"
+                              },
+                              {
+                                "id": "adc34fff-0761-50fc-b724-381180f1dc1c",
+                                "name": "change",
+                                "type": "string",
+                                "description": "Retirement, End of support, Deprecation, Automatic migration, Upgrade or Behavior change"
+                              },
+                              {
+                                "id": "0c344a45-825e-58ce-baba-1b1d8967c9e2",
+                                "name": "replacement",
+                                "type": "string",
+                                "description": "Replacement model, empty if none"
+                              },
+                              {
+                                "id": "3b4d73e1-889d-59f0-acc9-7dce6d7a02d2",
+                                "name": "date",
+                                "type": "string",
+                                "description": "yyyy-MM-dd, empty if none"
+                              }
+                            ]
+                          }
+                        ],
+                        "jsonSchema": {
+                          "type": "object",
+                          "properties": {
+                            "inventoryKeys": {
+                              "type": "string",
+                              "description": "Matched inventory keys separated by ;; (empty if none)"
+                            },
+                            "actionBy": {
+                              "type": "string",
+                              "description": "Earliest date yyyy-MM-dd, empty if none"
+                            },
+                            "headline": {
+                              "type": "string",
+                              "description": "One sentence for agent owners"
+                            },
+                            "reason": {
+                              "type": "string",
+                              "description": "Why agents are or are not affected"
+                            },
+                            "impacts": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "model": {
+                                    "type": "string",
+                                    "description": "Affected model (as in the inventory)"
+                                  },
+                                  "harness": {
+                                    "type": "string",
+                                    "description": "Harness (as in the inventory)"
+                                  },
+                                  "change": {
+                                    "type": "string",
+                                    "description": "Retirement, End of support, Deprecation, Automatic migration, Upgrade or Behavior change"
+                                  },
+                                  "replacement": {
+                                    "type": "string",
+                                    "description": "Replacement model, empty if none"
+                                  },
+                                  "date": {
+                                    "type": "string",
+                                    "description": "yyyy-MM-dd, empty if none"
+                                  }
+                                },
+                                "required": [
+                                  "model",
+                                  "harness",
+                                  "change",
+                                  "replacement",
+                                  "date"
+                                ]
+                              }
+                            }
+                          },
+                          "required": [
+                            "inventoryKeys",
+                            "actionBy",
+                            "headline",
+                            "reason",
+                            "impacts"
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "type": "string",
+                                "title": "Agent Response",
+                                "description": "Aggregated message text emitted before the structured output (may be null)"
+                              },
+                              "activities": {
+                                "type": "array",
+                                "description": "Bot response activities (typing, message, and event types)"
+                              },
+                              "structuredOutput": {
+                                "type": "object",
+                                "properties": {
+                                  "inventoryKeys": {
+                                    "type": "string",
+                                    "description": "Matched inventory keys separated by ;; (empty if none)"
+                                  },
+                                  "actionBy": {
+                                    "type": "string",
+                                    "description": "Earliest date yyyy-MM-dd, empty if none"
+                                  },
+                                  "headline": {
+                                    "type": "string",
+                                    "description": "One sentence for agent owners"
+                                  },
+                                  "reason": {
+                                    "type": "string",
+                                    "description": "Why agents are or are not affected"
+                                  },
+                                  "impacts": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "model": {
+                                          "type": "string",
+                                          "description": "Affected model (as in the inventory)"
+                                        },
+                                        "harness": {
+                                          "type": "string",
+                                          "description": "Harness (as in the inventory)"
+                                        },
+                                        "change": {
+                                          "type": "string",
+                                          "description": "Retirement, End of support, Deprecation, Automatic migration, Upgrade or Behavior change"
+                                        },
+                                        "replacement": {
+                                          "type": "string",
+                                          "description": "Replacement model, empty if none"
+                                        },
+                                        "date": {
+                                          "type": "string",
+                                          "description": "yyyy-MM-dd, empty if none"
+                                        }
+                                      },
+                                      "required": [
+                                        "model",
+                                        "harness",
+                                        "change",
+                                        "replacement",
+                                        "date"
+                                      ]
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "inventoryKeys",
+                                  "actionBy",
+                                  "headline",
+                                  "reason",
+                                  "impacts"
+                                ],
+                                "title": ""
+                              }
+                            },
+                            "required": [
+                              "activities",
+                              "structuredOutput"
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "ifElse-1097d8dc-5416-5d60-9021-acf5938c94d6",
+                    "name": "Any agents impacted?",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 640,
+                      "y": 100
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "4d7b225c-87d1-5f2a-bc37-b1e625c48304",
+                            "name": "Agents impacted",
+                            "expression": "{\n  \"and\": [\n    {\n      \"not\": {\n        \"equals\": [\n          \"@trim(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], ''))\",\n          \"\"\n        ]\n      }\n    }\n  ]\n}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:4d7b225c-87d1-5f2a-bc37-b1e625c48304",
+                          "label": "Agents impacted"
+                        },
+                        {
+                          "id": "else",
+                          "label": "Else"
+                        }
+                      ]
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "measured": {
+                      "width": 240,
+                      "height": 167
+                    }
+                  },
+                  {
+                    "id": "connector-248b4ad7-7425-5f92-9d78-ccf27c695090",
+                    "name": "Get impacted agents",
+                    "type": "connector",
+                    "version": 1,
+                    "data": {
+                      "config": {
+                        "apiName": "shared_powerplatformadminv2",
+                        "displayName": "Query Power Platform resources",
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1835/1.0.1835.5096/powerplatformadminv2/icon.png",
+                        "brandColor": "#000000",
+                        "operationName": "QueryResources",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "api-version",
+                            "body"
+                          ],
+                          "properties": {
+                            "api-version": {
+                              "type": "string",
+                              "title": "Api-version",
+                              "default": "2024-10-01"
+                            },
+                            "body": {
+                              "type": "object",
+                              "title": "Query",
+                              "properties": {
+                                "TableName": {
+                                  "type": "string"
+                                },
+                                "Clauses": {
+                                  "type": "array"
+                                },
+                                "Options": {
+                                  "type": "object"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_powerplatformadminv2",
+                        "parameters": {
+                          "api-version": "2024-10-01",
+                          "body": {
+                            "TableName": "PowerPlatformResources",
+                            "Clauses": [
+                              {
+                                "$type": "where",
+                                "FieldName": "type",
+                                "Operator": "==",
+                                "Values": [
+                                  "'microsoft.copilotstudio/agents'"
+                                ]
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "model",
+                                "Expression": "tostring(properties.model)"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "harness",
+                                "Expression": "tostring(properties.harness)"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "environmentId",
+                                "Expression": "tostring(properties.environmentId)"
+                              },
+                              {
+                                "$type": "where",
+                                "FieldName": "@{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'type', 'environmentId')}",
+                                "Operator": "in~",
+                                "Values": "@if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), createArray('''microsoft.copilotstudio/agents'''), split(concat('''', join(coalesce(variables('Config')?['environmentIds'], json('[]')), ''';;'''), ''''), ';;'))"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "key",
+                                "Expression": "strcat(model, '|', harness)"
+                              },
+                              {
+                                "$type": "where",
+                                "FieldName": "key",
+                                "Operator": "in~",
+                                "Values": "@split(concat('''', replace(replace(replace(replace(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], '')), '''', ''), ' ;;', ';;'), ';; ', ';;'), ';;', ''';;'''), ''''), ';;')"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "ownerId",
+                                "Expression": "tostring(properties.ownerId)"
+                              },
+                              {
+                                "$type": "join",
+                                "JoinKind": "leftouter",
+                                "RightTable": {
+                                  "TableName": "PowerPlatformResources",
+                                  "Clauses": [
+                                    {
+                                      "$type": "where",
+                                      "FieldName": "type",
+                                      "Operator": "==",
+                                      "Values": [
+                                        "'microsoft.powerplatform/environments'"
+                                      ]
+                                    },
+                                    {
+                                      "$type": "project",
+                                      "FieldList": [
+                                        "environmentId = name",
+                                        "environmentName = tostring(properties.displayName)"
+                                      ]
+                                    }
+                                  ]
+                                },
+                                "LeftColumnName": "environmentId",
+                                "RightColumnName": "environmentId"
+                              },
+                              {
+                                "$type": "project",
+                                "FieldList": [
+                                  "agentId = name",
+                                  "agentName = tostring(properties.displayName)",
+                                  "model",
+                                  "harness",
+                                  "environmentId",
+                                  "environmentName",
+                                  "ownerId"
+                                ]
+                              }
+                            ],
+                            "Options": {
+                              "Top": 1000
+                            }
+                          }
+                        },
+                        "initializedParameterDefaults": [],
+                        "operationId": "QueryResources"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "position": {
+                      "x": 940,
+                      "y": 100
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "connector-aa8a9b10-d842-5920-ae72-8306d773156c",
+                    "name": "Get impacted owners",
+                    "type": "connector",
+                    "version": 1,
+                    "data": {
+                      "config": {
+                        "apiName": "shared_powerplatformadminv2",
+                        "displayName": "Query Power Platform resources",
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1835/1.0.1835.5096/powerplatformadminv2/icon.png",
+                        "brandColor": "#000000",
+                        "operationName": "QueryResources",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "api-version",
+                            "body"
+                          ],
+                          "properties": {
+                            "api-version": {
+                              "type": "string",
+                              "title": "Api-version",
+                              "default": "2024-10-01"
+                            },
+                            "body": {
+                              "type": "object",
+                              "title": "Query",
+                              "properties": {
+                                "TableName": {
+                                  "type": "string"
+                                },
+                                "Clauses": {
+                                  "type": "array"
+                                },
+                                "Options": {
+                                  "type": "object"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_powerplatformadminv2",
+                        "parameters": {
+                          "api-version": "2024-10-01",
+                          "body": {
+                            "TableName": "PowerPlatformResources",
+                            "Clauses": [
+                              {
+                                "$type": "where",
+                                "FieldName": "type",
+                                "Operator": "==",
+                                "Values": [
+                                  "'microsoft.copilotstudio/agents'"
+                                ]
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "model",
+                                "Expression": "tostring(properties.model)"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "harness",
+                                "Expression": "tostring(properties.harness)"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "environmentId",
+                                "Expression": "tostring(properties.environmentId)"
+                              },
+                              {
+                                "$type": "where",
+                                "FieldName": "@{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'type', 'environmentId')}",
+                                "Operator": "in~",
+                                "Values": "@if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), createArray('''microsoft.copilotstudio/agents'''), split(concat('''', join(coalesce(variables('Config')?['environmentIds'], json('[]')), ''';;'''), ''''), ';;'))"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "key",
+                                "Expression": "strcat(model, '|', harness)"
+                              },
+                              {
+                                "$type": "where",
+                                "FieldName": "key",
+                                "Operator": "in~",
+                                "Values": "@split(concat('''', replace(replace(replace(replace(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], '')), '''', ''), ' ;;', ';;'), ';; ', ';;'), ';;', ''';;'''), ''''), ';;')"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "ownerId",
+                                "Expression": "tostring(properties.ownerId)"
+                              },
+                              {
+                                "$type": "where",
+                                "FieldName": "ownerId",
+                                "Operator": "!in",
+                                "Values": [
+                                  "''",
+                                  "'00000000-0000-0000-0000-000000000000'"
+                                ]
+                              },
+                              {
+                                "$type": "summarize",
+                                "SummarizeClauseExpression": {
+                                  "OperatorName": "count",
+                                  "OperatorFieldName": "",
+                                  "FieldList": [
+                                    "ownerId"
+                                  ]
+                                }
+                              }
+                            ],
+                            "Options": {
+                              "Top": "@if(bool(coalesce(variables('Config')?['testMode'], true)), min(int(coalesce(variables('Config')?['testModeMaxEmails'], 3)), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100))), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100)))"
+                            }
+                          }
+                        },
+                        "initializedParameterDefaults": [],
+                        "operationId": "QueryResources"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "position": {
+                      "x": 1240,
+                      "y": 100
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "builtinFunction-7591b353-4a5f-59cb-a8c1-02f2d2e0a94e",
+                    "name": "Select impacts",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1540,
+                      "y": 100
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/compose.svg",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@coalesce(body('Identify_impacted_models')?['structuredOutput/impacts'], json('[]'))",
+                          "select": {
+                            "Model": "@item()?['model']",
+                            "Harness": "@item()?['harness']",
+                            "Change": "@item()?['change']",
+                            "Replacement": "@item()?['replacement']",
+                            "Date": "@item()?['date']"
+                          }
+                        },
+                        "description": "Transform items in an array by selecting and mapping properties.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "from",
+                            "select"
+                          ],
+                          "properties": {
+                            "from": {
+                              "type": "array",
+                              "title": "From",
+                              "description": "Array to transform"
+                            },
+                            "select": {
+                              "type": "object",
+                              "title": "Map",
+                              "description": "Property mappings",
+                              "x-ms-editor": "dictionary",
+                              "x-ms-editor-options": {
+                                "valueType": "any"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "builtinFunction-7dfc6efd-4b28-5b9f-90a0-fcce2301558e",
+                    "name": "Create impacts table",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1840,
+                      "y": 100
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "htmltable",
+                        "operationName": "htmltable",
+                        "displayName": "Create HTML table",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/compose.svg",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@body('Select_impacts')",
+                          "columns": "Automatic"
+                        },
+                        "description": "Create an HTML table from an array of objects.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "from"
+                          ],
+                          "properties": {
+                            "from": {
+                              "type": "array",
+                              "title": "From",
+                              "description": "Array to convert"
+                            },
+                            "columns": {
+                              "type": "string",
+                              "title": "Columns",
+                              "description": "Column selection",
+                              "enum": [
+                                "Automatic",
+                                "Custom"
+                              ],
+                              "default": "Automatic"
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5",
+                    "name": "For each owner",
+                    "type": "loop",
+                    "version": 1,
+                    "position": {
+                      "x": 2140,
+                      "y": 40
+                    },
+                    "width": 1600,
+                    "height": 640,
+                    "style": {
+                      "width": 1600,
+                      "height": 640
+                    },
+                    "data": {
+                      "config": {
+                        "loopType": "foreach",
+                        "foreach": "@coalesce(body('Get_impacted_owners')?['data'], json('[]'))",
+                        "foreachRich": {
+                          "segments": [
+                            {
+                              "type": "static",
+                              "value": "@coalesce(body('Get_impacted_owners')?['data'], json('[]'))"
+                            }
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 1600,
+                      "height": 640
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "connector-df66a16f-e691-5485-8aec-d7746b3c9dac",
+                    "name": "Get owner agents",
+                    "type": "connector",
+                    "version": 1,
+                    "data": {
+                      "config": {
+                        "apiName": "shared_powerplatformadminv2",
+                        "displayName": "Query Power Platform resources",
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1835/1.0.1835.5096/powerplatformadminv2/icon.png",
+                        "brandColor": "#000000",
+                        "operationName": "QueryResources",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "api-version",
+                            "body"
+                          ],
+                          "properties": {
+                            "api-version": {
+                              "type": "string",
+                              "title": "Api-version",
+                              "default": "2024-10-01"
+                            },
+                            "body": {
+                              "type": "object",
+                              "title": "Query",
+                              "properties": {
+                                "TableName": {
+                                  "type": "string"
+                                },
+                                "Clauses": {
+                                  "type": "array"
+                                },
+                                "Options": {
+                                  "type": "object"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_powerplatformadminv2",
+                        "parameters": {
+                          "api-version": "2024-10-01",
+                          "body": {
+                            "TableName": "PowerPlatformResources",
+                            "Clauses": [
+                              {
+                                "$type": "where",
+                                "FieldName": "type",
+                                "Operator": "==",
+                                "Values": [
+                                  "'microsoft.copilotstudio/agents'"
+                                ]
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "model",
+                                "Expression": "tostring(properties.model)"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "harness",
+                                "Expression": "tostring(properties.harness)"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "environmentId",
+                                "Expression": "tostring(properties.environmentId)"
+                              },
+                              {
+                                "$type": "where",
+                                "FieldName": "@{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'type', 'environmentId')}",
+                                "Operator": "in~",
+                                "Values": "@if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), createArray('''microsoft.copilotstudio/agents'''), split(concat('''', join(coalesce(variables('Config')?['environmentIds'], json('[]')), ''';;'''), ''''), ';;'))"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "key",
+                                "Expression": "strcat(model, '|', harness)"
+                              },
+                              {
+                                "$type": "where",
+                                "FieldName": "key",
+                                "Operator": "in~",
+                                "Values": "@split(concat('''', replace(replace(replace(replace(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], '')), '''', ''), ' ;;', ';;'), ';; ', ';;'), ';;', ''';;'''), ''''), ';;')"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "ownerId",
+                                "Expression": "tostring(properties.ownerId)"
+                              },
+                              {
+                                "$type": "where",
+                                "FieldName": "ownerId",
+                                "Operator": "==",
+                                "Values": [
+                                  "'@{items('For_each_owner')?['ownerId']}'"
+                                ]
+                              },
+                              {
+                                "$type": "join",
+                                "JoinKind": "leftouter",
+                                "RightTable": {
+                                  "TableName": "PowerPlatformResources",
+                                  "Clauses": [
+                                    {
+                                      "$type": "where",
+                                      "FieldName": "type",
+                                      "Operator": "==",
+                                      "Values": [
+                                        "'microsoft.powerplatform/environments'"
+                                      ]
+                                    },
+                                    {
+                                      "$type": "project",
+                                      "FieldList": [
+                                        "environmentId = name",
+                                        "environmentName = tostring(properties.displayName)"
+                                      ]
+                                    }
+                                  ]
+                                },
+                                "LeftColumnName": "environmentId",
+                                "RightColumnName": "environmentId"
+                              },
+                              {
+                                "$type": "project",
+                                "FieldList": [
+                                  "agentId = name",
+                                  "agentName = tostring(properties.displayName)",
+                                  "model",
+                                  "harness",
+                                  "environmentId",
+                                  "environmentName",
+                                  "ownerId"
+                                ]
+                              }
+                            ],
+                            "Options": {
+                              "Top": 1000
+                            }
+                          }
+                        },
+                        "initializedParameterDefaults": [],
+                        "operationId": "QueryResources"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "position": {
+                      "x": 40,
+                      "y": 100
+                    },
+                    "parentId": "loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5"
+                  },
+                  {
+                    "id": "builtinFunction-cde656ba-c859-5cb3-acfa-b8bb568bc641",
+                    "name": "Select owner agents",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 330,
+                      "y": 100
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/compose.svg",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@coalesce(body('Get_owner_agents')?['data'], json('[]'))",
+                          "select": {
+                            "Agent": "@item()?['agentName']",
+                            "Environment": "@item()?['environmentName']",
+                            "Model": "@item()?['model']",
+                            "Harness": "@item()?['harness']"
+                          }
+                        },
+                        "description": "Transform items in an array by selecting and mapping properties.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "from",
+                            "select"
+                          ],
+                          "properties": {
+                            "from": {
+                              "type": "array",
+                              "title": "From",
+                              "description": "Array to transform"
+                            },
+                            "select": {
+                              "type": "object",
+                              "title": "Map",
+                              "description": "Property mappings",
+                              "x-ms-editor": "dictionary",
+                              "x-ms-editor-options": {
+                                "valueType": "any"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "parentId": "loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5"
+                  },
+                  {
+                    "id": "builtinFunction-4ff71b4b-3898-57ab-ae78-79e80383cfec",
+                    "name": "Create owner agents table",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 620,
+                      "y": 100
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "htmltable",
+                        "operationName": "htmltable",
+                        "displayName": "Create HTML table",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/compose.svg",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@body('Select_owner_agents')",
+                          "columns": "Automatic"
+                        },
+                        "description": "Create an HTML table from an array of objects.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "from"
+                          ],
+                          "properties": {
+                            "from": {
+                              "type": "array",
+                              "title": "From",
+                              "description": "Array to convert"
+                            },
+                            "columns": {
+                              "type": "string",
+                              "title": "Columns",
+                              "description": "Column selection",
+                              "enum": [
+                                "Automatic",
+                                "Custom"
+                              ],
+                              "default": "Automatic"
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "parentId": "loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5"
+                  },
+                  {
+                    "id": "connector-90072e1c-dcf6-5849-842c-a00364a93c9e",
+                    "name": "Get owner profile",
+                    "type": "connector",
+                    "version": 1,
+                    "data": {
+                      "config": {
+                        "apiName": "shared_office365users",
+                        "displayName": "Office 365 Users",
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1818/1.0.1818.4788/office365users/icon.png",
+                        "brandColor": "#0078D4",
+                        "operationName": "UserProfile_V2",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_office365users",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "id"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "title": "User (UPN)",
+                              "description": "User principal name or email id"
+                            }
+                          }
+                        },
+                        "parameters": {
+                          "id": "@items('For_each_owner')?['ownerId']"
+                        },
+                        "initializedParameterDefaults": [],
+                        "operationId": "UserProfile_V2"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "position": {
+                      "x": 910,
+                      "y": 100
+                    },
+                    "parentId": "loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5"
+                  },
+                  {
+                    "id": "connector-ee8ce607-bba7-5438-9402-1ce974d325d7",
+                    "name": "Send owner email",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 1200,
+                      "y": 100
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_office365",
+                        "displayName": "Office 365 Outlook",
+                        "iconUri": "https://res-1.cdn.office.net/files/fabric-cdn-prod_20251008.001/assets/brand-icons/product/svg/outlook_48x1.svg",
+                        "brandColor": "#0078D4",
+                        "operationName": "SendEmailV2",
+                        "operationType": "OpenApiConnection",
+                        "parametersSchema": {
+                          "type": "object",
+                          "properties": {
+                            "emailMessage": {
+                              "type": "object",
+                              "title": "Email",
+                              "properties": {
+                                "To": {
+                                  "type": "string",
+                                  "title": "To",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-property-name-alias": "emailMessage/To"
+                                },
+                                "Subject": {
+                                  "type": "string",
+                                  "title": "Subject",
+                                  "description": "Specify the subject of the mail",
+                                  "x-ms-property-name-alias": "emailMessage/Subject"
+                                },
+                                "Body": {
+                                  "type": "string",
+                                  "title": "Body",
+                                  "format": "html",
+                                  "description": "Specify the body of the mail",
+                                  "x-ms-property-name-alias": "emailMessage/Body"
+                                },
+                                "From": {
+                                  "type": "string",
+                                  "title": "From (Send as)",
+                                  "format": "email",
+                                  "description": "Email address to send mail from (requires \"Send as\" or \"Send on behalf of\" permission for that mailbox). For more info on granting permissions please refer https://docs.microsoft.com/office365/admin/manage/send-email-as-distribution-list",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/From"
+                                },
+                                "Cc": {
+                                  "type": "string",
+                                  "title": "CC",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Cc"
+                                },
+                                "Bcc": {
+                                  "type": "string",
+                                  "title": "BCC",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Bcc"
+                                },
+                                "Attachments": {
+                                  "type": "array",
+                                  "title": "Attachments",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "Name": {
+                                        "type": "string",
+                                        "title": "Name",
+                                        "description": "Attachment name",
+                                        "x-ms-property-name-alias": "Name"
+                                      },
+                                      "ContentBytes": {
+                                        "type": "string",
+                                        "title": "Content",
+                                        "format": "byte",
+                                        "description": "Attachment content",
+                                        "x-ms-property-name-alias": "ContentBytes"
+                                      }
+                                    },
+                                    "required": [
+                                      "ContentBytes",
+                                      "Name"
+                                    ],
+                                    "description": "Attachment"
+                                  },
+                                  "description": "Attachments",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Attachments"
+                                },
+                                "Sensitivity": {
+                                  "type": "string",
+                                  "title": "Sensitivity",
+                                  "x-ms-dynamic-list": {
+                                    "operationId": "GetSensitivityLabels",
+                                    "parameters": {},
+                                    "itemValuePath": "Id",
+                                    "itemTitlePath": "DisplayName"
+                                  },
+                                  "description": "Sensitivity",
+                                  "x-ms-visibility": "important",
+                                  "x-ms-property-name-alias": "emailMessage/Sensitivity"
+                                },
+                                "ReplyTo": {
+                                  "type": "string",
+                                  "title": "Reply To",
+                                  "format": "email",
+                                  "description": "The email addresses to use when replying",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/ReplyTo"
+                                },
+                                "Importance": {
+                                  "type": "string",
+                                  "title": "Importance",
+                                  "description": "Importance",
+                                  "default": "Normal",
+                                  "enum": [
+                                    "Low",
+                                    "Normal",
+                                    "High"
+                                  ],
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Importance"
+                                }
+                              },
+                              "required": [
+                                "Body",
+                                "Subject",
+                                "To"
+                              ],
+                              "description": "Email.",
+                              "x-ms-property-name-alias": "emailMessage"
+                            }
+                          },
+                          "required": [
+                            "emailMessage"
+                          ]
+                        },
+                        "parameters": {
+                          "emailMessage/To": "@{if(bool(coalesce(variables('Config')?['testMode'], true)), variables('Config')?['adminEmail'], if(empty(coalesce(body('Get_owner_profile')?['mail'], body('Get_owner_profile')?['userPrincipalName'], '')), variables('Config')?['adminEmail'], coalesce(body('Get_owner_profile')?['mail'], body('Get_owner_profile')?['userPrincipalName'], '')))}",
+                          "emailMessage/Subject": "@{if(bool(coalesce(variables('Config')?['testMode'], true)), '[TEST] ', '')}Action needed@{if(empty(coalesce(body('Identify_impacted_models')?['structuredOutput/actionBy'], '')), '', concat(' by ', coalesce(body('Identify_impacted_models')?['structuredOutput/actionBy'], '')))}: @{items('For_each_owner')?['count_']} of your Copilot Studio agents use an AI model that is changing (@{items('For_each_message')?['id']})",
+                          "emailMessage/Body": "@{if(bool(coalesce(variables('Config')?['testMode'], true)), concat('<p style=\"color:#a4262c\"><b>TEST MODE</b> - this email would go to: ', if(empty(coalesce(body('Get_owner_profile')?['mail'], body('Get_owner_profile')?['userPrincipalName'], '')), concat('(owner not found - Entra object id ', items('For_each_owner')?['ownerId'], ')'), coalesce(body('Get_owner_profile')?['mail'], body('Get_owner_profile')?['userPrincipalName'], '')), '</p>'), if(empty(coalesce(body('Get_owner_profile')?['mail'], body('Get_owner_profile')?['userPrincipalName'], '')), concat('<p style=\"color:#a4262c\"><b>Owner not found</b> (Entra object id ', items('For_each_owner')?['ownerId'], '). Please forward this to the right owner.</p>'), ''))}<p>Hello@{if(empty(coalesce(body('Get_owner_profile')?['displayName'], '')), '', concat(' ', body('Get_owner_profile')?['displayName']))},</p><p>You own Copilot Studio agents that use an AI model Microsoft is changing. @{body('Identify_impacted_models')?['structuredOutput/headline']}</p><h3>What changes</h3>@{body('Create_impacts_table')}<h3>What you need to do</h3><ul><li>Open each agent listed below in Copilot Studio (in the environment shown) and test it with the replacement model.</li><li>Switch to the replacement model and republish @{if(empty(coalesce(body('Identify_impacted_models')?['structuredOutput/actionBy'], '')), 'as soon as possible', concat('before ', coalesce(body('Identify_impacted_models')?['structuredOutput/actionBy'], '')))}. If Microsoft migrates the model automatically, check that the agent still behaves as expected.</li><li>If you no longer need the agent, delete it.</li></ul><p>Questions? Contact @{coalesce(variables('Config')?['contactText'], 'your Power Platform environment admins')}.</p><p>Message Center post: <a href=\"https://admin.microsoft.com/Adminportal/Home#/MessageCenter/:/messages/@{items('For_each_message')?['id']}\">@{items('For_each_message')?['id']} - @{items('For_each_message')?['title']}</a></p><h3>Your impacted agents</h3>@{body('Create_owner_agents_table')}",
+                          "emailMessage/Importance": "@{if(less(ticks(if(empty(coalesce(body('Identify_impacted_models')?['structuredOutput/actionBy'], '')), '9999-12-31', coalesce(body('Identify_impacted_models')?['structuredOutput/actionBy'], ''))), ticks(addDays(utcNow(), 30))), 'High', 'Normal')}"
+                        },
+                        "connectionName": "shared_office365"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {}
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "parentId": "loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5"
+                  },
+                  {
+                    "id": "builtinFunction-8adfa8b9-c9f4-5b38-955c-d313e6a8d37c",
+                    "name": "Select all agents",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 3800,
+                      "y": 100
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/compose.svg",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@take(coalesce(body('Get_impacted_agents')?['data'], json('[]')), 500)",
+                          "select": {
+                            "Agent": "@item()?['agentName']",
+                            "Environment": "@item()?['environmentName']",
+                            "Model": "@item()?['model']",
+                            "Harness": "@item()?['harness']",
+                            "Owner id": "@item()?['ownerId']"
+                          }
+                        },
+                        "description": "Transform items in an array by selecting and mapping properties.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "from",
+                            "select"
+                          ],
+                          "properties": {
+                            "from": {
+                              "type": "array",
+                              "title": "From",
+                              "description": "Array to transform"
+                            },
+                            "select": {
+                              "type": "object",
+                              "title": "Map",
+                              "description": "Property mappings",
+                              "x-ms-editor": "dictionary",
+                              "x-ms-editor-options": {
+                                "valueType": "any"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "builtinFunction-8c9d4031-f650-59a0-bbb8-18c54de279b9",
+                    "name": "Create all agents table",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 4080,
+                      "y": 100
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "htmltable",
+                        "operationName": "htmltable",
+                        "displayName": "Create HTML table",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/compose.svg",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@body('Select_all_agents')",
+                          "columns": "Automatic"
+                        },
+                        "description": "Create an HTML table from an array of objects.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "from"
+                          ],
+                          "properties": {
+                            "from": {
+                              "type": "array",
+                              "title": "From",
+                              "description": "Array to convert"
+                            },
+                            "columns": {
+                              "type": "string",
+                              "title": "Columns",
+                              "description": "Column selection",
+                              "enum": [
+                                "Automatic",
+                                "Custom"
+                              ],
+                              "default": "Automatic"
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "connector-38feacf7-c7da-5e18-bf65-23d373ec74e9",
+                    "name": "Send admin summary",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 4360,
+                      "y": 100
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_office365",
+                        "displayName": "Office 365 Outlook",
+                        "iconUri": "https://res-1.cdn.office.net/files/fabric-cdn-prod_20251008.001/assets/brand-icons/product/svg/outlook_48x1.svg",
+                        "brandColor": "#0078D4",
+                        "operationName": "SendEmailV2",
+                        "operationType": "OpenApiConnection",
+                        "parametersSchema": {
+                          "type": "object",
+                          "properties": {
+                            "emailMessage": {
+                              "type": "object",
+                              "title": "Email",
+                              "properties": {
+                                "To": {
+                                  "type": "string",
+                                  "title": "To",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-property-name-alias": "emailMessage/To"
+                                },
+                                "Subject": {
+                                  "type": "string",
+                                  "title": "Subject",
+                                  "description": "Specify the subject of the mail",
+                                  "x-ms-property-name-alias": "emailMessage/Subject"
+                                },
+                                "Body": {
+                                  "type": "string",
+                                  "title": "Body",
+                                  "format": "html",
+                                  "description": "Specify the body of the mail",
+                                  "x-ms-property-name-alias": "emailMessage/Body"
+                                },
+                                "From": {
+                                  "type": "string",
+                                  "title": "From (Send as)",
+                                  "format": "email",
+                                  "description": "Email address to send mail from (requires \"Send as\" or \"Send on behalf of\" permission for that mailbox). For more info on granting permissions please refer https://docs.microsoft.com/office365/admin/manage/send-email-as-distribution-list",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/From"
+                                },
+                                "Cc": {
+                                  "type": "string",
+                                  "title": "CC",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Cc"
+                                },
+                                "Bcc": {
+                                  "type": "string",
+                                  "title": "BCC",
+                                  "x-ms-dynamic-list": {
+                                    "builtInOperation": "AadGraph.GetUsers",
+                                    "parameters": {},
+                                    "itemValuePath": "mail"
+                                  },
+                                  "format": "email",
+                                  "description": "Specify email addresses separated by semicolons like someone@contoso.com",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Bcc"
+                                },
+                                "Attachments": {
+                                  "type": "array",
+                                  "title": "Attachments",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "Name": {
+                                        "type": "string",
+                                        "title": "Name",
+                                        "description": "Attachment name",
+                                        "x-ms-property-name-alias": "Name"
+                                      },
+                                      "ContentBytes": {
+                                        "type": "string",
+                                        "title": "Content",
+                                        "format": "byte",
+                                        "description": "Attachment content",
+                                        "x-ms-property-name-alias": "ContentBytes"
+                                      }
+                                    },
+                                    "required": [
+                                      "ContentBytes",
+                                      "Name"
+                                    ],
+                                    "description": "Attachment"
+                                  },
+                                  "description": "Attachments",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Attachments"
+                                },
+                                "Sensitivity": {
+                                  "type": "string",
+                                  "title": "Sensitivity",
+                                  "x-ms-dynamic-list": {
+                                    "operationId": "GetSensitivityLabels",
+                                    "parameters": {},
+                                    "itemValuePath": "Id",
+                                    "itemTitlePath": "DisplayName"
+                                  },
+                                  "description": "Sensitivity",
+                                  "x-ms-visibility": "important",
+                                  "x-ms-property-name-alias": "emailMessage/Sensitivity"
+                                },
+                                "ReplyTo": {
+                                  "type": "string",
+                                  "title": "Reply To",
+                                  "format": "email",
+                                  "description": "The email addresses to use when replying",
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/ReplyTo"
+                                },
+                                "Importance": {
+                                  "type": "string",
+                                  "title": "Importance",
+                                  "description": "Importance",
+                                  "default": "Normal",
+                                  "enum": [
+                                    "Low",
+                                    "Normal",
+                                    "High"
+                                  ],
+                                  "x-ms-visibility": "advanced",
+                                  "x-ms-property-name-alias": "emailMessage/Importance"
+                                }
+                              },
+                              "required": [
+                                "Body",
+                                "Subject",
+                                "To"
+                              ],
+                              "description": "Email.",
+                              "x-ms-property-name-alias": "emailMessage"
+                            }
+                          },
+                          "required": [
+                            "emailMessage"
+                          ]
+                        },
+                        "parameters": {
+                          "emailMessage/To": "@{variables('Config')?['adminEmail']}",
+                          "emailMessage/Subject": "AI model lifecycle summary - @{items('For_each_message')?['id']}: @{body('Get_impacted_agents')?['totalRecords']} agent(s), @{body('Get_impacted_owners')?['totalRecords']} owner(s)",
+                          "emailMessage/Body": "<p>@{body('Identify_impacted_models')?['structuredOutput/headline']}</p><p><i>@{body('Identify_impacted_models')?['structuredOutput/reason']}</i></p><h3>What changes</h3>@{body('Create_impacts_table')}<h3>Numbers</h3><ul><li>Scope: @{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'all environments in the tenant', concat(string(length(coalesce(variables('Config')?['environmentIds'], json('[]')))), ' environment(s) listed in environmentIds'))}</li><li>Impacted agents: @{body('Get_impacted_agents')?['totalRecords']}</li><li>Owners with impacted agents: @{body('Get_impacted_owners')?['totalRecords']}</li><li>Owner emails sent this run: @{length(coalesce(body('Get_impacted_owners')?['data'], json('[]')))}@{if(bool(coalesce(variables('Config')?['testMode'], true)), ' (TEST MODE - all sent to you)', '')}@{if(greater(int(coalesce(body('Get_impacted_owners')?['totalRecords'], 0)), length(coalesce(body('Get_impacted_owners')?['data'], json('[]')))), ' - <b>capped</b>: raise maxOwnerEmailsPerPost / turn off testMode to reach every owner', '')}</li><li>Agents without an owner (ownerId empty or 00000000-...) get no email - they are in the table below.</li></ul><h3>All impacted agents (first 500)</h3>@{body('Create_all_agents_table')}<p>Message Center post: <a href=\"https://admin.microsoft.com/Adminportal/Home#/MessageCenter/:/messages/@{items('For_each_message')?['id']}\">@{items('For_each_message')?['id']} - @{items('For_each_message')?['title']}</a></p>",
+                          "emailMessage/Importance": "Normal"
+                        },
+                        "connectionName": "shared_office365"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {}
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "canvasNote-c90e5e14-5536-4e93-ae20-cec2d5dc2fed",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 60,
+                      "y": 120
+                    },
+                    "width": 300,
+                    "height": 200,
+                    "style": {
+                      "width": 300,
+                      "height": 200
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**CUSTOMIZE - Trigger**\n\nRuns daily (Recurrence). If you change the frequency, set `lookbackDays` in *Config* to the same interval so no post is missed or processed twice. To test, use Test / Run now (temporarily raise `lookbackDays`, e.g. 30, to pick up recent posts).",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    }
+                  },
+                  {
+                    "id": "canvasNote-d3da733e-6e29-4bb4-a870-8d99bfc67f80",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 343,
+                      "y": 30
+                    },
+                    "width": 300,
+                    "height": 440,
+                    "style": {
+                      "width": 300,
+                      "height": 440
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**CUSTOMIZE - Configuration (fill in first)**\n\n- `tenantId`, `clientId` - Entra app with Graph *ServiceMessage.Read.All* (application)\n- `keyVaultSecretName` - Key Vault secret with that app's client secret\n- `adminEmail` - governance mailbox: gets one summary per post and every email in test mode\n- `contactText` - who owners should contact, shown in the owner email (default: your Power Platform environment admins)\n- `lookbackDays` - must match the trigger interval\n- `testMode` - **true** = owner emails go to `adminEmail` only (shows the real recipient), max `testModeMaxEmails` per post\n- `maxOwnerEmailsPerPost` - safety cap on owner emails per post (the summary says when it was hit)\n- `environmentIds` - **scope**: environment IDs to check, e.g. `[\"<env-id-1>\", \"<env-id-2>\"]` (Power Platform admin center > Environments > Details). Leave `[]` for the whole tenant",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    }
+                  },
+                  {
+                    "id": "canvasNote-5f8b6fd2-acf6-4448-be2c-64a65584ff07",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 640,
+                      "y": 120
+                    },
+                    "width": 300,
+                    "height": 230,
+                    "style": {
+                      "width": 300,
+                      "height": 230
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**CUSTOMIZE - Model lifecycle filter**\n\n*ModelServices*: Message Center services whose posts can affect Copilot Studio agents. A post reaches the agent only if it has one of these services AND its title mentions a model term (ai model, models, harness, gpt, claude, ...) or its body mentions retiring/replacement model. Each post that passes is one agent run (Copilot credits).",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    }
+                  },
+                  {
+                    "id": "canvasNote-0ff718f5-c00e-4e80-b29a-2358b2135554",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 1232,
+                      "y": 120
+                    },
+                    "width": 300,
+                    "height": 200,
+                    "style": {
+                      "width": 300,
+                      "height": 200
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**CUSTOMIZE - Graph call**\n\nEntra app registration with ServiceMessage.Read.All (application). Tenant and client id come from *Config*; the client secret is read from Azure Key Vault with secure inputs/outputs - rotate it in Key Vault, never paste it here. Paging is on.",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    }
+                  },
+                  {
+                    "id": "canvasNote-0ad11d93-86d1-41d6-9ca1-87cd72a5d275",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 919,
+                      "y": 510.5
+                    },
+                    "width": 320,
+                    "height": 330,
+                    "style": {
+                      "width": 320,
+                      "height": 330
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**CUSTOMIZE - Connections (production)**\n\nKey Vault, *Power Platform for Admins V2*, Office 365 Outlook and Users connections sign in as a user. If that sign-in expires or the user loses a role, runs fail (401/403). Use a dedicated service account (or for Key Vault a service principal / Secret environment variable) so runs don't depend on a person.\n\nAfter assigning an admin role, **re-sign-in** the Admins V2 connection (Fix connection) - old tokens keep returning 403.",
+                        "color": "yellow"
+                      },
+                      "outcomes": []
+                    }
+                  },
+                  {
+                    "id": "canvasNote-4e2a9c71-3b6d-4f08-a1c5-7d9e2b6f3a80",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 1485,
+                      "y": 510.5
+                    },
+                    "width": 320,
+                    "height": 380,
+                    "style": {
+                      "width": 320,
+                      "height": 380
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**CUSTOMIZE - Agent inventory**\n\n*Query Power Platform resources* (Power Platform for Admins V2) reads the Power Platform inventory. The connection must be an OAuth (user) connection of a **Power Platform / Global administrator**.\n\n*Get model summary* returns one row per `model` + `harness` (with agent count) - small enough for the agent even in tenants with thousands of agents. Agents on *Copilot Studio default* and *Microsoft 365 Copilot* are excluded (Microsoft moves them automatically). `properties.model` is a preview field and reflects the **published** agent.",
+                        "color": "green"
+                      },
+                      "outcomes": []
+                    }
+                  },
+                  {
+                    "id": "canvasNote-c35c2cdf-3729-5555-bde4-f6c2d8fce93b",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 340,
+                      "y": 330
+                    },
+                    "width": 300,
+                    "height": 330,
+                    "style": {
+                      "width": 300,
+                      "height": 330
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**CUSTOMIZE - Agent (reasoning only)**\n\nReads the post (incl. tables), maps affected models + harness to the inventory summary (normalized names, exact versions, harness mapping: *Microsoft Copilot harness* = `GitHub Copilot`) and returns **structured output**: `inventoryKeys`, `impacts` (model, harness, change, replacement, date), `actionBy`, `headline`, `reason`. It sends nothing itself, so cost stays at one agent run per matching post no matter how many agents are impacted.",
+                        "color": "green"
+                      },
+                      "outcomes": []
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "canvasNote-b84448a2-5b8b-54cb-ab2c-6586302a1da1",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 940,
+                      "y": 330
+                    },
+                    "width": 300,
+                    "height": 260,
+                    "style": {
+                      "width": 300,
+                      "height": 260
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**Server-side queries**\n\n*Get impacted agents* returns agents whose `model|harness` key the agent matched (first 1000 - the API page size; totals are always exact), used for the admin summary. Each owner's own list comes from *Get owner agents* inside the loop, so no owner is cut off. *Get impacted owners* groups them by owner (no-owner rows excluded) and is capped by `maxOwnerEmailsPerPost` (or `testModeMaxEmails` in test mode).",
+                        "color": "blue"
+                      },
+                      "outcomes": []
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "canvasNote-8b2e110d-4000-56b6-a327-f65e5b6d96c5",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 40,
+                      "y": 330
+                    },
+                    "width": 280,
+                    "height": 230,
+                    "style": {
+                      "width": 280,
+                      "height": 230
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**For each Message Center post**\n\nEvery post returned by the Graph call is checked here, one at a time. *Is it about AI model lifecycle?* applies the *ModelServices* + keyword filter; posts that don't match go to Else and nothing happens (no agent run, no cost).",
+                        "color": "blue"
+                      },
+                      "outcomes": []
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "canvasNote-22b3a53c-d4de-5097-8106-1dc9c9eb9119",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 640,
+                      "y": 330
+                    },
+                    "width": 280,
+                    "height": 200,
+                    "style": {
+                      "width": 280,
+                      "height": 200
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**Any agents impacted?**\n\nTrue when the agent returned at least one `inventoryKeys` value (a model + harness that exists in this tenant / scope). Otherwise the post doesn't affect any agent: Else, no emails.",
+                        "color": "blue"
+                      },
+                      "outcomes": []
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "canvasNote-7e93ec8b-c0d7-5063-982d-e59de35c9820",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 1540,
+                      "y": 330
+                    },
+                    "width": 300,
+                    "height": 220,
+                    "style": {
+                      "width": 300,
+                      "height": 220
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**What changes table**\n\nTurns the agent's `impacts` (model, harness, change, replacement, date) into the HTML table shown at the top of every owner email and in the admin summary - built once per post, reused for every owner.",
+                        "color": "blue"
+                      },
+                      "outcomes": []
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "canvasNote-f4f09aa8-95dc-5f0f-96ce-e1b87caf15dc",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 40,
+                      "y": 300
+                    },
+                    "width": 540,
+                    "height": 200,
+                    "style": {
+                      "width": 540,
+                      "height": 200
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**Per owner: their agents**\n\n*Get owner agents* queries the inventory again for just this owner (same keys and scope), so every owner sees their full list even when the post hits thousands of agents. *Select* + *Create table* turn it into the agent / environment table at the end of the email.",
+                        "color": "blue"
+                      },
+                      "outcomes": []
+                    },
+                    "parentId": "loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5"
+                  },
+                  {
+                    "id": "canvasNote-04046608-ce3d-5e3a-b893-0e5c36d00a1f",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 620,
+                      "y": 300
+                    },
+                    "width": 420,
+                    "height": 220,
+                    "style": {
+                      "width": 420,
+                      "height": 220
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**Get owner profile**\n\nLooks up the owner's Entra object id (Office 365 Users) to get the name and email. If the user was deleted or can't be found the step fails, and the email goes to `adminEmail` with an *Owner not found* banner so someone can forward it.",
+                        "color": "blue"
+                      },
+                      "outcomes": []
+                    },
+                    "parentId": "loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5"
+                  },
+                  {
+                    "id": "canvasNote-1f1c600e-0e3c-5efd-aaaf-235805995a8f",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 1080,
+                      "y": 300
+                    },
+                    "width": 480,
+                    "height": 320,
+                    "style": {
+                      "width": 480,
+                      "height": 320
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**CUSTOMIZE - Owner email**\n\nOne email per owner per post (5 in parallel): what changes, what to do and the action-by date, then their agents (list last so long lists don't bury the actions; High importance within 30 days). Runs even if *Get owner profile* fails (configure run after).\n\n**Sender**: the account of the *Office 365 Outlook* connection. To send from a shared mailbox instead, swap to *Send an email from a shared mailbox (V2)* - the connection user needs Send As on it.",
+                        "color": "green"
+                      },
+                      "outcomes": []
+                    },
+                    "parentId": "loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5"
+                  },
+                  {
+                    "id": "canvasNote-8f43d784-565a-5141-9fd2-709199082392",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 3800,
+                      "y": 330
+                    },
+                    "width": 420,
+                    "height": 240,
+                    "style": {
+                      "width": 420,
+                      "height": 240
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**Admin summary**\n\nRuns after all owner emails for the post. One email to `adminEmail`: scope, totals, whether the email cap was hit, the *What changes* table and the first 500 impacted agents (incl. agents without an owner, who get no email). Sent from the same *Office 365 Outlook* connection.",
+                        "color": "blue"
+                      },
+                      "outcomes": []
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-7b658283-d0fb-42e0-b089-92e70453fbba-variable-1cf5cd84-67a1-4031-9176-dc30956fed47",
+                    "source": "start-7b658283-d0fb-42e0-b089-92e70453fbba",
+                    "target": "variable-1cf5cd84-67a1-4031-9176-dc30956fed47"
+                  },
+                  {
+                    "id": "edge-variable-1cf5cd84-67a1-4031-9176-dc30956fed47-variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2",
+                    "source": "variable-1cf5cd84-67a1-4031-9176-dc30956fed47",
+                    "target": "variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2"
+                  },
+                  {
+                    "id": "edge-variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2-connector-02876510-9ebd-4212-bfff-dce7caa35a2d",
+                    "source": "variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2",
+                    "target": "connector-02876510-9ebd-4212-bfff-dce7caa35a2d"
+                  },
+                  {
+                    "id": "edge-connector-02876510-9ebd-4212-bfff-dce7caa35a2d-builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa",
+                    "source": "connector-02876510-9ebd-4212-bfff-dce7caa35a2d",
+                    "target": "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa"
+                  },
+                  {
+                    "id": "edge-builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa-connector-5b1f3c2a-8e4d-4a7b-9c61-2f0d7e3a9b14",
+                    "source": "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa",
+                    "target": "connector-5b1f3c2a-8e4d-4a7b-9c61-2f0d7e3a9b14"
+                  },
+                  {
+                    "id": "edge-connector-5b1f3c2a-8e4d-4a7b-9c61-2f0d7e3a9b14-loop-49cc1e78-beb8-47cd-ae39-24625f467aec-external-input",
+                    "source": "connector-5b1f3c2a-8e4d-4a7b-9c61-2f0d7e3a9b14",
+                    "target": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "targetHandle": "external-input"
+                  },
+                  {
+                    "id": "edge-loop-49cc1e78-beb8-47cd-ae39-24625f467aec-internal-source-ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42",
+                    "source": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "target": "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42",
+                    "sourceHandle": "internal-source"
+                  },
+                  {
+                    "id": "edge-ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42-condition:6ac01c79-db90-48d1-add3-8eebfa42f345-agent-41d9f125-184a-47d1-a5e7-5233955f7463",
+                    "source": "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42",
+                    "target": "agent-41d9f125-184a-47d1-a5e7-5233955f7463",
+                    "sourceHandle": "condition:6ac01c79-db90-48d1-add3-8eebfa42f345"
+                  },
+                  {
+                    "id": "edge-ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42-else-loop-49cc1e78-beb8-47cd-ae39-24625f467aec-internal-target",
+                    "source": "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42",
+                    "target": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "sourceHandle": "else",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-agent-41d9f125-184a-47d1-a5e7-5233955f7463-ifElse-1097d8dc-5416-5d60-9021-acf5938c94d6",
+                    "source": "agent-41d9f125-184a-47d1-a5e7-5233955f7463",
+                    "target": "ifElse-1097d8dc-5416-5d60-9021-acf5938c94d6"
+                  },
+                  {
+                    "id": "edge-ifElse-1097d8dc-5416-5d60-9021-acf5938c94d6-condition:4d7b225c-87d1-5f2a-bc37-b1e625c48304-connector-248b4ad7-7425-5f92-9d78-ccf27c695090",
+                    "source": "ifElse-1097d8dc-5416-5d60-9021-acf5938c94d6",
+                    "target": "connector-248b4ad7-7425-5f92-9d78-ccf27c695090",
+                    "sourceHandle": "condition:4d7b225c-87d1-5f2a-bc37-b1e625c48304"
+                  },
+                  {
+                    "id": "edge-ifElse-1097d8dc-5416-5d60-9021-acf5938c94d6-else-loop-49cc1e78-beb8-47cd-ae39-24625f467aec-internal-target",
+                    "source": "ifElse-1097d8dc-5416-5d60-9021-acf5938c94d6",
+                    "target": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "sourceHandle": "else",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-connector-248b4ad7-7425-5f92-9d78-ccf27c695090-connector-aa8a9b10-d842-5920-ae72-8306d773156c",
+                    "source": "connector-248b4ad7-7425-5f92-9d78-ccf27c695090",
+                    "target": "connector-aa8a9b10-d842-5920-ae72-8306d773156c"
+                  },
+                  {
+                    "id": "edge-connector-aa8a9b10-d842-5920-ae72-8306d773156c-builtinFunction-7591b353-4a5f-59cb-a8c1-02f2d2e0a94e",
+                    "source": "connector-aa8a9b10-d842-5920-ae72-8306d773156c",
+                    "target": "builtinFunction-7591b353-4a5f-59cb-a8c1-02f2d2e0a94e"
+                  },
+                  {
+                    "id": "edge-builtinFunction-7591b353-4a5f-59cb-a8c1-02f2d2e0a94e-builtinFunction-7dfc6efd-4b28-5b9f-90a0-fcce2301558e",
+                    "source": "builtinFunction-7591b353-4a5f-59cb-a8c1-02f2d2e0a94e",
+                    "target": "builtinFunction-7dfc6efd-4b28-5b9f-90a0-fcce2301558e"
+                  },
+                  {
+                    "id": "edge-builtinFunction-7dfc6efd-4b28-5b9f-90a0-fcce2301558e-loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5-external-input",
+                    "source": "builtinFunction-7dfc6efd-4b28-5b9f-90a0-fcce2301558e",
+                    "target": "loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5",
+                    "targetHandle": "external-input"
+                  },
+                  {
+                    "id": "edge-loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5-internal-source-connector-df66a16f-e691-5485-8aec-d7746b3c9dac",
+                    "source": "loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5",
+                    "target": "connector-df66a16f-e691-5485-8aec-d7746b3c9dac",
+                    "sourceHandle": "internal-source"
+                  },
+                  {
+                    "id": "edge-connector-df66a16f-e691-5485-8aec-d7746b3c9dac-builtinFunction-cde656ba-c859-5cb3-acfa-b8bb568bc641",
+                    "source": "connector-df66a16f-e691-5485-8aec-d7746b3c9dac",
+                    "target": "builtinFunction-cde656ba-c859-5cb3-acfa-b8bb568bc641"
+                  },
+                  {
+                    "id": "edge-builtinFunction-cde656ba-c859-5cb3-acfa-b8bb568bc641-builtinFunction-4ff71b4b-3898-57ab-ae78-79e80383cfec",
+                    "source": "builtinFunction-cde656ba-c859-5cb3-acfa-b8bb568bc641",
+                    "target": "builtinFunction-4ff71b4b-3898-57ab-ae78-79e80383cfec"
+                  },
+                  {
+                    "id": "edge-builtinFunction-4ff71b4b-3898-57ab-ae78-79e80383cfec-connector-90072e1c-dcf6-5849-842c-a00364a93c9e",
+                    "source": "builtinFunction-4ff71b4b-3898-57ab-ae78-79e80383cfec",
+                    "target": "connector-90072e1c-dcf6-5849-842c-a00364a93c9e"
+                  },
+                  {
+                    "id": "edge-connector-90072e1c-dcf6-5849-842c-a00364a93c9e-connector-ee8ce607-bba7-5438-9402-1ce974d325d7",
+                    "source": "connector-90072e1c-dcf6-5849-842c-a00364a93c9e",
+                    "target": "connector-ee8ce607-bba7-5438-9402-1ce974d325d7"
+                  },
+                  {
+                    "id": "edge-connector-ee8ce607-bba7-5438-9402-1ce974d325d7-loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5-internal-target",
+                    "source": "connector-ee8ce607-bba7-5438-9402-1ce974d325d7",
+                    "target": "loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5-external-output-builtinFunction-8adfa8b9-c9f4-5b38-955c-d313e6a8d37c",
+                    "source": "loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5",
+                    "target": "builtinFunction-8adfa8b9-c9f4-5b38-955c-d313e6a8d37c",
+                    "sourceHandle": "external-output"
+                  },
+                  {
+                    "id": "edge-builtinFunction-8adfa8b9-c9f4-5b38-955c-d313e6a8d37c-builtinFunction-8c9d4031-f650-59a0-bbb8-18c54de279b9",
+                    "source": "builtinFunction-8adfa8b9-c9f4-5b38-955c-d313e6a8d37c",
+                    "target": "builtinFunction-8c9d4031-f650-59a0-bbb8-18c54de279b9"
+                  },
+                  {
+                    "id": "edge-builtinFunction-8c9d4031-f650-59a0-bbb8-18c54de279b9-connector-38feacf7-c7da-5e18-bf65-23d373ec74e9",
+                    "source": "builtinFunction-8c9d4031-f650-59a0-bbb8-18c54de279b9",
+                    "target": "connector-38feacf7-c7da-5e18-bf65-23d373ec74e9"
+                  },
+                  {
+                    "id": "edge-connector-38feacf7-c7da-5e18-bf65-23d373ec74e9-loop-49cc1e78-beb8-47cd-ae39-24625f467aec-internal-target",
+                    "source": "connector-38feacf7-c7da-5e18-bf65-23d373ec74e9",
+                    "target": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "targetHandle": "internal-target"
+                  }
+                ],
+                "connectionReferences": {
+                  "shared_keyvault": {
+                    "api": {
+                      "name": "shared_keyvault"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedkeyvault_mcplanner"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-keyvault-mcplanner"
+                  },
+                  "shared_agentnode": {
+                    "api": {
+                      "name": "shared_agentnode"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedagentnode_50374135"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "6330ddb618034d1182719bcdc4fc0625"
+                  },
+                  "shared_powerplatformadminv2": {
+                    "api": {
+                      "name": "shared_powerplatformadminv2"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedpowerplatformadminv2_aimodel"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-powerplatforma-aimodellifecycle"
+                  },
+                  "shared_office365": {
+                    "api": {
+                      "name": "shared_office365"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedoffice365_aimodel"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "4db2ffd6772146cbbc9b41d0d0f06c53"
+                  },
+                  "shared_office365users": {
+                    "api": {
+                      "name": "shared_office365users"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedoffice365users_aimodel"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-office365user-6a678d3e-8e07-4d8b-9c1f-2c68d2f900d3"
+                  }
+                },
+                "parameters": {
+                  "$authentication": {
+                    "type": "SecureObject",
+                    "defaultValue": {}
+                  },
+                  "$connections": {
+                    "type": "Object",
+                    "defaultValue": {}
+                  }
+                }
+              },
+              "nodeActionMapping": {
+                "variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2": [
+                  "Set_area_owners"
+                ],
+                "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa": [
+                  "Get_Message_Center_posts"
+                ],
+                "agent-41d9f125-184a-47d1-a5e7-5233955f7463": [
+                  "Agent"
+                ],
+                "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42": [
+                  "Is_it_about_AI___LLMs_"
+                ],
+                "loop-49cc1e78-beb8-47cd-ae39-24625f467aec": [
+                  "For_each_message"
+                ],
+                "connector-02876510-9ebd-4212-bfff-dce7caa35a2d": [
+                  "Get_client_secret_from_Key_Vault"
+                ]
+              },
+              "canvasOrientation": "horizontal"
+            }
+          }
+        }
+      },
+      "actions": {
+        "Set_configuration": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Config",
+                "type": "Object",
+                "value": {
+                  "tenantId": "<your-tenant-id>",
+                  "clientId": "<your-app-client-id>",
+                  "keyVaultSecretName": "<your-key-vault-secret-name>",
+                  "adminEmail": "ai-governance@contoso.com",
+                  "contactText": "your Power Platform environment admins",
+                  "lookbackDays": 1,
+                  "testMode": true,
+                  "testModeMaxEmails": 3,
+                  "maxOwnerEmailsPerPost": 100,
+                  "environmentIds": []
+                }
+              }
+            ]
+          },
+          "metadata": {
+            "description": "Set configuration",
+            "nodeId": "variable-1cf5cd84-67a1-4031-9176-dc30956fed47"
+          }
+        },
+        "Set_model_lifecycle_filter": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "ModelServices",
+                "type": "Array",
+                "value": [
+                  "Microsoft Copilot (Power Platform)",
+                  "Microsoft Copilot Studio",
+                  "Power Platform",
+                  "Power Apps",
+                  "Microsoft Power Automate"
+                ]
+              }
+            ]
+          },
+          "runAfter": {
+            "Set_configuration": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Set model lifecycle filter",
+            "nodeId": "variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2"
+          }
+        },
+        "Get_client_secret_from_Key_Vault": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "secretName": "@variables('Config')?['keyVaultSecretName']"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_keyvault",
+              "connectionName": "shared_keyvault",
+              "operationId": "GetSecret"
+            }
+          },
+          "runAfter": {
+            "Set_model_lifecycle_filter": [
+              "Succeeded"
+            ]
+          },
+          "runtimeConfiguration": {
+            "secureData": {
+              "properties": [
+                "inputs",
+                "outputs"
+              ]
+            }
+          },
+          "metadata": {
+            "description": "Get client secret from Key Vault",
+            "nodeId": "connector-02876510-9ebd-4212-bfff-dce7caa35a2d"
+          }
+        },
+        "Get_Message_Center_posts": {
+          "type": "Http",
+          "inputs": {
+            "method": "GET",
+            "uri": "https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/messages",
+            "queries": {
+              "$filter": "lastModifiedDateTime ge @{formatDateTime(addDays(utcNow(), mul(-1, int(coalesce(variables('Config')?['lookbackDays'], 1)))),'yyyy-MM-ddTHH:mm:ssZ')}"
+            },
+            "authentication": {
+              "type": "ActiveDirectoryOAuth",
+              "authority": "https://login.microsoftonline.com",
+              "tenant": "@variables('Config')?['tenantId']",
+              "audience": "https://graph.microsoft.com",
+              "clientId": "@variables('Config')?['clientId']",
+              "secret": "@body('Get_client_secret_from_Key_Vault')?['value']"
+            }
+          },
+          "runAfter": {
+            "Get_client_secret_from_Key_Vault": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Get Message Center posts",
+            "nodeId": "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa"
+          },
+          "runtimeConfiguration": {
+            "paginationPolicy": {
+              "minimumItemCount": 5000
+            }
+          }
+        },
+        "Get_model_summary": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "api-version": "2024-10-01",
+              "body": {
+                "TableName": "PowerPlatformResources",
+                "Clauses": [
+                  {
+                    "$type": "where",
+                    "FieldName": "type",
+                    "Operator": "==",
+                    "Values": [
+                      "'microsoft.copilotstudio/agents'"
+                    ]
+                  },
+                  {
+                    "$type": "extend",
+                    "FieldName": "model",
+                    "Expression": "tostring(properties.model)"
+                  },
+                  {
+                    "$type": "extend",
+                    "FieldName": "harness",
+                    "Expression": "tostring(properties.harness)"
+                  },
+                  {
+                    "$type": "extend",
+                    "FieldName": "environmentId",
+                    "Expression": "tostring(properties.environmentId)"
+                  },
+                  {
+                    "$type": "where",
+                    "FieldName": "@{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'type', 'environmentId')}",
+                    "Operator": "in~",
+                    "Values": "@if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), createArray('''microsoft.copilotstudio/agents'''), split(concat('''', join(coalesce(variables('Config')?['environmentIds'], json('[]')), ''';;'''), ''''), ';;'))"
+                  },
+                  {
+                    "$type": "where",
+                    "FieldName": "model",
+                    "Operator": "!in",
+                    "Values": [
+                      "''",
+                      "'Microsoft 365 Copilot'",
+                      "'Copilot Studio default'"
+                    ]
+                  },
+                  {
+                    "$type": "extend",
+                    "FieldName": "key",
+                    "Expression": "strcat(model, '|', harness)"
+                  },
+                  {
+                    "$type": "summarize",
+                    "SummarizeClauseExpression": {
+                      "OperatorName": "count",
+                      "OperatorFieldName": "",
+                      "FieldList": [
+                        "key",
+                        "model",
+                        "harness"
+                      ]
+                    }
+                  }
+                ],
+                "Options": {
+                  "Top": 1000
+                }
+              }
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_powerplatformadminv2",
+              "connectionName": "shared_powerplatformadminv2",
+              "operationId": "QueryResources"
+            }
+          },
+          "runAfter": {
+            "Get_Message_Center_posts": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Get model summary",
+            "nodeId": "connector-5b1f3c2a-8e4d-4a7b-9c61-2f0d7e3a9b14"
+          }
+        },
+        "For_each_message": {
+          "type": "Foreach",
+          "foreach": "@coalesce(body('Get_Message_Center_posts')?['value'], json('[]'))",
+          "metadata": {
+            "description": "For each message",
+            "nodeId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+          },
+          "runAfter": {
+            "Get_model_summary": [
+              "Succeeded"
+            ]
+          },
+          "actions": {
+            "Is_it_about_AI_model_lifecycle_": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "greater": [
+                      "@length(intersection(coalesce(items('For_each_message')?['services'],json('[]')), variables('ModelServices')))",
+                      0
+                    ]
+                  },
+                  {
+                    "or": [
+                      {
+                        "contains": [
+                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
+                          "ai model"
+                        ]
+                      },
+                      {
+                        "contains": [
+                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
+                          "models"
+                        ]
+                      },
+                      {
+                        "contains": [
+                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
+                          "harness"
+                        ]
+                      },
+                      {
+                        "contains": [
+                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
+                          "gpt"
+                        ]
+                      },
+                      {
+                        "contains": [
+                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
+                          "claude"
+                        ]
+                      },
+                      {
+                        "contains": [
+                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
+                          "anthropic"
+                        ]
+                      },
+                      {
+                        "contains": [
+                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
+                          "openai"
+                        ]
+                      },
+                      {
+                        "contains": [
+                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
+                          "mistral"
+                        ]
+                      },
+                      {
+                        "contains": [
+                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
+                          "grok"
+                        ]
+                      },
+                      {
+                        "contains": [
+                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
+                          "llm"
+                        ]
+                      },
+                      {
+                        "contains": [
+                          "@toLower(coalesce(items('For_each_message')?['body']?['content'],''))",
+                          "retiring model"
+                        ]
+                      },
+                      {
+                        "contains": [
+                          "@toLower(coalesce(items('For_each_message')?['body']?['content'],''))",
+                          "replacement model"
+                        ]
+                      },
+                      {
+                        "contains": [
+                          "@toLower(coalesce(items('For_each_message')?['body']?['content'],''))",
+                          "model retirement"
+                        ]
+                      },
+                      {
+                        "contains": [
+                          "@toLower(coalesce(items('For_each_message')?['body']?['content'],''))",
+                          "model deprecation"
+                        ]
+                      },
+                      {
+                        "contains": [
+                          "@toLower(coalesce(items('For_each_message')?['body']?['content'],''))",
+                          "end of support for selected ai models"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "else": {
+                "actions": {}
+              },
+              "metadata": {
+                "description": "Is it about AI model lifecycle?",
+                "nodeId": "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42"
+              },
+              "actions": {
+                "Identify_impacted_models": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "body/definition": {
+                        "components": [],
+                        "environmentVariables": [],
+                        "flows": [],
+                        "dataverseTableSearchs": [],
+                        "dataverseTableSearchGlossaryConfigurations": [],
+                        "dataverseTableSearchEntityConfigurations": [],
+                        "dataverseTableSearchEntityColumnSynonyms": [],
+                        "connectionReferences": [],
+                        "connectorDefinitions": [],
+                        "aIModelDefinitions": [],
+                        "aIPluginOperations": [],
+                        "connectedAgentDefinitions": [],
+                        "componentCollections": [],
+                        "connectedBots": [],
+                        "diagnostics": [],
+                        "entity": {
+                          "authorizedSecurityGroupIds": [],
+                          "supportedLanguages": [],
+                          "diagnostics": [],
+                          "schemaName": "workflow_agentnode",
+                          "language": 1033,
+                          "accessControlPolicy": "Any",
+                          "authenticationMode": "Integrated",
+                          "authenticationTrigger": "Always",
+                          "synchronizationStatus": {
+                            "graphDriveItems": [],
+                            "diagnostics": [],
+                            "lastPublishedDetails": {
+                              "diagnosticDetails": [],
+                              "diagnostics": [],
+                              "authenticationMode": "Integrated",
+                              "$kind": "SuccessfulPublishResultDetails"
+                            },
+                            "$kind": "BotSynchronizationDetails"
+                          },
+                          "configuration": {
+                            "categories": [],
+                            "channels": [],
+                            "settings": {},
+                            "memoryParameters": [],
+                            "diagnostics": [],
+                            "recognizer": {
+                              "diagnostics": [],
+                              "$kind": "CLICopilotRecognizer"
+                            },
+                            "agentSettings": {
+                              "conversationStarters": [],
+                              "diagnostics": [],
+                              "model": {
+                                "diagnostics": [],
+                                "series": "GPT56ReasoningTerra",
+                                "$kind": "ModelConfig"
+                              },
+                              "instructions": {
+                                "segments": [],
+                                "diagnostics": [],
+                                "$kind": "Instructions"
+                              },
+                              "$kind": "AgentSettings",
+                              "output": {
+                                "diagnostics": [],
+                                "schema": "{\"type\":\"object\",\"properties\":{\"inventoryKeys\":{\"type\":\"string\",\"description\":\"Matched inventory keys separated by ;; (empty if none)\"},\"actionBy\":{\"type\":\"string\",\"description\":\"Earliest date yyyy-MM-dd, empty if none\"},\"headline\":{\"type\":\"string\",\"description\":\"One sentence for agent owners\"},\"reason\":{\"type\":\"string\",\"description\":\"Why agents are or are not affected\"},\"impacts\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"model\":{\"type\":\"string\",\"description\":\"Affected model (as in the inventory)\"},\"harness\":{\"type\":\"string\",\"description\":\"Harness (as in the inventory)\"},\"change\":{\"type\":\"string\",\"description\":\"Retirement, End of support, Deprecation, Automatic migration, Upgrade or Behavior change\"},\"replacement\":{\"type\":\"string\",\"description\":\"Replacement model, empty if none\"},\"date\":{\"type\":\"string\",\"description\":\"yyyy-MM-dd, empty if none\"}},\"required\":[\"model\",\"harness\",\"change\",\"replacement\",\"date\"]}}},\"required\":[\"inventoryKeys\",\"actionBy\",\"headline\",\"reason\",\"impacts\"]}",
+                                "$kind": "StructuredAgentOutput"
+                              }
+                            },
+                            "$kind": "BotConfiguration"
+                          },
+                          "$kind": "BotEntity"
+                        },
+                        "$kind": "BotDefinition"
+                      },
+                      "body/message": "You read ONE Microsoft 365 Message Center post and decide which AI models used by Copilot Studio agents in this tenant it affects. You do NOT send emails - the workflow does that from your structured output. Use ONLY the post and the inventory summary. Never invent models, dates or replacements.\n\nToday (UTC): @{utcNow('yyyy-MM-dd')}\n\nMessage Center post (JSON):\n@{items('For_each_message')}\n\nInventory summary - one row per model + harness combination used by agents in this tenant (key, model, harness, count_ = number of agents):\n@{coalesce(body('Get_model_summary')?['data'], json('[]'))}\n\nRules:\n1. Read the WHOLE post body, including tables and lists. Find every model that is retired, reaches end of support, is deprecated, is automatically migrated/upgraded, or changes behavior. Ignore models that are only announced as new or newly available.\n2. If the change only applies to prompts (AI Builder), Microsoft 365 Copilot Chat or other products - not to Copilot Studio agents - nothing is impacted.\n3. Match affected models to inventory rows. Compare model names ignoring case, spaces, hyphens, dots and underscores (\"GPT-5 Chat\" = \"gpt-5-chat\" = \"GPT5Chat\"). Versions must match exactly: GPT-5 is NOT GPT-5.2, Claude Sonnet 4.6 is NOT Claude Sonnet 4.5.\n4. Harness: \"Microsoft Copilot harness\" or \"GitHub Copilot harness\" = harness \"GitHub Copilot\"; \"standard harness\" / \"standard orchestration\" = \"Standard\"; \"classic\" / \"conversational\" = \"Conversational AI\". If the post does not restrict the harness, include every harness row of that model. If you are not sure a row is affected, leave it out and mention it in reason.\n\nOutput:\n- inventoryKeys: the `key` values of the matched inventory rows, copied EXACTLY, separated by \";;\" (e.g. \"GPT-5 Chat|Standard;;GPT-5 Chat|GitHub Copilot\"). Empty string if nothing in the inventory is affected.\n- impacts: one item per matched key: model, harness, change (Retirement, End of support, Deprecation, Automatic migration, Upgrade or Behavior change), replacement (\"\" if none), date (yyyy-MM-dd; if only a month is given use its first day; \"\" if none).\n- actionBy: the earliest impacts date (yyyy-MM-dd), or \"\".\n- headline: one plain-text sentence (max 300 characters) for agent owners explaining what changes and when.\n- reason: one line explaining why agents are or are not affected (mention uncertain matches here)."
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
+                      "connectionName": "shared_agentnode",
+                      "operationId": "InvokeDefinition"
+                    }
+                  },
+                  "metadata": {
+                    "description": "Identify impacted models",
+                    "nodeId": "agent-41d9f125-184a-47d1-a5e7-5233955f7463"
+                  }
+                },
+                "Any_agents_impacted_": {
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "not": {
+                          "equals": [
+                            "@trim(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], ''))",
+                            ""
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "else": {
+                    "actions": {}
+                  },
+                  "runAfter": {
+                    "Identify_impacted_models": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "description": "Any agents impacted?",
+                    "nodeId": "ifElse-1097d8dc-5416-5d60-9021-acf5938c94d6"
+                  },
+                  "actions": {
+                    "Get_impacted_agents": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "api-version": "2024-10-01",
+                          "body": {
+                            "TableName": "PowerPlatformResources",
+                            "Clauses": [
+                              {
+                                "$type": "where",
+                                "FieldName": "type",
+                                "Operator": "==",
+                                "Values": [
+                                  "'microsoft.copilotstudio/agents'"
+                                ]
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "model",
+                                "Expression": "tostring(properties.model)"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "harness",
+                                "Expression": "tostring(properties.harness)"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "environmentId",
+                                "Expression": "tostring(properties.environmentId)"
+                              },
+                              {
+                                "$type": "where",
+                                "FieldName": "@{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'type', 'environmentId')}",
+                                "Operator": "in~",
+                                "Values": "@if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), createArray('''microsoft.copilotstudio/agents'''), split(concat('''', join(coalesce(variables('Config')?['environmentIds'], json('[]')), ''';;'''), ''''), ';;'))"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "key",
+                                "Expression": "strcat(model, '|', harness)"
+                              },
+                              {
+                                "$type": "where",
+                                "FieldName": "key",
+                                "Operator": "in~",
+                                "Values": "@split(concat('''', replace(replace(replace(replace(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], '')), '''', ''), ' ;;', ';;'), ';; ', ';;'), ';;', ''';;'''), ''''), ';;')"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "ownerId",
+                                "Expression": "tostring(properties.ownerId)"
+                              },
+                              {
+                                "$type": "join",
+                                "JoinKind": "leftouter",
+                                "RightTable": {
+                                  "TableName": "PowerPlatformResources",
+                                  "Clauses": [
+                                    {
+                                      "$type": "where",
+                                      "FieldName": "type",
+                                      "Operator": "==",
+                                      "Values": [
+                                        "'microsoft.powerplatform/environments'"
+                                      ]
+                                    },
+                                    {
+                                      "$type": "project",
+                                      "FieldList": [
+                                        "environmentId = name",
+                                        "environmentName = tostring(properties.displayName)"
+                                      ]
+                                    }
+                                  ]
+                                },
+                                "LeftColumnName": "environmentId",
+                                "RightColumnName": "environmentId"
+                              },
+                              {
+                                "$type": "project",
+                                "FieldList": [
+                                  "agentId = name",
+                                  "agentName = tostring(properties.displayName)",
+                                  "model",
+                                  "harness",
+                                  "environmentId",
+                                  "environmentName",
+                                  "ownerId"
+                                ]
+                              }
+                            ],
+                            "Options": {
+                              "Top": 1000
+                            }
+                          }
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_powerplatformadminv2",
+                          "connectionName": "shared_powerplatformadminv2",
+                          "operationId": "QueryResources"
+                        }
+                      },
+                      "runAfter": {},
+                      "metadata": {
+                        "description": "Get impacted agents",
+                        "nodeId": "connector-248b4ad7-7425-5f92-9d78-ccf27c695090"
+                      }
+                    },
+                    "Get_impacted_owners": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "api-version": "2024-10-01",
+                          "body": {
+                            "TableName": "PowerPlatformResources",
+                            "Clauses": [
+                              {
+                                "$type": "where",
+                                "FieldName": "type",
+                                "Operator": "==",
+                                "Values": [
+                                  "'microsoft.copilotstudio/agents'"
+                                ]
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "model",
+                                "Expression": "tostring(properties.model)"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "harness",
+                                "Expression": "tostring(properties.harness)"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "environmentId",
+                                "Expression": "tostring(properties.environmentId)"
+                              },
+                              {
+                                "$type": "where",
+                                "FieldName": "@{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'type', 'environmentId')}",
+                                "Operator": "in~",
+                                "Values": "@if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), createArray('''microsoft.copilotstudio/agents'''), split(concat('''', join(coalesce(variables('Config')?['environmentIds'], json('[]')), ''';;'''), ''''), ';;'))"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "key",
+                                "Expression": "strcat(model, '|', harness)"
+                              },
+                              {
+                                "$type": "where",
+                                "FieldName": "key",
+                                "Operator": "in~",
+                                "Values": "@split(concat('''', replace(replace(replace(replace(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], '')), '''', ''), ' ;;', ';;'), ';; ', ';;'), ';;', ''';;'''), ''''), ';;')"
+                              },
+                              {
+                                "$type": "extend",
+                                "FieldName": "ownerId",
+                                "Expression": "tostring(properties.ownerId)"
+                              },
+                              {
+                                "$type": "where",
+                                "FieldName": "ownerId",
+                                "Operator": "!in",
+                                "Values": [
+                                  "''",
+                                  "'00000000-0000-0000-0000-000000000000'"
+                                ]
+                              },
+                              {
+                                "$type": "summarize",
+                                "SummarizeClauseExpression": {
+                                  "OperatorName": "count",
+                                  "OperatorFieldName": "",
+                                  "FieldList": [
+                                    "ownerId"
+                                  ]
+                                }
+                              }
+                            ],
+                            "Options": {
+                              "Top": "@if(bool(coalesce(variables('Config')?['testMode'], true)), min(int(coalesce(variables('Config')?['testModeMaxEmails'], 3)), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100))), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100)))"
+                            }
+                          }
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_powerplatformadminv2",
+                          "connectionName": "shared_powerplatformadminv2",
+                          "operationId": "QueryResources"
+                        }
+                      },
+                      "runAfter": {
+                        "Get_impacted_agents": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "description": "Get impacted owners",
+                        "nodeId": "connector-aa8a9b10-d842-5920-ae72-8306d773156c"
+                      }
+                    },
+                    "Select_impacts": {
+                      "type": "Select",
+                      "inputs": {
+                        "from": "@coalesce(body('Identify_impacted_models')?['structuredOutput/impacts'], json('[]'))",
+                        "select": {
+                          "Model": "@item()?['model']",
+                          "Harness": "@item()?['harness']",
+                          "Change": "@item()?['change']",
+                          "Replacement": "@item()?['replacement']",
+                          "Date": "@item()?['date']"
+                        }
+                      },
+                      "runAfter": {
+                        "Get_impacted_owners": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "description": "Select impacts",
+                        "nodeId": "builtinFunction-7591b353-4a5f-59cb-a8c1-02f2d2e0a94e"
+                      }
+                    },
+                    "Create_impacts_table": {
+                      "type": "Table",
+                      "inputs": {
+                        "from": "@body('Select_impacts')",
+                        "format": "HTML"
+                      },
+                      "runAfter": {
+                        "Select_impacts": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "description": "Create impacts table",
+                        "nodeId": "builtinFunction-7dfc6efd-4b28-5b9f-90a0-fcce2301558e"
+                      }
+                    },
+                    "For_each_owner": {
+                      "type": "Foreach",
+                      "foreach": "@coalesce(body('Get_impacted_owners')?['data'], json('[]'))",
+                      "runtimeConfiguration": {
+                        "concurrency": {
+                          "repetitions": 5
+                        }
+                      },
+                      "runAfter": {
+                        "Create_impacts_table": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "description": "For each owner",
+                        "nodeId": "loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5"
+                      },
+                      "actions": {
+                        "Get_owner_agents": {
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "api-version": "2024-10-01",
+                              "body": {
+                                "TableName": "PowerPlatformResources",
+                                "Clauses": [
+                                  {
+                                    "$type": "where",
+                                    "FieldName": "type",
+                                    "Operator": "==",
+                                    "Values": [
+                                      "'microsoft.copilotstudio/agents'"
+                                    ]
+                                  },
+                                  {
+                                    "$type": "extend",
+                                    "FieldName": "model",
+                                    "Expression": "tostring(properties.model)"
+                                  },
+                                  {
+                                    "$type": "extend",
+                                    "FieldName": "harness",
+                                    "Expression": "tostring(properties.harness)"
+                                  },
+                                  {
+                                    "$type": "extend",
+                                    "FieldName": "environmentId",
+                                    "Expression": "tostring(properties.environmentId)"
+                                  },
+                                  {
+                                    "$type": "where",
+                                    "FieldName": "@{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'type', 'environmentId')}",
+                                    "Operator": "in~",
+                                    "Values": "@if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), createArray('''microsoft.copilotstudio/agents'''), split(concat('''', join(coalesce(variables('Config')?['environmentIds'], json('[]')), ''';;'''), ''''), ';;'))"
+                                  },
+                                  {
+                                    "$type": "extend",
+                                    "FieldName": "key",
+                                    "Expression": "strcat(model, '|', harness)"
+                                  },
+                                  {
+                                    "$type": "where",
+                                    "FieldName": "key",
+                                    "Operator": "in~",
+                                    "Values": "@split(concat('''', replace(replace(replace(replace(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], '')), '''', ''), ' ;;', ';;'), ';; ', ';;'), ';;', ''';;'''), ''''), ';;')"
+                                  },
+                                  {
+                                    "$type": "extend",
+                                    "FieldName": "ownerId",
+                                    "Expression": "tostring(properties.ownerId)"
+                                  },
+                                  {
+                                    "$type": "where",
+                                    "FieldName": "ownerId",
+                                    "Operator": "==",
+                                    "Values": [
+                                      "'@{items('For_each_owner')?['ownerId']}'"
+                                    ]
+                                  },
+                                  {
+                                    "$type": "join",
+                                    "JoinKind": "leftouter",
+                                    "RightTable": {
+                                      "TableName": "PowerPlatformResources",
+                                      "Clauses": [
+                                        {
+                                          "$type": "where",
+                                          "FieldName": "type",
+                                          "Operator": "==",
+                                          "Values": [
+                                            "'microsoft.powerplatform/environments'"
+                                          ]
+                                        },
+                                        {
+                                          "$type": "project",
+                                          "FieldList": [
+                                            "environmentId = name",
+                                            "environmentName = tostring(properties.displayName)"
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    "LeftColumnName": "environmentId",
+                                    "RightColumnName": "environmentId"
+                                  },
+                                  {
+                                    "$type": "project",
+                                    "FieldList": [
+                                      "agentId = name",
+                                      "agentName = tostring(properties.displayName)",
+                                      "model",
+                                      "harness",
+                                      "environmentId",
+                                      "environmentName",
+                                      "ownerId"
+                                    ]
+                                  }
+                                ],
+                                "Options": {
+                                  "Top": 1000
+                                }
+                              }
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_powerplatformadminv2",
+                              "connectionName": "shared_powerplatformadminv2",
+                              "operationId": "QueryResources"
+                            }
+                          },
+                          "runAfter": {},
+                          "metadata": {
+                            "description": "Get owner agents",
+                            "nodeId": "connector-df66a16f-e691-5485-8aec-d7746b3c9dac"
+                          }
+                        },
+                        "Select_owner_agents": {
+                          "type": "Select",
+                          "inputs": {
+                            "from": "@coalesce(body('Get_owner_agents')?['data'], json('[]'))",
+                            "select": {
+                              "Agent": "@item()?['agentName']",
+                              "Environment": "@item()?['environmentName']",
+                              "Model": "@item()?['model']",
+                              "Harness": "@item()?['harness']"
+                            }
+                          },
+                          "runAfter": {
+                            "Get_owner_agents": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "description": "Select owner agents",
+                            "nodeId": "builtinFunction-cde656ba-c859-5cb3-acfa-b8bb568bc641"
+                          }
+                        },
+                        "Create_owner_agents_table": {
+                          "type": "Table",
+                          "inputs": {
+                            "from": "@body('Select_owner_agents')",
+                            "format": "HTML"
+                          },
+                          "runAfter": {
+                            "Select_owner_agents": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "description": "Create owner agents table",
+                            "nodeId": "builtinFunction-4ff71b4b-3898-57ab-ae78-79e80383cfec"
+                          }
+                        },
+                        "Get_owner_profile": {
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "id": "@items('For_each_owner')?['ownerId']"
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365users",
+                              "connectionName": "shared_office365users",
+                              "operationId": "UserProfile_V2"
+                            }
+                          },
+                          "runAfter": {
+                            "Create_owner_agents_table": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "description": "Get owner profile",
+                            "nodeId": "connector-90072e1c-dcf6-5849-842c-a00364a93c9e"
+                          }
+                        },
+                        "Send_owner_email": {
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "emailMessage/To": "@{if(bool(coalesce(variables('Config')?['testMode'], true)), variables('Config')?['adminEmail'], if(empty(coalesce(body('Get_owner_profile')?['mail'], body('Get_owner_profile')?['userPrincipalName'], '')), variables('Config')?['adminEmail'], coalesce(body('Get_owner_profile')?['mail'], body('Get_owner_profile')?['userPrincipalName'], '')))}",
+                              "emailMessage/Subject": "@{if(bool(coalesce(variables('Config')?['testMode'], true)), '[TEST] ', '')}Action needed@{if(empty(coalesce(body('Identify_impacted_models')?['structuredOutput/actionBy'], '')), '', concat(' by ', coalesce(body('Identify_impacted_models')?['structuredOutput/actionBy'], '')))}: @{items('For_each_owner')?['count_']} of your Copilot Studio agents use an AI model that is changing (@{items('For_each_message')?['id']})",
+                              "emailMessage/Body": "@{if(bool(coalesce(variables('Config')?['testMode'], true)), concat('<p style=\"color:#a4262c\"><b>TEST MODE</b> - this email would go to: ', if(empty(coalesce(body('Get_owner_profile')?['mail'], body('Get_owner_profile')?['userPrincipalName'], '')), concat('(owner not found - Entra object id ', items('For_each_owner')?['ownerId'], ')'), coalesce(body('Get_owner_profile')?['mail'], body('Get_owner_profile')?['userPrincipalName'], '')), '</p>'), if(empty(coalesce(body('Get_owner_profile')?['mail'], body('Get_owner_profile')?['userPrincipalName'], '')), concat('<p style=\"color:#a4262c\"><b>Owner not found</b> (Entra object id ', items('For_each_owner')?['ownerId'], '). Please forward this to the right owner.</p>'), ''))}<p>Hello@{if(empty(coalesce(body('Get_owner_profile')?['displayName'], '')), '', concat(' ', body('Get_owner_profile')?['displayName']))},</p><p>You own Copilot Studio agents that use an AI model Microsoft is changing. @{body('Identify_impacted_models')?['structuredOutput/headline']}</p><h3>What changes</h3>@{body('Create_impacts_table')}<h3>What you need to do</h3><ul><li>Open each agent listed below in Copilot Studio (in the environment shown) and test it with the replacement model.</li><li>Switch to the replacement model and republish @{if(empty(coalesce(body('Identify_impacted_models')?['structuredOutput/actionBy'], '')), 'as soon as possible', concat('before ', coalesce(body('Identify_impacted_models')?['structuredOutput/actionBy'], '')))}. If Microsoft migrates the model automatically, check that the agent still behaves as expected.</li><li>If you no longer need the agent, delete it.</li></ul><p>Questions? Contact @{coalesce(variables('Config')?['contactText'], 'your Power Platform environment admins')}.</p><p>Message Center post: <a href=\"https://admin.microsoft.com/Adminportal/Home#/MessageCenter/:/messages/@{items('For_each_message')?['id']}\">@{items('For_each_message')?['id']} - @{items('For_each_message')?['title']}</a></p><h3>Your impacted agents</h3>@{body('Create_owner_agents_table')}",
+                              "emailMessage/Importance": "@{if(less(ticks(if(empty(coalesce(body('Identify_impacted_models')?['structuredOutput/actionBy'], '')), '9999-12-31', coalesce(body('Identify_impacted_models')?['structuredOutput/actionBy'], ''))), ticks(addDays(utcNow(), 30))), 'High', 'Normal')}"
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                              "connectionName": "shared_office365",
+                              "operationId": "SendEmailV2"
+                            }
+                          },
+                          "runAfter": {
+                            "Get_owner_profile": [
+                              "Succeeded",
+                              "Failed"
+                            ]
+                          },
+                          "metadata": {
+                            "description": "Send owner email",
+                            "nodeId": "connector-ee8ce607-bba7-5438-9402-1ce974d325d7"
+                          }
+                        }
+                      }
+                    },
+                    "Select_all_agents": {
+                      "type": "Select",
+                      "inputs": {
+                        "from": "@take(coalesce(body('Get_impacted_agents')?['data'], json('[]')), 500)",
+                        "select": {
+                          "Agent": "@item()?['agentName']",
+                          "Environment": "@item()?['environmentName']",
+                          "Model": "@item()?['model']",
+                          "Harness": "@item()?['harness']",
+                          "Owner id": "@item()?['ownerId']"
+                        }
+                      },
+                      "runAfter": {
+                        "For_each_owner": [
+                          "Succeeded",
+                          "Failed"
+                        ]
+                      },
+                      "metadata": {
+                        "description": "Select all agents",
+                        "nodeId": "builtinFunction-8adfa8b9-c9f4-5b38-955c-d313e6a8d37c"
+                      }
+                    },
+                    "Create_all_agents_table": {
+                      "type": "Table",
+                      "inputs": {
+                        "from": "@body('Select_all_agents')",
+                        "format": "HTML"
+                      },
+                      "runAfter": {
+                        "Select_all_agents": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "description": "Create all agents table",
+                        "nodeId": "builtinFunction-8c9d4031-f650-59a0-bbb8-18c54de279b9"
+                      }
+                    },
+                    "Send_admin_summary": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "emailMessage/To": "@{variables('Config')?['adminEmail']}",
+                          "emailMessage/Subject": "AI model lifecycle summary - @{items('For_each_message')?['id']}: @{body('Get_impacted_agents')?['totalRecords']} agent(s), @{body('Get_impacted_owners')?['totalRecords']} owner(s)",
+                          "emailMessage/Body": "<p>@{body('Identify_impacted_models')?['structuredOutput/headline']}</p><p><i>@{body('Identify_impacted_models')?['structuredOutput/reason']}</i></p><h3>What changes</h3>@{body('Create_impacts_table')}<h3>Numbers</h3><ul><li>Scope: @{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'all environments in the tenant', concat(string(length(coalesce(variables('Config')?['environmentIds'], json('[]')))), ' environment(s) listed in environmentIds'))}</li><li>Impacted agents: @{body('Get_impacted_agents')?['totalRecords']}</li><li>Owners with impacted agents: @{body('Get_impacted_owners')?['totalRecords']}</li><li>Owner emails sent this run: @{length(coalesce(body('Get_impacted_owners')?['data'], json('[]')))}@{if(bool(coalesce(variables('Config')?['testMode'], true)), ' (TEST MODE - all sent to you)', '')}@{if(greater(int(coalesce(body('Get_impacted_owners')?['totalRecords'], 0)), length(coalesce(body('Get_impacted_owners')?['data'], json('[]')))), ' - <b>capped</b>: raise maxOwnerEmailsPerPost / turn off testMode to reach every owner', '')}</li><li>Agents without an owner (ownerId empty or 00000000-...) get no email - they are in the table below.</li></ul><h3>All impacted agents (first 500)</h3>@{body('Create_all_agents_table')}<p>Message Center post: <a href=\"https://admin.microsoft.com/Adminportal/Home#/MessageCenter/:/messages/@{items('For_each_message')?['id']}\">@{items('For_each_message')?['id']} - @{items('For_each_message')?['title']}</a></p>",
+                          "emailMessage/Importance": "Normal"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                          "connectionName": "shared_office365",
+                          "operationId": "SendEmailV2"
+                        }
+                      },
+                      "runAfter": {
+                        "Create_all_agents_table": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "description": "Send admin summary",
+                        "nodeId": "connector-38feacf7-c7da-5e18-bf65-23d373ec74e9"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "telemetryMetadata": {
+          "creationSource": "WorkflowDesigner",
+          "modifiedSources": "WorkflowDesigner"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
