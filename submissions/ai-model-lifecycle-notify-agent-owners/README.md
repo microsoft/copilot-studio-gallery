@@ -57,7 +57,9 @@ post**, however many agents are impacted.
    5. **For each owner** (5 in parallel): *Get owner agents* lists that owner's
       agents with environment names, *Get owner profile* resolves the name and
       email in Entra, and *Send owner email* sends the email. The email is High
-      importance when the action-by date is within 30 days.
+      importance when the action-by date is within 30 days. Migration steps are
+      only included for impacts that list a replacement model; for upgrades,
+      automatic migrations and behavior changes owners are asked to test.
    6. **Send admin summary** emails `adminEmail` with the scope, totals, whether
       the email cap was hit, and the first 500 impacted agents.
 
@@ -160,9 +162,12 @@ change, not the workflow.
   your posts or inventory name harnesses differently.
 - `properties.model` in the inventory is a preview field and reflects the
   **published** version of each agent. Draft-only changes are not seen.
-- The inventory API returns at most 1,000 rows per call. Each owner's own list is
-  queried separately, so owners are never cut off, but the admin summary lists at
-  most 500 agents (totals are always exact).
+- The inventory API returns at most 1,000 rows per call. Each owner's list is
+  queried separately (up to 1,000 agents per owner). If an owner has more, the
+  email says the list is partial. The admin summary lists at most 500 agents
+  (totals are always exact).
+- The admin summary counts the owners **selected** for an email. If any send
+  fails it shows a red warning; check *Send owner email* in the run history.
 - An owner who can't be found in Entra (for example a deleted user) gets no
   email. The email goes to `adminEmail` with an *Owner not found* banner instead.
 - Each run looks back a fixed `lookbackDays` window. If a run is missed or fails,
