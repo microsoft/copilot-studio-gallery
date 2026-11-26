@@ -1,0 +1,227 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnActivity
+  id: main
+  priority: 0
+  type: Message
+  actions:
+    - kind: SetVariable
+      id: setText
+      variable: init:Topic.Text
+      value: =Trim(Substitute(Coalesce(System.Activity.Text, ""), Char(160), " "))
+
+    - kind: ConditionGroup
+      id: checkCardSubmit
+      conditions:
+        - id: isCardSubmit
+          condition: =IsBlank(Topic.Text)
+          actions:
+            - kind: BeginDialog
+              id: goSavePreferences
+              dialog: ait_RoadmapWatcherforMicrosoft365.topic.SavePreferences
+
+            - kind: CancelAllDialogs
+              id: endCardSubmit
+
+    - kind: SetVariable
+      id: setHasSlash
+      variable: init:Topic.HasSlash
+      value: =StartsWith(Topic.Text, "/")
+
+    - kind: SetVariable
+      id: setLine
+      variable: init:Topic.Line
+      value: =If(Topic.HasSlash, Topic.Text, "/" & Topic.Text)
+
+    - kind: SetVariable
+      id: setWord
+      variable: init:Topic.Word
+      value: =Lower(First(Split(Topic.Line, " ")).Value)
+
+    - kind: SetVariable
+      id: setArgs
+      variable: init:Topic.Args
+      value: =Trim(Mid(Topic.Line, Len(Topic.Word) + 1))
+
+    - kind: SetVariable
+      id: setCommand
+      variable: init:Topic.Command
+      value: |-
+        =Switch(Topic.Word,
+          "/help", "help", "/?", "help",
+          "/products", "products", "/product", "products",
+          "/packs", "packs", "/pack", "packs",
+          "/subscribe", "subscribe", "/add", "subscribe", "/sub", "subscribe",
+          "/unsubscribe", "unsubscribe", "/remove", "unsubscribe", "/unsub", "unsubscribe",
+          "/mysubs", "mysubs", "/subscriptions", "mysubs",
+          "/lookahead", "lookahead",
+          "/critical", "critical",
+          "/frequency", "frequency", "/freq", "frequency",
+          "/pause", "pause", "/resume", "resume",
+          "/digest", "digest",
+          "/details", "details", "/detail", "details",
+          "/mysettings", "mysettings", "/settings", "mysettings",
+          "unknown")
+
+    - kind: ConditionGroup
+      id: checkPlain
+      conditions:
+        - id: isPlainText
+          condition: =Topic.Command = "unknown" && Not(Topic.HasSlash)
+          actions:
+            - kind: SendActivity
+              id: plainReply
+              activity: I only understand commands, such as help, mysettings or digest. Type help to see them all.
+
+            - kind: CancelAllDialogs
+              id: endPlain
+
+    - kind: ConditionGroup
+      id: checkUser
+      conditions:
+        - id: noUser
+          condition: =IsBlank(System.User.Id) && Not(Topic.Command in ["help", "products", "packs", "details", "unknown"])
+          actions:
+            - kind: SendActivity
+              id: noUserReply
+              activity: I can't tell who you are. Open me in Microsoft Teams, signed in with your work account.
+
+            - kind: CancelAllDialogs
+              id: endNoUser
+
+    - kind: ConditionGroup
+      id: route
+      conditions:
+        - id: routeHelp
+          condition: =Topic.Command = "help"
+          actions:
+            - kind: BeginDialog
+              id: goHelp
+              dialog: ait_RoadmapWatcherforMicrosoft365.topic.Help
+
+        - id: routeProducts
+          condition: =Topic.Command = "products"
+          actions:
+            - kind: BeginDialog
+              id: goProducts
+              input:
+                binding:
+                  Args: =Topic.Args
+
+              dialog: ait_RoadmapWatcherforMicrosoft365.topic.Products
+
+        - id: routePacks
+          condition: =Topic.Command = "packs"
+          actions:
+            - kind: BeginDialog
+              id: goPacks
+              dialog: ait_RoadmapWatcherforMicrosoft365.topic.Packs
+
+        - id: routeSubscribe
+          condition: =Topic.Command = "subscribe"
+          actions:
+            - kind: BeginDialog
+              id: goSubscribe
+              input:
+                binding:
+                  Args: =Topic.Args
+
+              dialog: ait_RoadmapWatcherforMicrosoft365.topic.Subscribe
+
+        - id: routeUnsubscribe
+          condition: =Topic.Command = "unsubscribe"
+          actions:
+            - kind: BeginDialog
+              id: goUnsubscribe
+              input:
+                binding:
+                  Args: =Topic.Args
+
+              dialog: ait_RoadmapWatcherforMicrosoft365.topic.Unsubscribe
+
+        - id: routeMySubs
+          condition: =Topic.Command = "mysubs"
+          actions:
+            - kind: BeginDialog
+              id: goMySubs
+              dialog: ait_RoadmapWatcherforMicrosoft365.topic.MySubscriptions
+
+        - id: routeLookahead
+          condition: =Topic.Command = "lookahead"
+          actions:
+            - kind: BeginDialog
+              id: goLookahead
+              input:
+                binding:
+                  Args: =Topic.Args
+
+              dialog: ait_RoadmapWatcherforMicrosoft365.topic.SetLookahead
+
+        - id: routeCritical
+          condition: =Topic.Command = "critical"
+          actions:
+            - kind: BeginDialog
+              id: goCritical
+              input:
+                binding:
+                  Args: =Topic.Args
+
+              dialog: ait_RoadmapWatcherforMicrosoft365.topic.SetCriticalWindow
+
+        - id: routeFrequency
+          condition: =Topic.Command = "frequency"
+          actions:
+            - kind: BeginDialog
+              id: goFrequency
+              input:
+                binding:
+                  Args: =Topic.Args
+
+              dialog: ait_RoadmapWatcherforMicrosoft365.topic.SetFrequency
+
+        - id: routePauseResume
+          condition: =Topic.Command in [ "pause", "resume" ]
+          actions:
+            - kind: BeginDialog
+              id: goPauseResume
+              input:
+                binding:
+                  Pause: =Topic.Command = "pause"
+
+              dialog: ait_RoadmapWatcherforMicrosoft365.topic.PauseResume
+
+        - id: routeDigest
+          condition: =Topic.Command = "digest"
+          actions:
+            - kind: BeginDialog
+              id: goDigest
+              dialog: ait_RoadmapWatcherforMicrosoft365.topic.DigestNow
+
+        - id: routeDetails
+          condition: =Topic.Command = "details"
+          actions:
+            - kind: BeginDialog
+              id: goDetails
+              input:
+                binding:
+                  Args: =Topic.Args
+
+              dialog: ait_RoadmapWatcherforMicrosoft365.topic.Details
+
+        - id: routeSettings
+          condition: =Topic.Command = "mysettings"
+          actions:
+            - kind: BeginDialog
+              id: goSettings
+              dialog: ait_RoadmapWatcherforMicrosoft365.topic.Settings
+
+      elseActions:
+        - kind: SendActivity
+          id: unknownReply
+          activity: I don't know the command {Topic.Word}. Type /help to see the commands.
+
+    - kind: CancelAllDialogs
+      id: endTurn
+
+inputType: {}
+outputType: {}

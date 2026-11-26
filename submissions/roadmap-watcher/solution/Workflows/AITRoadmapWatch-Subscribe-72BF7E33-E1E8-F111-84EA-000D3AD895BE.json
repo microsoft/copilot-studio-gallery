@@ -1,0 +1,3958 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "ait_Dataverse"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "type": "Object",
+          "defaultValue": {}
+        },
+        "$authentication": {
+          "type": "SecureObject",
+          "defaultValue": {}
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "aadObjectId": {
+                  "title": "aadObjectId",
+                  "type": "string",
+                  "description": "Entra object ID of the user (System.User.Id)",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "upn": {
+                  "title": "upn",
+                  "type": "string",
+                  "description": "User principal name (System.User.PrincipalName)",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "displayName": {
+                  "title": "displayName",
+                  "type": "string",
+                  "description": "Display name (System.User.DisplayName)",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "args": {
+                  "title": "args",
+                  "type": "string",
+                  "description": "Comma-separated pack codes, product names or aliases",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "aadObjectId",
+                "args"
+              ]
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "AIT Roadmap Watch - Subscribe",
+                "nodes": [
+                  {
+                    "id": "start-35c791e9-4d7c-4a55-a64d-34b7ecee7238",
+                    "name": "When an agent calls the flow",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 500,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "connector",
+                        "connector": {
+                          "apiName": "Skills",
+                          "operationName": "When_an_agent_calls_the_flow",
+                          "displayName": "When an agent calls the flow",
+                          "kind": "Skills",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "aadObjectId": {
+                                  "title": "aadObjectId",
+                                  "type": "string",
+                                  "description": "Entra object ID of the user (System.User.Id)",
+                                  "x-ms-content-hint": "TEXT",
+                                  "x-ms-dynamically-added": true
+                                },
+                                "upn": {
+                                  "title": "upn",
+                                  "type": "string",
+                                  "description": "User principal name (System.User.PrincipalName)",
+                                  "x-ms-content-hint": "TEXT",
+                                  "x-ms-dynamically-added": true
+                                },
+                                "displayName": {
+                                  "title": "displayName",
+                                  "type": "string",
+                                  "description": "Display name (System.User.DisplayName)",
+                                  "x-ms-content-hint": "TEXT",
+                                  "x-ms-dynamically-added": true
+                                },
+                                "args": {
+                                  "title": "args",
+                                  "type": "string",
+                                  "description": "Comma-separated pack codes, product names or aliases",
+                                  "x-ms-content-hint": "TEXT",
+                                  "x-ms-dynamically-added": true
+                                }
+                              },
+                              "required": [
+                                "aadObjectId",
+                                "args"
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "connector-2109366b-3078-4f34-94ad-1a99d345786a",
+                    "name": "Get settings",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 830,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "ListRecords",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "environmentvariabledefinitions",
+                          "$select": "schemaname,defaultvalue",
+                          "$filter": "startswith(schemaname, 'ait_')",
+                          "$expand": "environmentvariabledefinition_environmentvariablevalue($select=value)"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-9836824b-a578-449c-8d46-b5321f26eca6",
+                    "name": "Select settings",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1160,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@body('Get_settings')?['value']",
+                          "select": "@concat(substring(string(createArray(item()?['schemaname'])), 1, sub(length(string(createArray(item()?['schemaname']))), 2)), ':', substring(string(createArray(coalesce(first(item()?['environmentvariabledefinition_environmentvariablevalue'])?['value'], item()?['defaultvalue'], ''))), 1, sub(length(string(createArray(coalesce(first(item()?['environmentvariabledefinition_environmentvariablevalue'])?['value'], item()?['defaultvalue'], '')))), 2)))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "connector-2109366b-3078-4f34-94ad-1a99d345786a": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-53cc671e-8394-412c-8e6c-368e26ed80ec",
+                    "name": "Settings",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1490,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@json(concat('{', join(body('Select_settings'), ','), '}'))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-9836824b-a578-449c-8d46-b5321f26eca6": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "variable-7000ca32-df8c-4f98-bd12-d7ab67719f7c",
+                    "name": "Init subscriber",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 1820,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "abe59b97-50ae-44a9-aa4d-50f5fd7618e0",
+                            "variableName": "Subscriber",
+                            "mode": "initialize",
+                            "type": "object",
+                            "value": "{}"
+                          },
+                          {
+                            "id": "50ea1483-ee8b-4548-b3e4-203a3c5d735c",
+                            "variableName": "IsNewSubscriber",
+                            "mode": "initialize",
+                            "type": "boolean",
+                            "value": "false"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-53cc671e-8394-412c-8e6c-368e26ed80ec": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "connector-3d2f2eda-1667-4f1c-83e6-0f7205f0f387",
+                    "name": "Find subscriber",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 2150,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "ListRecords",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "ait_subscribers",
+                          "$filter": "ait_aadobjectid eq '@{replace(triggerBody()?['aadObjectId'], '''', '''''')}'",
+                          "$top": 1
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "variable-7000ca32-df8c-4f98-bd12-d7ab67719f7c": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3",
+                    "name": "Check subscriber block",
+                    "type": "scope",
+                    "version": 1,
+                    "position": {
+                      "x": 2480,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "description": ""
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "connector-3d2f2eda-1667-4f1c-83e6-0f7205f0f387": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "width": 1350,
+                    "height": 332,
+                    "style": {
+                      "width": 1350,
+                      "height": 332
+                    }
+                  },
+                  {
+                    "id": "ifElse-ebc19752-32f4-4bdc-9a0d-f7e5244be90c",
+                    "name": "Check subscriber",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 60,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "e7bab776-3a08-4f41-a950-19d74b6b330a",
+                            "name": "True",
+                            "expression": "@empty(body('Find_subscriber')?['value'])"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:e7bab776-3a08-4f41-a950-19d74b6b330a",
+                          "label": "True"
+                        },
+                        {
+                          "id": "else",
+                          "label": "False"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3"
+                  },
+                  {
+                    "id": "connector-1dd4b841-4390-45af-93a0-61d7c306b5c0",
+                    "name": "Create subscriber",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 390,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "CreateRecord",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "ait_subscribers",
+                          "item/ait_displayname": "@{take(if(empty(triggerBody()?['displayName']), if(empty(triggerBody()?['upn']), triggerBody()?['aadObjectId'], triggerBody()?['upn']), triggerBody()?['displayName']), 100)}",
+                          "item/ait_aadobjectid": "@triggerBody()?['aadObjectId']",
+                          "item/ait_upn": "@triggerBody()?['upn']",
+                          "item/ait_lookaheadmonths": "@int(outputs('Settings')?['ait_DefaultLookaheadMonths'])",
+                          "item/ait_criticalwindowmonths": "@int(outputs('Settings')?['ait_DefaultCriticalWindowMonths'])",
+                          "item/ait_frequency": 748120001,
+                          "item/ait_weekday": 748120000,
+                          "item/ait_ispaused": false,
+                          "item/ait_sendemptydigest": "@contains(createArray('yes', 'true', '1'), toLower(string(outputs('Settings')?['ait_SendEmptyDigest'])))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3"
+                  },
+                  {
+                    "id": "variable-52328b40-25db-4ed3-99dd-b970e47d1ec2",
+                    "name": "Set new subscriber",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 720,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "3304f616-1235-49f5-b004-6e3c025ba7b9",
+                            "variableName": "Subscriber",
+                            "mode": "set",
+                            "type": "object",
+                            "value": "@body('Create_subscriber')"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "connector-1dd4b841-4390-45af-93a0-61d7c306b5c0": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3"
+                  },
+                  {
+                    "id": "variable-e737ce0a-93ef-4831-a9a2-847c0a33dcc5",
+                    "name": "Set is new",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 1050,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "8a584f59-cb76-417b-85ad-6db37290cd52",
+                            "variableName": "IsNewSubscriber",
+                            "mode": "set",
+                            "type": "boolean",
+                            "value": "true"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "variable-52328b40-25db-4ed3-99dd-b970e47d1ec2": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3"
+                  },
+                  {
+                    "id": "variable-928a92fb-c472-4b5d-88c4-9f4085f10ba7",
+                    "name": "Set existing subscriber",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 390,
+                      "y": 206
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "6e077986-aa6a-4594-8d7b-1fd1d4377dfe",
+                            "variableName": "Subscriber",
+                            "mode": "set",
+                            "type": "object",
+                            "value": "@first(body('Find_subscriber')?['value'])"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3"
+                  },
+                  {
+                    "id": "builtinFunction-ef9ccd6f-5279-46dd-831d-f54269775af1",
+                    "name": "Followed condition",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 3920,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "(ait_product_subscription/any(s: s/_ait_subscriberid_value eq @{variables('Subscriber')?['ait_subscriberid']}) or ait_pack_product/any(p: p/ait_isactive eq true and p/ait_pack_subscription/any(s: s/_ait_subscriberid_value eq @{variables('Subscriber')?['ait_subscriberid']})))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "variable-30821f9d-ba1d-4fe0-a112-6674feee6f4f",
+                    "name": "Init match",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 5900,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "d4bafed3-6210-4c77-b472-5d2fdcd35fe0",
+                            "variableName": "Targets",
+                            "mode": "initialize",
+                            "type": "array",
+                            "value": "[]"
+                          },
+                          {
+                            "id": "d990cd02-5816-49b1-a34a-9673e98baa1f",
+                            "variableName": "Unmatched",
+                            "mode": "initialize",
+                            "type": "array",
+                            "value": "[]"
+                          },
+                          {
+                            "id": "034f75ca-8293-41a6-8aad-c8867a48cc8a",
+                            "variableName": "Ambiguous",
+                            "mode": "initialize",
+                            "type": "array",
+                            "value": "[]"
+                          },
+                          {
+                            "id": "819575fe-0da2-4475-ba46-d8ad5f0ba624",
+                            "variableName": "Choices",
+                            "mode": "initialize",
+                            "type": "array",
+                            "value": "[]"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-7e7a77ee-14d2-48fa-b942-201cd92e6444": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-d45ee1e7-8f2b-4c70-8708-b3b5c3b2ec12",
+                    "name": "Token list",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 6230,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@split(coalesce(triggerBody()?['args'], ''), ',')",
+                          "select": "@toLower(trim(item()))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "variable-30821f9d-ba1d-4fe0-a112-6674feee6f4f": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-95030d7b-02b7-4de1-a0ec-e007af4eb0e6",
+                    "name": "Tokens",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 6560,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "query",
+                        "operationName": "query",
+                        "displayName": "Filter array",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@union(body('Token_list'), body('Token_list'))",
+                          "where": "@not(empty(item()))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-d45ee1e7-8f2b-4c70-8708-b3b5c3b2ec12": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787",
+                    "name": "Each token",
+                    "type": "loop",
+                    "version": 1,
+                    "position": {
+                      "x": 6890,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "loopType": "foreach",
+                        "foreach": "@body('Tokens')"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-95030d7b-02b7-4de1-a0ec-e007af4eb0e6": [
+                            "Succeeded"
+                          ]
+                        },
+                        "runtimeConfiguration": {
+                          "concurrency": {
+                            "repetitions": 1
+                          }
+                        }
+                      }
+                    },
+                    "width": 3330,
+                    "height": 332,
+                    "style": {
+                      "width": 3330,
+                      "height": 332
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-ba8f82c6-e40a-4fb6-86d3-40bd3cb32f4e",
+                    "name": "Pack hit",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 60,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "query",
+                        "operationName": "query",
+                        "displayName": "Filter array",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@outputs('Candidates')",
+                          "where": "@and(equals(item()?['kind'], 'pack'), equals(item()?['code'], items('Each_token')))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787"
+                  },
+                  {
+                    "id": "builtinFunction-27bbbd97-967c-4cea-8d43-d71f919421d1",
+                    "name": "Exact hit",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 390,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "query",
+                        "operationName": "query",
+                        "displayName": "Filter array",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@outputs('Candidates')",
+                          "where": "@and(equals(item()?['kind'], 'product'), or(equals(item()?['name'], items('Each_token')), equals(item()?['alt'], items('Each_token')), contains(item()?['aliases'], concat(',', items('Each_token'), ','))))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-ba8f82c6-e40a-4fb6-86d3-40bd3cb32f4e": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787"
+                  },
+                  {
+                    "id": "builtinFunction-b7bc42b3-9be6-4451-b485-5c9fc97c79ff",
+                    "name": "Contains hit",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 720,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "query",
+                        "operationName": "query",
+                        "displayName": "Filter array",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@outputs('Candidates')",
+                          "where": "@and(equals(item()?['kind'], 'product'), or(contains(item()?['name'], items('Each_token')), contains(item()?['alt'], items('Each_token'))))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-27bbbd97-967c-4cea-8d43-d71f919421d1": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787"
+                  },
+                  {
+                    "id": "builtinFunction-fc0a078b-3fff-47ca-9c96-750834d11ab9",
+                    "name": "Match",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1050,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@if(greater(length(body('Pack_hit')), 0), first(body('Pack_hit')), if(greater(length(body('Exact_hit')), 0), first(body('Exact_hit')), if(equals(length(body('Contains_hit')), 1), first(body('Contains_hit')), json(concat('{\"kind\":\"', if(greater(length(body('Contains_hit')), 1), 'ambiguous', 'none'), '\"}')))))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-b7bc42b3-9be6-4451-b485-5c9fc97c79ff": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787"
+                  },
+                  {
+                    "id": "ifElse-c088abc6-3ca3-467f-b571-ccfdca60df03",
+                    "name": "Route match",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 1380,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "57457702-422d-4323-b61b-e13a6d01bd81",
+                            "name": "True",
+                            "expression": "@equals(outputs('Match')?['kind'], 'pack')"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:57457702-422d-4323-b61b-e13a6d01bd81",
+                          "label": "True"
+                        },
+                        {
+                          "id": "else",
+                          "label": "False"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-fc0a078b-3fff-47ca-9c96-750834d11ab9": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787"
+                  },
+                  {
+                    "id": "variable-9f999ba9-c8ae-4ba3-8203-f6871dc11f50",
+                    "name": "Append pack",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 1710,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "6c9f6919-2de4-47bf-841e-5b1f9e7d75ab",
+                            "variableName": "Targets",
+                            "mode": "appendToArray",
+                            "type": "array",
+                            "value": "@outputs('Match')"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787"
+                  },
+                  {
+                    "id": "ifElse-8aedbb65-8cc0-4a41-a0b5-f96fa24c7d76",
+                    "name": "Route match Product",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 1710,
+                      "y": 206
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "6b90919e-572b-45ca-bacf-507f07aebe33",
+                            "name": "True",
+                            "expression": "@equals(outputs('Match')?['kind'], 'product')"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:6b90919e-572b-45ca-bacf-507f07aebe33",
+                          "label": "True"
+                        },
+                        {
+                          "id": "else",
+                          "label": "False"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787"
+                  },
+                  {
+                    "id": "variable-4ca7d26c-3577-48d3-9355-d750ccc6cfc4",
+                    "name": "Append product",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 2040,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "753b0ec9-bd52-4e7e-9139-8775d4681a26",
+                            "variableName": "Targets",
+                            "mode": "appendToArray",
+                            "type": "array",
+                            "value": "@outputs('Match')"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787"
+                  },
+                  {
+                    "id": "ifElse-be36ed12-030c-454e-83fb-5119f0dfedc6",
+                    "name": "Route match Several",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 2040,
+                      "y": 206
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "313a8129-5933-4a69-a99f-c4e3f0837468",
+                            "name": "True",
+                            "expression": "@equals(outputs('Match')?['kind'], 'ambiguous')"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:313a8129-5933-4a69-a99f-c4e3f0837468",
+                          "label": "True"
+                        },
+                        {
+                          "id": "else",
+                          "label": "False"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787"
+                  },
+                  {
+                    "id": "variable-0fa3bf36-a66c-49e5-9312-828d4cc030b0",
+                    "name": "Append ambiguous",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 2370,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "e58dca5a-725d-4aad-a4f2-78352769ee3c",
+                            "variableName": "Ambiguous",
+                            "mode": "appendToArray",
+                            "type": "array",
+                            "value": "@items('Each_token')"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787"
+                  },
+                  {
+                    "id": "builtinFunction-7e145d9a-cdff-4672-ae88-85a9797d34a2",
+                    "name": "Choice names",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 2700,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@take(body('Contains_hit'), 10)",
+                          "select": "@item()?['label']"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "variable-0fa3bf36-a66c-49e5-9312-828d4cc030b0": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787"
+                  },
+                  {
+                    "id": "variable-8fab4af4-fa87-47a5-9f55-41f46b64f31c",
+                    "name": "Append choices",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 3030,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "06be5fcb-e996-45ab-b51b-6d7e288cf91d",
+                            "variableName": "Choices",
+                            "mode": "appendToArray",
+                            "type": "array",
+                            "value": "|@{join(body('Choice_names'), '|')}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-7e145d9a-cdff-4672-ae88-85a9797d34a2": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787"
+                  },
+                  {
+                    "id": "variable-349296e1-1046-41ac-bef8-08a303800509",
+                    "name": "Append unmatched",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 2370,
+                      "y": 206
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "cf137791-cff8-45c4-b020-b23d743588f7",
+                            "variableName": "Unmatched",
+                            "mode": "appendToArray",
+                            "type": "array",
+                            "value": "@items('Each_token')"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787"
+                  },
+                  {
+                    "id": "builtinFunction-85e63fcf-73ac-4b36-a30b-6c2d8eb4077c",
+                    "name": "Choice items",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 10310,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "query",
+                        "operationName": "query",
+                        "displayName": "Filter array",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@union(split(join(variables('Choices'), ''), '|'), json('[]'))",
+                          "where": "@not(empty(item()))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "loop-2ea759f3-f471-4df2-a902-cf2077d8b787": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-1903b9c6-cbec-45af-a37c-3c06b5bd7d2a",
+                    "name": "Choice list",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 10640,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@join(body('Choice_items'), '|')"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-85e63fcf-73ac-4b36-a30b-6c2d8eb4077c": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "connector-41a6d781-6051-406b-9c40-b95184c150fb",
+                    "name": "Get packs",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 4250,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "ListRecords",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "ait_packs",
+                          "$select": "ait_packid,ait_code,ait_name",
+                          "$filter": "ait_isactive eq true"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-ef9ccd6f-5279-46dd-831d-f54269775af1": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "connector-086e46f4-65fb-4f3f-8caa-b5a092b1cfd7",
+                    "name": "Get products",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 4580,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "ListRecords",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "ait_products",
+                          "$select": "ait_productid,ait_name,ait_displayname,ait_aliases",
+                          "$filter": "ait_isactive eq true"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "connector-41a6d781-6051-406b-9c40-b95184c150fb": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-bc428912-9fc8-4ec8-8abe-a630bae29a99",
+                    "name": "Pack candidates",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 4910,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@body('Get_packs')?['value']",
+                          "select": {
+                            "kind": "pack",
+                            "id": "@item()?['ait_packid']",
+                            "key": "@concat('pack:', item()?['ait_code'])",
+                            "label": "@concat('pack ', item()?['ait_code'], ' (', item()?['ait_name'], ')')",
+                            "code": "@toLower(item()?['ait_code'])",
+                            "name": "",
+                            "alt": "",
+                            "aliases": ""
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "connector-086e46f4-65fb-4f3f-8caa-b5a092b1cfd7": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-79029a57-8bf9-415a-9b23-09a9c3eea61d",
+                    "name": "Product candidates",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 5240,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@body('Get_products')?['value']",
+                          "select": {
+                            "kind": "product",
+                            "id": "@item()?['ait_productid']",
+                            "key": "@concat('product:', item()?['ait_name'])",
+                            "label": "@item()?['ait_name']",
+                            "code": "",
+                            "name": "@toLower(item()?['ait_name'])",
+                            "alt": "@toLower(coalesce(item()?['ait_displayname'], item()?['ait_name']))",
+                            "aliases": "@concat(',', replace(replace(toLower(coalesce(item()?['ait_aliases'], '')), ' ,', ','), ', ', ','), ',')"
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-bc428912-9fc8-4ec8-8abe-a630bae29a99": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-7e7a77ee-14d2-48fa-b942-201cd92e6444",
+                    "name": "Candidates",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 5570,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@union(body('Pack_candidates'), body('Product_candidates'))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-79029a57-8bf9-415a-9b23-09a9c3eea61d": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "connector-d63d856b-7d5a-4142-88f7-542fcd206c57",
+                    "name": "Get subscriptions",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 10970,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "ListRecords",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "ait_subscriptions",
+                          "$select": "ait_targetkey",
+                          "$filter": "_ait_subscriberid_value eq @{variables('Subscriber')?['ait_subscriberid']}"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-1903b9c6-cbec-45af-a37c-3c06b5bd7d2a": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-10c4e52d-7070-4413-90dd-b0bdd8009da4",
+                    "name": "Existing keys",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 11300,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@body('Get_subscriptions')?['value']",
+                          "select": "@item()?['ait_targetkey']"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "connector-d63d856b-7d5a-4142-88f7-542fcd206c57": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-5273e287-ed35-4a59-ae68-4fd2de7736c8",
+                    "name": "New targets",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 11630,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "query",
+                        "operationName": "query",
+                        "displayName": "Filter array",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@union(variables('Targets'), variables('Targets'))",
+                          "where": "@not(contains(body('Existing_keys'), item()?['key']))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-10c4e52d-7070-4413-90dd-b0bdd8009da4": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-c9029544-0a22-45ec-939f-86b838d5f3ca",
+                    "name": "Already targets",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 11960,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "query",
+                        "operationName": "query",
+                        "displayName": "Filter array",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@union(variables('Targets'), variables('Targets'))",
+                          "where": "@contains(body('Existing_keys'), item()?['key'])"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-5273e287-ed35-4a59-ae68-4fd2de7736c8": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-41375972-202e-49a3-8744-d693782d483d",
+                    "name": "New labels",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 12290,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@body('New_targets')",
+                          "select": "@item()?['label']"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-c9029544-0a22-45ec-939f-86b838d5f3ca": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-482273df-473a-4a60-9584-6e4ca611a158",
+                    "name": "Already labels",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 12620,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@body('Already_targets')",
+                          "select": "@item()?['label']"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-41375972-202e-49a3-8744-d693782d483d": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-c42f3675-8474-4918-ac0f-0644413132ff",
+                    "name": "New conditions",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 12950,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@body('New_targets')",
+                          "select": "@if(equals(item()?['kind'], 'pack'), concat('ait_pack_product/any(p: p/ait_packid eq ', item()?['id'], ')'), concat('ait_productid eq ', item()?['id']))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-482273df-473a-4a60-9584-6e4ca611a158": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "connector-92ba9af2-2f54-42b0-8c3c-b955168927d1",
+                    "name": "Count after",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 13280,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "ListRecords",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "ait_products",
+                          "$select": "ait_productid",
+                          "$filter": "ait_isactive eq true and (@{outputs('Followed_condition')}@{if(empty(body('New_conditions')), '', concat(' or ', join(body('New_conditions'), ' or ')))})"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-c42f3675-8474-4918-ac0f-0644413132ff": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-4c121629-6f29-4814-838c-4995e3990494",
+                    "name": "Cap",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 13610,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@int(coalesce(outputs('Settings')?['ait_MaxProductsPerUser'], '0'))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "connector-92ba9af2-2f54-42b0-8c3c-b955168927d1": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-2d2573ec-06ab-491b-88b6-6939bcbc2a61",
+                    "name": "Over cap",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 13940,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@and(greater(length(body('New_targets')), 0), greater(outputs('Cap'), 0), greater(length(body('Count_after')?['value']), outputs('Cap')))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-4c121629-6f29-4814-838c-4995e3990494": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "scope-0b42af51-e5d3-4d38-84dd-ea37effb2f4d",
+                    "name": "Check cap block",
+                    "type": "scope",
+                    "version": 1,
+                    "position": {
+                      "x": 14270,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "description": ""
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-2d2573ec-06ab-491b-88b6-6939bcbc2a61": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "width": 1140,
+                    "height": 472,
+                    "style": {
+                      "width": 1140,
+                      "height": 472
+                    }
+                  },
+                  {
+                    "id": "ifElse-291ec726-c490-4857-862d-8ab583bf98c6",
+                    "name": "Check cap",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 60,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "0629854e-7d77-45c5-9b28-1e4583c63589",
+                            "name": "True",
+                            "expression": "@not(outputs('Over_cap'))"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:0629854e-7d77-45c5-9b28-1e4583c63589",
+                          "label": "True"
+                        },
+                        {
+                          "id": "else",
+                          "label": "False"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "scope-0b42af51-e5d3-4d38-84dd-ea37effb2f4d"
+                  },
+                  {
+                    "id": "loop-e12850e8-1aff-4217-8654-7add9a1c6820",
+                    "name": "Each new target",
+                    "type": "loop",
+                    "version": 1,
+                    "position": {
+                      "x": 390,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "loopType": "foreach",
+                        "foreach": "@body('New_targets')"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {},
+                        "runtimeConfiguration": {
+                          "concurrency": {
+                            "repetitions": 1
+                          }
+                        }
+                      }
+                    },
+                    "parentId": "scope-0b42af51-e5d3-4d38-84dd-ea37effb2f4d",
+                    "width": 690,
+                    "height": 332,
+                    "style": {
+                      "width": 690,
+                      "height": 332
+                    }
+                  },
+                  {
+                    "id": "ifElse-4ad7182e-c1a8-430e-b787-cd8a5da8a183",
+                    "name": "Is pack",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 60,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "78f30f0e-0165-4942-acb2-e1b0605a0abf",
+                            "name": "True",
+                            "expression": "@equals(items('Each_new_target')?['kind'], 'pack')"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:78f30f0e-0165-4942-acb2-e1b0605a0abf",
+                          "label": "True"
+                        },
+                        {
+                          "id": "else",
+                          "label": "False"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "loop-e12850e8-1aff-4217-8654-7add9a1c6820"
+                  },
+                  {
+                    "id": "connector-b5ffde19-8d6f-41fd-ac6d-236cec672d04",
+                    "name": "Create pack subscription",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 390,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "CreateRecord",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "ait_subscriptions",
+                          "item/ait_name": "@{take(concat(variables('Subscriber')?['ait_displayname'], ' · ', items('Each_new_target')?['key']), 100)}",
+                          "item/ait_targetkey": "@items('Each_new_target')?['key']",
+                          "item/ait_subscriberid@odata.bind": "/ait_subscribers(@{variables('Subscriber')?['ait_subscriberid']})",
+                          "item/ait_packid@odata.bind": "/ait_packs(@{items('Each_new_target')?['id']})"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "loop-e12850e8-1aff-4217-8654-7add9a1c6820"
+                  },
+                  {
+                    "id": "connector-8a19d52b-4c51-4384-ba80-a63ffd4bd1c6",
+                    "name": "Create product subscription",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 390,
+                      "y": 206
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "CreateRecord",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "ait_subscriptions",
+                          "item/ait_name": "@{take(concat(variables('Subscriber')?['ait_displayname'], ' · ', items('Each_new_target')?['key']), 100)}",
+                          "item/ait_targetkey": "@items('Each_new_target')?['key']",
+                          "item/ait_subscriberid@odata.bind": "/ait_subscribers(@{variables('Subscriber')?['ait_subscriberid']})",
+                          "item/ait_productid@odata.bind": "/ait_products(@{items('Each_new_target')?['id']})"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "loop-e12850e8-1aff-4217-8654-7add9a1c6820"
+                  },
+                  {
+                    "id": "connector-6ab9c98d-92b1-4ce6-98b4-8bb90f42dc42",
+                    "name": "Count now",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 15500,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "ListRecords",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "ait_products",
+                          "$select": "ait_productid",
+                          "$filter": "ait_isactive eq true and @{outputs('Followed_condition')}"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "scope-0b42af51-e5d3-4d38-84dd-ea37effb2f4d": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-7c3ef382-f1e3-4553-96a8-0e5da54b70a1",
+                    "name": "Lines",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 15830,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": [
+                            "@{if(outputs('Over_cap'), concat('Not added: that would bring you to ', length(body('Count_after')?['value']), ' products, and the limit is ', outputs('Cap'), '. Remove some with /remove first, or add fewer.'), if(empty(body('New_labels')), '', concat('Added: ', join(body('New_labels'), ', '), '.')))}",
+                            "@{if(empty(body('Already_labels')), '', concat('Already following: ', join(body('Already_labels'), ', '), '.'))}",
+                            "@{if(empty(variables('Unmatched')), '', concat('No match for ''', join(variables('Unmatched'), ''', '''), '''. Try /products ', first(variables('Unmatched')), ' to search the catalog.'))}",
+                            "@{if(empty(variables('Ambiguous')), '', concat('More than one product matches ''', join(variables('Ambiguous'), ''', '''), '''. Pick one below.'))}",
+                            "@{concat('You follow ', length(body('Count_now')?['value']), ' products. Type /mysubs to see them.')}"
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "connector-6ab9c98d-92b1-4ce6-98b4-8bb90f42dc42": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-08b0c5de-f8e3-441e-8b0e-f21e1b295384",
+                    "name": "Message lines",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 16160,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "query",
+                        "operationName": "query",
+                        "displayName": "Filter array",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@outputs('Lines')",
+                          "where": "@not(empty(item()))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-7c3ef382-f1e3-4553-96a8-0e5da54b70a1": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-e2bf5ee1-82c1-4898-a983-77f17ecfce8d",
+                    "name": "Reply",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 16490,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": {
+                            "message": "@{join(body('Message_lines'), decodeUriComponent('%0A%0A'))}",
+                            "choices": "@{outputs('Choice_list')}"
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-08b0c5de-f8e3-441e-8b0e-f21e1b295384": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-e179a654-466c-4dac-9b7a-21b678006598",
+                    "name": "Respond to the agent",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 16820,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "response",
+                        "operationName": "response",
+                        "displayName": "Respond to the agent",
+                        "category": "request",
+                        "categoryDisplayName": "Request",
+                        "kind": "Skills",
+                        "parameters": {
+                          "statusCode": 200,
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "title": "message",
+                                "description": "",
+                                "type": "string",
+                                "x-ms-content-hint": "TEXT",
+                                "x-ms-dynamically-added": true
+                              },
+                              "choices": {
+                                "title": "choices",
+                                "description": "",
+                                "type": "string",
+                                "x-ms-content-hint": "TEXT",
+                                "x-ms-dynamically-added": true
+                              }
+                            },
+                            "additionalProperties": {}
+                          },
+                          "body": {
+                            "message": "@{outputs('Reply')?['message']}",
+                            "choices": "@{outputs('Reply')?['choices']}"
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-e2bf5ee1-82c1-4898-a983-77f17ecfce8d": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-ba3119fd-fe09-4bb9-87d6-6c6c124a91d4",
+                    "name": "Respond with error",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 16820,
+                      "y": 326
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "response",
+                        "operationName": "response",
+                        "displayName": "Respond with error",
+                        "category": "request",
+                        "categoryDisplayName": "Request",
+                        "kind": "Skills",
+                        "parameters": {
+                          "statusCode": 200,
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "title": "message",
+                                "description": "",
+                                "type": "string",
+                                "x-ms-content-hint": "TEXT",
+                                "x-ms-dynamically-added": true
+                              },
+                              "choices": {
+                                "title": "choices",
+                                "description": "",
+                                "type": "string",
+                                "x-ms-content-hint": "TEXT",
+                                "x-ms-dynamically-added": true
+                              }
+                            },
+                            "additionalProperties": {}
+                          },
+                          "body": {
+                            "message": "Sorry, something went wrong on my side. Please try again in a few minutes.",
+                            "choices": ""
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-e2bf5ee1-82c1-4898-a983-77f17ecfce8d": [
+                            "Failed",
+                            "Skipped",
+                            "TimedOut"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-35c791e9-4d7c-4a55-a64d-34b7ecee7238-connector-2109366b-3078-4f34-94ad-1a99d345786a",
+                    "source": "start-35c791e9-4d7c-4a55-a64d-34b7ecee7238",
+                    "target": "connector-2109366b-3078-4f34-94ad-1a99d345786a"
+                  },
+                  {
+                    "id": "edge-connector-2109366b-3078-4f34-94ad-1a99d345786a-builtinFunction-9836824b-a578-449c-8d46-b5321f26eca6",
+                    "source": "connector-2109366b-3078-4f34-94ad-1a99d345786a",
+                    "target": "builtinFunction-9836824b-a578-449c-8d46-b5321f26eca6"
+                  },
+                  {
+                    "id": "edge-builtinFunction-9836824b-a578-449c-8d46-b5321f26eca6-builtinFunction-53cc671e-8394-412c-8e6c-368e26ed80ec",
+                    "source": "builtinFunction-9836824b-a578-449c-8d46-b5321f26eca6",
+                    "target": "builtinFunction-53cc671e-8394-412c-8e6c-368e26ed80ec"
+                  },
+                  {
+                    "id": "edge-builtinFunction-53cc671e-8394-412c-8e6c-368e26ed80ec-variable-7000ca32-df8c-4f98-bd12-d7ab67719f7c",
+                    "source": "builtinFunction-53cc671e-8394-412c-8e6c-368e26ed80ec",
+                    "target": "variable-7000ca32-df8c-4f98-bd12-d7ab67719f7c"
+                  },
+                  {
+                    "id": "edge-variable-7000ca32-df8c-4f98-bd12-d7ab67719f7c-connector-3d2f2eda-1667-4f1c-83e6-0f7205f0f387",
+                    "source": "variable-7000ca32-df8c-4f98-bd12-d7ab67719f7c",
+                    "target": "connector-3d2f2eda-1667-4f1c-83e6-0f7205f0f387"
+                  },
+                  {
+                    "id": "edge-connector-3d2f2eda-1667-4f1c-83e6-0f7205f0f387-scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3-external-input",
+                    "source": "connector-3d2f2eda-1667-4f1c-83e6-0f7205f0f387",
+                    "target": "scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3",
+                    "targetHandle": "external-input"
+                  },
+                  {
+                    "id": "edge-scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3-ifElse-ebc19752-32f4-4bdc-9a0d-f7e5244be90c-internal-source",
+                    "source": "scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3",
+                    "target": "ifElse-ebc19752-32f4-4bdc-9a0d-f7e5244be90c",
+                    "sourceHandle": "internal-source"
+                  },
+                  {
+                    "id": "edge-ifElse-ebc19752-32f4-4bdc-9a0d-f7e5244be90c-scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3-internal-target",
+                    "source": "ifElse-ebc19752-32f4-4bdc-9a0d-f7e5244be90c",
+                    "target": "scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-ifElse-ebc19752-32f4-4bdc-9a0d-f7e5244be90c-connector-1dd4b841-4390-45af-93a0-61d7c306b5c0-condition:e7bab776-3a08-4f41-a950-19d74b6b330a",
+                    "source": "ifElse-ebc19752-32f4-4bdc-9a0d-f7e5244be90c",
+                    "target": "connector-1dd4b841-4390-45af-93a0-61d7c306b5c0",
+                    "sourceHandle": "condition:e7bab776-3a08-4f41-a950-19d74b6b330a"
+                  },
+                  {
+                    "id": "edge-connector-1dd4b841-4390-45af-93a0-61d7c306b5c0-variable-52328b40-25db-4ed3-99dd-b970e47d1ec2",
+                    "source": "connector-1dd4b841-4390-45af-93a0-61d7c306b5c0",
+                    "target": "variable-52328b40-25db-4ed3-99dd-b970e47d1ec2"
+                  },
+                  {
+                    "id": "edge-variable-52328b40-25db-4ed3-99dd-b970e47d1ec2-variable-e737ce0a-93ef-4831-a9a2-847c0a33dcc5",
+                    "source": "variable-52328b40-25db-4ed3-99dd-b970e47d1ec2",
+                    "target": "variable-e737ce0a-93ef-4831-a9a2-847c0a33dcc5"
+                  },
+                  {
+                    "id": "edge-ifElse-ebc19752-32f4-4bdc-9a0d-f7e5244be90c-variable-928a92fb-c472-4b5d-88c4-9f4085f10ba7-else",
+                    "source": "ifElse-ebc19752-32f4-4bdc-9a0d-f7e5244be90c",
+                    "target": "variable-928a92fb-c472-4b5d-88c4-9f4085f10ba7",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3-builtinFunction-ef9ccd6f-5279-46dd-831d-f54269775af1-external-output",
+                    "source": "scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3",
+                    "target": "builtinFunction-ef9ccd6f-5279-46dd-831d-f54269775af1",
+                    "sourceHandle": "external-output"
+                  },
+                  {
+                    "id": "edge-builtinFunction-7e7a77ee-14d2-48fa-b942-201cd92e6444-variable-30821f9d-ba1d-4fe0-a112-6674feee6f4f",
+                    "source": "builtinFunction-7e7a77ee-14d2-48fa-b942-201cd92e6444",
+                    "target": "variable-30821f9d-ba1d-4fe0-a112-6674feee6f4f"
+                  },
+                  {
+                    "id": "edge-variable-30821f9d-ba1d-4fe0-a112-6674feee6f4f-builtinFunction-d45ee1e7-8f2b-4c70-8708-b3b5c3b2ec12",
+                    "source": "variable-30821f9d-ba1d-4fe0-a112-6674feee6f4f",
+                    "target": "builtinFunction-d45ee1e7-8f2b-4c70-8708-b3b5c3b2ec12"
+                  },
+                  {
+                    "id": "edge-builtinFunction-d45ee1e7-8f2b-4c70-8708-b3b5c3b2ec12-builtinFunction-95030d7b-02b7-4de1-a0ec-e007af4eb0e6",
+                    "source": "builtinFunction-d45ee1e7-8f2b-4c70-8708-b3b5c3b2ec12",
+                    "target": "builtinFunction-95030d7b-02b7-4de1-a0ec-e007af4eb0e6"
+                  },
+                  {
+                    "id": "edge-builtinFunction-95030d7b-02b7-4de1-a0ec-e007af4eb0e6-loop-2ea759f3-f471-4df2-a902-cf2077d8b787-external-input",
+                    "source": "builtinFunction-95030d7b-02b7-4de1-a0ec-e007af4eb0e6",
+                    "target": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787",
+                    "targetHandle": "external-input"
+                  },
+                  {
+                    "id": "edge-loop-2ea759f3-f471-4df2-a902-cf2077d8b787-builtinFunction-ba8f82c6-e40a-4fb6-86d3-40bd3cb32f4e-internal-source",
+                    "source": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787",
+                    "target": "builtinFunction-ba8f82c6-e40a-4fb6-86d3-40bd3cb32f4e",
+                    "sourceHandle": "internal-source"
+                  },
+                  {
+                    "id": "edge-builtinFunction-ba8f82c6-e40a-4fb6-86d3-40bd3cb32f4e-builtinFunction-27bbbd97-967c-4cea-8d43-d71f919421d1",
+                    "source": "builtinFunction-ba8f82c6-e40a-4fb6-86d3-40bd3cb32f4e",
+                    "target": "builtinFunction-27bbbd97-967c-4cea-8d43-d71f919421d1"
+                  },
+                  {
+                    "id": "edge-builtinFunction-27bbbd97-967c-4cea-8d43-d71f919421d1-builtinFunction-b7bc42b3-9be6-4451-b485-5c9fc97c79ff",
+                    "source": "builtinFunction-27bbbd97-967c-4cea-8d43-d71f919421d1",
+                    "target": "builtinFunction-b7bc42b3-9be6-4451-b485-5c9fc97c79ff"
+                  },
+                  {
+                    "id": "edge-builtinFunction-b7bc42b3-9be6-4451-b485-5c9fc97c79ff-builtinFunction-fc0a078b-3fff-47ca-9c96-750834d11ab9",
+                    "source": "builtinFunction-b7bc42b3-9be6-4451-b485-5c9fc97c79ff",
+                    "target": "builtinFunction-fc0a078b-3fff-47ca-9c96-750834d11ab9"
+                  },
+                  {
+                    "id": "edge-builtinFunction-fc0a078b-3fff-47ca-9c96-750834d11ab9-ifElse-c088abc6-3ca3-467f-b571-ccfdca60df03",
+                    "source": "builtinFunction-fc0a078b-3fff-47ca-9c96-750834d11ab9",
+                    "target": "ifElse-c088abc6-3ca3-467f-b571-ccfdca60df03"
+                  },
+                  {
+                    "id": "edge-ifElse-c088abc6-3ca3-467f-b571-ccfdca60df03-loop-2ea759f3-f471-4df2-a902-cf2077d8b787-internal-target",
+                    "source": "ifElse-c088abc6-3ca3-467f-b571-ccfdca60df03",
+                    "target": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-ifElse-c088abc6-3ca3-467f-b571-ccfdca60df03-variable-9f999ba9-c8ae-4ba3-8203-f6871dc11f50-condition:57457702-422d-4323-b61b-e13a6d01bd81",
+                    "source": "ifElse-c088abc6-3ca3-467f-b571-ccfdca60df03",
+                    "target": "variable-9f999ba9-c8ae-4ba3-8203-f6871dc11f50",
+                    "sourceHandle": "condition:57457702-422d-4323-b61b-e13a6d01bd81"
+                  },
+                  {
+                    "id": "edge-ifElse-c088abc6-3ca3-467f-b571-ccfdca60df03-ifElse-8aedbb65-8cc0-4a41-a0b5-f96fa24c7d76-else",
+                    "source": "ifElse-c088abc6-3ca3-467f-b571-ccfdca60df03",
+                    "target": "ifElse-8aedbb65-8cc0-4a41-a0b5-f96fa24c7d76",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-ifElse-8aedbb65-8cc0-4a41-a0b5-f96fa24c7d76-variable-4ca7d26c-3577-48d3-9355-d750ccc6cfc4-condition:6b90919e-572b-45ca-bacf-507f07aebe33",
+                    "source": "ifElse-8aedbb65-8cc0-4a41-a0b5-f96fa24c7d76",
+                    "target": "variable-4ca7d26c-3577-48d3-9355-d750ccc6cfc4",
+                    "sourceHandle": "condition:6b90919e-572b-45ca-bacf-507f07aebe33"
+                  },
+                  {
+                    "id": "edge-ifElse-8aedbb65-8cc0-4a41-a0b5-f96fa24c7d76-ifElse-be36ed12-030c-454e-83fb-5119f0dfedc6-else",
+                    "source": "ifElse-8aedbb65-8cc0-4a41-a0b5-f96fa24c7d76",
+                    "target": "ifElse-be36ed12-030c-454e-83fb-5119f0dfedc6",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-ifElse-be36ed12-030c-454e-83fb-5119f0dfedc6-variable-0fa3bf36-a66c-49e5-9312-828d4cc030b0-condition:313a8129-5933-4a69-a99f-c4e3f0837468",
+                    "source": "ifElse-be36ed12-030c-454e-83fb-5119f0dfedc6",
+                    "target": "variable-0fa3bf36-a66c-49e5-9312-828d4cc030b0",
+                    "sourceHandle": "condition:313a8129-5933-4a69-a99f-c4e3f0837468"
+                  },
+                  {
+                    "id": "edge-variable-0fa3bf36-a66c-49e5-9312-828d4cc030b0-builtinFunction-7e145d9a-cdff-4672-ae88-85a9797d34a2",
+                    "source": "variable-0fa3bf36-a66c-49e5-9312-828d4cc030b0",
+                    "target": "builtinFunction-7e145d9a-cdff-4672-ae88-85a9797d34a2"
+                  },
+                  {
+                    "id": "edge-builtinFunction-7e145d9a-cdff-4672-ae88-85a9797d34a2-variable-8fab4af4-fa87-47a5-9f55-41f46b64f31c",
+                    "source": "builtinFunction-7e145d9a-cdff-4672-ae88-85a9797d34a2",
+                    "target": "variable-8fab4af4-fa87-47a5-9f55-41f46b64f31c"
+                  },
+                  {
+                    "id": "edge-ifElse-be36ed12-030c-454e-83fb-5119f0dfedc6-variable-349296e1-1046-41ac-bef8-08a303800509-else",
+                    "source": "ifElse-be36ed12-030c-454e-83fb-5119f0dfedc6",
+                    "target": "variable-349296e1-1046-41ac-bef8-08a303800509",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-loop-2ea759f3-f471-4df2-a902-cf2077d8b787-builtinFunction-85e63fcf-73ac-4b36-a30b-6c2d8eb4077c-external-output",
+                    "source": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787",
+                    "target": "builtinFunction-85e63fcf-73ac-4b36-a30b-6c2d8eb4077c",
+                    "sourceHandle": "external-output"
+                  },
+                  {
+                    "id": "edge-builtinFunction-85e63fcf-73ac-4b36-a30b-6c2d8eb4077c-builtinFunction-1903b9c6-cbec-45af-a37c-3c06b5bd7d2a",
+                    "source": "builtinFunction-85e63fcf-73ac-4b36-a30b-6c2d8eb4077c",
+                    "target": "builtinFunction-1903b9c6-cbec-45af-a37c-3c06b5bd7d2a"
+                  },
+                  {
+                    "id": "edge-builtinFunction-ef9ccd6f-5279-46dd-831d-f54269775af1-connector-41a6d781-6051-406b-9c40-b95184c150fb",
+                    "source": "builtinFunction-ef9ccd6f-5279-46dd-831d-f54269775af1",
+                    "target": "connector-41a6d781-6051-406b-9c40-b95184c150fb"
+                  },
+                  {
+                    "id": "edge-connector-41a6d781-6051-406b-9c40-b95184c150fb-connector-086e46f4-65fb-4f3f-8caa-b5a092b1cfd7",
+                    "source": "connector-41a6d781-6051-406b-9c40-b95184c150fb",
+                    "target": "connector-086e46f4-65fb-4f3f-8caa-b5a092b1cfd7"
+                  },
+                  {
+                    "id": "edge-connector-086e46f4-65fb-4f3f-8caa-b5a092b1cfd7-builtinFunction-bc428912-9fc8-4ec8-8abe-a630bae29a99",
+                    "source": "connector-086e46f4-65fb-4f3f-8caa-b5a092b1cfd7",
+                    "target": "builtinFunction-bc428912-9fc8-4ec8-8abe-a630bae29a99"
+                  },
+                  {
+                    "id": "edge-builtinFunction-bc428912-9fc8-4ec8-8abe-a630bae29a99-builtinFunction-79029a57-8bf9-415a-9b23-09a9c3eea61d",
+                    "source": "builtinFunction-bc428912-9fc8-4ec8-8abe-a630bae29a99",
+                    "target": "builtinFunction-79029a57-8bf9-415a-9b23-09a9c3eea61d"
+                  },
+                  {
+                    "id": "edge-builtinFunction-79029a57-8bf9-415a-9b23-09a9c3eea61d-builtinFunction-7e7a77ee-14d2-48fa-b942-201cd92e6444",
+                    "source": "builtinFunction-79029a57-8bf9-415a-9b23-09a9c3eea61d",
+                    "target": "builtinFunction-7e7a77ee-14d2-48fa-b942-201cd92e6444"
+                  },
+                  {
+                    "id": "edge-builtinFunction-1903b9c6-cbec-45af-a37c-3c06b5bd7d2a-connector-d63d856b-7d5a-4142-88f7-542fcd206c57",
+                    "source": "builtinFunction-1903b9c6-cbec-45af-a37c-3c06b5bd7d2a",
+                    "target": "connector-d63d856b-7d5a-4142-88f7-542fcd206c57"
+                  },
+                  {
+                    "id": "edge-connector-d63d856b-7d5a-4142-88f7-542fcd206c57-builtinFunction-10c4e52d-7070-4413-90dd-b0bdd8009da4",
+                    "source": "connector-d63d856b-7d5a-4142-88f7-542fcd206c57",
+                    "target": "builtinFunction-10c4e52d-7070-4413-90dd-b0bdd8009da4"
+                  },
+                  {
+                    "id": "edge-builtinFunction-10c4e52d-7070-4413-90dd-b0bdd8009da4-builtinFunction-5273e287-ed35-4a59-ae68-4fd2de7736c8",
+                    "source": "builtinFunction-10c4e52d-7070-4413-90dd-b0bdd8009da4",
+                    "target": "builtinFunction-5273e287-ed35-4a59-ae68-4fd2de7736c8"
+                  },
+                  {
+                    "id": "edge-builtinFunction-5273e287-ed35-4a59-ae68-4fd2de7736c8-builtinFunction-c9029544-0a22-45ec-939f-86b838d5f3ca",
+                    "source": "builtinFunction-5273e287-ed35-4a59-ae68-4fd2de7736c8",
+                    "target": "builtinFunction-c9029544-0a22-45ec-939f-86b838d5f3ca"
+                  },
+                  {
+                    "id": "edge-builtinFunction-c9029544-0a22-45ec-939f-86b838d5f3ca-builtinFunction-41375972-202e-49a3-8744-d693782d483d",
+                    "source": "builtinFunction-c9029544-0a22-45ec-939f-86b838d5f3ca",
+                    "target": "builtinFunction-41375972-202e-49a3-8744-d693782d483d"
+                  },
+                  {
+                    "id": "edge-builtinFunction-41375972-202e-49a3-8744-d693782d483d-builtinFunction-482273df-473a-4a60-9584-6e4ca611a158",
+                    "source": "builtinFunction-41375972-202e-49a3-8744-d693782d483d",
+                    "target": "builtinFunction-482273df-473a-4a60-9584-6e4ca611a158"
+                  },
+                  {
+                    "id": "edge-builtinFunction-482273df-473a-4a60-9584-6e4ca611a158-builtinFunction-c42f3675-8474-4918-ac0f-0644413132ff",
+                    "source": "builtinFunction-482273df-473a-4a60-9584-6e4ca611a158",
+                    "target": "builtinFunction-c42f3675-8474-4918-ac0f-0644413132ff"
+                  },
+                  {
+                    "id": "edge-builtinFunction-c42f3675-8474-4918-ac0f-0644413132ff-connector-92ba9af2-2f54-42b0-8c3c-b955168927d1",
+                    "source": "builtinFunction-c42f3675-8474-4918-ac0f-0644413132ff",
+                    "target": "connector-92ba9af2-2f54-42b0-8c3c-b955168927d1"
+                  },
+                  {
+                    "id": "edge-connector-92ba9af2-2f54-42b0-8c3c-b955168927d1-builtinFunction-4c121629-6f29-4814-838c-4995e3990494",
+                    "source": "connector-92ba9af2-2f54-42b0-8c3c-b955168927d1",
+                    "target": "builtinFunction-4c121629-6f29-4814-838c-4995e3990494"
+                  },
+                  {
+                    "id": "edge-builtinFunction-4c121629-6f29-4814-838c-4995e3990494-builtinFunction-2d2573ec-06ab-491b-88b6-6939bcbc2a61",
+                    "source": "builtinFunction-4c121629-6f29-4814-838c-4995e3990494",
+                    "target": "builtinFunction-2d2573ec-06ab-491b-88b6-6939bcbc2a61"
+                  },
+                  {
+                    "id": "edge-builtinFunction-2d2573ec-06ab-491b-88b6-6939bcbc2a61-scope-0b42af51-e5d3-4d38-84dd-ea37effb2f4d-external-input",
+                    "source": "builtinFunction-2d2573ec-06ab-491b-88b6-6939bcbc2a61",
+                    "target": "scope-0b42af51-e5d3-4d38-84dd-ea37effb2f4d",
+                    "targetHandle": "external-input"
+                  },
+                  {
+                    "id": "edge-scope-0b42af51-e5d3-4d38-84dd-ea37effb2f4d-ifElse-291ec726-c490-4857-862d-8ab583bf98c6-internal-source",
+                    "source": "scope-0b42af51-e5d3-4d38-84dd-ea37effb2f4d",
+                    "target": "ifElse-291ec726-c490-4857-862d-8ab583bf98c6",
+                    "sourceHandle": "internal-source"
+                  },
+                  {
+                    "id": "edge-ifElse-291ec726-c490-4857-862d-8ab583bf98c6-scope-0b42af51-e5d3-4d38-84dd-ea37effb2f4d-internal-target",
+                    "source": "ifElse-291ec726-c490-4857-862d-8ab583bf98c6",
+                    "target": "scope-0b42af51-e5d3-4d38-84dd-ea37effb2f4d",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-ifElse-291ec726-c490-4857-862d-8ab583bf98c6-loop-e12850e8-1aff-4217-8654-7add9a1c6820-condition:0629854e-7d77-45c5-9b28-1e4583c63589-external-input",
+                    "source": "ifElse-291ec726-c490-4857-862d-8ab583bf98c6",
+                    "target": "loop-e12850e8-1aff-4217-8654-7add9a1c6820",
+                    "sourceHandle": "condition:0629854e-7d77-45c5-9b28-1e4583c63589",
+                    "targetHandle": "external-input"
+                  },
+                  {
+                    "id": "edge-loop-e12850e8-1aff-4217-8654-7add9a1c6820-ifElse-4ad7182e-c1a8-430e-b787-cd8a5da8a183-internal-source",
+                    "source": "loop-e12850e8-1aff-4217-8654-7add9a1c6820",
+                    "target": "ifElse-4ad7182e-c1a8-430e-b787-cd8a5da8a183",
+                    "sourceHandle": "internal-source"
+                  },
+                  {
+                    "id": "edge-ifElse-4ad7182e-c1a8-430e-b787-cd8a5da8a183-loop-e12850e8-1aff-4217-8654-7add9a1c6820-internal-target",
+                    "source": "ifElse-4ad7182e-c1a8-430e-b787-cd8a5da8a183",
+                    "target": "loop-e12850e8-1aff-4217-8654-7add9a1c6820",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-ifElse-4ad7182e-c1a8-430e-b787-cd8a5da8a183-connector-b5ffde19-8d6f-41fd-ac6d-236cec672d04-condition:78f30f0e-0165-4942-acb2-e1b0605a0abf",
+                    "source": "ifElse-4ad7182e-c1a8-430e-b787-cd8a5da8a183",
+                    "target": "connector-b5ffde19-8d6f-41fd-ac6d-236cec672d04",
+                    "sourceHandle": "condition:78f30f0e-0165-4942-acb2-e1b0605a0abf"
+                  },
+                  {
+                    "id": "edge-ifElse-4ad7182e-c1a8-430e-b787-cd8a5da8a183-connector-8a19d52b-4c51-4384-ba80-a63ffd4bd1c6-else",
+                    "source": "ifElse-4ad7182e-c1a8-430e-b787-cd8a5da8a183",
+                    "target": "connector-8a19d52b-4c51-4384-ba80-a63ffd4bd1c6",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-scope-0b42af51-e5d3-4d38-84dd-ea37effb2f4d-connector-6ab9c98d-92b1-4ce6-98b4-8bb90f42dc42-external-output",
+                    "source": "scope-0b42af51-e5d3-4d38-84dd-ea37effb2f4d",
+                    "target": "connector-6ab9c98d-92b1-4ce6-98b4-8bb90f42dc42",
+                    "sourceHandle": "external-output"
+                  },
+                  {
+                    "id": "edge-connector-6ab9c98d-92b1-4ce6-98b4-8bb90f42dc42-builtinFunction-7c3ef382-f1e3-4553-96a8-0e5da54b70a1",
+                    "source": "connector-6ab9c98d-92b1-4ce6-98b4-8bb90f42dc42",
+                    "target": "builtinFunction-7c3ef382-f1e3-4553-96a8-0e5da54b70a1"
+                  },
+                  {
+                    "id": "edge-builtinFunction-7c3ef382-f1e3-4553-96a8-0e5da54b70a1-builtinFunction-08b0c5de-f8e3-441e-8b0e-f21e1b295384",
+                    "source": "builtinFunction-7c3ef382-f1e3-4553-96a8-0e5da54b70a1",
+                    "target": "builtinFunction-08b0c5de-f8e3-441e-8b0e-f21e1b295384"
+                  },
+                  {
+                    "id": "edge-builtinFunction-08b0c5de-f8e3-441e-8b0e-f21e1b295384-builtinFunction-e2bf5ee1-82c1-4898-a983-77f17ecfce8d",
+                    "source": "builtinFunction-08b0c5de-f8e3-441e-8b0e-f21e1b295384",
+                    "target": "builtinFunction-e2bf5ee1-82c1-4898-a983-77f17ecfce8d"
+                  },
+                  {
+                    "id": "edge-builtinFunction-e2bf5ee1-82c1-4898-a983-77f17ecfce8d-builtinFunction-e179a654-466c-4dac-9b7a-21b678006598",
+                    "source": "builtinFunction-e2bf5ee1-82c1-4898-a983-77f17ecfce8d",
+                    "target": "builtinFunction-e179a654-466c-4dac-9b7a-21b678006598"
+                  },
+                  {
+                    "id": "edge-builtinFunction-e2bf5ee1-82c1-4898-a983-77f17ecfce8d-builtinFunction-ba3119fd-fe09-4bb9-87d6-6c6c124a91d4",
+                    "source": "builtinFunction-e2bf5ee1-82c1-4898-a983-77f17ecfce8d",
+                    "target": "builtinFunction-ba3119fd-fe09-4bb9-87d6-6c6c124a91d4"
+                  }
+                ],
+                "connectionReferences": {
+                  "shared_commondataserviceforapps": {
+                    "runtimeSource": "embedded",
+                    "connection": {
+                      "connectionReferenceLogicalName": "ait_Dataverse"
+                    },
+                    "api": {
+                      "name": "shared_commondataserviceforapps"
+                    }
+                  }
+                },
+                "parameters": {}
+              },
+              "nodeActionMapping": {
+                "connector-2109366b-3078-4f34-94ad-1a99d345786a": [
+                  "Get_settings"
+                ],
+                "builtinFunction-9836824b-a578-449c-8d46-b5321f26eca6": [
+                  "Select_settings"
+                ],
+                "builtinFunction-53cc671e-8394-412c-8e6c-368e26ed80ec": [
+                  "Settings"
+                ],
+                "variable-7000ca32-df8c-4f98-bd12-d7ab67719f7c": [
+                  "Init_subscriber"
+                ],
+                "connector-3d2f2eda-1667-4f1c-83e6-0f7205f0f387": [
+                  "Find_subscriber"
+                ],
+                "scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3": [
+                  "Check_subscriber_block"
+                ],
+                "ifElse-ebc19752-32f4-4bdc-9a0d-f7e5244be90c": [
+                  "Check_subscriber"
+                ],
+                "connector-1dd4b841-4390-45af-93a0-61d7c306b5c0": [
+                  "Create_subscriber"
+                ],
+                "variable-52328b40-25db-4ed3-99dd-b970e47d1ec2": [
+                  "Set_new_subscriber"
+                ],
+                "variable-e737ce0a-93ef-4831-a9a2-847c0a33dcc5": [
+                  "Set_is_new"
+                ],
+                "variable-928a92fb-c472-4b5d-88c4-9f4085f10ba7": [
+                  "Set_existing_subscriber"
+                ],
+                "builtinFunction-ef9ccd6f-5279-46dd-831d-f54269775af1": [
+                  "Followed_condition"
+                ],
+                "variable-30821f9d-ba1d-4fe0-a112-6674feee6f4f": [
+                  "Init_match"
+                ],
+                "builtinFunction-d45ee1e7-8f2b-4c70-8708-b3b5c3b2ec12": [
+                  "Token_list"
+                ],
+                "builtinFunction-95030d7b-02b7-4de1-a0ec-e007af4eb0e6": [
+                  "Tokens"
+                ],
+                "loop-2ea759f3-f471-4df2-a902-cf2077d8b787": [
+                  "Each_token"
+                ],
+                "builtinFunction-ba8f82c6-e40a-4fb6-86d3-40bd3cb32f4e": [
+                  "Pack_hit"
+                ],
+                "builtinFunction-27bbbd97-967c-4cea-8d43-d71f919421d1": [
+                  "Exact_hit"
+                ],
+                "builtinFunction-b7bc42b3-9be6-4451-b485-5c9fc97c79ff": [
+                  "Contains_hit"
+                ],
+                "builtinFunction-fc0a078b-3fff-47ca-9c96-750834d11ab9": [
+                  "Match"
+                ],
+                "ifElse-c088abc6-3ca3-467f-b571-ccfdca60df03": [
+                  "Route_match"
+                ],
+                "variable-9f999ba9-c8ae-4ba3-8203-f6871dc11f50": [
+                  "Append_pack"
+                ],
+                "ifElse-8aedbb65-8cc0-4a41-a0b5-f96fa24c7d76": [
+                  "Route_match_Product"
+                ],
+                "variable-4ca7d26c-3577-48d3-9355-d750ccc6cfc4": [
+                  "Append_product"
+                ],
+                "ifElse-be36ed12-030c-454e-83fb-5119f0dfedc6": [
+                  "Route_match_Several"
+                ],
+                "variable-0fa3bf36-a66c-49e5-9312-828d4cc030b0": [
+                  "Append_ambiguous"
+                ],
+                "builtinFunction-7e145d9a-cdff-4672-ae88-85a9797d34a2": [
+                  "Choice_names"
+                ],
+                "variable-8fab4af4-fa87-47a5-9f55-41f46b64f31c": [
+                  "Append_choices"
+                ],
+                "variable-349296e1-1046-41ac-bef8-08a303800509": [
+                  "Append_unmatched"
+                ],
+                "builtinFunction-85e63fcf-73ac-4b36-a30b-6c2d8eb4077c": [
+                  "Choice_items"
+                ],
+                "builtinFunction-1903b9c6-cbec-45af-a37c-3c06b5bd7d2a": [
+                  "Choice_list"
+                ],
+                "connector-41a6d781-6051-406b-9c40-b95184c150fb": [
+                  "Get_packs"
+                ],
+                "connector-086e46f4-65fb-4f3f-8caa-b5a092b1cfd7": [
+                  "Get_products"
+                ],
+                "builtinFunction-bc428912-9fc8-4ec8-8abe-a630bae29a99": [
+                  "Pack_candidates"
+                ],
+                "builtinFunction-79029a57-8bf9-415a-9b23-09a9c3eea61d": [
+                  "Product_candidates"
+                ],
+                "builtinFunction-7e7a77ee-14d2-48fa-b942-201cd92e6444": [
+                  "Candidates"
+                ],
+                "connector-d63d856b-7d5a-4142-88f7-542fcd206c57": [
+                  "Get_subscriptions"
+                ],
+                "builtinFunction-10c4e52d-7070-4413-90dd-b0bdd8009da4": [
+                  "Existing_keys"
+                ],
+                "builtinFunction-5273e287-ed35-4a59-ae68-4fd2de7736c8": [
+                  "New_targets"
+                ],
+                "builtinFunction-c9029544-0a22-45ec-939f-86b838d5f3ca": [
+                  "Already_targets"
+                ],
+                "builtinFunction-41375972-202e-49a3-8744-d693782d483d": [
+                  "New_labels"
+                ],
+                "builtinFunction-482273df-473a-4a60-9584-6e4ca611a158": [
+                  "Already_labels"
+                ],
+                "builtinFunction-c42f3675-8474-4918-ac0f-0644413132ff": [
+                  "New_conditions"
+                ],
+                "connector-92ba9af2-2f54-42b0-8c3c-b955168927d1": [
+                  "Count_after"
+                ],
+                "builtinFunction-4c121629-6f29-4814-838c-4995e3990494": [
+                  "Cap"
+                ],
+                "builtinFunction-2d2573ec-06ab-491b-88b6-6939bcbc2a61": [
+                  "Over_cap"
+                ],
+                "scope-0b42af51-e5d3-4d38-84dd-ea37effb2f4d": [
+                  "Check_cap_block"
+                ],
+                "ifElse-291ec726-c490-4857-862d-8ab583bf98c6": [
+                  "Check_cap"
+                ],
+                "loop-e12850e8-1aff-4217-8654-7add9a1c6820": [
+                  "Each_new_target"
+                ],
+                "ifElse-4ad7182e-c1a8-430e-b787-cd8a5da8a183": [
+                  "Is_pack"
+                ],
+                "connector-b5ffde19-8d6f-41fd-ac6d-236cec672d04": [
+                  "Create_pack_subscription"
+                ],
+                "connector-8a19d52b-4c51-4384-ba80-a63ffd4bd1c6": [
+                  "Create_product_subscription"
+                ],
+                "connector-6ab9c98d-92b1-4ce6-98b4-8bb90f42dc42": [
+                  "Count_now"
+                ],
+                "builtinFunction-7c3ef382-f1e3-4553-96a8-0e5da54b70a1": [
+                  "Lines"
+                ],
+                "builtinFunction-08b0c5de-f8e3-441e-8b0e-f21e1b295384": [
+                  "Message_lines"
+                ],
+                "builtinFunction-e2bf5ee1-82c1-4898-a983-77f17ecfce8d": [
+                  "Reply"
+                ],
+                "builtinFunction-e179a654-466c-4dac-9b7a-21b678006598": [
+                  "Respond_to_the_agent"
+                ],
+                "builtinFunction-ba3119fd-fe09-4bb9-87d6-6c6c124a91d4": [
+                  "Respond_with_error"
+                ]
+              },
+              "canvasOrientation": "horizontal"
+            }
+          }
+        }
+      },
+      "actions": {
+        "Get_settings": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "environmentvariabledefinitions",
+              "$select": "schemaname,defaultvalue",
+              "$filter": "startswith(schemaname, 'ait_')",
+              "$expand": "environmentvariabledefinition_environmentvariablevalue($select=value)"
+            }
+          },
+          "metadata": {
+            "description": "Get settings",
+            "nodeId": "connector-2109366b-3078-4f34-94ad-1a99d345786a"
+          }
+        },
+        "Select_settings": {
+          "runAfter": {
+            "Get_settings": [
+              "Succeeded"
+            ]
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@body('Get_settings')?['value']",
+            "select": "@concat(substring(string(createArray(item()?['schemaname'])), 1, sub(length(string(createArray(item()?['schemaname']))), 2)), ':', substring(string(createArray(coalesce(first(item()?['environmentvariabledefinition_environmentvariablevalue'])?['value'], item()?['defaultvalue'], ''))), 1, sub(length(string(createArray(coalesce(first(item()?['environmentvariabledefinition_environmentvariablevalue'])?['value'], item()?['defaultvalue'], '')))), 2)))"
+          },
+          "metadata": {
+            "description": "Select settings",
+            "nodeId": "builtinFunction-9836824b-a578-449c-8d46-b5321f26eca6"
+          }
+        },
+        "Settings": {
+          "runAfter": {
+            "Select_settings": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": "@json(concat('{', join(body('Select_settings'), ','), '}'))",
+          "metadata": {
+            "description": "Settings",
+            "nodeId": "builtinFunction-53cc671e-8394-412c-8e6c-368e26ed80ec"
+          }
+        },
+        "Init_subscriber": {
+          "runAfter": {
+            "Settings": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Subscriber",
+                "type": "object",
+                "value": {}
+              },
+              {
+                "name": "IsNewSubscriber",
+                "type": "boolean",
+                "value": false
+              }
+            ]
+          },
+          "metadata": {
+            "description": "Init subscriber",
+            "nodeId": "variable-7000ca32-df8c-4f98-bd12-d7ab67719f7c"
+          }
+        },
+        "Find_subscriber": {
+          "runAfter": {
+            "Init_subscriber": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "ait_subscribers",
+              "$filter": "ait_aadobjectid eq '@{replace(triggerBody()?['aadObjectId'], '''', '''''')}'",
+              "$top": 1
+            }
+          },
+          "metadata": {
+            "description": "Find subscriber",
+            "nodeId": "connector-3d2f2eda-1667-4f1c-83e6-0f7205f0f387"
+          }
+        },
+        "Check_subscriber_block": {
+          "type": "Scope",
+          "runAfter": {
+            "Find_subscriber": [
+              "Succeeded"
+            ]
+          },
+          "actions": {
+            "Check_subscriber": {
+              "runAfter": {},
+              "type": "If",
+              "expression": "@empty(body('Find_subscriber')?['value'])",
+              "actions": {
+                "Create_subscriber": {
+                  "runAfter": {},
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connectionName": "shared_commondataserviceforapps",
+                      "operationId": "CreateRecord",
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                    },
+                    "parameters": {
+                      "entityName": "ait_subscribers",
+                      "item/ait_displayname": "@{take(if(empty(triggerBody()?['displayName']), if(empty(triggerBody()?['upn']), triggerBody()?['aadObjectId'], triggerBody()?['upn']), triggerBody()?['displayName']), 100)}",
+                      "item/ait_aadobjectid": "@triggerBody()?['aadObjectId']",
+                      "item/ait_upn": "@triggerBody()?['upn']",
+                      "item/ait_lookaheadmonths": "@int(outputs('Settings')?['ait_DefaultLookaheadMonths'])",
+                      "item/ait_criticalwindowmonths": "@int(outputs('Settings')?['ait_DefaultCriticalWindowMonths'])",
+                      "item/ait_frequency": 748120001,
+                      "item/ait_weekday": 748120000,
+                      "item/ait_ispaused": false,
+                      "item/ait_sendemptydigest": "@contains(createArray('yes', 'true', '1'), toLower(string(outputs('Settings')?['ait_SendEmptyDigest'])))"
+                    }
+                  },
+                  "metadata": {
+                    "description": "Create subscriber",
+                    "nodeId": "connector-1dd4b841-4390-45af-93a0-61d7c306b5c0"
+                  }
+                },
+                "Set_new_subscriber": {
+                  "runAfter": {
+                    "Create_subscriber": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "Subscriber",
+                    "value": "@body('Create_subscriber')"
+                  },
+                  "metadata": {
+                    "description": "Set new subscriber",
+                    "nodeId": "variable-52328b40-25db-4ed3-99dd-b970e47d1ec2"
+                  }
+                },
+                "Set_is_new": {
+                  "runAfter": {
+                    "Set_new_subscriber": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "IsNewSubscriber",
+                    "value": true
+                  },
+                  "metadata": {
+                    "description": "Set is new",
+                    "nodeId": "variable-e737ce0a-93ef-4831-a9a2-847c0a33dcc5"
+                  }
+                }
+              },
+              "else": {
+                "actions": {
+                  "Set_existing_subscriber": {
+                    "runAfter": {},
+                    "type": "SetVariable",
+                    "inputs": {
+                      "name": "Subscriber",
+                      "value": "@first(body('Find_subscriber')?['value'])"
+                    },
+                    "metadata": {
+                      "description": "Set existing subscriber",
+                      "nodeId": "variable-928a92fb-c472-4b5d-88c4-9f4085f10ba7"
+                    }
+                  }
+                }
+              },
+              "metadata": {
+                "description": "Check subscriber",
+                "nodeId": "ifElse-ebc19752-32f4-4bdc-9a0d-f7e5244be90c"
+              }
+            }
+          },
+          "metadata": {
+            "description": "Check subscriber block",
+            "nodeId": "scope-62c4a057-d8bd-4d6e-9906-09639f3fbce3"
+          }
+        },
+        "Followed_condition": {
+          "runAfter": {
+            "Check_subscriber_block": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": "(ait_product_subscription/any(s: s/_ait_subscriberid_value eq @{variables('Subscriber')?['ait_subscriberid']}) or ait_pack_product/any(p: p/ait_isactive eq true and p/ait_pack_subscription/any(s: s/_ait_subscriberid_value eq @{variables('Subscriber')?['ait_subscriberid']})))",
+          "metadata": {
+            "description": "Followed condition",
+            "nodeId": "builtinFunction-ef9ccd6f-5279-46dd-831d-f54269775af1"
+          }
+        },
+        "Init_match": {
+          "runAfter": {
+            "Candidates": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Targets",
+                "type": "array",
+                "value": []
+              },
+              {
+                "name": "Unmatched",
+                "type": "array",
+                "value": []
+              },
+              {
+                "name": "Ambiguous",
+                "type": "array",
+                "value": []
+              },
+              {
+                "name": "Choices",
+                "type": "array",
+                "value": []
+              }
+            ]
+          },
+          "metadata": {
+            "description": "Init match",
+            "nodeId": "variable-30821f9d-ba1d-4fe0-a112-6674feee6f4f"
+          }
+        },
+        "Token_list": {
+          "runAfter": {
+            "Init_match": [
+              "Succeeded"
+            ]
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@split(coalesce(triggerBody()?['args'], ''), ',')",
+            "select": "@toLower(trim(item()))"
+          },
+          "metadata": {
+            "description": "Token list",
+            "nodeId": "builtinFunction-d45ee1e7-8f2b-4c70-8708-b3b5c3b2ec12"
+          }
+        },
+        "Tokens": {
+          "runAfter": {
+            "Token_list": [
+              "Succeeded"
+            ]
+          },
+          "type": "Query",
+          "inputs": {
+            "from": "@union(body('Token_list'), body('Token_list'))",
+            "where": "@not(empty(item()))"
+          },
+          "metadata": {
+            "description": "Tokens",
+            "nodeId": "builtinFunction-95030d7b-02b7-4de1-a0ec-e007af4eb0e6"
+          }
+        },
+        "Each_token": {
+          "runAfter": {
+            "Tokens": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach",
+          "foreach": "@body('Tokens')",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "repetitions": 1
+            }
+          },
+          "actions": {
+            "Pack_hit": {
+              "runAfter": {},
+              "type": "Query",
+              "inputs": {
+                "from": "@outputs('Candidates')",
+                "where": "@and(equals(item()?['kind'], 'pack'), equals(item()?['code'], items('Each_token')))"
+              },
+              "metadata": {
+                "description": "Pack hit",
+                "nodeId": "builtinFunction-ba8f82c6-e40a-4fb6-86d3-40bd3cb32f4e"
+              }
+            },
+            "Exact_hit": {
+              "runAfter": {
+                "Pack_hit": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Query",
+              "inputs": {
+                "from": "@outputs('Candidates')",
+                "where": "@and(equals(item()?['kind'], 'product'), or(equals(item()?['name'], items('Each_token')), equals(item()?['alt'], items('Each_token')), contains(item()?['aliases'], concat(',', items('Each_token'), ','))))"
+              },
+              "metadata": {
+                "description": "Exact hit",
+                "nodeId": "builtinFunction-27bbbd97-967c-4cea-8d43-d71f919421d1"
+              }
+            },
+            "Contains_hit": {
+              "runAfter": {
+                "Exact_hit": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Query",
+              "inputs": {
+                "from": "@outputs('Candidates')",
+                "where": "@and(equals(item()?['kind'], 'product'), or(contains(item()?['name'], items('Each_token')), contains(item()?['alt'], items('Each_token'))))"
+              },
+              "metadata": {
+                "description": "Contains hit",
+                "nodeId": "builtinFunction-b7bc42b3-9be6-4451-b485-5c9fc97c79ff"
+              }
+            },
+            "Match": {
+              "runAfter": {
+                "Contains_hit": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Compose",
+              "inputs": "@if(greater(length(body('Pack_hit')), 0), first(body('Pack_hit')), if(greater(length(body('Exact_hit')), 0), first(body('Exact_hit')), if(equals(length(body('Contains_hit')), 1), first(body('Contains_hit')), json(concat('{\"kind\":\"', if(greater(length(body('Contains_hit')), 1), 'ambiguous', 'none'), '\"}')))))",
+              "metadata": {
+                "description": "Match",
+                "nodeId": "builtinFunction-fc0a078b-3fff-47ca-9c96-750834d11ab9"
+              }
+            },
+            "Route_match": {
+              "type": "If",
+              "expression": "@equals(outputs('Match')?['kind'], 'pack')",
+              "actions": {
+                "Append_pack": {
+                  "runAfter": {},
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "Targets",
+                    "value": "@outputs('Match')"
+                  },
+                  "metadata": {
+                    "description": "Append pack",
+                    "nodeId": "variable-9f999ba9-c8ae-4ba3-8203-f6871dc11f50"
+                  }
+                }
+              },
+              "else": {
+                "actions": {
+                  "Route_match_Product": {
+                    "type": "If",
+                    "expression": "@equals(outputs('Match')?['kind'], 'product')",
+                    "actions": {
+                      "Append_product": {
+                        "runAfter": {},
+                        "type": "AppendToArrayVariable",
+                        "inputs": {
+                          "name": "Targets",
+                          "value": "@outputs('Match')"
+                        },
+                        "metadata": {
+                          "description": "Append product",
+                          "nodeId": "variable-4ca7d26c-3577-48d3-9355-d750ccc6cfc4"
+                        }
+                      }
+                    },
+                    "else": {
+                      "actions": {
+                        "Route_match_Several": {
+                          "type": "If",
+                          "expression": "@equals(outputs('Match')?['kind'], 'ambiguous')",
+                          "actions": {
+                            "Append_ambiguous": {
+                              "runAfter": {},
+                              "type": "AppendToArrayVariable",
+                              "inputs": {
+                                "name": "Ambiguous",
+                                "value": "@items('Each_token')"
+                              },
+                              "metadata": {
+                                "description": "Append ambiguous",
+                                "nodeId": "variable-0fa3bf36-a66c-49e5-9312-828d4cc030b0"
+                              }
+                            },
+                            "Choice_names": {
+                              "runAfter": {
+                                "Append_ambiguous": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "Select",
+                              "inputs": {
+                                "from": "@take(body('Contains_hit'), 10)",
+                                "select": "@item()?['label']"
+                              },
+                              "metadata": {
+                                "description": "Choice names",
+                                "nodeId": "builtinFunction-7e145d9a-cdff-4672-ae88-85a9797d34a2"
+                              }
+                            },
+                            "Append_choices": {
+                              "runAfter": {
+                                "Choice_names": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "AppendToArrayVariable",
+                              "inputs": {
+                                "name": "Choices",
+                                "value": "|@{join(body('Choice_names'), '|')}"
+                              },
+                              "metadata": {
+                                "description": "Append choices",
+                                "nodeId": "variable-8fab4af4-fa87-47a5-9f55-41f46b64f31c"
+                              }
+                            }
+                          },
+                          "else": {
+                            "actions": {
+                              "Append_unmatched": {
+                                "runAfter": {},
+                                "type": "AppendToArrayVariable",
+                                "inputs": {
+                                  "name": "Unmatched",
+                                  "value": "@items('Each_token')"
+                                },
+                                "metadata": {
+                                  "description": "Append unmatched",
+                                  "nodeId": "variable-349296e1-1046-41ac-bef8-08a303800509"
+                                }
+                              }
+                            }
+                          },
+                          "runAfter": {},
+                          "metadata": {
+                            "description": "Route match Several",
+                            "nodeId": "ifElse-be36ed12-030c-454e-83fb-5119f0dfedc6"
+                          }
+                        }
+                      }
+                    },
+                    "runAfter": {},
+                    "metadata": {
+                      "description": "Route match Product",
+                      "nodeId": "ifElse-8aedbb65-8cc0-4a41-a0b5-f96fa24c7d76"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Match": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "description": "Route match",
+                "nodeId": "ifElse-c088abc6-3ca3-467f-b571-ccfdca60df03"
+              }
+            }
+          },
+          "metadata": {
+            "description": "Each token",
+            "nodeId": "loop-2ea759f3-f471-4df2-a902-cf2077d8b787"
+          }
+        },
+        "Choice_items": {
+          "runAfter": {
+            "Each_token": [
+              "Succeeded"
+            ]
+          },
+          "type": "Query",
+          "inputs": {
+            "from": "@union(split(join(variables('Choices'), ''), '|'), json('[]'))",
+            "where": "@not(empty(item()))"
+          },
+          "metadata": {
+            "description": "Choice items",
+            "nodeId": "builtinFunction-85e63fcf-73ac-4b36-a30b-6c2d8eb4077c"
+          }
+        },
+        "Choice_list": {
+          "runAfter": {
+            "Choice_items": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": "@join(body('Choice_items'), '|')",
+          "metadata": {
+            "description": "Choice list",
+            "nodeId": "builtinFunction-1903b9c6-cbec-45af-a37c-3c06b5bd7d2a"
+          }
+        },
+        "Get_packs": {
+          "runAfter": {
+            "Followed_condition": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "ait_packs",
+              "$select": "ait_packid,ait_code,ait_name",
+              "$filter": "ait_isactive eq true"
+            }
+          },
+          "metadata": {
+            "description": "Get packs",
+            "nodeId": "connector-41a6d781-6051-406b-9c40-b95184c150fb"
+          }
+        },
+        "Get_products": {
+          "runAfter": {
+            "Get_packs": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "ait_products",
+              "$select": "ait_productid,ait_name,ait_displayname,ait_aliases",
+              "$filter": "ait_isactive eq true"
+            }
+          },
+          "metadata": {
+            "description": "Get products",
+            "nodeId": "connector-086e46f4-65fb-4f3f-8caa-b5a092b1cfd7"
+          }
+        },
+        "Pack_candidates": {
+          "runAfter": {
+            "Get_products": [
+              "Succeeded"
+            ]
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@body('Get_packs')?['value']",
+            "select": {
+              "kind": "pack",
+              "id": "@item()?['ait_packid']",
+              "key": "@concat('pack:', item()?['ait_code'])",
+              "label": "@concat('pack ', item()?['ait_code'], ' (', item()?['ait_name'], ')')",
+              "code": "@toLower(item()?['ait_code'])",
+              "name": "",
+              "alt": "",
+              "aliases": ""
+            }
+          },
+          "metadata": {
+            "description": "Pack candidates",
+            "nodeId": "builtinFunction-bc428912-9fc8-4ec8-8abe-a630bae29a99"
+          }
+        },
+        "Product_candidates": {
+          "runAfter": {
+            "Pack_candidates": [
+              "Succeeded"
+            ]
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@body('Get_products')?['value']",
+            "select": {
+              "kind": "product",
+              "id": "@item()?['ait_productid']",
+              "key": "@concat('product:', item()?['ait_name'])",
+              "label": "@item()?['ait_name']",
+              "code": "",
+              "name": "@toLower(item()?['ait_name'])",
+              "alt": "@toLower(coalesce(item()?['ait_displayname'], item()?['ait_name']))",
+              "aliases": "@concat(',', replace(replace(toLower(coalesce(item()?['ait_aliases'], '')), ' ,', ','), ', ', ','), ',')"
+            }
+          },
+          "metadata": {
+            "description": "Product candidates",
+            "nodeId": "builtinFunction-79029a57-8bf9-415a-9b23-09a9c3eea61d"
+          }
+        },
+        "Candidates": {
+          "runAfter": {
+            "Product_candidates": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": "@union(body('Pack_candidates'), body('Product_candidates'))",
+          "metadata": {
+            "description": "Candidates",
+            "nodeId": "builtinFunction-7e7a77ee-14d2-48fa-b942-201cd92e6444"
+          }
+        },
+        "Get_subscriptions": {
+          "runAfter": {
+            "Choice_list": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "ait_subscriptions",
+              "$select": "ait_targetkey",
+              "$filter": "_ait_subscriberid_value eq @{variables('Subscriber')?['ait_subscriberid']}"
+            }
+          },
+          "metadata": {
+            "description": "Get subscriptions",
+            "nodeId": "connector-d63d856b-7d5a-4142-88f7-542fcd206c57"
+          }
+        },
+        "Existing_keys": {
+          "runAfter": {
+            "Get_subscriptions": [
+              "Succeeded"
+            ]
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@body('Get_subscriptions')?['value']",
+            "select": "@item()?['ait_targetkey']"
+          },
+          "metadata": {
+            "description": "Existing keys",
+            "nodeId": "builtinFunction-10c4e52d-7070-4413-90dd-b0bdd8009da4"
+          }
+        },
+        "New_targets": {
+          "runAfter": {
+            "Existing_keys": [
+              "Succeeded"
+            ]
+          },
+          "type": "Query",
+          "inputs": {
+            "from": "@union(variables('Targets'), variables('Targets'))",
+            "where": "@not(contains(body('Existing_keys'), item()?['key']))"
+          },
+          "metadata": {
+            "description": "New targets",
+            "nodeId": "builtinFunction-5273e287-ed35-4a59-ae68-4fd2de7736c8"
+          }
+        },
+        "Already_targets": {
+          "runAfter": {
+            "New_targets": [
+              "Succeeded"
+            ]
+          },
+          "type": "Query",
+          "inputs": {
+            "from": "@union(variables('Targets'), variables('Targets'))",
+            "where": "@contains(body('Existing_keys'), item()?['key'])"
+          },
+          "metadata": {
+            "description": "Already targets",
+            "nodeId": "builtinFunction-c9029544-0a22-45ec-939f-86b838d5f3ca"
+          }
+        },
+        "New_labels": {
+          "runAfter": {
+            "Already_targets": [
+              "Succeeded"
+            ]
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@body('New_targets')",
+            "select": "@item()?['label']"
+          },
+          "metadata": {
+            "description": "New labels",
+            "nodeId": "builtinFunction-41375972-202e-49a3-8744-d693782d483d"
+          }
+        },
+        "Already_labels": {
+          "runAfter": {
+            "New_labels": [
+              "Succeeded"
+            ]
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@body('Already_targets')",
+            "select": "@item()?['label']"
+          },
+          "metadata": {
+            "description": "Already labels",
+            "nodeId": "builtinFunction-482273df-473a-4a60-9584-6e4ca611a158"
+          }
+        },
+        "New_conditions": {
+          "runAfter": {
+            "Already_labels": [
+              "Succeeded"
+            ]
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@body('New_targets')",
+            "select": "@if(equals(item()?['kind'], 'pack'), concat('ait_pack_product/any(p: p/ait_packid eq ', item()?['id'], ')'), concat('ait_productid eq ', item()?['id']))"
+          },
+          "metadata": {
+            "description": "New conditions",
+            "nodeId": "builtinFunction-c42f3675-8474-4918-ac0f-0644413132ff"
+          }
+        },
+        "Count_after": {
+          "runAfter": {
+            "New_conditions": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "ait_products",
+              "$select": "ait_productid",
+              "$filter": "ait_isactive eq true and (@{outputs('Followed_condition')}@{if(empty(body('New_conditions')), '', concat(' or ', join(body('New_conditions'), ' or ')))})"
+            }
+          },
+          "metadata": {
+            "description": "Count after",
+            "nodeId": "connector-92ba9af2-2f54-42b0-8c3c-b955168927d1"
+          }
+        },
+        "Cap": {
+          "runAfter": {
+            "Count_after": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": "@int(coalesce(outputs('Settings')?['ait_MaxProductsPerUser'], '0'))",
+          "metadata": {
+            "description": "Cap",
+            "nodeId": "builtinFunction-4c121629-6f29-4814-838c-4995e3990494"
+          }
+        },
+        "Over_cap": {
+          "runAfter": {
+            "Cap": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": "@and(greater(length(body('New_targets')), 0), greater(outputs('Cap'), 0), greater(length(body('Count_after')?['value']), outputs('Cap')))",
+          "metadata": {
+            "description": "Over cap",
+            "nodeId": "builtinFunction-2d2573ec-06ab-491b-88b6-6939bcbc2a61"
+          }
+        },
+        "Check_cap_block": {
+          "type": "Scope",
+          "runAfter": {
+            "Over_cap": [
+              "Succeeded"
+            ]
+          },
+          "actions": {
+            "Check_cap": {
+              "runAfter": {},
+              "type": "If",
+              "expression": "@not(outputs('Over_cap'))",
+              "actions": {
+                "Each_new_target": {
+                  "runAfter": {},
+                  "type": "Foreach",
+                  "foreach": "@body('New_targets')",
+                  "runtimeConfiguration": {
+                    "concurrency": {
+                      "repetitions": 1
+                    }
+                  },
+                  "actions": {
+                    "Is_pack": {
+                      "runAfter": {},
+                      "type": "If",
+                      "expression": "@equals(items('Each_new_target')?['kind'], 'pack')",
+                      "actions": {
+                        "Create_pack_subscription": {
+                          "runAfter": {},
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "host": {
+                              "connectionName": "shared_commondataserviceforapps",
+                              "operationId": "CreateRecord",
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                            },
+                            "parameters": {
+                              "entityName": "ait_subscriptions",
+                              "item/ait_name": "@{take(concat(variables('Subscriber')?['ait_displayname'], ' · ', items('Each_new_target')?['key']), 100)}",
+                              "item/ait_targetkey": "@items('Each_new_target')?['key']",
+                              "item/ait_subscriberid@odata.bind": "/ait_subscribers(@{variables('Subscriber')?['ait_subscriberid']})",
+                              "item/ait_packid@odata.bind": "/ait_packs(@{items('Each_new_target')?['id']})"
+                            }
+                          },
+                          "metadata": {
+                            "description": "Create pack subscription",
+                            "nodeId": "connector-b5ffde19-8d6f-41fd-ac6d-236cec672d04"
+                          }
+                        }
+                      },
+                      "else": {
+                        "actions": {
+                          "Create_product_subscription": {
+                            "runAfter": {},
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "host": {
+                                "connectionName": "shared_commondataserviceforapps",
+                                "operationId": "CreateRecord",
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                              },
+                              "parameters": {
+                                "entityName": "ait_subscriptions",
+                                "item/ait_name": "@{take(concat(variables('Subscriber')?['ait_displayname'], ' · ', items('Each_new_target')?['key']), 100)}",
+                                "item/ait_targetkey": "@items('Each_new_target')?['key']",
+                                "item/ait_subscriberid@odata.bind": "/ait_subscribers(@{variables('Subscriber')?['ait_subscriberid']})",
+                                "item/ait_productid@odata.bind": "/ait_products(@{items('Each_new_target')?['id']})"
+                              }
+                            },
+                            "metadata": {
+                              "description": "Create product subscription",
+                              "nodeId": "connector-8a19d52b-4c51-4384-ba80-a63ffd4bd1c6"
+                            }
+                          }
+                        }
+                      },
+                      "metadata": {
+                        "description": "Is pack",
+                        "nodeId": "ifElse-4ad7182e-c1a8-430e-b787-cd8a5da8a183"
+                      }
+                    }
+                  },
+                  "metadata": {
+                    "description": "Each new target",
+                    "nodeId": "loop-e12850e8-1aff-4217-8654-7add9a1c6820"
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "metadata": {
+                "description": "Check cap",
+                "nodeId": "ifElse-291ec726-c490-4857-862d-8ab583bf98c6"
+              }
+            }
+          },
+          "metadata": {
+            "description": "Check cap block",
+            "nodeId": "scope-0b42af51-e5d3-4d38-84dd-ea37effb2f4d"
+          }
+        },
+        "Count_now": {
+          "runAfter": {
+            "Check_cap_block": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "ait_products",
+              "$select": "ait_productid",
+              "$filter": "ait_isactive eq true and @{outputs('Followed_condition')}"
+            }
+          },
+          "metadata": {
+            "description": "Count now",
+            "nodeId": "connector-6ab9c98d-92b1-4ce6-98b4-8bb90f42dc42"
+          }
+        },
+        "Lines": {
+          "runAfter": {
+            "Count_now": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": [
+            "@{if(outputs('Over_cap'), concat('Not added: that would bring you to ', length(body('Count_after')?['value']), ' products, and the limit is ', outputs('Cap'), '. Remove some with /remove first, or add fewer.'), if(empty(body('New_labels')), '', concat('Added: ', join(body('New_labels'), ', '), '.')))}",
+            "@{if(empty(body('Already_labels')), '', concat('Already following: ', join(body('Already_labels'), ', '), '.'))}",
+            "@{if(empty(variables('Unmatched')), '', concat('No match for ''', join(variables('Unmatched'), ''', '''), '''. Try /products ', first(variables('Unmatched')), ' to search the catalog.'))}",
+            "@{if(empty(variables('Ambiguous')), '', concat('More than one product matches ''', join(variables('Ambiguous'), ''', '''), '''. Pick one below.'))}",
+            "@{concat('You follow ', length(body('Count_now')?['value']), ' products. Type /mysubs to see them.')}"
+          ],
+          "metadata": {
+            "description": "Lines",
+            "nodeId": "builtinFunction-7c3ef382-f1e3-4553-96a8-0e5da54b70a1"
+          }
+        },
+        "Message_lines": {
+          "runAfter": {
+            "Lines": [
+              "Succeeded"
+            ]
+          },
+          "type": "Query",
+          "inputs": {
+            "from": "@outputs('Lines')",
+            "where": "@not(empty(item()))"
+          },
+          "metadata": {
+            "description": "Message lines",
+            "nodeId": "builtinFunction-08b0c5de-f8e3-441e-8b0e-f21e1b295384"
+          }
+        },
+        "Reply": {
+          "runAfter": {
+            "Message_lines": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": {
+            "message": "@{join(body('Message_lines'), decodeUriComponent('%0A%0A'))}",
+            "choices": "@{outputs('Choice_list')}"
+          },
+          "metadata": {
+            "description": "Reply",
+            "nodeId": "builtinFunction-e2bf5ee1-82c1-4898-a983-77f17ecfce8d"
+          }
+        },
+        "Respond_to_the_agent": {
+          "runAfter": {
+            "Reply": [
+              "Succeeded"
+            ]
+          },
+          "type": "Response",
+          "kind": "Skills",
+          "inputs": {
+            "statusCode": 200,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "title": "message",
+                  "description": "",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "choices": {
+                  "title": "choices",
+                  "description": "",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "additionalProperties": {}
+            },
+            "body": {
+              "message": "@{outputs('Reply')?['message']}",
+              "choices": "@{outputs('Reply')?['choices']}"
+            }
+          },
+          "metadata": {
+            "description": "Respond to the agent",
+            "nodeId": "builtinFunction-e179a654-466c-4dac-9b7a-21b678006598"
+          }
+        },
+        "Respond_with_error": {
+          "runAfter": {
+            "Reply": [
+              "Failed",
+              "Skipped",
+              "TimedOut"
+            ]
+          },
+          "type": "Response",
+          "kind": "Skills",
+          "inputs": {
+            "statusCode": 200,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "title": "message",
+                  "description": "",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "choices": {
+                  "title": "choices",
+                  "description": "",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "additionalProperties": {}
+            },
+            "body": {
+              "message": "Sorry, something went wrong on my side. Please try again in a few minutes.",
+              "choices": ""
+            }
+          },
+          "metadata": {
+            "description": "Respond with error",
+            "nodeId": "builtinFunction-ba3119fd-fe09-4bb9-87d6-6c6c124a91d4"
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "defaultToEmbeddedConnections": true
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

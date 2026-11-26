@@ -1,0 +1,32 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRedirect
+  id: main
+  actions:
+    - kind: InvokeFlowAction
+      id: callPauseResume
+      input:
+        binding:
+          aadObjectId: =System.User.Id
+          displayName: =System.User.DisplayName
+          pause: =Topic.Pause
+          upn: =System.User.PrincipalName
+
+      output:
+        binding:
+          message: Topic.Message
+
+      flowId: 7b409b5f-e1e8-f111-84ea-000d3ad895be
+
+    - kind: SendActivity
+      id: sendResult
+      activity: "{Topic.Message}"
+
+inputType:
+  properties:
+    Pause:
+      displayName: Pause
+      description: true for /pause, false for /resume
+      type: Boolean
+
+outputType: {}

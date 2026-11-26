@@ -1,0 +1,45 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRedirect
+  id: main
+  actions:
+    - kind: ConditionGroup
+      id: checkArgs
+      conditions:
+        - id: badArgs
+          condition: =Not(IsMatch(Topic.Args, "^\d{1,2}$")) || Value(Topic.Args) < 1 || Value(Topic.Args) > 24
+          actions:
+            - kind: SendActivity
+              id: usage
+              activity: "Usage: `/lookahead <months>`, a whole number from 1 to 24. Example: /lookahead 6"
+
+            - kind: EndDialog
+              id: endBadArgs
+
+    - kind: InvokeFlowAction
+      id: callSetLookahead
+      input:
+        binding:
+          aadObjectId: =System.User.Id
+          displayName: =System.User.DisplayName
+          months: =Value(Topic.Args)
+          upn: =System.User.PrincipalName
+
+      output:
+        binding:
+          message: Topic.Message
+
+      flowId: 6780493c-e1e8-f111-84ea-000d3ad895be
+
+    - kind: SendActivity
+      id: sendResult
+      activity: "{Topic.Message}"
+
+inputType:
+  properties:
+    Args:
+      displayName: Args
+      description: Months after /lookahead
+      type: String
+
+outputType: {}

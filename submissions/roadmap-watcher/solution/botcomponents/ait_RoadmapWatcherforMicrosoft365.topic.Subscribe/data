@@ -1,0 +1,67 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRedirect
+  id: main
+  actions:
+    - kind: ConditionGroup
+      id: checkArgs
+      conditions:
+        - id: noArgs
+          condition: =IsBlank(Topic.Args)
+          actions:
+            - kind: SendActivity
+              id: usage
+              activity: "Usage: `/add <names>`, comma-separated pack codes, product names or aliases. Example: /add security, teams. Type /packs or /products to see the names."
+
+            - kind: EndDialog
+              id: endNoArgs
+
+    - kind: InvokeFlowAction
+      id: callSubscribe
+      input:
+        binding:
+          aadObjectId: =System.User.Id
+          args: =Topic.Args
+          displayName: =System.User.DisplayName
+          upn: =System.User.PrincipalName
+
+      output:
+        binding:
+          choices: Topic.Choices
+          message: Topic.Message
+
+      flowId: 72bf7e33-e1e8-f111-84ea-000d3ad895be
+
+    - kind: SendActivity
+      id: sendResult
+      activity: "{Topic.Message}"
+
+    - kind: ConditionGroup
+      id: checkChoices
+      conditions:
+        - id: hasChoices
+          condition: =!IsBlank(Topic.Choices)
+          actions:
+            - kind: SendActivity
+              id: sendChoices
+              activity:
+                attachments:
+                  - kind: AdaptiveCardTemplate
+                    cardContent: |-
+                      ={
+                        type: "AdaptiveCard",
+                        version: "1.5",
+                        body: [
+                          { type: "TextBlock", text: "Which product did you mean?", weight: "Bolder", wrap: true },
+                          { type: "Container", items: ForAll(Split(Topic.Choices, "|"), { type: "ActionSet", actions: [ { type: "Action.Submit", title: Value, data: { msteams: { type: "imBack", value: "/add " & Value } } } ] }) }
+                        ]
+                      }
+
+inputType:
+  properties:
+    Args:
+      displayName: Args
+      description: Comma-separated names after /add or /subscribe
+      type: String
+
+outputType: {}

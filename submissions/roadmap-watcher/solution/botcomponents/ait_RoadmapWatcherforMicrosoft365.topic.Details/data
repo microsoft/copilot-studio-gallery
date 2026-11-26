@@ -1,0 +1,42 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRedirect
+  id: main
+  actions:
+    - kind: ConditionGroup
+      id: checkArgs
+      conditions:
+        - id: badArgs
+          condition: =Not(IsMatch(Topic.Args, "^[A-Za-z0-9\-]{1,200}$"))
+          actions:
+            - kind: SendActivity
+              id: usage
+              activity: "Usage: `/details <id>`, the ID from the Microsoft 365 roadmap or Azure Updates. Examples: /details 570439, /details azure-567933"
+
+            - kind: EndDialog
+              id: endBadArgs
+
+    - kind: InvokeFlowAction
+      id: callDetails
+      input:
+        binding:
+          id: =Topic.Args
+
+      output:
+        binding:
+          message: Topic.Message
+
+      flowId: 988de98f-e0e8-f111-84ea-000d3ad895be
+
+    - kind: SendActivity
+      id: sendDetails
+      activity: "{Topic.Message}"
+
+inputType:
+  properties:
+    Args:
+      displayName: Args
+      description: Microsoft 365 roadmap ID or Azure update ID after /details
+      type: String
+
+outputType: {}
