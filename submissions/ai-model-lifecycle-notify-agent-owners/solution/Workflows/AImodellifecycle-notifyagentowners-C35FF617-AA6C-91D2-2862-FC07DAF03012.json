@@ -1,15 +1,15 @@
 {
   "properties": {
     "connectionReferences": {
-      "shared_keyvault": {
+      "shared_webcontentsv2": {
         "api": {
-          "name": "shared_keyvault"
+          "name": "shared_webcontentsv2"
         },
         "connection": {
-          "connectionReferenceLogicalName": "new_sharedkeyvault_mcplanner"
+          "connectionReferenceLogicalName": "new_sharedwebcontentsv2_aimodel"
         },
         "runtimeSource": "embedded",
-        "connectionName": "shared-keyvault-mcplanner"
+        "connectionName": "shared-webcontentsv2-aimodellifecycle"
       },
       "shared_commondataserviceforapps": {
         "api": {
@@ -145,7 +145,7 @@
                             "variableName": "Config",
                             "mode": "initialize",
                             "type": "object",
-                            "value": "{\n  \"tenantId\": \"<your-tenant-id>\",\n  \"clientId\": \"<your-app-client-id>\",\n  \"keyVaultSecretName\": \"<your-key-vault-secret-name>\",\n  \"adminEmail\": \"ai-governance@contoso.com\",\n  \"contactText\": \"your Power Platform environment admins\",\n  \"lookbackDays\": 30,\n  \"testMode\": true,\n  \"testModeMaxEmails\": 3,\n  \"maxOwnerEmailsPerPost\": 100,\n  \"environmentIds\": []\n}"
+                            "value": "{\n  \"adminEmail\": \"ai-governance@contoso.com\",\n  \"contactText\": \"your Power Platform environment admins\",\n  \"lookbackDays\": 30,\n  \"testMode\": true,\n  \"testModeMaxEmails\": 3,\n  \"maxOwnerEmailsPerPost\": 100,\n  \"environmentIds\": []\n}"
                           }
                         ]
                       },
@@ -201,40 +201,49 @@
                     }
                   },
                   {
-                    "id": "connector-02876510-9ebd-4212-bfff-dce7caa35a2d",
-                    "name": "Get client secret from Key Vault",
+                    "id": "connector-de816df8-3fe2-52bd-ba7b-c4261c093306",
+                    "name": "Get Message Center posts",
                     "type": "connector",
                     "version": 1,
-                    "position": {
-                      "x": 949,
-                      "y": 400.5
-                    },
                     "data": {
                       "config": {
-                        "apiName": "shared_keyvault",
-                        "displayName": "Get secret",
-                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1819/1.0.1819.4795/keyvault/icon.png",
+                        "apiName": "shared_webcontentsv2",
+                        "displayName": "HTTP With Microsoft Entra ID",
+                        "iconUri": "https://conn-afd-prod-endpoint-bmc9bqahasf3grgk.b01.azurefd.net/releases/v1.0.1782/1.0.1782.4448/WebContentsV2/icon.png",
                         "brandColor": "#0072C6",
-                        "operationName": "GetSecret",
+                        "operationName": "InvokeHttp",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_webcontentsv2",
                         "parametersSchema": {
                           "type": "object",
                           "required": [
-                            "secretName"
+                            "request/method",
+                            "request/url"
                           ],
                           "properties": {
-                            "secretName": {
+                            "request/method": {
                               "type": "string",
-                              "title": "Name of the secret"
+                              "title": "Method"
+                            },
+                            "request/url": {
+                              "type": "string",
+                              "title": "Url of the request"
+                            },
+                            "request/headers": {
+                              "type": "object",
+                              "title": "Headers"
                             }
                           }
                         },
-                        "operationType": "OpenApiConnection",
-                        "connectionName": "shared_keyvault",
                         "parameters": {
-                          "secretName": "@variables('Config')?['keyVaultSecretName']"
+                          "request/method": "GET",
+                          "request/url": "https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/messages?$filter=lastModifiedDateTime%20ge%20@{formatDateTime(addDays(utcNow(), mul(-1, int(coalesce(variables('Config')?['lookbackDays'], 30)))),'yyyy-MM-ddTHH:mm:ssZ')}",
+                          "request/headers": {
+                            "Prefer": "odata.maxpagesize=1000"
+                          }
                         },
                         "initializedParameterDefaults": [],
-                        "operationId": "GetSecret"
+                        "operationId": "InvokeHttp"
                       },
                       "outcomes": [
                         {
@@ -249,111 +258,10 @@
                     "measured": {
                       "width": 240,
                       "height": 66
-                    }
-                  },
-                  {
-                    "id": "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa",
-                    "name": "Get Message Center posts",
-                    "type": "builtinFunction",
-                    "version": 1,
+                    },
                     "position": {
-                      "x": 1232,
+                      "x": 949,
                       "y": 400.5
-                    },
-                    "data": {
-                      "config": {
-                        "operationId": "httpaction",
-                        "operationName": "httpaction",
-                        "displayName": "HTTP",
-                        "category": "providers/Microsoft.ProcessSimple/operationGroups/Http",
-                        "categoryDisplayName": "HTTP",
-                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/http.svg",
-                        "brandColor": "#709727",
-                        "parameters": {
-                          "method": "GET",
-                          "uri": "https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/messages",
-                          "queries": {
-                            "$filter": "lastModifiedDateTime ge @{formatDateTime(addDays(utcNow(), mul(-1, int(coalesce(variables('Config')?['lookbackDays'], 30)))),'yyyy-MM-ddTHH:mm:ssZ')}"
-                          },
-                          "authentication": {
-                            "type": "ActiveDirectoryOAuth",
-                            "authority": "https://login.microsoftonline.com",
-                            "tenant": "@variables('Config')?['tenantId']",
-                            "audience": "https://graph.microsoft.com",
-                            "clientId": "@variables('Config')?['clientId']",
-                            "secret": "@body('Get_client_secret_from_Key_Vault')?['value']"
-                          }
-                        },
-                        "description": "Make an HTTP request to any endpoint.",
-                        "parametersSchema": {
-                          "type": "object",
-                          "required": [
-                            "method",
-                            "uri"
-                          ],
-                          "properties": {
-                            "method": {
-                              "type": "string",
-                              "title": "Method",
-                              "description": "HTTP method",
-                              "enum": [
-                                "GET",
-                                "POST",
-                                "PUT",
-                                "PATCH",
-                                "DELETE",
-                                "HEAD",
-                                "OPTIONS"
-                              ],
-                              "default": "GET"
-                            },
-                            "uri": {
-                              "type": "string",
-                              "title": "URI",
-                              "description": "Request URL"
-                            },
-                            "headers": {
-                              "type": "object",
-                              "title": "Headers",
-                              "description": "Request headers"
-                            },
-                            "queries": {
-                              "type": "object",
-                              "title": "Queries",
-                              "description": "Query parameters"
-                            },
-                            "body": {
-                              "title": "Body",
-                              "description": "Request body"
-                            },
-                            "authentication": {
-                              "type": "object",
-                              "title": "Authentication",
-                              "description": "Authentication configuration"
-                            }
-                          }
-                        }
-                      },
-                      "outcomes": [
-                        {
-                          "id": "default",
-                          "label": "Default",
-                          "outcomeSchema": {
-                            "type": "object",
-                            "description": "Function output"
-                          }
-                        }
-                      ],
-                      "settings": {
-                        "secureInputs": {
-                          "isSupported": true,
-                          "value": true
-                        }
-                      }
-                    },
-                    "measured": {
-                      "width": 243,
-                      "height": 66
                     }
                   },
                   {
@@ -408,7 +316,7 @@
                       "height": 66
                     },
                     "position": {
-                      "x": 1515,
+                      "x": 1232,
                       "y": 400.5
                     }
                   },
@@ -418,7 +326,7 @@
                     "type": "builtinFunction",
                     "version": 1,
                     "position": {
-                      "x": 1798,
+                      "x": 1515,
                       "y": 400.5
                     },
                     "data": {
@@ -481,7 +389,7 @@
                     "type": "builtinFunction",
                     "version": 1,
                     "position": {
-                      "x": 2081,
+                      "x": 1798,
                       "y": 400.5
                     },
                     "data": {
@@ -663,7 +571,7 @@
                       "height": 66
                     },
                     "position": {
-                      "x": 2364,
+                      "x": 2081,
                       "y": 400.5
                     }
                   },
@@ -673,7 +581,7 @@
                     "type": "loop",
                     "version": 1,
                     "position": {
-                      "x": 2647,
+                      "x": 2364,
                       "y": 250
                     },
                     "width": 5000,
@@ -2557,14 +2465,14 @@
                       "y": 30
                     },
                     "width": 300,
-                    "height": 460,
+                    "height": 400,
                     "style": {
                       "width": 300,
-                      "height": 460
+                      "height": 400
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Configuration (fill in first)**\n\n- `tenantId`, `clientId` - Entra app with Graph *ServiceMessage.Read.All* (application)\n- `keyVaultSecretName` - Key Vault secret with that app's client secret\n- `adminEmail` - governance mailbox: gets one summary per post and every email in test mode\n- `contactText` - who owners should contact, shown in the owner email (default: your Power Platform environment admins)\n- `lookbackDays` - how far back to read posts each run (default 30). A safety window: missed runs catch up, already-handled posts are skipped\n- `testMode` - **true** = owner emails go to `adminEmail` only (shows the real recipient), max `testModeMaxEmails` per post\n- `maxOwnerEmailsPerPost` - safety cap on owner emails per post (the summary says when it was hit)\n- `environmentIds` - **scope**: environment IDs to check, e.g. `[\"<env-id-1>\", \"<env-id-2>\"]` (Power Platform admin center > Environments > Details). Leave `[]` for the whole tenant",
+                        "markdown": "**CUSTOMIZE - Configuration (fill in first)**\n\n- `adminEmail` - governance mailbox: gets one summary per post and every email in test mode\n- `contactText` - who owners should contact, shown in the owner email (default: your Power Platform environment admins)\n- `lookbackDays` - how far back to read posts each run (default 30). A safety window: missed runs catch up, already-handled posts are skipped\n- `testMode` - **true** = owner emails go to `adminEmail` only (shows the real recipient), max `testModeMaxEmails` per post\n- `maxOwnerEmailsPerPost` - safety cap on owner emails per post (the summary says when it was hit)\n- `environmentIds` - **scope**: environment IDs to check, e.g. `[\"<env-id-1>\", \"<env-id-2>\"]` (Power Platform admin center > Environments > Details). Leave `[]` for the whole tenant",
                         "color": "yellow"
                       },
                       "outcomes": []
@@ -2602,15 +2510,15 @@
                       "x": 949,
                       "y": 120
                     },
-                    "width": 540,
-                    "height": 200,
+                    "width": 260,
+                    "height": 260,
                     "style": {
-                      "width": 540,
-                      "height": 200
+                      "width": 260,
+                      "height": 260
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Graph call**\n\nEntra app registration with ServiceMessage.Read.All (application). Tenant and client id come from *Config*; the client secret is read from Azure Key Vault with secure inputs/outputs - rotate it in Key Vault, never paste it here. Paging is on.",
+                        "markdown": "**CUSTOMIZE - Graph call (no secrets)**\n\n*HTTP With Microsoft Entra ID* calls Graph as the connection user - no app registration, secret or certificate. The user needs the *Message Center Reader* role (or higher) and an admin must consent to `ServiceMessage.Read.All` for the connector. One page of up to 1,000 posts.",
                         "color": "yellow"
                       },
                       "outcomes": []
@@ -2622,7 +2530,7 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 1515,
+                      "x": 1232,
                       "y": 120
                     },
                     "width": 540,
@@ -2656,7 +2564,7 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Connections (production)**\n\nKey Vault, *Power Platform for Admins V2*, Dataverse, Office 365 Outlook and Users connections sign in as a user: if that sign-in expires or the user loses a role, runs fail (401/403). Use a dedicated service account (or for Key Vault a service principal / Secret environment variable) so runs don't depend on a person.\n\nAfter assigning an admin role, **re-sign-in** the Admins V2 connection (Fix connection) - old tokens keep returning 403.",
+                        "markdown": "**CUSTOMIZE - Connections (production)**\n\n*HTTP With Microsoft Entra ID*, *Power Platform for Admins V2*, Dataverse, Office 365 Outlook and Users connections sign in as a user: if that sign-in expires or the user loses a role, runs fail (401/403). Use a dedicated service account so runs don't depend on a person.\n\nAfter assigning an admin role, **re-sign-in** the Admins V2 connection (Fix connection) - old tokens keep returning 403.",
                         "color": "yellow"
                       },
                       "outcomes": []
@@ -2668,7 +2576,7 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 2334,
+                      "x": 2051,
                       "y": 510.5
                     },
                     "width": 320,
@@ -2914,18 +2822,13 @@
                     "target": "variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2"
                   },
                   {
-                    "id": "edge-variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2-connector-02876510-9ebd-4212-bfff-dce7caa35a2d",
+                    "id": "edge-variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2-connector-de816df8-3fe2-52bd-ba7b-c4261c093306",
                     "source": "variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2",
-                    "target": "connector-02876510-9ebd-4212-bfff-dce7caa35a2d"
+                    "target": "connector-de816df8-3fe2-52bd-ba7b-c4261c093306"
                   },
                   {
-                    "id": "edge-connector-02876510-9ebd-4212-bfff-dce7caa35a2d-builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa",
-                    "source": "connector-02876510-9ebd-4212-bfff-dce7caa35a2d",
-                    "target": "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa"
-                  },
-                  {
-                    "id": "edge-builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa-connector-d194b48e-0549-5cd5-9d97-8d26163bf805",
-                    "source": "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa",
+                    "id": "edge-connector-de816df8-3fe2-52bd-ba7b-c4261c093306-connector-d194b48e-0549-5cd5-9d97-8d26163bf805",
+                    "source": "connector-de816df8-3fe2-52bd-ba7b-c4261c093306",
                     "target": "connector-d194b48e-0549-5cd5-9d97-8d26163bf805"
                   },
                   {
@@ -3073,15 +2976,15 @@
                   }
                 ],
                 "connectionReferences": {
-                  "shared_keyvault": {
+                  "shared_webcontentsv2": {
                     "api": {
-                      "name": "shared_keyvault"
+                      "name": "shared_webcontentsv2"
                     },
                     "connection": {
-                      "connectionReferenceLogicalName": "new_sharedkeyvault_mcplanner"
+                      "connectionReferenceLogicalName": "new_sharedwebcontentsv2_aimodel"
                     },
                     "runtimeSource": "embedded",
-                    "connectionName": "shared-keyvault-mcplanner"
+                    "connectionName": "shared-webcontentsv2-aimodellifecycle"
                   },
                   "shared_commondataserviceforapps": {
                     "api": {
@@ -3146,23 +3049,83 @@
                 }
               },
               "nodeActionMapping": {
-                "variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2": [
-                  "Set_area_owners"
+                "variable-1cf5cd84-67a1-4031-9176-dc30956fed47": [
+                  "Set_configuration"
                 ],
-                "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa": [
+                "variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2": [
+                  "Set_model_lifecycle_filter"
+                ],
+                "connector-de816df8-3fe2-52bd-ba7b-c4261c093306": [
                   "Get_Message_Center_posts"
                 ],
-                "agent-41d9f125-184a-47d1-a5e7-5233955f7463": [
-                  "Agent"
+                "connector-d194b48e-0549-5cd5-9d97-8d26163bf805": [
+                  "List_processed_posts"
                 ],
-                "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42": [
-                  "Is_it_about_AI___LLMs_"
+                "builtinFunction-4196b120-7f45-57c3-af8c-d09cd8f600c4": [
+                  "Select_processed_post_IDs"
+                ],
+                "builtinFunction-7375ec27-163f-5c8b-8872-ad5bc6cf8f01": [
+                  "Filter_new_posts"
+                ],
+                "connector-5b1f3c2a-8e4d-4a7b-9c61-2f0d7e3a9b14": [
+                  "Get_model_summary"
                 ],
                 "loop-49cc1e78-beb8-47cd-ae39-24625f467aec": [
                   "For_each_message"
                 ],
-                "connector-02876510-9ebd-4212-bfff-dce7caa35a2d": [
-                  "Get_client_secret_from_Key_Vault"
+                "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42": [
+                  "Is_it_about_AI_model_lifecycle_"
+                ],
+                "agent-41d9f125-184a-47d1-a5e7-5233955f7463": [
+                  "Identify_impacted_models"
+                ],
+                "ifElse-1097d8dc-5416-5d60-9021-acf5938c94d6": [
+                  "Any_agents_impacted_"
+                ],
+                "connector-248b4ad7-7425-5f92-9d78-ccf27c695090": [
+                  "Get_impacted_agents"
+                ],
+                "connector-aa8a9b10-d842-5920-ae72-8306d773156c": [
+                  "Get_impacted_owners"
+                ],
+                "builtinFunction-7591b353-4a5f-59cb-a8c1-02f2d2e0a94e": [
+                  "Select_impacts"
+                ],
+                "builtinFunction-7dfc6efd-4b28-5b9f-90a0-fcce2301558e": [
+                  "Create_impacts_table"
+                ],
+                "loop-d80a5e22-3bfb-5d6e-8a92-0142ad7905a5": [
+                  "For_each_owner"
+                ],
+                "connector-df66a16f-e691-5485-8aec-d7746b3c9dac": [
+                  "Get_owner_agents"
+                ],
+                "builtinFunction-cde656ba-c859-5cb3-acfa-b8bb568bc641": [
+                  "Select_owner_agents"
+                ],
+                "builtinFunction-4ff71b4b-3898-57ab-ae78-79e80383cfec": [
+                  "Create_owner_agents_table"
+                ],
+                "connector-90072e1c-dcf6-5849-842c-a00364a93c9e": [
+                  "Get_owner_profile"
+                ],
+                "connector-ee8ce607-bba7-5438-9402-1ce974d325d7": [
+                  "Send_owner_email"
+                ],
+                "builtinFunction-8adfa8b9-c9f4-5b38-955c-d313e6a8d37c": [
+                  "Select_all_agents"
+                ],
+                "builtinFunction-8c9d4031-f650-59a0-bbb8-18c54de279b9": [
+                  "Create_all_agents_table"
+                ],
+                "connector-38feacf7-c7da-5e18-bf65-23d373ec74e9": [
+                  "Send_admin_summary"
+                ],
+                "connector-0758f421-15cf-5e87-ad03-dd9eddaca287": [
+                  "Record_processed_post"
+                ],
+                "connector-44698fa5-af37-5b65-8f56-9c7e25a094f3": [
+                  "Record_no_impact"
                 ]
               },
               "canvasOrientation": "horizontal"
@@ -3179,9 +3142,6 @@
                 "name": "Config",
                 "type": "Object",
                 "value": {
-                  "tenantId": "<your-tenant-id>",
-                  "clientId": "<your-app-client-id>",
-                  "keyVaultSecretName": "<your-key-vault-secret-name>",
                   "adminEmail": "ai-governance@contoso.com",
                   "contactText": "your Power Platform environment admins",
                   "lookbackDays": 30,
@@ -3225,16 +3185,20 @@
             "nodeId": "variable-37d1c17f-40b1-4ad6-8345-fbf2ed8396e2"
           }
         },
-        "Get_client_secret_from_Key_Vault": {
+        "Get_Message_Center_posts": {
           "type": "OpenApiConnection",
           "inputs": {
             "parameters": {
-              "secretName": "@variables('Config')?['keyVaultSecretName']"
+              "request/method": "GET",
+              "request/url": "https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/messages?$filter=lastModifiedDateTime%20ge%20@{formatDateTime(addDays(utcNow(), mul(-1, int(coalesce(variables('Config')?['lookbackDays'], 30)))),'yyyy-MM-ddTHH:mm:ssZ')}",
+              "request/headers": {
+                "Prefer": "odata.maxpagesize=1000"
+              }
             },
             "host": {
-              "apiId": "/providers/Microsoft.PowerApps/apis/shared_keyvault",
-              "connectionName": "shared_keyvault",
-              "operationId": "GetSecret"
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_webcontentsv2",
+              "connectionName": "shared_webcontentsv2",
+              "operationId": "InvokeHttp"
             }
           },
           "runAfter": {
@@ -3242,49 +3206,9 @@
               "Succeeded"
             ]
           },
-          "runtimeConfiguration": {
-            "secureData": {
-              "properties": [
-                "inputs",
-                "outputs"
-              ]
-            }
-          },
-          "metadata": {
-            "description": "Get client secret from Key Vault",
-            "nodeId": "connector-02876510-9ebd-4212-bfff-dce7caa35a2d"
-          }
-        },
-        "Get_Message_Center_posts": {
-          "type": "Http",
-          "inputs": {
-            "method": "GET",
-            "uri": "https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/messages",
-            "queries": {
-              "$filter": "lastModifiedDateTime ge @{formatDateTime(addDays(utcNow(), mul(-1, int(coalesce(variables('Config')?['lookbackDays'], 30)))),'yyyy-MM-ddTHH:mm:ssZ')}"
-            },
-            "authentication": {
-              "type": "ActiveDirectoryOAuth",
-              "authority": "https://login.microsoftonline.com",
-              "tenant": "@variables('Config')?['tenantId']",
-              "audience": "https://graph.microsoft.com",
-              "clientId": "@variables('Config')?['clientId']",
-              "secret": "@body('Get_client_secret_from_Key_Vault')?['value']"
-            }
-          },
-          "runAfter": {
-            "Get_client_secret_from_Key_Vault": [
-              "Succeeded"
-            ]
-          },
           "metadata": {
             "description": "Get Message Center posts",
-            "nodeId": "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa"
-          },
-          "runtimeConfiguration": {
-            "paginationPolicy": {
-              "minimumItemCount": 5000
-            }
+            "nodeId": "connector-de816df8-3fe2-52bd-ba7b-c4261c093306"
           }
         },
         "List_processed_posts": {

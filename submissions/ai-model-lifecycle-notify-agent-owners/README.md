@@ -30,22 +30,21 @@ post**, however many agents are impacted.
    object (see [Setup](#import-and-setup)).
 3. **Set model lifecycle filter** lists the Message Center services whose posts
    can affect Copilot Studio agents.
-4. **Get client secret from Key Vault** reads the app registration's secret with
-   secure inputs and outputs.
-5. **Get Message Center posts** calls
+4. **Get Message Center posts** calls
    `GET https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/messages`
-   with client-credentials auth, filtered to posts modified in the last
-   `lookbackDays`, with paging on.
-6. **List processed posts**, **Select processed post IDs** and **Filter new
+   through the **HTTP With Microsoft Entra ID** connector, signed in as the
+   connection user. No app registration, secret or certificate is needed. It
+   reads posts modified in the last `lookbackDays`, up to 1,000 in one call.
+5. **List processed posts**, **Select processed post IDs** and **Filter new
    posts** read the *AI model processed post* Dataverse table and drop every
    post that is already in it. Each post is handled once, even when Microsoft
    updates it later or the lookback windows of two runs overlap.
-7. **Get model summary** queries the Power Platform inventory once and returns
+6. **Get model summary** queries the Power Platform inventory once and returns
    one row per `model` + `harness` combination with an agent count. This stays
    small even in tenants with thousands of agents. Agents on *Copilot Studio
    default* and *Microsoft 365 Copilot* are excluded, because Microsoft moves
    them automatically.
-8. **For each new post:**
+7. **For each new post:**
    1. **Is it about AI model lifecycle?** keeps posts that list one of the
       filter's services **and** mention a model term in the title (AI model,
       GPT, Claude, harness, ...) or a retirement term in the body. Other posts
@@ -82,10 +81,12 @@ read them.
 
 - A Dataverse environment with Copilot Studio workflows, plus permission to
   import an unmanaged solution (it creates one table) and create connections.
-- **An Entra app registration** with Microsoft Graph `ServiceMessage.Read.All`
-  (**application** permission, admin consent granted) and a client secret.
-- **Azure Key Vault** holding that client secret, and an account or app that can
-  read secrets from it (for example the *Key Vault Secrets User* role).
+- **Message Center access for the Graph connection.** The account behind the
+  *HTTP With Microsoft Entra ID* connection needs the **Message Center Reader**
+  role (or a higher admin role). An admin must also consent to the delegated
+  Microsoft Graph permission `ServiceMessage.Read.All` for the connector's app
+  (*PowerPlatform-webcontentsv2-Connector*). Without consent, signing in fails
+  with a "needs admin approval" message.
 - **A Power Platform administrator (or Global administrator)** account for the
   *Power Platform for Admins V2* connection. The inventory only returns all
   agents to an admin. After you assign the role, sign in to the connection again,
@@ -104,7 +105,7 @@ read them.
 
    | Connection reference | Connector | Used for |
    | --- | --- | --- |
-   | `new_sharedkeyvault_mcplanner` | Azure Key Vault (point it at your vault) | Graph client secret |
+   | `new_sharedwebcontentsv2_aimodel` | HTTP With Microsoft Entra ID. Set both *Base Resource URL* and *Microsoft Entra ID Resource URI* to `https://graph.microsoft.com` | Reading Message Center posts |
    | `new_sharedpowerplatformadminv2_aimodel` | Power Platform for Admins V2 | Agent inventory queries |
    | `new_sharedcommondataserviceforapps_aimodel` | Microsoft Dataverse (this environment) | Reading and recording processed posts |
    | `new_sharedagentnode_50374135` | Agent | *Identify impacted models* |
@@ -115,9 +116,6 @@ read them.
 
    | Field | Default | Meaning |
    | --- | --- | --- |
-   | `tenantId` | `<your-tenant-id>` | Your Entra tenant ID |
-   | `clientId` | `<your-app-client-id>` | The app registration with `ServiceMessage.Read.All` |
-   | `keyVaultSecretName` | `<your-key-vault-secret-name>` | The secret holding its client secret |
    | `adminEmail` | `ai-governance@contoso.com` | Gets one summary per post, and every email in test mode |
    | `contactText` | `your Power Platform environment admins` | Who owners should contact, shown in the owner email |
    | `lookbackDays` | `30` | How far back to read posts each run. A safety window: missed or failed runs catch up, and posts already handled are skipped |
@@ -164,17 +162,14 @@ to **Send an email from a shared mailbox (V2)** and give the connection account
 
 ### Keeping the connections running
 
-The Key Vault, Admins V2, Outlook and Users connections sign in as a user. If
-that user's sign-in expires or the user loses a role, runs fail with 401 or 403.
-For production, use a dedicated service account for the connections. For Key
-Vault you can also use a **service principal** connection, or replace the step
-with a Key Vault-backed **secret environment variable**. Only the connections
-change, not the workflow.
+All connections sign in as a user, so the workflow stores no secrets. If that
+user's sign-in expires or the user loses a role, runs fail with 401 or 403. For
+production, use a dedicated service account for the connections. Only the
+connections change, not the workflow.
 
 ## Data and actions
 
-- **Reads:** Microsoft 365 Message Center posts for your tenant (Graph), one Key
-  Vault secret, Copilot Studio agents and environments in the Power Platform
+- **Reads:** Microsoft 365 Message Center posts for your tenant (Graph), Copilot Studio agents and environments in the Power Platform
   inventory, and owner profiles in Entra.
 - **Writes:** sends emails to agent owners and to `adminEmail`, and adds one
   row per handled post to the *AI model processed post* table. Nothing in your
@@ -203,6 +198,9 @@ change, not the workflow.
   email. The email goes to `adminEmail` with an *Owner not found* banner instead.
 - A post is handled once. If Microsoft later updates it (for example with a new
   date), owners are not emailed again; delete the post's row to re-send it.
+- Each run reads up to 1,000 posts modified within `lookbackDays` (30 days is
+  usually a few hundred). If a very large window returns more, the rest are not
+  read in that run.
 - Posts older than `lookbackDays` are never read. If the workflow is off for
   longer than that, raise `lookbackDays` for one run to catch up.
 - The sample was built and tested in its source environment, scoped to a few
