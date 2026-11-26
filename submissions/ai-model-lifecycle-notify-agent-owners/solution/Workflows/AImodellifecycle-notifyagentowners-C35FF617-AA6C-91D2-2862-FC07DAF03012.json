@@ -576,18 +576,81 @@
                     }
                   },
                   {
+                    "id": "builtinFunction-51317a13-0d20-52a1-a259-13b577ba4049",
+                    "name": "Select inventory keys",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 2364,
+                      "y": 400.5
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/compose.svg",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@coalesce(body('Get_model_summary')?['data'], json('[]'))",
+                          "select": "@item()?['key']"
+                        },
+                        "description": "Transform items in an array by selecting and mapping properties.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "from",
+                            "select"
+                          ],
+                          "properties": {
+                            "from": {
+                              "type": "array",
+                              "title": "From",
+                              "description": "Array to transform"
+                            },
+                            "select": {
+                              "type": "object",
+                              "title": "Map",
+                              "description": "Property mappings",
+                              "x-ms-editor": "dictionary",
+                              "x-ms-editor-options": {
+                                "valueType": "any"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
                     "id": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
                     "name": "For each message",
                     "type": "loop",
                     "version": 1,
                     "position": {
-                      "x": 2364,
+                      "x": 2647,
                       "y": 250
                     },
-                    "width": 5000,
+                    "width": 5900,
                     "height": 900,
                     "style": {
-                      "width": 5000,
+                      "width": 5900,
                       "height": 900
                     },
                     "data": {
@@ -611,13 +674,13 @@
                       ]
                     },
                     "measured": {
-                      "width": 5000,
+                      "width": 5900,
                       "height": 900
                     }
                   },
                   {
                     "id": "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42",
-                    "name": "Is it about AI model lifecycle?",
+                    "name": "Is it from a model service?",
                     "type": "ifElse",
                     "version": 1,
                     "position": {
@@ -630,7 +693,7 @@
                           {
                             "id": "6ac01c79-db90-48d1-add3-8eebfa42f345",
                             "name": "If",
-                            "expression": "{\n  \"and\": [\n    {\n      \"greater\": [\n        \"@length(intersection(coalesce(items('For_each_message')?['services'],json('[]')), variables('ModelServices')))\",\n        0\n      ]\n    },\n    {\n      \"or\": [\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"ai model\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"models\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"harness\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"gpt\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"claude\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"anthropic\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"openai\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"mistral\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"grok\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['title'],''))\",\n            \"llm\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['body']?['content'],''))\",\n            \"retiring model\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['body']?['content'],''))\",\n            \"replacement model\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['body']?['content'],''))\",\n            \"model retirement\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['body']?['content'],''))\",\n            \"model deprecation\"\n          ]\n        },\n        {\n          \"contains\": [\n            \"@toLower(coalesce(items('For_each_message')?['body']?['content'],''))\",\n            \"end of support for selected ai models\"\n          ]\n        }\n      ]\n    }\n  ]\n}"
+                            "expression": "{\n  \"and\": [\n    {\n      \"greater\": [\n        \"@length(intersection(coalesce(items('For_each_message')?['services'],json('[]')), variables('ModelServices')))\",\n        0\n      ]\n    }\n  ]\n}"
                           }
                         ]
                       },
@@ -667,13 +730,19 @@
                         "botSchemaName": "",
                         "isHitlEscalationEnabled": false,
                         "webSearchEnabled": false,
-                        "inlineInstructions": "You read ONE Microsoft 365 Message Center post and decide which AI models used by Copilot Studio agents in this tenant it affects. You do NOT send emails - the workflow does that from your structured output. Use ONLY the post and the inventory summary. Never invent models, dates or replacements.\n\nToday (UTC): @{utcNow('yyyy-MM-dd')}\n\nMessage Center post (JSON):\n@{items('For_each_message')}\n\nInventory summary - one row per model + harness combination used by agents in this tenant (key, model, harness, count_ = number of agents):\n@{coalesce(body('Get_model_summary')?['data'], json('[]'))}\n\nRules:\n1. Read the WHOLE post body, including tables and lists. Find every model that is retired, reaches end of support, is deprecated, is automatically migrated/upgraded, or changes behavior. Ignore models that are only announced as new or newly available.\n2. If the change only applies to prompts (AI Builder), Microsoft 365 Copilot Chat or other products - not to Copilot Studio agents - nothing is impacted.\n3. Match affected models to inventory rows. Compare model names ignoring case, spaces, hyphens, dots and underscores (\"GPT-5 Chat\" = \"gpt-5-chat\" = \"GPT5Chat\"). Versions must match exactly: GPT-5 is NOT GPT-5.2, Claude Sonnet 4.6 is NOT Claude Sonnet 4.5.\n4. Harness: \"Microsoft Copilot harness\" or \"GitHub Copilot harness\" = harness \"GitHub Copilot\"; \"standard harness\" / \"standard orchestration\" = \"Standard\"; \"classic\" / \"conversational\" = \"Conversational AI\". If the post does not restrict the harness, include every harness row of that model. If you are not sure a row is affected, leave it out and mention it in reason.\n\nOutput:\n- inventoryKeys: the `key` values of the matched inventory rows, copied EXACTLY, separated by \";;\" (e.g. \"GPT-5 Chat|Standard;;GPT-5 Chat|GitHub Copilot\"). Empty string if nothing in the inventory is affected.\n- impacts: one item per matched key: model, harness, change (Retirement, End of support, Deprecation, Automatic migration, Upgrade or Behavior change), replacement (\"\" if none), date (yyyy-MM-dd; if only a month is given use its first day; \"\" if none).\n- actionBy: the earliest impacts date (yyyy-MM-dd), or \"\".\n- headline: one plain-text sentence (max 300 characters) for agent owners explaining what changes and when.\n- reason: one line explaining why agents are or are not affected (mention uncertain matches here).",
+                        "inlineInstructions": "You read ONE Microsoft 365 Message Center post and decide whether it is about an AI model change and which AI models used by Copilot Studio agents in this tenant it affects. You do NOT send emails - the workflow does that from your structured output. Use ONLY the post and the inventory summary. Never invent models, dates or replacements.\n\nToday (UTC): @{utcNow('yyyy-MM-dd')}\n\nMessage Center post (JSON):\n@{items('For_each_message')}\n\nInventory summary - one row per model + harness combination used by agents in this tenant (key, model, harness, count_ = number of agents):\n@{coalesce(body('Get_model_summary')?['data'], json('[]'))}\n\nRules:\n0. verdict - decide first:\n   - \"not_about_models\": the post is not about retiring, deprecating, migrating, upgrading or changing the behavior of AI models (for example a new feature, UI change, licensing or a model becoming newly available).\n   - \"no_impact\": it is about such a model change, but no inventory row below is affected.\n   - \"impacted\": at least one inventory row below is affected.\n1. Read the WHOLE post body, including tables and lists. Find every model that is retired, reaches end of support, is deprecated, is automatically migrated/upgraded, or changes behavior. Ignore models that are only announced as new or newly available.\n2. If the change only applies to prompts (AI Builder), Microsoft 365 Copilot Chat or other products - not to Copilot Studio agents - verdict is \"no_impact\".\n3. Match affected models to inventory rows. Compare model names ignoring case, spaces, hyphens, dots and underscores (\"GPT-5 Chat\" = \"gpt-5-chat\" = \"GPT5Chat\"). Versions must match exactly: GPT-5 is NOT GPT-5.2, Claude Sonnet 4.6 is NOT Claude Sonnet 4.5.\n4. Harness: \"Microsoft Copilot harness\" or \"GitHub Copilot harness\" = harness \"GitHub Copilot\"; \"standard harness\" / \"standard orchestration\" = \"Standard\"; \"classic\" / \"conversational\" = \"Conversational AI\". If the post does not restrict the harness, include every harness row of that model. If you are not sure a row is affected, leave it out and mention it in reason.\n\nOutput:\n- verdict: \"impacted\", \"no_impact\" or \"not_about_models\" (rule 0).\n- inventoryKeys: the `key` values of the matched inventory rows, copied EXACTLY, separated by \";;\" (e.g. \"GPT-5 Chat|Standard;;GPT-5 Chat|GitHub Copilot\"). Only keys that appear in the inventory summary. Empty string unless verdict is \"impacted\".\n- impacts: one item per matched key: model, harness, change (Retirement, End of support, Deprecation, Automatic migration, Upgrade or Behavior change), replacement (\"\" if none), date (yyyy-MM-dd; if only a month is given use its first day; \"\" if none).\n- actionBy: the earliest impacts date (yyyy-MM-dd), or \"\".\n- For \"not_about_models\" and \"no_impact\": impacts is [], actionBy and headline are \"\".\n- headline: one plain-text sentence (max 300 characters) for agent owners explaining what changes and when.\n- reason: one line explaining why agents are or are not affected (mention uncertain matches here).",
                         "outputMode": "structured-simple",
                         "fileOutputFormat": "binary-envelope-v2",
                         "inlineModel": "GPT56ReasoningTerra",
                         "inlineTools": [],
                         "connectionName": "shared_agentnode",
                         "simpleProperties": [
+                          {
+                            "id": "9372ddbb-b5c2-5ab6-bc18-f11838f733a0",
+                            "name": "verdict",
+                            "type": "string",
+                            "description": "impacted, no_impact or not_about_models"
+                          },
                           {
                             "id": "f65db367-f926-51a6-9514-8f3b72b5d580",
                             "name": "inventoryKeys",
@@ -740,6 +809,10 @@
                         "jsonSchema": {
                           "type": "object",
                           "properties": {
+                            "verdict": {
+                              "type": "string",
+                              "description": "impacted, no_impact or not_about_models"
+                            },
                             "inventoryKeys": {
                               "type": "string",
                               "description": "Matched inventory keys separated by ;; (empty if none)"
@@ -793,6 +866,7 @@
                             }
                           },
                           "required": [
+                            "verdict",
                             "inventoryKeys",
                             "actionBy",
                             "headline",
@@ -820,6 +894,10 @@
                               "structuredOutput": {
                                 "type": "object",
                                 "properties": {
+                                  "verdict": {
+                                    "type": "string",
+                                    "description": "impacted, no_impact or not_about_models"
+                                  },
                                   "inventoryKeys": {
                                     "type": "string",
                                     "description": "Matched inventory keys separated by ;; (empty if none)"
@@ -873,6 +951,7 @@
                                   }
                                 },
                                 "required": [
+                                  "verdict",
                                   "inventoryKeys",
                                   "actionBy",
                                   "headline",
@@ -902,7 +981,7 @@
                     "type": "ifElse",
                     "version": 1,
                     "position": {
-                      "x": 640,
+                      "x": 1540,
                       "y": 100
                     },
                     "data": {
@@ -911,7 +990,7 @@
                           {
                             "id": "4d7b225c-87d1-5f2a-bc37-b1e625c48304",
                             "name": "Agents impacted",
-                            "expression": "{\n  \"and\": [\n    {\n      \"not\": {\n        \"equals\": [\n          \"@trim(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], ''))\",\n          \"\"\n        ]\n      }\n    }\n  ]\n}"
+                            "expression": "{\n  \"and\": [\n    {\n      \"equals\": [\n        \"@toLower(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/verdict'], '')))\",\n        \"impacted\"\n      ]\n    },\n    {\n      \"greater\": [\n        \"@length(body('Filter_matched_keys'))\",\n        0\n      ]\n    }\n  ]\n}"
                           }
                         ]
                       },
@@ -1018,7 +1097,7 @@
                                 "$type": "where",
                                 "FieldName": "key",
                                 "Operator": "in~",
-                                "Values": "@split(concat('''', replace(replace(replace(replace(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], '')), '''', ''), ' ;;', ';;'), ';; ', ';;'), ';;', ''';;'''), ''''), ';;')"
+                                "Values": "@split(concat('''', replace(replace(join(body('Filter_matched_keys'), ';;'), '''', ''), ';;', ''';;'''), ''''), ';;')"
                               },
                               {
                                 "$type": "extend",
@@ -1087,7 +1166,7 @@
                       "height": 66
                     },
                     "position": {
-                      "x": 940,
+                      "x": 1840,
                       "y": 100
                     },
                     "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
@@ -1178,7 +1257,7 @@
                                 "$type": "where",
                                 "FieldName": "key",
                                 "Operator": "in~",
-                                "Values": "@split(concat('''', replace(replace(replace(replace(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], '')), '''', ''), ' ;;', ';;'), ';; ', ';;'), ';;', ''';;'''), ''''), ';;')"
+                                "Values": "@split(concat('''', replace(replace(join(body('Filter_matched_keys'), ';;'), '''', ''), ';;', ''';;'''), ''''), ';;')"
                               },
                               {
                                 "$type": "extend",
@@ -1228,7 +1307,7 @@
                       "height": 66
                     },
                     "position": {
-                      "x": 1240,
+                      "x": 2140,
                       "y": 100
                     },
                     "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
@@ -1239,7 +1318,7 @@
                     "type": "builtinFunction",
                     "version": 1,
                     "position": {
-                      "x": 1540,
+                      "x": 2440,
                       "y": 100
                     },
                     "data": {
@@ -1309,7 +1388,7 @@
                     "type": "builtinFunction",
                     "version": 1,
                     "position": {
-                      "x": 1840,
+                      "x": 2740,
                       "y": 100
                     },
                     "data": {
@@ -1373,7 +1452,7 @@
                     "type": "loop",
                     "version": 1,
                     "position": {
-                      "x": 2140,
+                      "x": 3040,
                       "y": 40
                     },
                     "width": 1600,
@@ -1494,7 +1573,7 @@
                                 "$type": "where",
                                 "FieldName": "key",
                                 "Operator": "in~",
-                                "Values": "@split(concat('''', replace(replace(replace(replace(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], '')), '''', ''), ' ;;', ';;'), ';; ', ';;'), ';;', ''';;'''), ''''), ';;')"
+                                "Values": "@split(concat('''', replace(replace(join(body('Filter_matched_keys'), ';;'), '''', ''), ';;', ''';;'''), ''''), ';;')"
                               },
                               {
                                 "$type": "extend",
@@ -1954,7 +2033,7 @@
                     "type": "builtinFunction",
                     "version": 1,
                     "position": {
-                      "x": 3800,
+                      "x": 4700,
                       "y": 100
                     },
                     "data": {
@@ -2024,7 +2103,7 @@
                     "type": "builtinFunction",
                     "version": 1,
                     "position": {
-                      "x": 4080,
+                      "x": 4980,
                       "y": 100
                     },
                     "data": {
@@ -2088,7 +2167,7 @@
                     "type": "connector",
                     "version": 1,
                     "position": {
-                      "x": 4360,
+                      "x": 5260,
                       "y": 100
                     },
                     "data": {
@@ -2246,7 +2325,7 @@
                         "parameters": {
                           "emailMessage/To": "@{variables('Config')?['adminEmail']}",
                           "emailMessage/Subject": "AI model lifecycle summary - @{items('For_each_message')?['id']}: @{body('Get_impacted_agents')?['totalRecords']} agent(s), @{body('Get_impacted_owners')?['totalRecords']} owner(s)",
-                          "emailMessage/Body": "<p>@{body('Identify_impacted_models')?['structuredOutput/headline']}</p><p><i>@{body('Identify_impacted_models')?['structuredOutput/reason']}</i></p><h3>What changes</h3>@{body('Create_impacts_table')}<h3>Numbers</h3><ul><li>Scope: @{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'all environments in the tenant', concat(string(length(coalesce(variables('Config')?['environmentIds'], json('[]')))), ' environment(s) listed in environmentIds'))}</li><li>Impacted agents: @{body('Get_impacted_agents')?['totalRecords']}</li><li>Owners with impacted agents: @{body('Get_impacted_owners')?['totalRecords']}</li><li>Owners selected for an email this run: @{length(coalesce(body('Get_impacted_owners')?['data'], json('[]')))}@{if(bool(coalesce(variables('Config')?['testMode'], true)), ' (TEST MODE - all sent to you)', '')}@{if(greater(int(coalesce(body('Get_impacted_owners')?['totalRecords'], 0)), length(coalesce(body('Get_impacted_owners')?['data'], json('[]')))), ' - <b>capped</b>: raise maxOwnerEmailsPerPost / turn off testMode to reach every owner', '')}@{if(equals(coalesce(actions('For_each_owner')?['status'], 'Succeeded'), 'Succeeded'), '', concat('<br><b style=\"color:#a4262c\">Some owner emails were not sent (owner loop status: ', actions('For_each_owner')?['status'], '). Check Send owner email in the run history.</b>'))}</li><li>Agents without an owner (ownerId empty or 00000000-...) get no email - they are in the table below.</li></ul><h3>All impacted agents (first 500)</h3>@{body('Create_all_agents_table')}<p>Message Center post: <a href=\"https://admin.microsoft.com/Adminportal/Home#/MessageCenter/:/messages/@{items('For_each_message')?['id']}\">@{items('For_each_message')?['id']} - @{items('For_each_message')?['title']}</a></p>",
+                          "emailMessage/Body": "<p>@{body('Identify_impacted_models')?['structuredOutput/headline']}</p><p><i>@{body('Identify_impacted_models')?['structuredOutput/reason']}</i></p><h3>What changes</h3>@{body('Create_impacts_table')}<h3>Numbers</h3><ul><li>Scope: @{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'all environments in the tenant', concat(string(length(coalesce(variables('Config')?['environmentIds'], json('[]')))), ' environment(s) listed in environmentIds'))}</li><li>Impacted agents: @{body('Get_impacted_agents')?['totalRecords']}</li><li>Owners with impacted agents: @{body('Get_impacted_owners')?['totalRecords']}</li><li>Owners selected for an email this run: @{length(coalesce(body('Get_impacted_owners')?['data'], json('[]')))}@{if(bool(coalesce(variables('Config')?['testMode'], true)), ' (TEST MODE - all sent to you)', '')}@{if(greater(int(coalesce(body('Get_impacted_owners')?['totalRecords'], 0)), length(coalesce(body('Get_impacted_owners')?['data'], json('[]')))), ' - <b>capped</b>: raise maxOwnerEmailsPerPost / turn off testMode to reach every owner', '')}@{if(equals(coalesce(actions('For_each_owner')?['status'], 'Succeeded'), 'Succeeded'), '', concat('<br><b style=\"color:#a4262c\">Some owner emails were not sent (owner loop status: ', actions('For_each_owner')?['status'], '). Check Send owner email in the run history.</b>'))}</li>@{if(empty(body('Filter_unmatched_keys')), '', concat('<li><b>Keys the agent returned that are not in the inventory (ignored):</b> ', join(body('Filter_unmatched_keys'), '; '), '</li>'))}<li>Agents without an owner (ownerId empty or 00000000-...) get no email - they are in the table below.</li></ul><h3>All impacted agents (first 500)</h3>@{body('Create_all_agents_table')}<p>Message Center post: <a href=\"https://admin.microsoft.com/Adminportal/Home#/MessageCenter/:/messages/@{items('For_each_message')?['id']}\">@{items('For_each_message')?['id']} - @{items('For_each_message')?['title']}</a></p>",
                           "emailMessage/Importance": "Normal"
                         },
                         "connectionName": "shared_office365"
@@ -2325,7 +2404,7 @@
                           "item/at_status": "@{if(and(equals(coalesce(actions('For_each_owner')?['status'], ''), 'Succeeded'), equals(coalesce(actions('Send_admin_summary')?['status'], ''), 'Succeeded')), 'notified', 'notified_with_errors')}",
                           "item/at_agentsimpacted": "@int(coalesce(body('Get_impacted_agents')?['totalRecords'], 0))",
                           "item/at_postlastmodified": "@items('For_each_message')?['lastModifiedDateTime']",
-                          "item/at_reason": "@{take(coalesce(body('Identify_impacted_models')?['structuredOutput/reason'], ''), 4000)}"
+                          "item/at_reason": "@{take(concat(coalesce(body('Identify_impacted_models')?['structuredOutput/reason'], ''), if(empty(body('Filter_unmatched_keys')), '', concat(' [Keys not in the inventory, ignored: ', join(body('Filter_unmatched_keys'), '; '), ']'))), 4000)}"
                         },
                         "initializedParameterDefaults": [],
                         "operationId": "CreateRecord"
@@ -2345,7 +2424,7 @@
                       "height": 66
                     },
                     "position": {
-                      "x": 4660,
+                      "x": 5560,
                       "y": 100
                     },
                     "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
@@ -2404,10 +2483,10 @@
                           "entityName": "at_aimodelprocessedposts",
                           "item/at_name": "@items('For_each_message')?['id']",
                           "item/at_title": "@{take(coalesce(items('For_each_message')?['title'], ''), 500)}",
-                          "item/at_status": "no_impact",
+                          "item/at_status": "@{if(equals(toLower(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/verdict'], ''))), 'not_about_models'), 'not_about_models', if(equals(toLower(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/verdict'], ''))), 'impacted'), 'unmatched_keys', 'no_impact'))}",
                           "item/at_agentsimpacted": 0,
                           "item/at_postlastmodified": "@items('For_each_message')?['lastModifiedDateTime']",
-                          "item/at_reason": "@{take(coalesce(body('Identify_impacted_models')?['structuredOutput/reason'], ''), 4000)}"
+                          "item/at_reason": "@{take(concat(coalesce(body('Identify_impacted_models')?['structuredOutput/reason'], ''), if(empty(body('Filter_unmatched_keys')), '', concat(' [Keys not in the inventory, ignored: ', join(body('Filter_unmatched_keys'), '; '), ']'))), 4000)}"
                         },
                         "initializedParameterDefaults": [],
                         "operationId": "CreateRecord"
@@ -2427,7 +2506,7 @@
                       "height": 66
                     },
                     "position": {
-                      "x": 640,
+                      "x": 1540,
                       "y": 620
                     },
                     "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
@@ -2495,7 +2574,7 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Model lifecycle filter**\n\n*ModelServices*: Message Center services whose posts can affect Copilot Studio agents. A post reaches the agent only if it has one of these services AND its title mentions a model term (ai model, models, harness, gpt, claude, ...) or its body mentions retiring/replacement model. Each post that passes is one agent run (Copilot credits).",
+                        "markdown": "**CUSTOMIZE - Model lifecycle filter**\n\n*ModelServices*: Message Center services whose posts can affect Copilot Studio agents. Only new posts tagged with one of these services reach the agent, which decides whether the post is about a model change. Each post that passes is one agent run (Copilot credits); every post the agent reads is recorded, so it is never read twice.",
                         "color": "yellow"
                       },
                       "outcomes": []
@@ -2610,7 +2689,7 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Agent (reasoning only)**\n\nReads the post (incl. tables), maps affected models + harness to the inventory summary (normalized names, exact versions, harness mapping: *Microsoft Copilot harness* = `GitHub Copilot`) and returns **structured output**: `inventoryKeys`, `impacts` (model, harness, change, replacement, date), `actionBy`, `headline`, `reason`. It sends nothing itself, so cost stays at one agent run per matching post no matter how many agents are impacted.",
+                        "markdown": "**CUSTOMIZE - Agent (reasoning only)**\n\nReads the post (incl. tables), maps affected models + harness to the inventory summary (normalized names, exact versions, harness mapping: *Microsoft Copilot harness* = `GitHub Copilot`) and returns **structured output**: `verdict` (*impacted*, *no_impact* or *not_about_models*), `inventoryKeys`, `impacts` (model, harness, change, replacement, date), `actionBy`, `headline`, `reason`. It sends nothing itself, so cost stays at one agent run per matching post no matter how many agents are impacted.",
                         "color": "green"
                       },
                       "outcomes": []
@@ -2623,7 +2702,7 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 940,
+                      "x": 1840,
                       "y": 330
                     },
                     "width": 300,
@@ -2658,7 +2737,7 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "**For each new Message Center post**\n\nEvery post not handled before is checked here, one at a time. *Is it about AI model lifecycle?* applies the *ModelServices* + keyword filter; posts that don't match go to Else and nothing happens (no agent run, no cost).",
+                        "markdown": "**For each new Message Center post**\n\nEvery post not handled before is checked here, one at a time. *Is it from a model service?* checks the *ModelServices* list; posts from other services go to Else and nothing happens (no agent run, no cost).",
                         "color": "blue"
                       },
                       "outcomes": []
@@ -2671,7 +2750,7 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 640,
+                      "x": 1540,
                       "y": 330
                     },
                     "width": 280,
@@ -2682,7 +2761,7 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "**Any agents impacted?**\n\nTrue when the agent returned at least one `inventoryKeys` value (a model + harness that exists in this tenant / scope). Otherwise the post doesn't affect any agent: Else records it as *no_impact* (with the agent's reason), no emails.",
+                        "markdown": "**Any agents impacted?**\n\nTrue when the agent's `verdict` is *impacted* AND at least one of its keys exists in the inventory. Otherwise Else records the post, no emails: *not_about_models*, *no_impact*, or *unmatched_keys* (agent said impacted but none of its keys exist in the inventory).",
                         "color": "blue"
                       },
                       "outcomes": []
@@ -2695,7 +2774,7 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 1540,
+                      "x": 2440,
                       "y": 330
                     },
                     "width": 300,
@@ -2791,7 +2870,7 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 3800,
+                      "x": 4700,
                       "y": 330
                     },
                     "width": 560,
@@ -2803,6 +2882,216 @@
                     "data": {
                       "config": {
                         "markdown": "**Admin summary + record**\n\nRuns after all owner emails for the post. One email to `adminEmail`: scope, totals, whether the email cap was hit, the *What changes* table and the first 500 impacted agents (incl. agents without an owner, who get no email). Then *Record processed post* saves the post as *notified* (or *notified_with_errors*). If an earlier step fails nothing is recorded, so the post is retried next run.",
+                        "color": "blue"
+                      },
+                      "outcomes": []
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "builtinFunction-75b4ec60-d94c-50fe-a064-4a9863643479",
+                    "name": "Select returned keys",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 640,
+                      "y": 100
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/compose.svg",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@split(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], ''), ';;')",
+                          "select": "@trim(toLower(item()))"
+                        },
+                        "description": "Transform items in an array by selecting and mapping properties.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "from",
+                            "select"
+                          ],
+                          "properties": {
+                            "from": {
+                              "type": "array",
+                              "title": "From",
+                              "description": "Array to transform"
+                            },
+                            "select": {
+                              "type": "object",
+                              "title": "Map",
+                              "description": "Property mappings",
+                              "x-ms-editor": "dictionary",
+                              "x-ms-editor-options": {
+                                "valueType": "any"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "builtinFunction-788929d1-6cf6-5b8b-92f4-5c3f9a5c4e88",
+                    "name": "Filter matched keys",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 940,
+                      "y": 100
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "query",
+                        "operationName": "query",
+                        "displayName": "Filter array",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/compose.svg",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@body('Select_inventory_keys')",
+                          "where": "{\n  \"and\": [\n    {\n      \"contains\": [\n        \"@body('Select_returned_keys')\",\n        \"@toLower(item())\"\n      ]\n    }\n  ]\n}"
+                        },
+                        "description": "Filter an array based on a condition.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "from",
+                            "where"
+                          ],
+                          "properties": {
+                            "from": {
+                              "type": "array",
+                              "title": "From",
+                              "description": "Array to filter"
+                            },
+                            "where": {
+                              "type": "string",
+                              "x-ms-editor": "condition",
+                              "title": "Where",
+                              "description": "Filter condition"
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "measured": {
+                      "width": 257,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-e8fed219-b525-555a-8c81-24d4642f6e7b",
+                    "name": "Filter unmatched keys",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1240,
+                      "y": 100
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "query",
+                        "operationName": "query",
+                        "displayName": "Filter array",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/compose.svg",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@body('Select_returned_keys')",
+                          "where": "{\n  \"and\": [\n    {\n      \"not\": {\n        \"equals\": [\n          \"@item()\",\n          \"\"\n        ]\n      }\n    },\n    {\n      \"not\": {\n        \"contains\": [\n          \"@concat(';;', toLower(join(body('Select_inventory_keys'), ';;')), ';;')\",\n          \"@concat(';;', item(), ';;')\"\n        ]\n      }\n    }\n  ]\n}"
+                        },
+                        "description": "Filter an array based on a condition.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "from",
+                            "where"
+                          ],
+                          "properties": {
+                            "from": {
+                              "type": "array",
+                              "title": "From",
+                              "description": "Array to filter"
+                            },
+                            "where": {
+                              "type": "string",
+                              "x-ms-editor": "condition",
+                              "title": "Where",
+                              "description": "Filter condition"
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
+                    "measured": {
+                      "width": 257,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "canvasNote-ad9fe2ae-b5b7-57a4-a561-b548dd92a731",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 640,
+                      "y": 330
+                    },
+                    "width": 860,
+                    "height": 200,
+                    "style": {
+                      "width": 860,
+                      "height": 200
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**Validate the agent's keys**\n\n*Select returned keys* splits the agent's `inventoryKeys`. *Filter matched keys* keeps only keys that exist in *Get model summary* (case-insensitive, exact inventory spelling) - only these are used in the inventory queries. *Filter unmatched keys* lists the rest: they are ignored, shown in the admin summary and saved in the record's reason.",
                         "color": "blue"
                       },
                       "outcomes": []
@@ -2847,8 +3136,13 @@
                     "target": "connector-5b1f3c2a-8e4d-4a7b-9c61-2f0d7e3a9b14"
                   },
                   {
-                    "id": "edge-connector-5b1f3c2a-8e4d-4a7b-9c61-2f0d7e3a9b14-loop-49cc1e78-beb8-47cd-ae39-24625f467aec-external-input",
+                    "id": "edge-connector-5b1f3c2a-8e4d-4a7b-9c61-2f0d7e3a9b14-builtinFunction-51317a13-0d20-52a1-a259-13b577ba4049",
                     "source": "connector-5b1f3c2a-8e4d-4a7b-9c61-2f0d7e3a9b14",
+                    "target": "builtinFunction-51317a13-0d20-52a1-a259-13b577ba4049"
+                  },
+                  {
+                    "id": "edge-builtinFunction-51317a13-0d20-52a1-a259-13b577ba4049-loop-49cc1e78-beb8-47cd-ae39-24625f467aec-external-input",
+                    "source": "builtinFunction-51317a13-0d20-52a1-a259-13b577ba4049",
                     "target": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
                     "targetHandle": "external-input"
                   },
@@ -2872,8 +3166,23 @@
                     "targetHandle": "internal-target"
                   },
                   {
-                    "id": "edge-agent-41d9f125-184a-47d1-a5e7-5233955f7463-ifElse-1097d8dc-5416-5d60-9021-acf5938c94d6",
+                    "id": "edge-agent-41d9f125-184a-47d1-a5e7-5233955f7463-builtinFunction-75b4ec60-d94c-50fe-a064-4a9863643479",
                     "source": "agent-41d9f125-184a-47d1-a5e7-5233955f7463",
+                    "target": "builtinFunction-75b4ec60-d94c-50fe-a064-4a9863643479"
+                  },
+                  {
+                    "id": "edge-builtinFunction-75b4ec60-d94c-50fe-a064-4a9863643479-builtinFunction-788929d1-6cf6-5b8b-92f4-5c3f9a5c4e88",
+                    "source": "builtinFunction-75b4ec60-d94c-50fe-a064-4a9863643479",
+                    "target": "builtinFunction-788929d1-6cf6-5b8b-92f4-5c3f9a5c4e88"
+                  },
+                  {
+                    "id": "edge-builtinFunction-788929d1-6cf6-5b8b-92f4-5c3f9a5c4e88-builtinFunction-e8fed219-b525-555a-8c81-24d4642f6e7b",
+                    "source": "builtinFunction-788929d1-6cf6-5b8b-92f4-5c3f9a5c4e88",
+                    "target": "builtinFunction-e8fed219-b525-555a-8c81-24d4642f6e7b"
+                  },
+                  {
+                    "id": "edge-builtinFunction-e8fed219-b525-555a-8c81-24d4642f6e7b-ifElse-1097d8dc-5416-5d60-9021-acf5938c94d6",
+                    "source": "builtinFunction-e8fed219-b525-555a-8c81-24d4642f6e7b",
                     "target": "ifElse-1097d8dc-5416-5d60-9021-acf5938c94d6"
                   },
                   {
@@ -3070,14 +3379,26 @@
                 "connector-5b1f3c2a-8e4d-4a7b-9c61-2f0d7e3a9b14": [
                   "Get_model_summary"
                 ],
+                "builtinFunction-51317a13-0d20-52a1-a259-13b577ba4049": [
+                  "Select_inventory_keys"
+                ],
                 "loop-49cc1e78-beb8-47cd-ae39-24625f467aec": [
                   "For_each_message"
                 ],
                 "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42": [
-                  "Is_it_about_AI_model_lifecycle_"
+                  "Is_it_from_a_model_service_"
                 ],
                 "agent-41d9f125-184a-47d1-a5e7-5233955f7463": [
                   "Identify_impacted_models"
+                ],
+                "builtinFunction-75b4ec60-d94c-50fe-a064-4a9863643479": [
+                  "Select_returned_keys"
+                ],
+                "builtinFunction-788929d1-6cf6-5b8b-92f4-5c3f9a5c4e88": [
+                  "Filter_matched_keys"
+                ],
+                "builtinFunction-e8fed219-b525-555a-8c81-24d4642f6e7b": [
+                  "Filter_unmatched_keys"
                 ],
                 "ifElse-1097d8dc-5416-5d60-9021-acf5938c94d6": [
                   "Any_agents_impacted_"
@@ -3357,6 +3678,22 @@
             "nodeId": "connector-5b1f3c2a-8e4d-4a7b-9c61-2f0d7e3a9b14"
           }
         },
+        "Select_inventory_keys": {
+          "type": "Select",
+          "inputs": {
+            "from": "@coalesce(body('Get_model_summary')?['data'], json('[]'))",
+            "select": "@item()?['key']"
+          },
+          "runAfter": {
+            "Get_model_summary": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Select inventory keys",
+            "nodeId": "builtinFunction-51317a13-0d20-52a1-a259-13b577ba4049"
+          }
+        },
         "For_each_message": {
           "type": "Foreach",
           "foreach": "@body('Filter_new_posts')",
@@ -3365,12 +3702,12 @@
             "nodeId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
           },
           "runAfter": {
-            "Get_model_summary": [
+            "Select_inventory_keys": [
               "Succeeded"
             ]
           },
           "actions": {
-            "Is_it_about_AI_model_lifecycle_": {
+            "Is_it_from_a_model_service_": {
               "type": "If",
               "expression": {
                 "and": [
@@ -3379,100 +3716,6 @@
                       "@length(intersection(coalesce(items('For_each_message')?['services'],json('[]')), variables('ModelServices')))",
                       0
                     ]
-                  },
-                  {
-                    "or": [
-                      {
-                        "contains": [
-                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
-                          "ai model"
-                        ]
-                      },
-                      {
-                        "contains": [
-                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
-                          "models"
-                        ]
-                      },
-                      {
-                        "contains": [
-                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
-                          "harness"
-                        ]
-                      },
-                      {
-                        "contains": [
-                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
-                          "gpt"
-                        ]
-                      },
-                      {
-                        "contains": [
-                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
-                          "claude"
-                        ]
-                      },
-                      {
-                        "contains": [
-                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
-                          "anthropic"
-                        ]
-                      },
-                      {
-                        "contains": [
-                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
-                          "openai"
-                        ]
-                      },
-                      {
-                        "contains": [
-                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
-                          "mistral"
-                        ]
-                      },
-                      {
-                        "contains": [
-                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
-                          "grok"
-                        ]
-                      },
-                      {
-                        "contains": [
-                          "@toLower(coalesce(items('For_each_message')?['title'],''))",
-                          "llm"
-                        ]
-                      },
-                      {
-                        "contains": [
-                          "@toLower(coalesce(items('For_each_message')?['body']?['content'],''))",
-                          "retiring model"
-                        ]
-                      },
-                      {
-                        "contains": [
-                          "@toLower(coalesce(items('For_each_message')?['body']?['content'],''))",
-                          "replacement model"
-                        ]
-                      },
-                      {
-                        "contains": [
-                          "@toLower(coalesce(items('For_each_message')?['body']?['content'],''))",
-                          "model retirement"
-                        ]
-                      },
-                      {
-                        "contains": [
-                          "@toLower(coalesce(items('For_each_message')?['body']?['content'],''))",
-                          "model deprecation"
-                        ]
-                      },
-                      {
-                        "contains": [
-                          "@toLower(coalesce(items('For_each_message')?['body']?['content'],''))",
-                          "end of support for selected ai models"
-                        ]
-                      }
-                    ]
                   }
                 ]
               },
@@ -3480,7 +3723,7 @@
                 "actions": {}
               },
               "metadata": {
-                "description": "Is it about AI model lifecycle?",
+                "description": "Is it from a model service?",
                 "nodeId": "ifElse-30ce9b92-d626-40b9-b65d-b3f11dc2da42"
               },
               "actions": {
@@ -3550,7 +3793,7 @@
                               "$kind": "AgentSettings",
                               "output": {
                                 "diagnostics": [],
-                                "schema": "{\"type\":\"object\",\"properties\":{\"inventoryKeys\":{\"type\":\"string\",\"description\":\"Matched inventory keys separated by ;; (empty if none)\"},\"actionBy\":{\"type\":\"string\",\"description\":\"Earliest date yyyy-MM-dd, empty if none\"},\"headline\":{\"type\":\"string\",\"description\":\"One sentence for agent owners\"},\"reason\":{\"type\":\"string\",\"description\":\"Why agents are or are not affected\"},\"impacts\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"model\":{\"type\":\"string\",\"description\":\"Affected model (as in the inventory)\"},\"harness\":{\"type\":\"string\",\"description\":\"Harness (as in the inventory)\"},\"change\":{\"type\":\"string\",\"description\":\"Retirement, End of support, Deprecation, Automatic migration, Upgrade or Behavior change\"},\"replacement\":{\"type\":\"string\",\"description\":\"Replacement model, empty if none\"},\"date\":{\"type\":\"string\",\"description\":\"yyyy-MM-dd, empty if none\"}},\"required\":[\"model\",\"harness\",\"change\",\"replacement\",\"date\"]}}},\"required\":[\"inventoryKeys\",\"actionBy\",\"headline\",\"reason\",\"impacts\"]}",
+                                "schema": "{\"type\":\"object\",\"properties\":{\"verdict\":{\"type\":\"string\",\"description\":\"impacted, no_impact or not_about_models\"},\"inventoryKeys\":{\"type\":\"string\",\"description\":\"Matched inventory keys separated by ;; (empty if none)\"},\"actionBy\":{\"type\":\"string\",\"description\":\"Earliest date yyyy-MM-dd, empty if none\"},\"headline\":{\"type\":\"string\",\"description\":\"One sentence for agent owners\"},\"reason\":{\"type\":\"string\",\"description\":\"Why agents are or are not affected\"},\"impacts\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"model\":{\"type\":\"string\",\"description\":\"Affected model (as in the inventory)\"},\"harness\":{\"type\":\"string\",\"description\":\"Harness (as in the inventory)\"},\"change\":{\"type\":\"string\",\"description\":\"Retirement, End of support, Deprecation, Automatic migration, Upgrade or Behavior change\"},\"replacement\":{\"type\":\"string\",\"description\":\"Replacement model, empty if none\"},\"date\":{\"type\":\"string\",\"description\":\"yyyy-MM-dd, empty if none\"}},\"required\":[\"model\",\"harness\",\"change\",\"replacement\",\"date\"]}}},\"required\":[\"verdict\",\"inventoryKeys\",\"actionBy\",\"headline\",\"reason\",\"impacts\"]}",
                                 "$kind": "StructuredAgentOutput"
                               }
                             },
@@ -3560,7 +3803,7 @@
                         },
                         "$kind": "BotDefinition"
                       },
-                      "body/message": "You read ONE Microsoft 365 Message Center post and decide which AI models used by Copilot Studio agents in this tenant it affects. You do NOT send emails - the workflow does that from your structured output. Use ONLY the post and the inventory summary. Never invent models, dates or replacements.\n\nToday (UTC): @{utcNow('yyyy-MM-dd')}\n\nMessage Center post (JSON):\n@{items('For_each_message')}\n\nInventory summary - one row per model + harness combination used by agents in this tenant (key, model, harness, count_ = number of agents):\n@{coalesce(body('Get_model_summary')?['data'], json('[]'))}\n\nRules:\n1. Read the WHOLE post body, including tables and lists. Find every model that is retired, reaches end of support, is deprecated, is automatically migrated/upgraded, or changes behavior. Ignore models that are only announced as new or newly available.\n2. If the change only applies to prompts (AI Builder), Microsoft 365 Copilot Chat or other products - not to Copilot Studio agents - nothing is impacted.\n3. Match affected models to inventory rows. Compare model names ignoring case, spaces, hyphens, dots and underscores (\"GPT-5 Chat\" = \"gpt-5-chat\" = \"GPT5Chat\"). Versions must match exactly: GPT-5 is NOT GPT-5.2, Claude Sonnet 4.6 is NOT Claude Sonnet 4.5.\n4. Harness: \"Microsoft Copilot harness\" or \"GitHub Copilot harness\" = harness \"GitHub Copilot\"; \"standard harness\" / \"standard orchestration\" = \"Standard\"; \"classic\" / \"conversational\" = \"Conversational AI\". If the post does not restrict the harness, include every harness row of that model. If you are not sure a row is affected, leave it out and mention it in reason.\n\nOutput:\n- inventoryKeys: the `key` values of the matched inventory rows, copied EXACTLY, separated by \";;\" (e.g. \"GPT-5 Chat|Standard;;GPT-5 Chat|GitHub Copilot\"). Empty string if nothing in the inventory is affected.\n- impacts: one item per matched key: model, harness, change (Retirement, End of support, Deprecation, Automatic migration, Upgrade or Behavior change), replacement (\"\" if none), date (yyyy-MM-dd; if only a month is given use its first day; \"\" if none).\n- actionBy: the earliest impacts date (yyyy-MM-dd), or \"\".\n- headline: one plain-text sentence (max 300 characters) for agent owners explaining what changes and when.\n- reason: one line explaining why agents are or are not affected (mention uncertain matches here)."
+                      "body/message": "You read ONE Microsoft 365 Message Center post and decide whether it is about an AI model change and which AI models used by Copilot Studio agents in this tenant it affects. You do NOT send emails - the workflow does that from your structured output. Use ONLY the post and the inventory summary. Never invent models, dates or replacements.\n\nToday (UTC): @{utcNow('yyyy-MM-dd')}\n\nMessage Center post (JSON):\n@{items('For_each_message')}\n\nInventory summary - one row per model + harness combination used by agents in this tenant (key, model, harness, count_ = number of agents):\n@{coalesce(body('Get_model_summary')?['data'], json('[]'))}\n\nRules:\n0. verdict - decide first:\n   - \"not_about_models\": the post is not about retiring, deprecating, migrating, upgrading or changing the behavior of AI models (for example a new feature, UI change, licensing or a model becoming newly available).\n   - \"no_impact\": it is about such a model change, but no inventory row below is affected.\n   - \"impacted\": at least one inventory row below is affected.\n1. Read the WHOLE post body, including tables and lists. Find every model that is retired, reaches end of support, is deprecated, is automatically migrated/upgraded, or changes behavior. Ignore models that are only announced as new or newly available.\n2. If the change only applies to prompts (AI Builder), Microsoft 365 Copilot Chat or other products - not to Copilot Studio agents - verdict is \"no_impact\".\n3. Match affected models to inventory rows. Compare model names ignoring case, spaces, hyphens, dots and underscores (\"GPT-5 Chat\" = \"gpt-5-chat\" = \"GPT5Chat\"). Versions must match exactly: GPT-5 is NOT GPT-5.2, Claude Sonnet 4.6 is NOT Claude Sonnet 4.5.\n4. Harness: \"Microsoft Copilot harness\" or \"GitHub Copilot harness\" = harness \"GitHub Copilot\"; \"standard harness\" / \"standard orchestration\" = \"Standard\"; \"classic\" / \"conversational\" = \"Conversational AI\". If the post does not restrict the harness, include every harness row of that model. If you are not sure a row is affected, leave it out and mention it in reason.\n\nOutput:\n- verdict: \"impacted\", \"no_impact\" or \"not_about_models\" (rule 0).\n- inventoryKeys: the `key` values of the matched inventory rows, copied EXACTLY, separated by \";;\" (e.g. \"GPT-5 Chat|Standard;;GPT-5 Chat|GitHub Copilot\"). Only keys that appear in the inventory summary. Empty string unless verdict is \"impacted\".\n- impacts: one item per matched key: model, harness, change (Retirement, End of support, Deprecation, Automatic migration, Upgrade or Behavior change), replacement (\"\" if none), date (yyyy-MM-dd; if only a month is given use its first day; \"\" if none).\n- actionBy: the earliest impacts date (yyyy-MM-dd), or \"\".\n- For \"not_about_models\" and \"no_impact\": impacts is [], actionBy and headline are \"\".\n- headline: one plain-text sentence (max 300 characters) for agent owners explaining what changes and when.\n- reason: one line explaining why agents are or are not affected (mention uncertain matches here)."
                     },
                     "host": {
                       "apiId": "/providers/Microsoft.PowerApps/apis/shared_agentnode",
@@ -3573,17 +3816,69 @@
                     "nodeId": "agent-41d9f125-184a-47d1-a5e7-5233955f7463"
                   }
                 },
+                "Select_returned_keys": {
+                  "type": "Select",
+                  "inputs": {
+                    "from": "@split(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], ''), ';;')",
+                    "select": "@trim(toLower(item()))"
+                  },
+                  "runAfter": {
+                    "Identify_impacted_models": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "description": "Select returned keys",
+                    "nodeId": "builtinFunction-75b4ec60-d94c-50fe-a064-4a9863643479"
+                  }
+                },
+                "Filter_matched_keys": {
+                  "type": "Query",
+                  "inputs": {
+                    "from": "@body('Select_inventory_keys')",
+                    "where": "@contains(body('Select_returned_keys'), toLower(item()))"
+                  },
+                  "runAfter": {
+                    "Select_returned_keys": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "description": "Filter matched keys",
+                    "nodeId": "builtinFunction-788929d1-6cf6-5b8b-92f4-5c3f9a5c4e88"
+                  }
+                },
+                "Filter_unmatched_keys": {
+                  "type": "Query",
+                  "inputs": {
+                    "from": "@body('Select_returned_keys')",
+                    "where": "@and(not(empty(item())), not(contains(concat(';;', toLower(join(body('Select_inventory_keys'), ';;')), ';;'), concat(';;', item(), ';;'))))"
+                  },
+                  "runAfter": {
+                    "Filter_matched_keys": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "description": "Filter unmatched keys",
+                    "nodeId": "builtinFunction-e8fed219-b525-555a-8c81-24d4642f6e7b"
+                  }
+                },
                 "Any_agents_impacted_": {
                   "type": "If",
                   "expression": {
                     "and": [
                       {
-                        "not": {
-                          "equals": [
-                            "@trim(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], ''))",
-                            ""
-                          ]
-                        }
+                        "equals": [
+                          "@toLower(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/verdict'], '')))",
+                          "impacted"
+                        ]
+                      },
+                      {
+                        "greater": [
+                          "@length(body('Filter_matched_keys'))",
+                          0
+                        ]
                       }
                     ]
                   },
@@ -3596,10 +3891,10 @@
                             "entityName": "at_aimodelprocessedposts",
                             "item/at_name": "@items('For_each_message')?['id']",
                             "item/at_title": "@{take(coalesce(items('For_each_message')?['title'], ''), 500)}",
-                            "item/at_status": "no_impact",
+                            "item/at_status": "@{if(equals(toLower(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/verdict'], ''))), 'not_about_models'), 'not_about_models', if(equals(toLower(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/verdict'], ''))), 'impacted'), 'unmatched_keys', 'no_impact'))}",
                             "item/at_agentsimpacted": 0,
                             "item/at_postlastmodified": "@items('For_each_message')?['lastModifiedDateTime']",
-                            "item/at_reason": "@{take(coalesce(body('Identify_impacted_models')?['structuredOutput/reason'], ''), 4000)}"
+                            "item/at_reason": "@{take(concat(coalesce(body('Identify_impacted_models')?['structuredOutput/reason'], ''), if(empty(body('Filter_unmatched_keys')), '', concat(' [Keys not in the inventory, ignored: ', join(body('Filter_unmatched_keys'), '; '), ']'))), 4000)}"
                           },
                           "host": {
                             "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
@@ -3616,7 +3911,7 @@
                     }
                   },
                   "runAfter": {
-                    "Identify_impacted_models": [
+                    "Filter_unmatched_keys": [
                       "Succeeded"
                     ]
                   },
@@ -3671,7 +3966,7 @@
                                 "$type": "where",
                                 "FieldName": "key",
                                 "Operator": "in~",
-                                "Values": "@split(concat('''', replace(replace(replace(replace(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], '')), '''', ''), ' ;;', ';;'), ';; ', ';;'), ';;', ''';;'''), ''''), ';;')"
+                                "Values": "@split(concat('''', replace(replace(join(body('Filter_matched_keys'), ';;'), '''', ''), ';;', ''';;'''), ''''), ';;')"
                               },
                               {
                                 "$type": "extend",
@@ -3780,7 +4075,7 @@
                                 "$type": "where",
                                 "FieldName": "key",
                                 "Operator": "in~",
-                                "Values": "@split(concat('''', replace(replace(replace(replace(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], '')), '''', ''), ' ;;', ';;'), ';; ', ';;'), ';;', ''';;'''), ''''), ';;')"
+                                "Values": "@split(concat('''', replace(replace(join(body('Filter_matched_keys'), ';;'), '''', ''), ';;', ''';;'''), ''''), ';;')"
                               },
                               {
                                 "$type": "extend",
@@ -3930,7 +4225,7 @@
                                     "$type": "where",
                                     "FieldName": "key",
                                     "Operator": "in~",
-                                    "Values": "@split(concat('''', replace(replace(replace(replace(trim(coalesce(body('Identify_impacted_models')?['structuredOutput/inventoryKeys'], '')), '''', ''), ' ;;', ';;'), ';; ', ';;'), ';;', ''';;'''), ''''), ';;')"
+                                    "Values": "@split(concat('''', replace(replace(join(body('Filter_matched_keys'), ';;'), '''', ''), ';;', ''';;'''), ''''), ';;')"
                                   },
                                   {
                                     "$type": "extend",
@@ -4133,7 +4428,7 @@
                         "parameters": {
                           "emailMessage/To": "@{variables('Config')?['adminEmail']}",
                           "emailMessage/Subject": "AI model lifecycle summary - @{items('For_each_message')?['id']}: @{body('Get_impacted_agents')?['totalRecords']} agent(s), @{body('Get_impacted_owners')?['totalRecords']} owner(s)",
-                          "emailMessage/Body": "<p>@{body('Identify_impacted_models')?['structuredOutput/headline']}</p><p><i>@{body('Identify_impacted_models')?['structuredOutput/reason']}</i></p><h3>What changes</h3>@{body('Create_impacts_table')}<h3>Numbers</h3><ul><li>Scope: @{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'all environments in the tenant', concat(string(length(coalesce(variables('Config')?['environmentIds'], json('[]')))), ' environment(s) listed in environmentIds'))}</li><li>Impacted agents: @{body('Get_impacted_agents')?['totalRecords']}</li><li>Owners with impacted agents: @{body('Get_impacted_owners')?['totalRecords']}</li><li>Owners selected for an email this run: @{length(coalesce(body('Get_impacted_owners')?['data'], json('[]')))}@{if(bool(coalesce(variables('Config')?['testMode'], true)), ' (TEST MODE - all sent to you)', '')}@{if(greater(int(coalesce(body('Get_impacted_owners')?['totalRecords'], 0)), length(coalesce(body('Get_impacted_owners')?['data'], json('[]')))), ' - <b>capped</b>: raise maxOwnerEmailsPerPost / turn off testMode to reach every owner', '')}@{if(equals(coalesce(actions('For_each_owner')?['status'], 'Succeeded'), 'Succeeded'), '', concat('<br><b style=\"color:#a4262c\">Some owner emails were not sent (owner loop status: ', actions('For_each_owner')?['status'], '). Check Send owner email in the run history.</b>'))}</li><li>Agents without an owner (ownerId empty or 00000000-...) get no email - they are in the table below.</li></ul><h3>All impacted agents (first 500)</h3>@{body('Create_all_agents_table')}<p>Message Center post: <a href=\"https://admin.microsoft.com/Adminportal/Home#/MessageCenter/:/messages/@{items('For_each_message')?['id']}\">@{items('For_each_message')?['id']} - @{items('For_each_message')?['title']}</a></p>",
+                          "emailMessage/Body": "<p>@{body('Identify_impacted_models')?['structuredOutput/headline']}</p><p><i>@{body('Identify_impacted_models')?['structuredOutput/reason']}</i></p><h3>What changes</h3>@{body('Create_impacts_table')}<h3>Numbers</h3><ul><li>Scope: @{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'all environments in the tenant', concat(string(length(coalesce(variables('Config')?['environmentIds'], json('[]')))), ' environment(s) listed in environmentIds'))}</li><li>Impacted agents: @{body('Get_impacted_agents')?['totalRecords']}</li><li>Owners with impacted agents: @{body('Get_impacted_owners')?['totalRecords']}</li><li>Owners selected for an email this run: @{length(coalesce(body('Get_impacted_owners')?['data'], json('[]')))}@{if(bool(coalesce(variables('Config')?['testMode'], true)), ' (TEST MODE - all sent to you)', '')}@{if(greater(int(coalesce(body('Get_impacted_owners')?['totalRecords'], 0)), length(coalesce(body('Get_impacted_owners')?['data'], json('[]')))), ' - <b>capped</b>: raise maxOwnerEmailsPerPost / turn off testMode to reach every owner', '')}@{if(equals(coalesce(actions('For_each_owner')?['status'], 'Succeeded'), 'Succeeded'), '', concat('<br><b style=\"color:#a4262c\">Some owner emails were not sent (owner loop status: ', actions('For_each_owner')?['status'], '). Check Send owner email in the run history.</b>'))}</li>@{if(empty(body('Filter_unmatched_keys')), '', concat('<li><b>Keys the agent returned that are not in the inventory (ignored):</b> ', join(body('Filter_unmatched_keys'), '; '), '</li>'))}<li>Agents without an owner (ownerId empty or 00000000-...) get no email - they are in the table below.</li></ul><h3>All impacted agents (first 500)</h3>@{body('Create_all_agents_table')}<p>Message Center post: <a href=\"https://admin.microsoft.com/Adminportal/Home#/MessageCenter/:/messages/@{items('For_each_message')?['id']}\">@{items('For_each_message')?['id']} - @{items('For_each_message')?['title']}</a></p>",
                           "emailMessage/Importance": "Normal"
                         },
                         "host": {
@@ -4162,7 +4457,7 @@
                           "item/at_status": "@{if(and(equals(coalesce(actions('For_each_owner')?['status'], ''), 'Succeeded'), equals(coalesce(actions('Send_admin_summary')?['status'], ''), 'Succeeded')), 'notified', 'notified_with_errors')}",
                           "item/at_agentsimpacted": "@int(coalesce(body('Get_impacted_agents')?['totalRecords'], 0))",
                           "item/at_postlastmodified": "@items('For_each_message')?['lastModifiedDateTime']",
-                          "item/at_reason": "@{take(coalesce(body('Identify_impacted_models')?['structuredOutput/reason'], ''), 4000)}"
+                          "item/at_reason": "@{take(concat(coalesce(body('Identify_impacted_models')?['structuredOutput/reason'], ''), if(empty(body('Filter_unmatched_keys')), '', concat(' [Keys not in the inventory, ignored: ', join(body('Filter_unmatched_keys'), '; '), ']'))), 4000)}"
                         },
                         "host": {
                           "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",

@@ -22,8 +22,8 @@ agents, including agents that have no owner.
 ## How the workflow works
 
 The design is hybrid: the agent node only reasons, and deterministic steps do
-the querying and emailing. That keeps the cost at **one agent run per relevant
-post**, however many agents are impacted.
+the querying and emailing. That keeps the cost at **one agent run per new post
+from a model service**, however many agents are impacted.
 
 1. **Recurrence** runs the workflow once a day.
 2. **Set configuration** holds every environment-specific value in one `Config`
@@ -45,30 +45,41 @@ post**, however many agents are impacted.
    default* and *Microsoft 365 Copilot* are excluded, because Microsoft moves
    them automatically.
 7. **For each new post:**
-   1. **Is it about AI model lifecycle?** keeps posts that list one of the
-      filter's services **and** mention a model term in the title (AI model,
-      GPT, Claude, harness, ...) or a retirement term in the body. Other posts
-      are skipped without an agent run.
+   1. **Is it from a model service?** keeps posts that list one of the
+      filter's services. This is the only deterministic gate: there is no
+      keyword list to maintain. Posts from other services are skipped without
+      an agent run.
    2. **Identify impacted models** (agent node) reads the whole post, including
-      retirement tables, and maps the affected models to the inventory summary.
-      It normalizes names, requires exact versions and maps harness names. It
-      returns structured output only: `inventoryKeys`, `impacts` (model,
-      harness, change, replacement, date), `actionBy`, `headline` and `reason`.
-   3. **Any agents impacted?** When no inventory key matched, *Record no
-      impact* saves the post as `no_impact` (with the agent's reason) and the
-      workflow moves on.
-   4. **Get impacted agents** and **Get impacted owners** query the inventory
+      retirement tables, decides whether it is about AI model lifecycle at all,
+      and maps the affected models to the inventory summary. It normalizes
+      names, requires exact versions and maps harness names. It returns
+      structured output only: `verdict` (`impacted`, `no_impact` or
+      `not_about_models`), `inventoryKeys`, `impacts` (model, harness, change,
+      replacement, date), `actionBy`, `headline` and `reason`.
+   3. **Validate the agent's keys.** *Select returned keys* splits the agent's
+      `inventoryKeys`, and *Filter matched keys* / *Filter unmatched keys*
+      compare them (case-insensitively) with the keys in the model summary.
+      Only keys that really exist in the inventory are queried, so a mistyped
+      or invented key can never select the wrong agents.
+   4. **Any agents impacted?** is true when the verdict is `impacted` **and** at
+      least one key is valid. Otherwise *Record no impact* saves the post with
+      the agent's reason and status `not_about_models`, `no_impact`, or
+      `unmatched_keys` (the agent said impacted but none of its keys exist in
+      the inventory), and the workflow moves on. Unmatched keys are listed in
+      the reason, so a bad match is distinguishable from a genuine no-impact.
+   5. **Get impacted agents** and **Get impacted owners** query the inventory
       server-side for the matched keys. Owners are grouped, and agents with no
       owner are left out of the owner emails.
-   5. **For each owner** (5 in parallel): *Get owner agents* lists that owner's
+   6. **For each owner** (5 in parallel): *Get owner agents* lists that owner's
       agents with environment names, *Get owner profile* resolves the name and
       email in Entra, and *Send owner email* sends the email. The email is High
       importance when the action-by date is within 30 days. Migration steps are
       only included for impacts that list a replacement model; for upgrades,
       automatic migrations and behavior changes owners are asked to test.
-   6. **Send admin summary** emails `adminEmail` with the scope, totals, whether
-      the email cap was hit, and the first 500 impacted agents.
-   7. **Record processed post** saves the post as `notified` (or
+   7. **Send admin summary** emails `adminEmail` with the scope, totals, whether
+      the email cap was hit, any keys the agent returned that are not in the
+      inventory, and the first 500 impacted agents.
+   8. **Record processed post** saves the post as `notified` (or
       `notified_with_errors` when an owner email or the admin summary failed)
       with the number of impacted agents.
 
@@ -103,7 +114,10 @@ read them.
   because old tokens keep returning 403.
 - A mailbox to send from (the *Office 365 Outlook* connection) and an admin or
   governance mailbox to receive the summaries.
-- Copilot Credits: one agent run per post that passes the filter.
+- Copilot Credits: one agent run per new post from a filtered service (each post
+  is handled once). Check the credits used per run in the run history. The
+  first run reads the whole `lookbackDays` window, so start with a small
+  `lookbackDays` or a few services if you want to limit that first batch.
 
 ## Import and setup
 
@@ -134,8 +148,8 @@ read them.
    | `maxOwnerEmailsPerPost` | `100` | Safety cap on owner emails per post. The summary says when it was hit |
    | `environmentIds` | `[]` | **Scope**: environment IDs to check, for example `["<env-id-1>", "<env-id-2>"]`. Leave `[]` for the whole tenant |
 
-4. Optionally adjust **Set model lifecycle filter** (services) and the keywords
-   in **Is it about AI model lifecycle?**.
+4. Optionally adjust the services in **Set model lifecycle filter**. Fewer
+   services means fewer agent runs; the agent decides relevance for the rest.
 5. Test it from the designer (**Test** / **Run now**), scoped to one or two
    environments with `environmentIds`. In test mode, every email arrives in
    `adminEmail`.
@@ -153,13 +167,15 @@ The solution includes the **AI model processed post** table
 | --- | --- |
 | Name (`at_name`) | Message Center ID, for example `MC1234567` |
 | Title | Post title |
-| Status | `notified`, `notified_with_errors` or `no_impact` |
+| Status | `notified`, `notified_with_errors`, `no_impact`, `not_about_models` or `unmatched_keys` |
 | Agents impacted | Number of impacted agents in scope |
 | Post last modified | The post's `lastModifiedDateTime` when it was handled |
 | Reason | The agent's reasoning |
 
-Posts that the keyword filter skips are not recorded, so they cost nothing and
-are checked again only while they are inside the lookback window. To send a post
+Posts from services outside the filter are not recorded, so they cost nothing.
+Every post the agent reads is recorded, so it never costs a second agent run.
+Review `unmatched_keys` rows: they usually mean the agent matched a model name
+that is written differently in the inventory. To send a post
 again (for example after changing the scope or the email text), delete its row.
 
 ### Who the emails come from
@@ -188,8 +204,8 @@ connections change, not the workflow.
 
 ## Limitations
 
-- This is a sample, not a production-ready service. Review the filter, keywords
-  and email text before turning off test mode.
+- This is a sample, not a production-ready service. Review the service filter, the
+  agent instructions and the email text before turning off test mode.
 - The agent's matches, dates and replacements are model output and can be wrong.
   Every email links to the original post, and the admin summary shows the
   agent's reasoning. Check before you act.
