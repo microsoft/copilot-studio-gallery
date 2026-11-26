@@ -1,0 +1,1400 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "ait_Dataverse"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "type": "Object",
+          "defaultValue": {}
+        },
+        "$authentication": {
+          "type": "SecureObject",
+          "defaultValue": {}
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "title": "id",
+                  "type": "string",
+                  "description": "Microsoft 365 roadmap ID or Azure update ID, optionally as azure-<id> (the topic validates it)",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "AIT Roadmap Watch - Details",
+                "nodes": [
+                  {
+                    "id": "start-b26f536a-7526-4f13-a226-696bf0ec6c64",
+                    "name": "When an agent calls the flow",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 500,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "connector",
+                        "connector": {
+                          "apiName": "Skills",
+                          "operationName": "When_an_agent_calls_the_flow",
+                          "displayName": "When an agent calls the flow",
+                          "kind": "Skills",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "title": "id",
+                                  "type": "string",
+                                  "description": "Microsoft 365 roadmap ID or Azure update ID, optionally as azure-<id> (the topic validates it)",
+                                  "x-ms-content-hint": "TEXT",
+                                  "x-ms-dynamically-added": true
+                                }
+                              },
+                              "required": [
+                                "id"
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "connector-bea5bfeb-a25b-4b64-b7f5-5d679338c533",
+                    "name": "Get settings",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 830,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "ListRecords",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "environmentvariabledefinitions",
+                          "$select": "schemaname,defaultvalue",
+                          "$filter": "startswith(schemaname, 'ait_')",
+                          "$expand": "environmentvariabledefinition_environmentvariablevalue($select=value)"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-ebfcc778-97dd-4f47-aea0-94910d15a6aa",
+                    "name": "Select settings",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1160,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@body('Get_settings')?['value']",
+                          "select": "@concat(substring(string(createArray(item()?['schemaname'])), 1, sub(length(string(createArray(item()?['schemaname']))), 2)), ':', substring(string(createArray(coalesce(first(item()?['environmentvariabledefinition_environmentvariablevalue'])?['value'], item()?['defaultvalue'], ''))), 1, sub(length(string(createArray(coalesce(first(item()?['environmentvariabledefinition_environmentvariablevalue'])?['value'], item()?['defaultvalue'], '')))), 2)))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "connector-bea5bfeb-a25b-4b64-b7f5-5d679338c533": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-200895de-27ab-4730-95df-1075b1be78e2",
+                    "name": "Settings",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1490,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@json(concat('{', join(body('Select_settings'), ','), '}'))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-ebfcc778-97dd-4f47-aea0-94910d15a6aa": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-5e712d92-2605-4123-9106-4652a203b3ed",
+                    "name": "Id",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1820,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": {
+                            "azure": "@startsWith(toLower(trim(triggerBody()?['id'])), 'azure-')",
+                            "bare": "@if(startsWith(toLower(trim(triggerBody()?['id'])), 'azure-'), substring(trim(triggerBody()?['id']), 6, sub(length(trim(triggerBody()?['id'])), 6)), trim(triggerBody()?['id']))"
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-200895de-27ab-4730-95df-1075b1be78e2": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-4b1652ba-2e3c-4218-ac2b-dcd738ae92bb",
+                    "name": "Call item",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 2150,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "httpaction",
+                        "operationName": "httpaction",
+                        "displayName": "HTTP",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/Http",
+                        "categoryDisplayName": "HTTP",
+                        "brandColor": "#709727",
+                        "parameters": {
+                          "method": "POST",
+                          "uri": "@outputs('Settings')?['ait_McpServerUrl']",
+                          "headers": {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json, text/event-stream"
+                          },
+                          "body": {
+                            "jsonrpc": "2.0",
+                            "id": 1,
+                            "method": "tools/call",
+                            "params": {
+                              "name": "@{if(outputs('Id')?['azure'], 'get_azure_update_by_id', 'get_m365_roadmap_by_id')}",
+                              "arguments": {
+                                "id": "@{outputs('Id')?['bare']}"
+                              }
+                            }
+                          },
+                          "retryPolicy": {
+                            "type": "fixed",
+                            "count": 2,
+                            "interval": "PT5S"
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-5e712d92-2605-4123-9106-4652a203b3ed": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-d19a8ca4-e216-4394-917c-1863e46bf88b",
+                    "name": "Envelope",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 2480,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@json(trim(substring(string(body('Call_item')), add(if(contains(string(body('Call_item')), 'data:'), length(first(split(string(body('Call_item')), 'data:'))), -1), 5), sub(length(string(body('Call_item'))), add(if(contains(string(body('Call_item')), 'data:'), length(first(split(string(body('Call_item')), 'data:'))), -1), 5)))))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-4b1652ba-2e3c-4218-ac2b-dcd738ae92bb": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-73adba5f-311f-4a44-8ed5-23db9f8c0135",
+                    "name": "Item text",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 2810,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@if(or(equals(outputs('Envelope')?['result']?['isError'], true), empty(outputs('Envelope')?['result']?['content'])), '{}', coalesce(first(outputs('Envelope')?['result']?['content'])?['text'], '{}'))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-d19a8ca4-e216-4394-917c-1863e46bf88b": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-7aa9b020-5bc1-403d-a54d-40235767d35f",
+                    "name": "First item",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 3140,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@json(outputs('Item_text'))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-73adba5f-311f-4a44-8ed5-23db9f8c0135": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "scope-77e628f7-cda1-470e-8a28-fcc523e2a252",
+                    "name": "Try azure block",
+                    "type": "scope",
+                    "version": 1,
+                    "position": {
+                      "x": 3470,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "description": ""
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-7aa9b020-5bc1-403d-a54d-40235767d35f": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "width": 1350,
+                    "height": 206,
+                    "style": {
+                      "width": 1350,
+                      "height": 206
+                    }
+                  },
+                  {
+                    "id": "ifElse-fc5c0573-f5cd-426f-839a-1d86042ad601",
+                    "name": "Try azure",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 60,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "b2535e29-4c84-4eb8-83bf-b0f07fdb4cf8",
+                            "name": "True",
+                            "expression": "@and(empty(outputs('First_item')?['title']), not(outputs('Id')?['azure']))"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:b2535e29-4c84-4eb8-83bf-b0f07fdb4cf8",
+                          "label": "True"
+                        },
+                        {
+                          "id": "else",
+                          "label": "False"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "scope-77e628f7-cda1-470e-8a28-fcc523e2a252"
+                  },
+                  {
+                    "id": "builtinFunction-d085e9aa-35ca-442c-bf4a-2f0a8d04bb34",
+                    "name": "Call azure item",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 390,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "httpaction",
+                        "operationName": "httpaction",
+                        "displayName": "HTTP",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/Http",
+                        "categoryDisplayName": "HTTP",
+                        "brandColor": "#709727",
+                        "parameters": {
+                          "method": "POST",
+                          "uri": "@outputs('Settings')?['ait_McpServerUrl']",
+                          "headers": {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json, text/event-stream"
+                          },
+                          "body": {
+                            "jsonrpc": "2.0",
+                            "id": 1,
+                            "method": "tools/call",
+                            "params": {
+                              "name": "get_azure_update_by_id",
+                              "arguments": {
+                                "id": "@{outputs('Id')?['bare']}"
+                              }
+                            }
+                          },
+                          "retryPolicy": {
+                            "type": "fixed",
+                            "count": 2,
+                            "interval": "PT5S"
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "scope-77e628f7-cda1-470e-8a28-fcc523e2a252"
+                  },
+                  {
+                    "id": "builtinFunction-8f981a92-423c-4ae3-be03-1ef59484b1e3",
+                    "name": "Azure Envelope",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 720,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@json(trim(substring(string(body('Call_azure_item')), add(if(contains(string(body('Call_azure_item')), 'data:'), length(first(split(string(body('Call_azure_item')), 'data:'))), -1), 5), sub(length(string(body('Call_azure_item'))), add(if(contains(string(body('Call_azure_item')), 'data:'), length(first(split(string(body('Call_azure_item')), 'data:'))), -1), 5)))))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-d085e9aa-35ca-442c-bf4a-2f0a8d04bb34": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "scope-77e628f7-cda1-470e-8a28-fcc523e2a252"
+                  },
+                  {
+                    "id": "builtinFunction-e3a54b71-958c-45f6-b6db-1582522be07b",
+                    "name": "Azure Item text",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1050,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@if(or(equals(outputs('Azure_Envelope')?['result']?['isError'], true), empty(outputs('Azure_Envelope')?['result']?['content'])), '{}', coalesce(first(outputs('Azure_Envelope')?['result']?['content'])?['text'], '{}'))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-8f981a92-423c-4ae3-be03-1ef59484b1e3": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "scope-77e628f7-cda1-470e-8a28-fcc523e2a252"
+                  },
+                  {
+                    "id": "builtinFunction-d150476a-3d55-49aa-91f5-8c8282d6176a",
+                    "name": "Is azure",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 4910,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@or(outputs('Id')?['azure'], and(empty(outputs('First_item')?['title']), not(empty(json(coalesce(outputs('Azure_Item_text'), '{}'))?['title']))))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "scope-77e628f7-cda1-470e-8a28-fcc523e2a252": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-bbceefe9-dd13-4374-b1c1-15f37d85ec7c",
+                    "name": "Item",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 5240,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@if(and(outputs('Is_azure'), not(outputs('Id')?['azure'])), json(coalesce(outputs('Azure_Item_text'), '{}')), outputs('First_item'))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-d150476a-3d55-49aa-91f5-8c8282d6176a": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-816181c5-6771-4b8a-9d7b-f0802a59ddf1",
+                    "name": "Description",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 5570,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": "@coalesce(outputs('Item')?['description'], '')"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-bbceefe9-dd13-4374-b1c1-15f37d85ec7c": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-879cb2ec-029b-4373-95b0-c7a2b4e16845",
+                    "name": "Reply",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 5900,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": {
+                            "message": "@{if(empty(outputs('Item')?['title']), concat('I could not find item ', trim(triggerBody()?['id']), ' on the Microsoft 365 roadmap or in Azure Updates. Check the ID.'), join(createArray(concat('**', if(outputs('Is_azure'), 'Azure · ', ''), outputs('Item')?['title'], '**'), concat(join(coalesce(outputs('Item')?['products'], json('[]')), ', '), ' · ', coalesce(outputs('Item')?['status'], 'no status'), if(empty(outputs('Item')?['generalAvailabilityDate']), '', concat(' · GA ', outputs('Item')?['generalAvailabilityDate'])), if(empty(outputs('Item')?['previewAvailabilityDate']), '', concat(' · Preview ', outputs('Item')?['previewAvailabilityDate'])), ' · ', join(coalesce(outputs('Item')?['cloudInstances'], outputs('Item')?['tags'], json('[]')), ', ')), if(greater(length(outputs('Description')), 3000), concat(take(outputs('Description'), 3000), '…'), outputs('Description')), if(outputs('Is_azure'), concat('[Open in Azure Updates](https://azure.microsoft.com/updates?id=', outputs('Id')?['bare'], ')'), concat('[Open in the Microsoft 365 roadmap](https://www.microsoft.com/microsoft-365/roadmap?id=', outputs('Id')?['bare'], ')'))), decodeUriComponent('%0A%0A')))}"
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-816181c5-6771-4b8a-9d7b-f0802a59ddf1": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-e1daa220-a459-4088-87a1-c5db10685caf",
+                    "name": "Respond to the agent",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 6230,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "response",
+                        "operationName": "response",
+                        "displayName": "Respond to the agent",
+                        "category": "request",
+                        "categoryDisplayName": "Request",
+                        "kind": "Skills",
+                        "parameters": {
+                          "statusCode": 200,
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "title": "message",
+                                "description": "",
+                                "type": "string",
+                                "x-ms-content-hint": "TEXT",
+                                "x-ms-dynamically-added": true
+                              }
+                            },
+                            "additionalProperties": {}
+                          },
+                          "body": {
+                            "message": "@{outputs('Reply')?['message']}"
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-879cb2ec-029b-4373-95b0-c7a2b4e16845": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-f50661ae-56bf-4c34-bbf7-b4ed18bc9c86",
+                    "name": "Respond with error",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 6230,
+                      "y": 326
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "response",
+                        "operationName": "response",
+                        "displayName": "Respond with error",
+                        "category": "request",
+                        "categoryDisplayName": "Request",
+                        "kind": "Skills",
+                        "parameters": {
+                          "statusCode": 200,
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "title": "message",
+                                "description": "",
+                                "type": "string",
+                                "x-ms-content-hint": "TEXT",
+                                "x-ms-dynamically-added": true
+                              }
+                            },
+                            "additionalProperties": {}
+                          },
+                          "body": {
+                            "message": "Sorry, something went wrong on my side. Please try again in a few minutes."
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-879cb2ec-029b-4373-95b0-c7a2b4e16845": [
+                            "Failed",
+                            "Skipped",
+                            "TimedOut"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-b26f536a-7526-4f13-a226-696bf0ec6c64-connector-bea5bfeb-a25b-4b64-b7f5-5d679338c533",
+                    "source": "start-b26f536a-7526-4f13-a226-696bf0ec6c64",
+                    "target": "connector-bea5bfeb-a25b-4b64-b7f5-5d679338c533"
+                  },
+                  {
+                    "id": "edge-connector-bea5bfeb-a25b-4b64-b7f5-5d679338c533-builtinFunction-ebfcc778-97dd-4f47-aea0-94910d15a6aa",
+                    "source": "connector-bea5bfeb-a25b-4b64-b7f5-5d679338c533",
+                    "target": "builtinFunction-ebfcc778-97dd-4f47-aea0-94910d15a6aa"
+                  },
+                  {
+                    "id": "edge-builtinFunction-ebfcc778-97dd-4f47-aea0-94910d15a6aa-builtinFunction-200895de-27ab-4730-95df-1075b1be78e2",
+                    "source": "builtinFunction-ebfcc778-97dd-4f47-aea0-94910d15a6aa",
+                    "target": "builtinFunction-200895de-27ab-4730-95df-1075b1be78e2"
+                  },
+                  {
+                    "id": "edge-builtinFunction-200895de-27ab-4730-95df-1075b1be78e2-builtinFunction-5e712d92-2605-4123-9106-4652a203b3ed",
+                    "source": "builtinFunction-200895de-27ab-4730-95df-1075b1be78e2",
+                    "target": "builtinFunction-5e712d92-2605-4123-9106-4652a203b3ed"
+                  },
+                  {
+                    "id": "edge-builtinFunction-5e712d92-2605-4123-9106-4652a203b3ed-builtinFunction-4b1652ba-2e3c-4218-ac2b-dcd738ae92bb",
+                    "source": "builtinFunction-5e712d92-2605-4123-9106-4652a203b3ed",
+                    "target": "builtinFunction-4b1652ba-2e3c-4218-ac2b-dcd738ae92bb"
+                  },
+                  {
+                    "id": "edge-builtinFunction-4b1652ba-2e3c-4218-ac2b-dcd738ae92bb-builtinFunction-d19a8ca4-e216-4394-917c-1863e46bf88b",
+                    "source": "builtinFunction-4b1652ba-2e3c-4218-ac2b-dcd738ae92bb",
+                    "target": "builtinFunction-d19a8ca4-e216-4394-917c-1863e46bf88b"
+                  },
+                  {
+                    "id": "edge-builtinFunction-d19a8ca4-e216-4394-917c-1863e46bf88b-builtinFunction-73adba5f-311f-4a44-8ed5-23db9f8c0135",
+                    "source": "builtinFunction-d19a8ca4-e216-4394-917c-1863e46bf88b",
+                    "target": "builtinFunction-73adba5f-311f-4a44-8ed5-23db9f8c0135"
+                  },
+                  {
+                    "id": "edge-builtinFunction-73adba5f-311f-4a44-8ed5-23db9f8c0135-builtinFunction-7aa9b020-5bc1-403d-a54d-40235767d35f",
+                    "source": "builtinFunction-73adba5f-311f-4a44-8ed5-23db9f8c0135",
+                    "target": "builtinFunction-7aa9b020-5bc1-403d-a54d-40235767d35f"
+                  },
+                  {
+                    "id": "edge-builtinFunction-7aa9b020-5bc1-403d-a54d-40235767d35f-scope-77e628f7-cda1-470e-8a28-fcc523e2a252-external-input",
+                    "source": "builtinFunction-7aa9b020-5bc1-403d-a54d-40235767d35f",
+                    "target": "scope-77e628f7-cda1-470e-8a28-fcc523e2a252",
+                    "targetHandle": "external-input"
+                  },
+                  {
+                    "id": "edge-scope-77e628f7-cda1-470e-8a28-fcc523e2a252-ifElse-fc5c0573-f5cd-426f-839a-1d86042ad601-internal-source",
+                    "source": "scope-77e628f7-cda1-470e-8a28-fcc523e2a252",
+                    "target": "ifElse-fc5c0573-f5cd-426f-839a-1d86042ad601",
+                    "sourceHandle": "internal-source"
+                  },
+                  {
+                    "id": "edge-ifElse-fc5c0573-f5cd-426f-839a-1d86042ad601-scope-77e628f7-cda1-470e-8a28-fcc523e2a252-internal-target",
+                    "source": "ifElse-fc5c0573-f5cd-426f-839a-1d86042ad601",
+                    "target": "scope-77e628f7-cda1-470e-8a28-fcc523e2a252",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-ifElse-fc5c0573-f5cd-426f-839a-1d86042ad601-builtinFunction-d085e9aa-35ca-442c-bf4a-2f0a8d04bb34-condition:b2535e29-4c84-4eb8-83bf-b0f07fdb4cf8",
+                    "source": "ifElse-fc5c0573-f5cd-426f-839a-1d86042ad601",
+                    "target": "builtinFunction-d085e9aa-35ca-442c-bf4a-2f0a8d04bb34",
+                    "sourceHandle": "condition:b2535e29-4c84-4eb8-83bf-b0f07fdb4cf8"
+                  },
+                  {
+                    "id": "edge-builtinFunction-d085e9aa-35ca-442c-bf4a-2f0a8d04bb34-builtinFunction-8f981a92-423c-4ae3-be03-1ef59484b1e3",
+                    "source": "builtinFunction-d085e9aa-35ca-442c-bf4a-2f0a8d04bb34",
+                    "target": "builtinFunction-8f981a92-423c-4ae3-be03-1ef59484b1e3"
+                  },
+                  {
+                    "id": "edge-builtinFunction-8f981a92-423c-4ae3-be03-1ef59484b1e3-builtinFunction-e3a54b71-958c-45f6-b6db-1582522be07b",
+                    "source": "builtinFunction-8f981a92-423c-4ae3-be03-1ef59484b1e3",
+                    "target": "builtinFunction-e3a54b71-958c-45f6-b6db-1582522be07b"
+                  },
+                  {
+                    "id": "edge-scope-77e628f7-cda1-470e-8a28-fcc523e2a252-builtinFunction-d150476a-3d55-49aa-91f5-8c8282d6176a-external-output",
+                    "source": "scope-77e628f7-cda1-470e-8a28-fcc523e2a252",
+                    "target": "builtinFunction-d150476a-3d55-49aa-91f5-8c8282d6176a",
+                    "sourceHandle": "external-output"
+                  },
+                  {
+                    "id": "edge-builtinFunction-d150476a-3d55-49aa-91f5-8c8282d6176a-builtinFunction-bbceefe9-dd13-4374-b1c1-15f37d85ec7c",
+                    "source": "builtinFunction-d150476a-3d55-49aa-91f5-8c8282d6176a",
+                    "target": "builtinFunction-bbceefe9-dd13-4374-b1c1-15f37d85ec7c"
+                  },
+                  {
+                    "id": "edge-builtinFunction-bbceefe9-dd13-4374-b1c1-15f37d85ec7c-builtinFunction-816181c5-6771-4b8a-9d7b-f0802a59ddf1",
+                    "source": "builtinFunction-bbceefe9-dd13-4374-b1c1-15f37d85ec7c",
+                    "target": "builtinFunction-816181c5-6771-4b8a-9d7b-f0802a59ddf1"
+                  },
+                  {
+                    "id": "edge-builtinFunction-816181c5-6771-4b8a-9d7b-f0802a59ddf1-builtinFunction-879cb2ec-029b-4373-95b0-c7a2b4e16845",
+                    "source": "builtinFunction-816181c5-6771-4b8a-9d7b-f0802a59ddf1",
+                    "target": "builtinFunction-879cb2ec-029b-4373-95b0-c7a2b4e16845"
+                  },
+                  {
+                    "id": "edge-builtinFunction-879cb2ec-029b-4373-95b0-c7a2b4e16845-builtinFunction-e1daa220-a459-4088-87a1-c5db10685caf",
+                    "source": "builtinFunction-879cb2ec-029b-4373-95b0-c7a2b4e16845",
+                    "target": "builtinFunction-e1daa220-a459-4088-87a1-c5db10685caf"
+                  },
+                  {
+                    "id": "edge-builtinFunction-879cb2ec-029b-4373-95b0-c7a2b4e16845-builtinFunction-f50661ae-56bf-4c34-bbf7-b4ed18bc9c86",
+                    "source": "builtinFunction-879cb2ec-029b-4373-95b0-c7a2b4e16845",
+                    "target": "builtinFunction-f50661ae-56bf-4c34-bbf7-b4ed18bc9c86"
+                  }
+                ],
+                "connectionReferences": {
+                  "shared_commondataserviceforapps": {
+                    "runtimeSource": "embedded",
+                    "connection": {
+                      "connectionReferenceLogicalName": "ait_Dataverse"
+                    },
+                    "api": {
+                      "name": "shared_commondataserviceforapps"
+                    }
+                  }
+                },
+                "parameters": {}
+              },
+              "nodeActionMapping": {
+                "connector-bea5bfeb-a25b-4b64-b7f5-5d679338c533": [
+                  "Get_settings"
+                ],
+                "builtinFunction-ebfcc778-97dd-4f47-aea0-94910d15a6aa": [
+                  "Select_settings"
+                ],
+                "builtinFunction-200895de-27ab-4730-95df-1075b1be78e2": [
+                  "Settings"
+                ],
+                "builtinFunction-5e712d92-2605-4123-9106-4652a203b3ed": [
+                  "Id"
+                ],
+                "builtinFunction-4b1652ba-2e3c-4218-ac2b-dcd738ae92bb": [
+                  "Call_item"
+                ],
+                "builtinFunction-d19a8ca4-e216-4394-917c-1863e46bf88b": [
+                  "Envelope"
+                ],
+                "builtinFunction-73adba5f-311f-4a44-8ed5-23db9f8c0135": [
+                  "Item_text"
+                ],
+                "builtinFunction-7aa9b020-5bc1-403d-a54d-40235767d35f": [
+                  "First_item"
+                ],
+                "scope-77e628f7-cda1-470e-8a28-fcc523e2a252": [
+                  "Try_azure_block"
+                ],
+                "ifElse-fc5c0573-f5cd-426f-839a-1d86042ad601": [
+                  "Try_azure"
+                ],
+                "builtinFunction-d085e9aa-35ca-442c-bf4a-2f0a8d04bb34": [
+                  "Call_azure_item"
+                ],
+                "builtinFunction-8f981a92-423c-4ae3-be03-1ef59484b1e3": [
+                  "Azure_Envelope"
+                ],
+                "builtinFunction-e3a54b71-958c-45f6-b6db-1582522be07b": [
+                  "Azure_Item_text"
+                ],
+                "builtinFunction-d150476a-3d55-49aa-91f5-8c8282d6176a": [
+                  "Is_azure"
+                ],
+                "builtinFunction-bbceefe9-dd13-4374-b1c1-15f37d85ec7c": [
+                  "Item"
+                ],
+                "builtinFunction-816181c5-6771-4b8a-9d7b-f0802a59ddf1": [
+                  "Description"
+                ],
+                "builtinFunction-879cb2ec-029b-4373-95b0-c7a2b4e16845": [
+                  "Reply"
+                ],
+                "builtinFunction-e1daa220-a459-4088-87a1-c5db10685caf": [
+                  "Respond_to_the_agent"
+                ],
+                "builtinFunction-f50661ae-56bf-4c34-bbf7-b4ed18bc9c86": [
+                  "Respond_with_error"
+                ]
+              },
+              "canvasOrientation": "horizontal"
+            }
+          }
+        }
+      },
+      "actions": {
+        "Get_settings": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "environmentvariabledefinitions",
+              "$select": "schemaname,defaultvalue",
+              "$filter": "startswith(schemaname, 'ait_')",
+              "$expand": "environmentvariabledefinition_environmentvariablevalue($select=value)"
+            }
+          },
+          "metadata": {
+            "description": "Get settings",
+            "nodeId": "connector-bea5bfeb-a25b-4b64-b7f5-5d679338c533"
+          }
+        },
+        "Select_settings": {
+          "runAfter": {
+            "Get_settings": [
+              "Succeeded"
+            ]
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@body('Get_settings')?['value']",
+            "select": "@concat(substring(string(createArray(item()?['schemaname'])), 1, sub(length(string(createArray(item()?['schemaname']))), 2)), ':', substring(string(createArray(coalesce(first(item()?['environmentvariabledefinition_environmentvariablevalue'])?['value'], item()?['defaultvalue'], ''))), 1, sub(length(string(createArray(coalesce(first(item()?['environmentvariabledefinition_environmentvariablevalue'])?['value'], item()?['defaultvalue'], '')))), 2)))"
+          },
+          "metadata": {
+            "description": "Select settings",
+            "nodeId": "builtinFunction-ebfcc778-97dd-4f47-aea0-94910d15a6aa"
+          }
+        },
+        "Settings": {
+          "runAfter": {
+            "Select_settings": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": "@json(concat('{', join(body('Select_settings'), ','), '}'))",
+          "metadata": {
+            "description": "Settings",
+            "nodeId": "builtinFunction-200895de-27ab-4730-95df-1075b1be78e2"
+          }
+        },
+        "Id": {
+          "runAfter": {
+            "Settings": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": {
+            "azure": "@startsWith(toLower(trim(triggerBody()?['id'])), 'azure-')",
+            "bare": "@if(startsWith(toLower(trim(triggerBody()?['id'])), 'azure-'), substring(trim(triggerBody()?['id']), 6, sub(length(trim(triggerBody()?['id'])), 6)), trim(triggerBody()?['id']))"
+          },
+          "metadata": {
+            "description": "Id",
+            "nodeId": "builtinFunction-5e712d92-2605-4123-9106-4652a203b3ed"
+          }
+        },
+        "Call_item": {
+          "runAfter": {
+            "Id": [
+              "Succeeded"
+            ]
+          },
+          "type": "Http",
+          "inputs": {
+            "method": "POST",
+            "uri": "@outputs('Settings')?['ait_McpServerUrl']",
+            "headers": {
+              "Content-Type": "application/json",
+              "Accept": "application/json, text/event-stream"
+            },
+            "body": {
+              "jsonrpc": "2.0",
+              "id": 1,
+              "method": "tools/call",
+              "params": {
+                "name": "@{if(outputs('Id')?['azure'], 'get_azure_update_by_id', 'get_m365_roadmap_by_id')}",
+                "arguments": {
+                  "id": "@{outputs('Id')?['bare']}"
+                }
+              }
+            },
+            "retryPolicy": {
+              "type": "fixed",
+              "count": 2,
+              "interval": "PT5S"
+            }
+          },
+          "metadata": {
+            "description": "Call item",
+            "nodeId": "builtinFunction-4b1652ba-2e3c-4218-ac2b-dcd738ae92bb"
+          }
+        },
+        "Envelope": {
+          "runAfter": {
+            "Call_item": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": "@json(trim(substring(string(body('Call_item')), add(if(contains(string(body('Call_item')), 'data:'), length(first(split(string(body('Call_item')), 'data:'))), -1), 5), sub(length(string(body('Call_item'))), add(if(contains(string(body('Call_item')), 'data:'), length(first(split(string(body('Call_item')), 'data:'))), -1), 5)))))",
+          "metadata": {
+            "description": "Envelope",
+            "nodeId": "builtinFunction-d19a8ca4-e216-4394-917c-1863e46bf88b"
+          }
+        },
+        "Item_text": {
+          "runAfter": {
+            "Envelope": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": "@if(or(equals(outputs('Envelope')?['result']?['isError'], true), empty(outputs('Envelope')?['result']?['content'])), '{}', coalesce(first(outputs('Envelope')?['result']?['content'])?['text'], '{}'))",
+          "metadata": {
+            "description": "Item text",
+            "nodeId": "builtinFunction-73adba5f-311f-4a44-8ed5-23db9f8c0135"
+          }
+        },
+        "First_item": {
+          "runAfter": {
+            "Item_text": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": "@json(outputs('Item_text'))",
+          "metadata": {
+            "description": "First item",
+            "nodeId": "builtinFunction-7aa9b020-5bc1-403d-a54d-40235767d35f"
+          }
+        },
+        "Try_azure_block": {
+          "type": "Scope",
+          "runAfter": {
+            "First_item": [
+              "Succeeded"
+            ]
+          },
+          "actions": {
+            "Try_azure": {
+              "runAfter": {},
+              "type": "If",
+              "expression": "@and(empty(outputs('First_item')?['title']), not(outputs('Id')?['azure']))",
+              "actions": {
+                "Call_azure_item": {
+                  "runAfter": {},
+                  "type": "Http",
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "@outputs('Settings')?['ait_McpServerUrl']",
+                    "headers": {
+                      "Content-Type": "application/json",
+                      "Accept": "application/json, text/event-stream"
+                    },
+                    "body": {
+                      "jsonrpc": "2.0",
+                      "id": 1,
+                      "method": "tools/call",
+                      "params": {
+                        "name": "get_azure_update_by_id",
+                        "arguments": {
+                          "id": "@{outputs('Id')?['bare']}"
+                        }
+                      }
+                    },
+                    "retryPolicy": {
+                      "type": "fixed",
+                      "count": 2,
+                      "interval": "PT5S"
+                    }
+                  },
+                  "metadata": {
+                    "description": "Call azure item",
+                    "nodeId": "builtinFunction-d085e9aa-35ca-442c-bf4a-2f0a8d04bb34"
+                  }
+                },
+                "Azure_Envelope": {
+                  "runAfter": {
+                    "Call_azure_item": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose",
+                  "inputs": "@json(trim(substring(string(body('Call_azure_item')), add(if(contains(string(body('Call_azure_item')), 'data:'), length(first(split(string(body('Call_azure_item')), 'data:'))), -1), 5), sub(length(string(body('Call_azure_item'))), add(if(contains(string(body('Call_azure_item')), 'data:'), length(first(split(string(body('Call_azure_item')), 'data:'))), -1), 5)))))",
+                  "metadata": {
+                    "description": "Azure Envelope",
+                    "nodeId": "builtinFunction-8f981a92-423c-4ae3-be03-1ef59484b1e3"
+                  }
+                },
+                "Azure_Item_text": {
+                  "runAfter": {
+                    "Azure_Envelope": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose",
+                  "inputs": "@if(or(equals(outputs('Azure_Envelope')?['result']?['isError'], true), empty(outputs('Azure_Envelope')?['result']?['content'])), '{}', coalesce(first(outputs('Azure_Envelope')?['result']?['content'])?['text'], '{}'))",
+                  "metadata": {
+                    "description": "Azure Item text",
+                    "nodeId": "builtinFunction-e3a54b71-958c-45f6-b6db-1582522be07b"
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "metadata": {
+                "description": "Try azure",
+                "nodeId": "ifElse-fc5c0573-f5cd-426f-839a-1d86042ad601"
+              }
+            }
+          },
+          "metadata": {
+            "description": "Try azure block",
+            "nodeId": "scope-77e628f7-cda1-470e-8a28-fcc523e2a252"
+          }
+        },
+        "Is_azure": {
+          "runAfter": {
+            "Try_azure_block": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": "@or(outputs('Id')?['azure'], and(empty(outputs('First_item')?['title']), not(empty(json(coalesce(outputs('Azure_Item_text'), '{}'))?['title']))))",
+          "metadata": {
+            "description": "Is azure",
+            "nodeId": "builtinFunction-d150476a-3d55-49aa-91f5-8c8282d6176a"
+          }
+        },
+        "Item": {
+          "runAfter": {
+            "Is_azure": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": "@if(and(outputs('Is_azure'), not(outputs('Id')?['azure'])), json(coalesce(outputs('Azure_Item_text'), '{}')), outputs('First_item'))",
+          "metadata": {
+            "description": "Item",
+            "nodeId": "builtinFunction-bbceefe9-dd13-4374-b1c1-15f37d85ec7c"
+          }
+        },
+        "Description": {
+          "runAfter": {
+            "Item": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": "@coalesce(outputs('Item')?['description'], '')",
+          "metadata": {
+            "description": "Description",
+            "nodeId": "builtinFunction-816181c5-6771-4b8a-9d7b-f0802a59ddf1"
+          }
+        },
+        "Reply": {
+          "runAfter": {
+            "Description": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": {
+            "message": "@{if(empty(outputs('Item')?['title']), concat('I could not find item ', trim(triggerBody()?['id']), ' on the Microsoft 365 roadmap or in Azure Updates. Check the ID.'), join(createArray(concat('**', if(outputs('Is_azure'), 'Azure · ', ''), outputs('Item')?['title'], '**'), concat(join(coalesce(outputs('Item')?['products'], json('[]')), ', '), ' · ', coalesce(outputs('Item')?['status'], 'no status'), if(empty(outputs('Item')?['generalAvailabilityDate']), '', concat(' · GA ', outputs('Item')?['generalAvailabilityDate'])), if(empty(outputs('Item')?['previewAvailabilityDate']), '', concat(' · Preview ', outputs('Item')?['previewAvailabilityDate'])), ' · ', join(coalesce(outputs('Item')?['cloudInstances'], outputs('Item')?['tags'], json('[]')), ', ')), if(greater(length(outputs('Description')), 3000), concat(take(outputs('Description'), 3000), '…'), outputs('Description')), if(outputs('Is_azure'), concat('[Open in Azure Updates](https://azure.microsoft.com/updates?id=', outputs('Id')?['bare'], ')'), concat('[Open in the Microsoft 365 roadmap](https://www.microsoft.com/microsoft-365/roadmap?id=', outputs('Id')?['bare'], ')'))), decodeUriComponent('%0A%0A')))}"
+          },
+          "metadata": {
+            "description": "Reply",
+            "nodeId": "builtinFunction-879cb2ec-029b-4373-95b0-c7a2b4e16845"
+          }
+        },
+        "Respond_to_the_agent": {
+          "runAfter": {
+            "Reply": [
+              "Succeeded"
+            ]
+          },
+          "type": "Response",
+          "kind": "Skills",
+          "inputs": {
+            "statusCode": 200,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "title": "message",
+                  "description": "",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "additionalProperties": {}
+            },
+            "body": {
+              "message": "@{outputs('Reply')?['message']}"
+            }
+          },
+          "metadata": {
+            "description": "Respond to the agent",
+            "nodeId": "builtinFunction-e1daa220-a459-4088-87a1-c5db10685caf"
+          }
+        },
+        "Respond_with_error": {
+          "runAfter": {
+            "Reply": [
+              "Failed",
+              "Skipped",
+              "TimedOut"
+            ]
+          },
+          "type": "Response",
+          "kind": "Skills",
+          "inputs": {
+            "statusCode": 200,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "title": "message",
+                  "description": "",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "additionalProperties": {}
+            },
+            "body": {
+              "message": "Sorry, something went wrong on my side. Please try again in a few minutes."
+            }
+          },
+          "metadata": {
+            "description": "Respond with error",
+            "nodeId": "builtinFunction-f50661ae-56bf-4c34-bbf7-b4ed18bc9c86"
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "defaultToEmbeddedConnections": true
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

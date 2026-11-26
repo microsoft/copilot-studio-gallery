@@ -1,0 +1,1403 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "ait_Dataverse"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "type": "Object",
+          "defaultValue": {}
+        },
+        "$authentication": {
+          "type": "SecureObject",
+          "defaultValue": {}
+        }
+      },
+      "triggers": {
+        "Recurrence": {
+          "type": "Recurrence",
+          "recurrence": {
+            "frequency": "Day",
+            "interval": 1,
+            "timeZone": "UTC",
+            "schedule": {
+              "hours": [
+                "7"
+              ],
+              "minutes": [
+                0
+              ]
+            }
+          },
+          "runtimeConfiguration": {
+            "concurrency": {
+              "runs": 1
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "AIT Roadmap Watch - Digest",
+                "nodes": [
+                  {
+                    "id": "start-824f72f9-bf1c-4ef2-a287-35c39ed37167",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 500,
+                      "y": 200
+                    },
+                    "name": "Recurrence",
+                    "data": {
+                      "config": {
+                        "triggerType": "recurrence",
+                        "recurrence": {
+                          "frequency": "Day",
+                          "interval": 1,
+                          "timeZone": "UTC",
+                          "schedule": {
+                            "hours": [
+                              "7"
+                            ],
+                            "minutes": [
+                              0
+                            ]
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runtimeConfiguration": {
+                          "concurrency": {
+                            "runs": 1
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "variable-ecbbcfb3-20d0-46f6-9527-e15bd78ebbbc",
+                    "name": "Init variables",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 830,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "d7ce53f0-0cbf-451c-a24e-e11d044870d0",
+                            "variableName": "Sent",
+                            "mode": "initialize",
+                            "type": "integer",
+                            "value": "0"
+                          },
+                          {
+                            "id": "f3c19cda-a7f2-4cfc-815d-ec9985d42552",
+                            "variableName": "Items",
+                            "mode": "initialize",
+                            "type": "integer",
+                            "value": "0"
+                          },
+                          {
+                            "id": "ecaa245f-2549-4bfe-a6bb-3e6b4d5e2c89",
+                            "variableName": "Failures",
+                            "mode": "initialize",
+                            "type": "array",
+                            "value": "[]"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    }
+                  },
+                  {
+                    "id": "connector-4698dd58-502c-4c96-b978-4511cf921976",
+                    "name": "Create run log",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 1160,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "CreateRecord",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "ait_runlogs",
+                          "item/ait_name": "Digest @{utcNow('yyyy-MM-dd HH:mm')} UTC",
+                          "item/ait_runtype": 748120002,
+                          "item/ait_runstatus": 748120000,
+                          "item/ait_startedon": "@utcNow()"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "variable-ecbbcfb3-20d0-46f6-9527-e15bd78ebbbc": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "scope-493dbe66-ef4b-432d-9917-9c04c3dbede7",
+                    "name": "Try",
+                    "type": "scope",
+                    "version": 1,
+                    "position": {
+                      "x": 1490,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "description": ""
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "connector-4698dd58-502c-4c96-b978-4511cf921976": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "width": 2130,
+                    "height": 472,
+                    "style": {
+                      "width": 2130,
+                      "height": 472
+                    }
+                  },
+                  {
+                    "id": "connector-d4c9aa19-edea-4e71-aebc-457728abfbd6",
+                    "name": "List due",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 60,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "ListRecords",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "ait_subscribers",
+                          "$select": "ait_subscriberid,ait_displayname",
+                          "$filter": "ait_ispaused ne true and (ait_nextdueon eq null or ait_nextdueon lt @{formatDateTime(addDays(startOfDay(utcNow()), 1), 'yyyy-MM-ddTHH:mm:ssZ')})"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {},
+                        "runtimeConfiguration": {
+                          "paginationPolicy": {
+                            "minimumItemCount": 100000
+                          }
+                        }
+                      }
+                    },
+                    "parentId": "scope-493dbe66-ef4b-432d-9917-9c04c3dbede7"
+                  },
+                  {
+                    "id": "loop-27e31163-695a-458f-b154-2dcba837df6a",
+                    "name": "Each due",
+                    "type": "loop",
+                    "version": 1,
+                    "position": {
+                      "x": 390,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "loopType": "foreach",
+                        "foreach": "@body('List_due')?['value']"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "connector-d4c9aa19-edea-4e71-aebc-457728abfbd6": [
+                            "Succeeded"
+                          ]
+                        },
+                        "runtimeConfiguration": {
+                          "concurrency": {
+                            "repetitions": 1
+                          }
+                        }
+                      }
+                    },
+                    "parentId": "scope-493dbe66-ef4b-432d-9917-9c04c3dbede7",
+                    "width": 1350,
+                    "height": 332,
+                    "style": {
+                      "width": 1350,
+                      "height": 332
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-a0275e9d-8cf6-42e7-b861-576405b32781",
+                    "name": "Send digest",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 60,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "RunChildFlow",
+                        "operationName": "RunChildFlow",
+                        "displayName": "Run a Child Flow",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/FlowsBuiltIn",
+                        "categoryDisplayName": "Flows",
+                        "brandColor": "#0077FF",
+                        "parameters": {
+                          "host/workflowReferenceName": "2141a6aa-e4e8-f111-84ea-000d3ad895be",
+                          "body/text": "@items('Each_due')?['ait_subscriberid']",
+                          "body/boolean": true
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "loop-27e31163-695a-458f-b154-2dcba837df6a"
+                  },
+                  {
+                    "id": "ifElse-570d2145-77c5-4e56-927f-49cd25c904e0",
+                    "name": "Check result",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 390,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "54705625-472d-47ab-9d2c-ba4021e18901",
+                            "name": "True",
+                            "expression": "@equals(body('Send_digest')?['status'], 'sent')"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:54705625-472d-47ab-9d2c-ba4021e18901",
+                          "label": "True"
+                        },
+                        {
+                          "id": "else",
+                          "label": "False"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-a0275e9d-8cf6-42e7-b861-576405b32781": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "loop-27e31163-695a-458f-b154-2dcba837df6a"
+                  },
+                  {
+                    "id": "variable-5260db24-8dc7-47b9-89e6-042611c5f071",
+                    "name": "Count sent",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 720,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "155cc0c5-d686-45e6-bf46-4c7a7587f3b9",
+                            "variableName": "Sent",
+                            "mode": "increment",
+                            "type": "integer",
+                            "value": "1"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "loop-27e31163-695a-458f-b154-2dcba837df6a"
+                  },
+                  {
+                    "id": "variable-57e504c3-ce0e-4ed2-9bf4-7e3c884f8e48",
+                    "name": "Count items",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 1050,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "21d3d2e9-b6e7-4bfa-873b-20347df68a7a",
+                            "variableName": "Items",
+                            "mode": "increment",
+                            "type": "integer",
+                            "value": "@int(body('Send_digest')?['itemcount'])"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "variable-5260db24-8dc7-47b9-89e6-042611c5f071": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "loop-27e31163-695a-458f-b154-2dcba837df6a"
+                  },
+                  {
+                    "id": "ifElse-86be32d8-6c4b-475b-98d7-ef3a0ab252ce",
+                    "name": "Check result Failed",
+                    "type": "ifElse",
+                    "version": 1,
+                    "position": {
+                      "x": 720,
+                      "y": 206
+                    },
+                    "data": {
+                      "config": {
+                        "conditions": [
+                          {
+                            "id": "d462f8de-7c8c-415f-8402-875827caf1e2",
+                            "name": "True",
+                            "expression": "@equals(body('Send_digest')?['status'], 'failed')"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "condition:d462f8de-7c8c-415f-8402-875827caf1e2",
+                          "label": "True"
+                        },
+                        {
+                          "id": "else",
+                          "label": "False"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "loop-27e31163-695a-458f-b154-2dcba837df6a"
+                  },
+                  {
+                    "id": "variable-61ca67ae-919c-4d28-8904-9d21aeae5a34",
+                    "name": "Record failure",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 1050,
+                      "y": 206
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "8f57fa67-0328-40f4-ba14-2244d0cf7314",
+                            "variableName": "Failures",
+                            "mode": "appendToArray",
+                            "type": "array",
+                            "value": "@{items('Each_due')?['ait_displayname']}: @{body('Send_digest')?['message']}"
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "loop-27e31163-695a-458f-b154-2dcba837df6a"
+                  },
+                  {
+                    "id": "variable-fac5bafa-3bde-463e-9b31-5bf28dcabc7e",
+                    "name": "Record child failure",
+                    "type": "variable",
+                    "version": 1,
+                    "position": {
+                      "x": 390,
+                      "y": 206
+                    },
+                    "data": {
+                      "config": {
+                        "assignments": [
+                          {
+                            "id": "47dd45df-d33f-43cb-b85e-3e6de405674d",
+                            "variableName": "Failures",
+                            "mode": "appendToArray",
+                            "type": "array",
+                            "value": "@{items('Each_due')?['ait_displayname']}: Send Digest did not finish (see its run history)."
+                          }
+                        ]
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-a0275e9d-8cf6-42e7-b861-576405b32781": [
+                            "Failed",
+                            "TimedOut"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "loop-27e31163-695a-458f-b154-2dcba837df6a"
+                  },
+                  {
+                    "id": "connector-d40c26fe-4fd2-427d-8fc7-03550afd246b",
+                    "name": "Complete run log",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 1830,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "UpdateRecord",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "ait_runlogs",
+                          "recordId": "@{body('Create_run_log')?['ait_runlogid']}",
+                          "item/ait_runstatus": "@if(empty(variables('Failures')), 748120001, 748120002)",
+                          "item/ait_endedon": "@utcNow()",
+                          "item/ait_itemcount": "@variables('Items')",
+                          "item/ait_name": "@{body('Create_run_log')?['ait_name']}: @{length(body('List_due')?['value'])} due, @{variables('Sent')} digests, @{variables('Items')} items, @{length(variables('Failures'))} failed",
+                          "item/ait_error": "@{if(empty(variables('Failures')), '', take(join(variables('Failures'), ' | '), 100000))}"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "loop-27e31163-695a-458f-b154-2dcba837df6a": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "scope-493dbe66-ef4b-432d-9917-9c04c3dbede7"
+                  },
+                  {
+                    "id": "scope-ca645506-42b3-426c-8397-7598159b5053",
+                    "name": "Catch",
+                    "type": "scope",
+                    "version": 1,
+                    "position": {
+                      "x": 3710,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "description": ""
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "scope-493dbe66-ef4b-432d-9917-9c04c3dbede7": [
+                            "Failed",
+                            "TimedOut"
+                          ]
+                        }
+                      }
+                    },
+                    "width": 1680,
+                    "height": 206,
+                    "style": {
+                      "width": 1680,
+                      "height": 206
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-af1d75a1-d905-46a6-b743-7ca4a151e036",
+                    "name": "Try steps",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 60,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": [
+                            {
+                              "name": "List_due",
+                              "status": "@actions('List_due')?['status']",
+                              "error": "@actions('List_due')?['error']",
+                              "outputs": "@actions('List_due')?['outputs']"
+                            },
+                            {
+                              "name": "Each_due",
+                              "status": "@actions('Each_due')?['status']",
+                              "error": "@actions('Each_due')?['error']",
+                              "outputs": "@actions('Each_due')?['outputs']"
+                            },
+                            {
+                              "name": "Complete_run_log",
+                              "status": "@actions('Complete_run_log')?['status']",
+                              "error": "@actions('Complete_run_log')?['error']",
+                              "outputs": "@actions('Complete_run_log')?['outputs']"
+                            }
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "parentId": "scope-ca645506-42b3-426c-8397-7598159b5053"
+                  },
+                  {
+                    "id": "builtinFunction-9b4ba38d-85f8-4c96-aa83-c89e4e72c6d3",
+                    "name": "Failed actions",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 390,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "query",
+                        "operationName": "query",
+                        "displayName": "Filter array",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@outputs('Try_steps')",
+                          "where": "@equals(item()?['status'], 'Failed')"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-af1d75a1-d905-46a6-b743-7ca4a151e036": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "scope-ca645506-42b3-426c-8397-7598159b5053"
+                  },
+                  {
+                    "id": "builtinFunction-d76a1fe1-e7fd-4409-9948-1a07920ca81f",
+                    "name": "Error text",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 720,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@body('Failed_actions')",
+                          "select": "@concat(item()?['name'], ': ', coalesce(item()?['error']?['message'], string(item()?['outputs']?['body']), 'failed'))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-9b4ba38d-85f8-4c96-aa83-c89e4e72c6d3": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "scope-ca645506-42b3-426c-8397-7598159b5053"
+                  },
+                  {
+                    "id": "connector-61dc723f-8fdf-449b-95f8-e5f03cd6fa79",
+                    "name": "Fail run log",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 1050,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "UpdateRecord",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "ait_runlogs",
+                          "recordId": "@{body('Create_run_log')?['ait_runlogid']}",
+                          "item/ait_runstatus": 748120002,
+                          "item/ait_endedon": "@utcNow()",
+                          "item/ait_itemcount": "@variables('Items')",
+                          "item/ait_error": "@{take(concat(join(variables('Failures'), ' | '), ' ', join(body('Error_text'), ' | '), ' See the flow run history for details.'), 100000)}"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-d76a1fe1-e7fd-4409-9948-1a07920ca81f": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "scope-ca645506-42b3-426c-8397-7598159b5053"
+                  },
+                  {
+                    "id": "end-b96f7806-4425-44be-8753-ef502d8eda1f",
+                    "name": "Stop failed",
+                    "type": "end",
+                    "version": 1,
+                    "position": {
+                      "x": 1380,
+                      "y": 80
+                    },
+                    "data": {
+                      "config": {
+                        "runStatus": "Failed",
+                        "errorCode": "DigestFailed",
+                        "errorMessage": "The digest run failed. See ait_runlog."
+                      },
+                      "outcomes": [],
+                      "settings": {
+                        "runAfter": {
+                          "connector-61dc723f-8fdf-449b-95f8-e5f03cd6fa79": [
+                            "Succeeded",
+                            "Failed"
+                          ]
+                        }
+                      }
+                    },
+                    "parentId": "scope-ca645506-42b3-426c-8397-7598159b5053"
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-824f72f9-bf1c-4ef2-a287-35c39ed37167-variable-ecbbcfb3-20d0-46f6-9527-e15bd78ebbbc",
+                    "source": "start-824f72f9-bf1c-4ef2-a287-35c39ed37167",
+                    "target": "variable-ecbbcfb3-20d0-46f6-9527-e15bd78ebbbc"
+                  },
+                  {
+                    "id": "edge-variable-ecbbcfb3-20d0-46f6-9527-e15bd78ebbbc-connector-4698dd58-502c-4c96-b978-4511cf921976",
+                    "source": "variable-ecbbcfb3-20d0-46f6-9527-e15bd78ebbbc",
+                    "target": "connector-4698dd58-502c-4c96-b978-4511cf921976"
+                  },
+                  {
+                    "id": "edge-connector-4698dd58-502c-4c96-b978-4511cf921976-scope-493dbe66-ef4b-432d-9917-9c04c3dbede7-external-input",
+                    "source": "connector-4698dd58-502c-4c96-b978-4511cf921976",
+                    "target": "scope-493dbe66-ef4b-432d-9917-9c04c3dbede7",
+                    "targetHandle": "external-input"
+                  },
+                  {
+                    "id": "edge-scope-493dbe66-ef4b-432d-9917-9c04c3dbede7-connector-d4c9aa19-edea-4e71-aebc-457728abfbd6-internal-source",
+                    "source": "scope-493dbe66-ef4b-432d-9917-9c04c3dbede7",
+                    "target": "connector-d4c9aa19-edea-4e71-aebc-457728abfbd6",
+                    "sourceHandle": "internal-source"
+                  },
+                  {
+                    "id": "edge-connector-d4c9aa19-edea-4e71-aebc-457728abfbd6-loop-27e31163-695a-458f-b154-2dcba837df6a-external-input",
+                    "source": "connector-d4c9aa19-edea-4e71-aebc-457728abfbd6",
+                    "target": "loop-27e31163-695a-458f-b154-2dcba837df6a",
+                    "targetHandle": "external-input"
+                  },
+                  {
+                    "id": "edge-loop-27e31163-695a-458f-b154-2dcba837df6a-builtinFunction-a0275e9d-8cf6-42e7-b861-576405b32781-internal-source",
+                    "source": "loop-27e31163-695a-458f-b154-2dcba837df6a",
+                    "target": "builtinFunction-a0275e9d-8cf6-42e7-b861-576405b32781",
+                    "sourceHandle": "internal-source"
+                  },
+                  {
+                    "id": "edge-builtinFunction-a0275e9d-8cf6-42e7-b861-576405b32781-ifElse-570d2145-77c5-4e56-927f-49cd25c904e0",
+                    "source": "builtinFunction-a0275e9d-8cf6-42e7-b861-576405b32781",
+                    "target": "ifElse-570d2145-77c5-4e56-927f-49cd25c904e0"
+                  },
+                  {
+                    "id": "edge-ifElse-570d2145-77c5-4e56-927f-49cd25c904e0-loop-27e31163-695a-458f-b154-2dcba837df6a-internal-target",
+                    "source": "ifElse-570d2145-77c5-4e56-927f-49cd25c904e0",
+                    "target": "loop-27e31163-695a-458f-b154-2dcba837df6a",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-ifElse-570d2145-77c5-4e56-927f-49cd25c904e0-variable-5260db24-8dc7-47b9-89e6-042611c5f071-condition:54705625-472d-47ab-9d2c-ba4021e18901",
+                    "source": "ifElse-570d2145-77c5-4e56-927f-49cd25c904e0",
+                    "target": "variable-5260db24-8dc7-47b9-89e6-042611c5f071",
+                    "sourceHandle": "condition:54705625-472d-47ab-9d2c-ba4021e18901"
+                  },
+                  {
+                    "id": "edge-variable-5260db24-8dc7-47b9-89e6-042611c5f071-variable-57e504c3-ce0e-4ed2-9bf4-7e3c884f8e48",
+                    "source": "variable-5260db24-8dc7-47b9-89e6-042611c5f071",
+                    "target": "variable-57e504c3-ce0e-4ed2-9bf4-7e3c884f8e48"
+                  },
+                  {
+                    "id": "edge-ifElse-570d2145-77c5-4e56-927f-49cd25c904e0-ifElse-86be32d8-6c4b-475b-98d7-ef3a0ab252ce-else",
+                    "source": "ifElse-570d2145-77c5-4e56-927f-49cd25c904e0",
+                    "target": "ifElse-86be32d8-6c4b-475b-98d7-ef3a0ab252ce",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-ifElse-86be32d8-6c4b-475b-98d7-ef3a0ab252ce-variable-61ca67ae-919c-4d28-8904-9d21aeae5a34-condition:d462f8de-7c8c-415f-8402-875827caf1e2",
+                    "source": "ifElse-86be32d8-6c4b-475b-98d7-ef3a0ab252ce",
+                    "target": "variable-61ca67ae-919c-4d28-8904-9d21aeae5a34",
+                    "sourceHandle": "condition:d462f8de-7c8c-415f-8402-875827caf1e2"
+                  },
+                  {
+                    "id": "edge-builtinFunction-a0275e9d-8cf6-42e7-b861-576405b32781-variable-fac5bafa-3bde-463e-9b31-5bf28dcabc7e",
+                    "source": "builtinFunction-a0275e9d-8cf6-42e7-b861-576405b32781",
+                    "target": "variable-fac5bafa-3bde-463e-9b31-5bf28dcabc7e"
+                  },
+                  {
+                    "id": "edge-variable-fac5bafa-3bde-463e-9b31-5bf28dcabc7e-loop-27e31163-695a-458f-b154-2dcba837df6a-internal-target",
+                    "source": "variable-fac5bafa-3bde-463e-9b31-5bf28dcabc7e",
+                    "target": "loop-27e31163-695a-458f-b154-2dcba837df6a",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-loop-27e31163-695a-458f-b154-2dcba837df6a-connector-d40c26fe-4fd2-427d-8fc7-03550afd246b-external-output",
+                    "source": "loop-27e31163-695a-458f-b154-2dcba837df6a",
+                    "target": "connector-d40c26fe-4fd2-427d-8fc7-03550afd246b",
+                    "sourceHandle": "external-output"
+                  },
+                  {
+                    "id": "edge-connector-d40c26fe-4fd2-427d-8fc7-03550afd246b-scope-493dbe66-ef4b-432d-9917-9c04c3dbede7-internal-target",
+                    "source": "connector-d40c26fe-4fd2-427d-8fc7-03550afd246b",
+                    "target": "scope-493dbe66-ef4b-432d-9917-9c04c3dbede7",
+                    "targetHandle": "internal-target"
+                  },
+                  {
+                    "id": "edge-scope-493dbe66-ef4b-432d-9917-9c04c3dbede7-scope-ca645506-42b3-426c-8397-7598159b5053-external-output-external-input",
+                    "source": "scope-493dbe66-ef4b-432d-9917-9c04c3dbede7",
+                    "target": "scope-ca645506-42b3-426c-8397-7598159b5053",
+                    "sourceHandle": "external-output",
+                    "targetHandle": "external-input"
+                  },
+                  {
+                    "id": "edge-scope-ca645506-42b3-426c-8397-7598159b5053-builtinFunction-af1d75a1-d905-46a6-b743-7ca4a151e036-internal-source",
+                    "source": "scope-ca645506-42b3-426c-8397-7598159b5053",
+                    "target": "builtinFunction-af1d75a1-d905-46a6-b743-7ca4a151e036",
+                    "sourceHandle": "internal-source"
+                  },
+                  {
+                    "id": "edge-builtinFunction-af1d75a1-d905-46a6-b743-7ca4a151e036-builtinFunction-9b4ba38d-85f8-4c96-aa83-c89e4e72c6d3",
+                    "source": "builtinFunction-af1d75a1-d905-46a6-b743-7ca4a151e036",
+                    "target": "builtinFunction-9b4ba38d-85f8-4c96-aa83-c89e4e72c6d3"
+                  },
+                  {
+                    "id": "edge-builtinFunction-9b4ba38d-85f8-4c96-aa83-c89e4e72c6d3-builtinFunction-d76a1fe1-e7fd-4409-9948-1a07920ca81f",
+                    "source": "builtinFunction-9b4ba38d-85f8-4c96-aa83-c89e4e72c6d3",
+                    "target": "builtinFunction-d76a1fe1-e7fd-4409-9948-1a07920ca81f"
+                  },
+                  {
+                    "id": "edge-builtinFunction-d76a1fe1-e7fd-4409-9948-1a07920ca81f-connector-61dc723f-8fdf-449b-95f8-e5f03cd6fa79",
+                    "source": "builtinFunction-d76a1fe1-e7fd-4409-9948-1a07920ca81f",
+                    "target": "connector-61dc723f-8fdf-449b-95f8-e5f03cd6fa79"
+                  },
+                  {
+                    "id": "edge-connector-61dc723f-8fdf-449b-95f8-e5f03cd6fa79-end-b96f7806-4425-44be-8753-ef502d8eda1f",
+                    "source": "connector-61dc723f-8fdf-449b-95f8-e5f03cd6fa79",
+                    "target": "end-b96f7806-4425-44be-8753-ef502d8eda1f"
+                  }
+                ],
+                "connectionReferences": {
+                  "shared_commondataserviceforapps": {
+                    "runtimeSource": "embedded",
+                    "connection": {
+                      "connectionReferenceLogicalName": "ait_Dataverse"
+                    },
+                    "api": {
+                      "name": "shared_commondataserviceforapps"
+                    }
+                  }
+                },
+                "parameters": {}
+              },
+              "nodeActionMapping": {
+                "variable-ecbbcfb3-20d0-46f6-9527-e15bd78ebbbc": [
+                  "Init_variables"
+                ],
+                "connector-4698dd58-502c-4c96-b978-4511cf921976": [
+                  "Create_run_log"
+                ],
+                "scope-493dbe66-ef4b-432d-9917-9c04c3dbede7": [
+                  "Try"
+                ],
+                "connector-d4c9aa19-edea-4e71-aebc-457728abfbd6": [
+                  "List_due"
+                ],
+                "loop-27e31163-695a-458f-b154-2dcba837df6a": [
+                  "Each_due"
+                ],
+                "builtinFunction-a0275e9d-8cf6-42e7-b861-576405b32781": [
+                  "Send_digest"
+                ],
+                "ifElse-570d2145-77c5-4e56-927f-49cd25c904e0": [
+                  "Check_result"
+                ],
+                "variable-5260db24-8dc7-47b9-89e6-042611c5f071": [
+                  "Count_sent"
+                ],
+                "variable-57e504c3-ce0e-4ed2-9bf4-7e3c884f8e48": [
+                  "Count_items"
+                ],
+                "ifElse-86be32d8-6c4b-475b-98d7-ef3a0ab252ce": [
+                  "Check_result_Failed"
+                ],
+                "variable-61ca67ae-919c-4d28-8904-9d21aeae5a34": [
+                  "Record_failure"
+                ],
+                "variable-fac5bafa-3bde-463e-9b31-5bf28dcabc7e": [
+                  "Record_child_failure"
+                ],
+                "connector-d40c26fe-4fd2-427d-8fc7-03550afd246b": [
+                  "Complete_run_log"
+                ],
+                "scope-ca645506-42b3-426c-8397-7598159b5053": [
+                  "Catch"
+                ],
+                "builtinFunction-af1d75a1-d905-46a6-b743-7ca4a151e036": [
+                  "Try_steps"
+                ],
+                "builtinFunction-9b4ba38d-85f8-4c96-aa83-c89e4e72c6d3": [
+                  "Failed_actions"
+                ],
+                "builtinFunction-d76a1fe1-e7fd-4409-9948-1a07920ca81f": [
+                  "Error_text"
+                ],
+                "connector-61dc723f-8fdf-449b-95f8-e5f03cd6fa79": [
+                  "Fail_run_log"
+                ],
+                "end-b96f7806-4425-44be-8753-ef502d8eda1f": [
+                  "Stop_failed"
+                ]
+              },
+              "canvasOrientation": "horizontal"
+            }
+          }
+        }
+      },
+      "actions": {
+        "Init_variables": {
+          "runAfter": {},
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Sent",
+                "type": "integer",
+                "value": 0
+              },
+              {
+                "name": "Items",
+                "type": "integer",
+                "value": 0
+              },
+              {
+                "name": "Failures",
+                "type": "array",
+                "value": []
+              }
+            ]
+          },
+          "metadata": {
+            "description": "Init variables",
+            "nodeId": "variable-ecbbcfb3-20d0-46f6-9527-e15bd78ebbbc"
+          }
+        },
+        "Create_run_log": {
+          "runAfter": {
+            "Init_variables": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "CreateRecord",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "ait_runlogs",
+              "item/ait_name": "Digest @{utcNow('yyyy-MM-dd HH:mm')} UTC",
+              "item/ait_runtype": 748120002,
+              "item/ait_runstatus": 748120000,
+              "item/ait_startedon": "@utcNow()"
+            }
+          },
+          "metadata": {
+            "description": "Create run log",
+            "nodeId": "connector-4698dd58-502c-4c96-b978-4511cf921976"
+          }
+        },
+        "Try": {
+          "runAfter": {
+            "Create_run_log": [
+              "Succeeded"
+            ]
+          },
+          "type": "Scope",
+          "actions": {
+            "List_due": {
+              "runAfter": {},
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "ait_subscribers",
+                  "$select": "ait_subscriberid,ait_displayname",
+                  "$filter": "ait_ispaused ne true and (ait_nextdueon eq null or ait_nextdueon lt @{formatDateTime(addDays(startOfDay(utcNow()), 1), 'yyyy-MM-ddTHH:mm:ssZ')})"
+                }
+              },
+              "runtimeConfiguration": {
+                "paginationPolicy": {
+                  "minimumItemCount": 100000
+                }
+              },
+              "metadata": {
+                "description": "List due",
+                "nodeId": "connector-d4c9aa19-edea-4e71-aebc-457728abfbd6"
+              }
+            },
+            "Each_due": {
+              "runAfter": {
+                "List_due": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Foreach",
+              "foreach": "@body('List_due')?['value']",
+              "runtimeConfiguration": {
+                "concurrency": {
+                  "repetitions": 1
+                }
+              },
+              "actions": {
+                "Send_digest": {
+                  "runAfter": {},
+                  "type": "Workflow",
+                  "inputs": {
+                    "host": {
+                      "workflowReferenceName": "2141a6aa-e4e8-f111-84ea-000d3ad895be"
+                    },
+                    "body": {
+                      "text": "@items('Each_due')?['ait_subscriberid']",
+                      "boolean": true
+                    }
+                  },
+                  "metadata": {
+                    "description": "Send digest",
+                    "nodeId": "builtinFunction-a0275e9d-8cf6-42e7-b861-576405b32781"
+                  }
+                },
+                "Check_result": {
+                  "type": "If",
+                  "expression": "@equals(body('Send_digest')?['status'], 'sent')",
+                  "actions": {
+                    "Count_sent": {
+                      "runAfter": {},
+                      "type": "IncrementVariable",
+                      "inputs": {
+                        "name": "Sent",
+                        "value": 1
+                      },
+                      "metadata": {
+                        "description": "Count sent",
+                        "nodeId": "variable-5260db24-8dc7-47b9-89e6-042611c5f071"
+                      }
+                    },
+                    "Count_items": {
+                      "runAfter": {
+                        "Count_sent": [
+                          "Succeeded"
+                        ]
+                      },
+                      "type": "IncrementVariable",
+                      "inputs": {
+                        "name": "Items",
+                        "value": "@int(body('Send_digest')?['itemcount'])"
+                      },
+                      "metadata": {
+                        "description": "Count items",
+                        "nodeId": "variable-57e504c3-ce0e-4ed2-9bf4-7e3c884f8e48"
+                      }
+                    }
+                  },
+                  "else": {
+                    "actions": {
+                      "Check_result_Failed": {
+                        "type": "If",
+                        "expression": "@equals(body('Send_digest')?['status'], 'failed')",
+                        "actions": {
+                          "Record_failure": {
+                            "runAfter": {},
+                            "type": "AppendToArrayVariable",
+                            "inputs": {
+                              "name": "Failures",
+                              "value": "@{items('Each_due')?['ait_displayname']}: @{body('Send_digest')?['message']}"
+                            },
+                            "metadata": {
+                              "description": "Record failure",
+                              "nodeId": "variable-61ca67ae-919c-4d28-8904-9d21aeae5a34"
+                            }
+                          }
+                        },
+                        "else": {
+                          "actions": {}
+                        },
+                        "runAfter": {},
+                        "metadata": {
+                          "description": "Check result Failed",
+                          "nodeId": "ifElse-86be32d8-6c4b-475b-98d7-ef3a0ab252ce"
+                        }
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "Send_digest": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "description": "Check result",
+                    "nodeId": "ifElse-570d2145-77c5-4e56-927f-49cd25c904e0"
+                  }
+                },
+                "Record_child_failure": {
+                  "runAfter": {
+                    "Send_digest": [
+                      "Failed",
+                      "TimedOut"
+                    ]
+                  },
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "Failures",
+                    "value": "@{items('Each_due')?['ait_displayname']}: Send Digest did not finish (see its run history)."
+                  },
+                  "metadata": {
+                    "description": "Record child failure",
+                    "nodeId": "variable-fac5bafa-3bde-463e-9b31-5bf28dcabc7e"
+                  }
+                }
+              },
+              "metadata": {
+                "description": "Each due",
+                "nodeId": "loop-27e31163-695a-458f-b154-2dcba837df6a"
+              }
+            },
+            "Complete_run_log": {
+              "runAfter": {
+                "Each_due": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "UpdateRecord",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "ait_runlogs",
+                  "recordId": "@{body('Create_run_log')?['ait_runlogid']}",
+                  "item/ait_runstatus": "@if(empty(variables('Failures')), 748120001, 748120002)",
+                  "item/ait_endedon": "@utcNow()",
+                  "item/ait_itemcount": "@variables('Items')",
+                  "item/ait_name": "@{body('Create_run_log')?['ait_name']}: @{length(body('List_due')?['value'])} due, @{variables('Sent')} digests, @{variables('Items')} items, @{length(variables('Failures'))} failed",
+                  "item/ait_error": "@{if(empty(variables('Failures')), '', take(join(variables('Failures'), ' | '), 100000))}"
+                }
+              },
+              "metadata": {
+                "description": "Complete run log",
+                "nodeId": "connector-d40c26fe-4fd2-427d-8fc7-03550afd246b"
+              }
+            }
+          },
+          "metadata": {
+            "description": "Try",
+            "nodeId": "scope-493dbe66-ef4b-432d-9917-9c04c3dbede7"
+          }
+        },
+        "Catch": {
+          "runAfter": {
+            "Try": [
+              "Failed",
+              "TimedOut"
+            ]
+          },
+          "type": "Scope",
+          "actions": {
+            "Try_steps": {
+              "type": "Compose",
+              "runAfter": {},
+              "inputs": [
+                {
+                  "name": "List_due",
+                  "status": "@actions('List_due')?['status']",
+                  "error": "@actions('List_due')?['error']",
+                  "outputs": "@actions('List_due')?['outputs']"
+                },
+                {
+                  "name": "Each_due",
+                  "status": "@actions('Each_due')?['status']",
+                  "error": "@actions('Each_due')?['error']",
+                  "outputs": "@actions('Each_due')?['outputs']"
+                },
+                {
+                  "name": "Complete_run_log",
+                  "status": "@actions('Complete_run_log')?['status']",
+                  "error": "@actions('Complete_run_log')?['error']",
+                  "outputs": "@actions('Complete_run_log')?['outputs']"
+                }
+              ],
+              "metadata": {
+                "description": "Try steps",
+                "nodeId": "builtinFunction-af1d75a1-d905-46a6-b743-7ca4a151e036"
+              }
+            },
+            "Failed_actions": {
+              "runAfter": {
+                "Try_steps": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Query",
+              "inputs": {
+                "from": "@outputs('Try_steps')",
+                "where": "@equals(item()?['status'], 'Failed')"
+              },
+              "metadata": {
+                "description": "Failed actions",
+                "nodeId": "builtinFunction-9b4ba38d-85f8-4c96-aa83-c89e4e72c6d3"
+              }
+            },
+            "Error_text": {
+              "runAfter": {
+                "Failed_actions": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Select",
+              "inputs": {
+                "from": "@body('Failed_actions')",
+                "select": "@concat(item()?['name'], ': ', coalesce(item()?['error']?['message'], string(item()?['outputs']?['body']), 'failed'))"
+              },
+              "metadata": {
+                "description": "Error text",
+                "nodeId": "builtinFunction-d76a1fe1-e7fd-4409-9948-1a07920ca81f"
+              }
+            },
+            "Fail_run_log": {
+              "runAfter": {
+                "Error_text": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "UpdateRecord",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "ait_runlogs",
+                  "recordId": "@{body('Create_run_log')?['ait_runlogid']}",
+                  "item/ait_runstatus": 748120002,
+                  "item/ait_endedon": "@utcNow()",
+                  "item/ait_itemcount": "@variables('Items')",
+                  "item/ait_error": "@{take(concat(join(variables('Failures'), ' | '), ' ', join(body('Error_text'), ' | '), ' See the flow run history for details.'), 100000)}"
+                }
+              },
+              "metadata": {
+                "description": "Fail run log",
+                "nodeId": "connector-61dc723f-8fdf-449b-95f8-e5f03cd6fa79"
+              }
+            },
+            "Stop_failed": {
+              "runAfter": {
+                "Fail_run_log": [
+                  "Succeeded",
+                  "Failed"
+                ]
+              },
+              "type": "Terminate",
+              "inputs": {
+                "runStatus": "Failed",
+                "runError": {
+                  "code": "DigestFailed",
+                  "message": "The digest run failed. See ait_runlog."
+                }
+              },
+              "metadata": {
+                "description": "Stop failed",
+                "nodeId": "end-b96f7806-4425-44be-8753-ef502d8eda1f"
+              }
+            }
+          },
+          "metadata": {
+            "description": "Catch",
+            "nodeId": "scope-ca645506-42b3-426c-8397-7598159b5053"
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "defaultToEmbeddedConnections": true
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

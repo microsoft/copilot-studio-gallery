@@ -27,7 +27,7 @@ no customer data. All user preferences and the roadmap cache are stored in Datav
 and Microsoft 365 Copilot. Generative orchestration is off. A **Command Router** topic
 catches every message, parses the slash command with Power Fx, and redirects to the
 matching topic, so commands behave the same way every time. Each command topic calls one
-agent flow. Users don't need any Dataverse access: the agent flows run under one service
+workflow. Users don't need any Dataverse access: the workflows run under one service
 connection and identify the user by their Entra object ID.
 
 | Command | Example | What it does |
@@ -50,14 +50,16 @@ The slash is optional (`help` works too). Teams reserves `/settings`, so use `/m
 
 ## Workflows
 
+All 19 are Copilot Studio workflows built in the workflow designer.
+
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
 | **AIT Roadmap Watch - Harvest** | Daily, 06:00 UTC | Pages through Microsoft 365 roadmap items modified since the last watermark and upserts them into Dataverse. Keyword rules set the Security, Action required, and Retirement flags. Hits on Action required and Retirement go through an AI Builder prompt (`ait_VerifyRetirement`) that confirms or clears them. The watermark only moves forward after a successful run. |
 | **AIT Roadmap Watch - Harvest Azure** | Daily, 06:00 UTC | Does the same for Azure Updates. Turned off by `ait_HarvestAzure = no`. |
 | **AIT Roadmap Watch - Catalog Refresh** | Weekly, Monday 05:00 UTC | Reads product facets from the roadmap and adds new product names to the catalog. |
 | **AIT Roadmap Watch - Digest** | Daily, 07:00 UTC | Finds every active subscriber whose digest is due and calls Send Digest for each. Shown in the gallery preview. |
-| **AIT Roadmap Watch - Send Digest** | Child flow | Expands packs into products and selects unsent items within the look-ahead window. Ranks them Critical, then Deprecation, then New feature, and posts an Adaptive Card as the agent in the user's Teams chat. Records each sent item so it is never sent twice. |
-| **Agent flows** (Welcome, Subscribe, Unsubscribe, Products, Packs, My Subscriptions, Settings, Save Preferences, Set Frequency, Set Look-ahead, Set Critical Window, Pause Resume, Digest Now, Details) | Called by the agent | One flow per command topic. Each reads or writes Dataverse and returns text or card JSON to the topic. |
+| **AIT Roadmap Watch - Send Digest** | Child workflow, called by Digest | Expands packs into products and selects unsent items within the look-ahead window. Ranks them Critical, then Deprecation, then New feature, and posts an Adaptive Card as the agent in the user's Teams chat. Records each sent item so it is never sent twice. |
+| **Command workflows** (Welcome, Subscribe, Unsubscribe, Products, Packs, My Subscriptions, Settings, Save Preferences, Set Frequency, Set Look-ahead, Set Critical Window, Pause Resume, Digest Now, Details) | Called by the agent | One workflow per command topic. Each reads or writes Dataverse and returns text or card JSON to the topic. |
 
 ## What's in the solution
 
@@ -76,8 +78,8 @@ The slash is optional (`help` works too). Teams reserves `/settings`, so use `/m
 **Prerequisites**
 
 - An environment with a Dataverse database, in the same tenant as your Teams users. You need System Administrator in it.
-- Copilot Studio capacity for the environment. Commands and the AI check use it. Scheduled digests don't.
-- A service account with **Power Automate Premium** and **Microsoft Teams** licences. It owns the flows and connections. The flows use the premium HTTP action to call the Release Communications endpoint.
+- Copilot Studio capacity (Copilot Credits) for the environment. Every workflow run uses it, the scheduled harvests and digests included, and so do agent replies and the AI check. When the environment has no credits left, new workflow runs are blocked. See **Cost** below.
+- A service account with a licence that includes Microsoft Teams. It owns the Dataverse and Teams connections that every workflow runs under. The workflows themselves are billed in Copilot Credits, not through a Power Automate licence.
 - AI prompts enabled in the environment. If they aren't, set `ait_AiVerification` to `false` after import.
 - No data policy that blocks **HTTP** together with **Microsoft Dataverse** and **Microsoft Teams**, and outbound HTTPS to `www.microsoft.com` allowed.
 - Commercial cloud only. GCC, GCC High, DoD, and China clouds aren't supported. The agent speaks English only.
@@ -92,7 +94,7 @@ The slash is optional (`help` works too). Teams reserves `/settings`, so use `/m
    | Variable | Default | Meaning |
    | --- | --- | --- |
    | `ait_MaxProductsPerUser` | 0 | Most products one user may follow; 0 = no limit |
-   | `ait_DeliveryHourUtc` | 7 | Delivery hour shown to users. Keep it equal to the Digest flow's trigger hour |
+   | `ait_DeliveryHourUtc` | 7 | Delivery hour shown to users. Keep it equal to the Digest workflow's trigger hour |
    | `ait_DefaultLookaheadMonths` | 3 | Look-ahead for new users |
    | `ait_DefaultCriticalWindowMonths` | 6 | Critical window for new users |
    | `ait_MaxItemsPerDigest` | 25 | Items per digest card |
@@ -104,9 +106,18 @@ The slash is optional (`help` works too). Teams reserves `/settings`, so use `/m
    | `ait_CloudInstance` | Worldwide (Standard Multi-Tenant) | Roadmap cloud filter |
    | `ait_McpServerUrl` | `https://www.microsoft.com/releasecommunications/mcp` | Data source |
 
-5. **Turn on the flows in this order:** Catalog Refresh, Harvest, Harvest Azure. Wait until **Roadmap Watcher Admin → Run logs** shows a succeeded row for each harvest. Then turn on Send Digest, then Digest. Check that every agent flow is on.
+5. **Turn on the workflows in this order:** Catalog Refresh, Harvest, Harvest Azure. Wait until **Roadmap Watcher Admin → Run logs** shows a succeeded row for each harvest. Then turn on Send Digest, then Digest. Check that every command workflow is on. If you open and publish a workflow in the designer, check its connections afterwards: they must stay on the `ait_Dataverse` and `ait_Teams` connection references, not on end-user credentials, or every Teams user is asked to sign in to Dataverse.
 6. **Publish the agent** in Copilot Studio, keeping **Authenticate with Microsoft**. Add the **Teams and Microsoft 365 Copilot** channel and submit it for admin approval.
 7. **Teams admin.** Allow the app in the Teams admin center. Optionally pre-install it for target users with a setup policy: a digest can only be posted to a user who has the app installed.
 8. **Smoke test** in Teams: open the agent (welcome message), then `help`, `/packs`, `/add security`, `/digest`.
 
-**Cost.** Harvest and digest flows run on the service account's Power Automate Premium licence. Each command in Teams uses Copilot Studio capacity: about 3 credits, or about 10 for `/digest`. Set a monthly credit limit for the agent in the Power Platform admin center.
+**Cost.** Every workflow step costs 0.13 Copilot Credits, and AI prompt checks are charged on top. The credits come from the environment, whichever account runs the workflow. Rough figures from the test environment:
+
+| Activity | Approximate Copilot Credits |
+| --- | --- |
+| Harvest and Harvest Azure | 150–200 a day together; more on days with many roadmap changes |
+| Catalog Refresh | 150 a week |
+| One 25-item digest | 34 per user per digest |
+| A command in Teams | The agent's reply plus the workflow it calls; `/digest` costs about as much as a scheduled digest |
+
+Watch consumption in **Power Platform admin center → Licensing → Copilot Studio**. Per-agent limits don't stop workflow runs, so cap spending through the environment's credit allocation.

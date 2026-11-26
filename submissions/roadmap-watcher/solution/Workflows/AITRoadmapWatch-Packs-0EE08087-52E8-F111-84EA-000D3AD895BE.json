@@ -1,0 +1,653 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "ait_Dataverse"
+        },
+        "runtimeSource": "embedded"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "metadata": {
+            "associatedData": {
+              "graph": {
+                "name": "AIT Roadmap Watch - Packs",
+                "nodes": [
+                  {
+                    "id": "start-32579820-1b74-468a-91c0-b02957356f23",
+                    "name": "When an agent calls the flow",
+                    "type": "start",
+                    "version": 1,
+                    "position": {
+                      "x": 100,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "triggerType": "connector",
+                        "connector": {
+                          "apiName": "Skills",
+                          "operationName": "When_an_agent_calls_the_flow",
+                          "displayName": "When an agent calls the flow",
+                          "kind": "Skills",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {},
+                              "required": []
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 261,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "connector-57e53bf3-fde0-433d-b86d-b0638b65cb84",
+                    "name": "Get packs",
+                    "type": "connector",
+                    "version": 1,
+                    "position": {
+                      "x": 500,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "brandColor": "#088142",
+                        "operationName": "ListRecords",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parameters": {
+                          "entityName": "ait_packs",
+                          "$select": "ait_code,ait_name,ait_description",
+                          "$filter": "ait_isactive eq true",
+                          "$orderby": "ait_name asc",
+                          "$expand": "ait_pack_product($select=ait_productid;$filter=ait_isactive eq true)"
+                        },
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1835/1.0.1835.5113/commondataserviceforapps/icon.png",
+                        "parametersSchema": {
+                          "type": "object",
+                          "properties": {
+                            "x-ms-odata-metadata-full": {
+                              "type": "boolean",
+                              "title": "Return Full Metadata",
+                              "description": "The header parameter to customer to opt-in returning full odata metadata in response.",
+                              "x-ms-visibility": "advanced",
+                              "x-ms-property-name-alias": "x-ms-odata-metadata-full"
+                            },
+                            "entityName": {
+                              "type": "string",
+                              "title": "Table name",
+                              "x-ms-dynamic-list": {
+                                "operationId": "GetEntities",
+                                "parameters": {},
+                                "itemsPath": "value",
+                                "itemValuePath": "EntitySetName",
+                                "itemTitlePath": "DisplayCollectionName/UserLocalizedLabel/Label"
+                              },
+                              "description": "Choose a table",
+                              "minLength": 1,
+                              "x-ms-property-name-alias": "entityName"
+                            },
+                            "$select": {
+                              "type": "string",
+                              "title": "Select columns",
+                              "description": "Enter a comma-separated list of column unique names to limit which columns are listed",
+                              "x-ms-visibility": "important",
+                              "x-ms-property-name-alias": "$select"
+                            },
+                            "$filter": {
+                              "type": "string",
+                              "title": "Filter rows",
+                              "description": "Enter an OData style filter expression to limit which rows are listed",
+                              "x-ms-visibility": "important",
+                              "x-ms-property-name-alias": "$filter"
+                            },
+                            "$orderby": {
+                              "type": "string",
+                              "title": "Sort By",
+                              "description": "Columns to sort by in OData orderBy style (excluding lookups)",
+                              "x-ms-visibility": "important",
+                              "x-ms-property-name-alias": "$orderby"
+                            },
+                            "$expand": {
+                              "type": "string",
+                              "title": "Expand Query",
+                              "description": "Enter an Odata style expand query to list related rows",
+                              "x-ms-visibility": "advanced",
+                              "x-ms-property-name-alias": "$expand"
+                            },
+                            "fetchXml": {
+                              "type": "string",
+                              "title": "Fetch Xml Query",
+                              "description": "Enter a Fetch XML query for advanced customization",
+                              "x-ms-visibility": "important",
+                              "x-ms-property-name-alias": "fetchXml"
+                            },
+                            "$top": {
+                              "type": "integer",
+                              "title": "Row count",
+                              "format": "int32",
+                              "description": "Enter the number of rows to be listed (default = 5000)",
+                              "x-ms-visibility": "important",
+                              "x-ms-property-name-alias": "$top"
+                            },
+                            "$skiptoken": {
+                              "type": "string",
+                              "title": "Skip token",
+                              "description": "Enter the skip token obtained from a previous run to list rows from the next page",
+                              "x-ms-visibility": "advanced",
+                              "x-ms-property-name-alias": "$skiptoken"
+                            },
+                            "partitionId": {
+                              "type": "string",
+                              "title": "Partition ID",
+                              "description": "An option to specify the partitionId while retrieving data for NoSQL tables",
+                              "x-ms-visibility": "advanced",
+                              "x-ms-property-name-alias": "partitionId"
+                            }
+                          },
+                          "required": [
+                            "entityName"
+                          ]
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "ait_code": {
+                                      "type": "string",
+                                      "title": "Code",
+                                      "description": "One word used in commands, e.g. security.",
+                                      "maxLength": 50,
+                                      "x-ms-visibility": "advanced",
+                                      "x-ms-property-name-alias": "ait_code"
+                                    },
+                                    "ait_description": {
+                                      "type": "string",
+                                      "title": "Description",
+                                      "maxLength": 2000,
+                                      "x-ms-visibility": "advanced",
+                                      "x-ms-property-name-alias": "ait_description"
+                                    },
+                                    "ait_name": {
+                                      "type": "string",
+                                      "title": "Name",
+                                      "description": "Name",
+                                      "maxLength": 100,
+                                      "x-ms-visibility": "advanced",
+                                      "x-ms-property-name-alias": "ait_name"
+                                    },
+                                    "@odata.id": {
+                                      "type": "string",
+                                      "title": "OData Id",
+                                      "description": "OData row id",
+                                      "x-ms-visibility": "important",
+                                      "x-ms-property-name-alias": "@odata.id"
+                                    }
+                                  },
+                                  "required": []
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {}
+                      }
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "selected": true
+                  },
+                  {
+                    "id": "builtinFunction-bcf2a794-edad-4b71-9d15-3720377efdcc",
+                    "name": "Pack lines",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 900,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@body('Get_packs')?['value']",
+                          "select": "@concat('- `', item()?['ait_code'], '` **', item()?['ait_name'], '** · ', length(coalesce(item()?['ait_pack_product'], json('[]'))), ' products', if(empty(item()?['ait_description']), '', concat(' · ', item()?['ait_description'])))"
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "connector-57e53bf3-fde0-433d-b86d-b0638b65cb84": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-4a51cf3c-a2ab-4fa9-92cd-b9b626374a23",
+                    "name": "Reply",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1300,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "composeNew",
+                        "operationName": "composeNew",
+                        "displayName": "Compose",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "inputs": {
+                            "message": "@{if(empty(body('Pack_lines')), 'No packs are set up yet. Ask your admin, or use /products.', concat('**Packs**', decodeUriComponent('%0A%0A'), join(body('Pack_lines'), decodeUriComponent('%0A')), decodeUriComponent('%0A%0A'), 'Follow a pack with `/add <code>`, for example /add security.'))}"
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-bcf2a794-edad-4b71-9d15-3720377efdcc": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-c8fbe39e-9cf7-4af0-ada7-fd2bf27c7248",
+                    "name": "Respond to the agent",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1700,
+                      "y": 200
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "response",
+                        "operationName": "response",
+                        "displayName": "Respond to the agent",
+                        "category": "request",
+                        "categoryDisplayName": "Request",
+                        "kind": "Skills",
+                        "parameters": {
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "title": "message",
+                                "description": "",
+                                "type": "string",
+                                "x-ms-content-hint": "TEXT",
+                                "x-ms-dynamically-added": true
+                              }
+                            },
+                            "required": []
+                          },
+                          "body": {
+                            "message": "@{outputs('Reply')?['message']}"
+                          },
+                          "statusCode": 200
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-4a51cf3c-a2ab-4fa9-92cd-b9b626374a23": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-73602c3b-dafb-4e54-9eb4-9b4229df20f6",
+                    "name": "Respond with error",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1700,
+                      "y": 420
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "response",
+                        "operationName": "response",
+                        "displayName": "Respond with error",
+                        "category": "request",
+                        "categoryDisplayName": "Request",
+                        "kind": "Skills",
+                        "parameters": {
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "title": "message",
+                                "description": "",
+                                "type": "string",
+                                "x-ms-content-hint": "TEXT",
+                                "x-ms-dynamically-added": true
+                              }
+                            },
+                            "required": []
+                          },
+                          "body": {
+                            "message": "Sorry, something went wrong on my side. Please try again in a few minutes."
+                          },
+                          "statusCode": 200
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default"
+                        }
+                      ],
+                      "settings": {
+                        "runAfter": {
+                          "builtinFunction-4a51cf3c-a2ab-4fa9-92cd-b9b626374a23": [
+                            "Failed",
+                            "Skipped",
+                            "TimedOut"
+                          ]
+                        }
+                      }
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-start-32579820-1b74-468a-91c0-b02957356f23-connector-57e53bf3-fde0-433d-b86d-b0638b65cb84",
+                    "source": "start-32579820-1b74-468a-91c0-b02957356f23",
+                    "target": "connector-57e53bf3-fde0-433d-b86d-b0638b65cb84"
+                  },
+                  {
+                    "id": "edge-connector-57e53bf3-fde0-433d-b86d-b0638b65cb84-builtinFunction-bcf2a794-edad-4b71-9d15-3720377efdcc",
+                    "source": "connector-57e53bf3-fde0-433d-b86d-b0638b65cb84",
+                    "target": "builtinFunction-bcf2a794-edad-4b71-9d15-3720377efdcc"
+                  },
+                  {
+                    "id": "edge-builtinFunction-bcf2a794-edad-4b71-9d15-3720377efdcc-builtinFunction-4a51cf3c-a2ab-4fa9-92cd-b9b626374a23",
+                    "source": "builtinFunction-bcf2a794-edad-4b71-9d15-3720377efdcc",
+                    "target": "builtinFunction-4a51cf3c-a2ab-4fa9-92cd-b9b626374a23"
+                  },
+                  {
+                    "id": "edge-builtinFunction-4a51cf3c-a2ab-4fa9-92cd-b9b626374a23-builtinFunction-c8fbe39e-9cf7-4af0-ada7-fd2bf27c7248",
+                    "source": "builtinFunction-4a51cf3c-a2ab-4fa9-92cd-b9b626374a23",
+                    "target": "builtinFunction-c8fbe39e-9cf7-4af0-ada7-fd2bf27c7248"
+                  },
+                  {
+                    "id": "edge-builtinFunction-4a51cf3c-a2ab-4fa9-92cd-b9b626374a23-builtinFunction-73602c3b-dafb-4e54-9eb4-9b4229df20f6",
+                    "source": "builtinFunction-4a51cf3c-a2ab-4fa9-92cd-b9b626374a23",
+                    "target": "builtinFunction-73602c3b-dafb-4e54-9eb4-9b4229df20f6"
+                  }
+                ],
+                "connectionReferences": {
+                  "shared_commondataserviceforapps": {
+                    "api": {
+                      "name": "shared_commondataserviceforapps"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "ait_Dataverse"
+                    },
+                    "runtimeSource": "embedded"
+                  }
+                },
+                "parameters": {
+                  "$authentication": {
+                    "type": "SecureObject",
+                    "defaultValue": {}
+                  },
+                  "$connections": {
+                    "type": "Object",
+                    "defaultValue": {}
+                  }
+                }
+              },
+              "nodeActionMapping": {
+                "connector-57e53bf3-fde0-433d-b86d-b0638b65cb84": [
+                  "Get_packs"
+                ],
+                "builtinFunction-bcf2a794-edad-4b71-9d15-3720377efdcc": [
+                  "Pack_lines"
+                ],
+                "builtinFunction-4a51cf3c-a2ab-4fa9-92cd-b9b626374a23": [
+                  "Reply"
+                ],
+                "builtinFunction-c8fbe39e-9cf7-4af0-ada7-fd2bf27c7248": [
+                  "Respond_to_the_agent"
+                ],
+                "builtinFunction-73602c3b-dafb-4e54-9eb4-9b4229df20f6": [
+                  "Respond_with_error"
+                ]
+              },
+              "canvasOrientation": "horizontal"
+            }
+          }
+        }
+      },
+      "actions": {
+        "Get_packs": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "entityName": "ait_packs",
+              "$select": "ait_code,ait_name,ait_description",
+              "$filter": "ait_isactive eq true",
+              "$orderby": "ait_name asc",
+              "$expand": "ait_pack_product($select=ait_productid;$filter=ait_isactive eq true)"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords"
+            }
+          },
+          "metadata": {
+            "description": "Get packs",
+            "nodeId": "connector-57e53bf3-fde0-433d-b86d-b0638b65cb84"
+          }
+        },
+        "Pack_lines": {
+          "type": "Select",
+          "inputs": {
+            "from": "@body('Get_packs')?['value']",
+            "select": "@concat('- `', item()?['ait_code'], '` **', item()?['ait_name'], '** · ', length(coalesce(item()?['ait_pack_product'], json('[]'))), ' products', if(empty(item()?['ait_description']), '', concat(' · ', item()?['ait_description'])))"
+          },
+          "runAfter": {
+            "Get_packs": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Pack lines",
+            "nodeId": "builtinFunction-bcf2a794-edad-4b71-9d15-3720377efdcc"
+          }
+        },
+        "Reply": {
+          "type": "Compose",
+          "inputs": {
+            "message": "@{if(empty(body('Pack_lines')), 'No packs are set up yet. Ask your admin, or use /products.', concat('**Packs**', decodeUriComponent('%0A%0A'), join(body('Pack_lines'), decodeUriComponent('%0A')), decodeUriComponent('%0A%0A'), 'Follow a pack with `/add <code>`, for example /add security.'))}"
+          },
+          "runAfter": {
+            "Pack_lines": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Reply",
+            "nodeId": "builtinFunction-4a51cf3c-a2ab-4fa9-92cd-b9b626374a23"
+          }
+        },
+        "Respond_to_the_agent": {
+          "type": "Response",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "title": "message",
+                  "description": "",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": []
+            },
+            "statusCode": 200,
+            "body": {
+              "message": "@{outputs('Reply')?['message']}"
+            }
+          },
+          "runAfter": {
+            "Reply": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Respond to the agent",
+            "nodeId": "builtinFunction-c8fbe39e-9cf7-4af0-ada7-fd2bf27c7248"
+          }
+        },
+        "Respond_with_error": {
+          "type": "Response",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "title": "message",
+                  "description": "",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": []
+            },
+            "statusCode": 200,
+            "body": {
+              "message": "Sorry, something went wrong on my side. Please try again in a few minutes."
+            }
+          },
+          "runAfter": {
+            "Reply": [
+              "Failed",
+              "Skipped",
+              "TimedOut"
+            ]
+          },
+          "metadata": {
+            "description": "Respond with error",
+            "nodeId": "builtinFunction-73602c3b-dafb-4e54-9eb4-9b4229df20f6"
+          }
+        }
+      },
+      "outputs": {},
+      "metadata": {
+        "telemetryMetadata": {
+          "modifiedSources": "WorkflowDesigner"
+        },
+        "defaultToEmbeddedConnections": true
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
