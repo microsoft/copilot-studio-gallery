@@ -189,10 +189,13 @@ Review `unmatched_keys` rows: they usually mean the agent matched a model name
 that is written differently in the inventory. To send a post
 again (for example after changing the scope or the email text), delete its row.
 
-*List processed posts* reads up to 100,000 rows each run. Past that, older rows
-are not read and their posts could be handled again if they come back into the
-lookback window. Delete rows older than `lookbackDays` from time to time (they
-are no longer needed) to stay well below that.
+*List processed posts* reads up to 100,000 rows each run, which is years of
+posts for most tenants. Keep the rows: they are what makes each post handled
+once. Microsoft can edit an old post, which brings it back into the
+`lookbackDays` window. If its row is gone (deleted, or beyond the 100,000 rows
+read), the workflow treats it as new: it costs another agent run and emails
+the owners again. If you prune the table anyway, accept that risk for the
+pruned posts.
 
 ### Who the emails come from
 
