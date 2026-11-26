@@ -69,9 +69,15 @@ post**, however many agents are impacted.
    6. **Send admin summary** emails `adminEmail` with the scope, totals, whether
       the email cap was hit, and the first 500 impacted agents.
    7. **Record processed post** saves the post as `notified` (or
-      `notified_with_errors` when an email failed) with the number of impacted
-      agents. If an earlier step fails, nothing is recorded and the post is
-      retried on the next run.
+      `notified_with_errors` when an owner email or the admin summary failed)
+      with the number of impacted agents.
+
+   **Retries.** If a step before the emails fails (reading posts, the agent or
+   the inventory queries), nothing is recorded and the next run retries the post,
+   as long as it is still inside `lookbackDays`. A post recorded as
+   `notified_with_errors` is **not** retried automatically. Check the run
+   history, then delete its row to send it again. That re-sends to every owner of
+   the post, so owners who already got the email get it twice.
 
 Every customization point has a **CUSTOMIZE** note on the workflow canvas. The
 blue notes explain the steps in between. Open the workflow in the designer to
@@ -81,6 +87,10 @@ read them.
 
 - A Dataverse environment with Copilot Studio workflows, plus permission to
   import an unmanaged solution (it creates one table) and create connections.
+- **Read and Create** access to the *AI model processed post* table for the
+  account behind the *Microsoft Dataverse* connection (for example through a
+  security role). Without it, runs fail before any post is processed, or posts
+  are not recorded and are handled again.
 - **Message Center access for the Graph connection.** The account behind the
   *HTTP With Microsoft Entra ID* connection needs the **Message Center Reader**
   role (or a higher admin role). An admin must also consent to the delegated
