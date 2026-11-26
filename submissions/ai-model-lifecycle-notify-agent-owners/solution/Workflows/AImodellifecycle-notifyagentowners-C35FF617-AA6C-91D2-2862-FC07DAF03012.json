@@ -11,6 +11,16 @@
         "runtimeSource": "embedded",
         "connectionName": "shared-keyvault-mcplanner"
       },
+      "shared_commondataserviceforapps": {
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedcommondataserviceforapps_aimodel"
+        },
+        "runtimeSource": "embedded",
+        "connectionName": "shared-commondataser-0f699fde-ec38-4f23-be4a-1fa3328f1311"
+      },
       "shared_agentnode": {
         "api": {
           "name": "shared_agentnode"
@@ -135,7 +145,7 @@
                             "variableName": "Config",
                             "mode": "initialize",
                             "type": "object",
-                            "value": "{\n  \"tenantId\": \"<your-tenant-id>\",\n  \"clientId\": \"<your-app-client-id>\",\n  \"keyVaultSecretName\": \"<your-key-vault-secret-name>\",\n  \"adminEmail\": \"ai-governance@contoso.com\",\n  \"contactText\": \"your Power Platform environment admins\",\n  \"lookbackDays\": 1,\n  \"testMode\": true,\n  \"testModeMaxEmails\": 3,\n  \"maxOwnerEmailsPerPost\": 100,\n  \"environmentIds\": []\n}"
+                            "value": "{\n  \"tenantId\": \"<your-tenant-id>\",\n  \"clientId\": \"<your-app-client-id>\",\n  \"keyVaultSecretName\": \"<your-key-vault-secret-name>\",\n  \"adminEmail\": \"ai-governance@contoso.com\",\n  \"contactText\": \"your Power Platform environment admins\",\n  \"lookbackDays\": 30,\n  \"testMode\": true,\n  \"testModeMaxEmails\": 3,\n  \"maxOwnerEmailsPerPost\": 100,\n  \"environmentIds\": []\n}"
                           }
                         ]
                       },
@@ -263,7 +273,7 @@
                           "method": "GET",
                           "uri": "https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/messages",
                           "queries": {
-                            "$filter": "lastModifiedDateTime ge @{formatDateTime(addDays(utcNow(), mul(-1, int(coalesce(variables('Config')?['lookbackDays'], 1)))),'yyyy-MM-ddTHH:mm:ssZ')}"
+                            "$filter": "lastModifiedDateTime ge @{formatDateTime(addDays(utcNow(), mul(-1, int(coalesce(variables('Config')?['lookbackDays'], 30)))),'yyyy-MM-ddTHH:mm:ssZ')}"
                           },
                           "authentication": {
                             "type": "ActiveDirectoryOAuth",
@@ -343,6 +353,185 @@
                     },
                     "measured": {
                       "width": 243,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "connector-d194b48e-0549-5cd5-9d97-8d26163bf805",
+                    "name": "List processed posts",
+                    "type": "connector",
+                    "version": 1,
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1835/1.0.1835.5113/commondataserviceforapps/icon.png",
+                        "brandColor": "#637080",
+                        "operationName": "ListRecords",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "entityName"
+                          ],
+                          "properties": {
+                            "entityName": {
+                              "type": "string",
+                              "title": "Table name"
+                            },
+                            "$select": {
+                              "type": "string",
+                              "title": "$select"
+                            }
+                          }
+                        },
+                        "parameters": {
+                          "entityName": "at_aimodelprocessedposts",
+                          "$select": "at_name"
+                        },
+                        "initializedParameterDefaults": [],
+                        "operationId": "ListRecords"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "position": {
+                      "x": 1515,
+                      "y": 400.5
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-4196b120-7f45-57c3-af8c-d09cd8f600c4",
+                    "name": "Select processed post IDs",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 1798,
+                      "y": 400.5
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "select",
+                        "operationName": "select",
+                        "displayName": "Select",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/compose.svg",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@coalesce(body('List_processed_posts')?['value'], json('[]'))",
+                          "select": "@item()?['at_name']"
+                        },
+                        "description": "Transform items in an array by selecting and mapping properties.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "from",
+                            "select"
+                          ],
+                          "properties": {
+                            "from": {
+                              "type": "array",
+                              "title": "From",
+                              "description": "Array to transform"
+                            },
+                            "select": {
+                              "type": "object",
+                              "title": "Map",
+                              "description": "Property mappings",
+                              "x-ms-editor": "dictionary",
+                              "x-ms-editor-options": {
+                                "valueType": "any"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    }
+                  },
+                  {
+                    "id": "builtinFunction-7375ec27-163f-5c8b-8872-ad5bc6cf8f01",
+                    "name": "Filter new posts",
+                    "type": "builtinFunction",
+                    "version": 1,
+                    "position": {
+                      "x": 2081,
+                      "y": 400.5
+                    },
+                    "data": {
+                      "config": {
+                        "operationId": "query",
+                        "operationName": "query",
+                        "displayName": "Filter array",
+                        "category": "providers/Microsoft.ProcessSimple/operationGroups/DataOperation",
+                        "categoryDisplayName": "Data Operations",
+                        "iconUri": "https://logicappsv2resources.blob.core.windows.net/icons/compose.svg",
+                        "brandColor": "#8c6cff",
+                        "parameters": {
+                          "from": "@coalesce(body('Get_Message_Center_posts')?['value'], json('[]'))",
+                          "where": "{\n  \"and\": [\n    {\n      \"not\": {\n        \"contains\": [\n          \"@body('Select_processed_post_IDs')\",\n          \"@item()?['id']\"\n        ]\n      }\n    }\n  ]\n}"
+                        },
+                        "description": "Filter an array based on a condition.",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "from",
+                            "where"
+                          ],
+                          "properties": {
+                            "from": {
+                              "type": "array",
+                              "title": "From",
+                              "description": "Array to filter"
+                            },
+                            "where": {
+                              "type": "string",
+                              "x-ms-editor": "condition",
+                              "title": "Where",
+                              "description": "Filter condition"
+                            }
+                          }
+                        }
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object",
+                            "description": "Function output"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 257,
                       "height": 66
                     }
                   },
@@ -474,7 +663,7 @@
                       "height": 66
                     },
                     "position": {
-                      "x": 1515,
+                      "x": 2364,
                       "y": 400.5
                     }
                   },
@@ -484,14 +673,14 @@
                     "type": "loop",
                     "version": 1,
                     "position": {
-                      "x": 1798,
+                      "x": 2647,
                       "y": 250
                     },
-                    "width": 4700,
-                    "height": 820,
+                    "width": 5000,
+                    "height": 900,
                     "style": {
-                      "width": 4700,
-                      "height": 820
+                      "width": 5000,
+                      "height": 900
                     },
                     "data": {
                       "config": {
@@ -514,8 +703,8 @@
                       ]
                     },
                     "measured": {
-                      "width": 4700,
-                      "height": 820
+                      "width": 5000,
+                      "height": 900
                     }
                   },
                   {
@@ -2172,6 +2361,170 @@
                     "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
                   },
                   {
+                    "id": "connector-0758f421-15cf-5e87-ad03-dd9eddaca287",
+                    "name": "Record processed post",
+                    "type": "connector",
+                    "version": 1,
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1835/1.0.1835.5113/commondataserviceforapps/icon.png",
+                        "brandColor": "#637080",
+                        "operationName": "CreateRecord",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "entityName"
+                          ],
+                          "properties": {
+                            "entityName": {
+                              "type": "string",
+                              "title": "Table name"
+                            },
+                            "item/at_name": {
+                              "type": "string",
+                              "title": "at_name"
+                            },
+                            "item/at_title": {
+                              "type": "string",
+                              "title": "at_title"
+                            },
+                            "item/at_status": {
+                              "type": "string",
+                              "title": "at_status"
+                            },
+                            "item/at_agentsimpacted": {
+                              "type": "string",
+                              "title": "at_agentsimpacted"
+                            },
+                            "item/at_postlastmodified": {
+                              "type": "string",
+                              "title": "at_postlastmodified"
+                            },
+                            "item/at_reason": {
+                              "type": "string",
+                              "title": "at_reason"
+                            }
+                          }
+                        },
+                        "parameters": {
+                          "entityName": "at_aimodelprocessedposts",
+                          "item/at_name": "@items('For_each_message')?['id']",
+                          "item/at_title": "@{take(coalesce(items('For_each_message')?['title'], ''), 500)}",
+                          "item/at_status": "@{if(and(equals(coalesce(actions('For_each_owner')?['status'], ''), 'Succeeded'), equals(coalesce(actions('Send_admin_summary')?['status'], ''), 'Succeeded')), 'notified', 'notified_with_errors')}",
+                          "item/at_agentsimpacted": "@int(coalesce(body('Get_impacted_agents')?['totalRecords'], 0))",
+                          "item/at_postlastmodified": "@items('For_each_message')?['lastModifiedDateTime']",
+                          "item/at_reason": "@{take(coalesce(body('Identify_impacted_models')?['structuredOutput/reason'], ''), 4000)}"
+                        },
+                        "initializedParameterDefaults": [],
+                        "operationId": "CreateRecord"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "position": {
+                      "x": 4660,
+                      "y": 100
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "connector-44698fa5-af37-5b65-8f56-9c7e25a094f3",
+                    "name": "Record no impact",
+                    "type": "connector",
+                    "version": 1,
+                    "data": {
+                      "config": {
+                        "apiName": "shared_commondataserviceforapps",
+                        "displayName": "Microsoft Dataverse",
+                        "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1835/1.0.1835.5113/commondataserviceforapps/icon.png",
+                        "brandColor": "#637080",
+                        "operationName": "CreateRecord",
+                        "operationType": "OpenApiConnection",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "parametersSchema": {
+                          "type": "object",
+                          "required": [
+                            "entityName"
+                          ],
+                          "properties": {
+                            "entityName": {
+                              "type": "string",
+                              "title": "Table name"
+                            },
+                            "item/at_name": {
+                              "type": "string",
+                              "title": "at_name"
+                            },
+                            "item/at_title": {
+                              "type": "string",
+                              "title": "at_title"
+                            },
+                            "item/at_status": {
+                              "type": "string",
+                              "title": "at_status"
+                            },
+                            "item/at_agentsimpacted": {
+                              "type": "string",
+                              "title": "at_agentsimpacted"
+                            },
+                            "item/at_postlastmodified": {
+                              "type": "string",
+                              "title": "at_postlastmodified"
+                            },
+                            "item/at_reason": {
+                              "type": "string",
+                              "title": "at_reason"
+                            }
+                          }
+                        },
+                        "parameters": {
+                          "entityName": "at_aimodelprocessedposts",
+                          "item/at_name": "@items('For_each_message')?['id']",
+                          "item/at_title": "@{take(coalesce(items('For_each_message')?['title'], ''), 500)}",
+                          "item/at_status": "no_impact",
+                          "item/at_agentsimpacted": 0,
+                          "item/at_postlastmodified": "@items('For_each_message')?['lastModifiedDateTime']",
+                          "item/at_reason": "@{take(coalesce(body('Identify_impacted_models')?['structuredOutput/reason'], ''), 4000)}"
+                        },
+                        "initializedParameterDefaults": [],
+                        "operationId": "CreateRecord"
+                      },
+                      "outcomes": [
+                        {
+                          "id": "default",
+                          "label": "Default",
+                          "outcomeSchema": {
+                            "type": "object"
+                          }
+                        }
+                      ]
+                    },
+                    "measured": {
+                      "width": 240,
+                      "height": 66
+                    },
+                    "position": {
+                      "x": 640,
+                      "y": 620
+                    },
+                    "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
                     "id": "canvasNote-c90e5e14-5536-4e93-ae20-cec2d5dc2fed",
                     "name": "Note",
                     "type": "canvasNote",
@@ -2188,7 +2541,7 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Trigger**\n\nRuns daily (Recurrence). If you change the frequency, set `lookbackDays` in *Config* to the same interval so no post is missed or processed twice. To test, use Test / Run now (temporarily raise `lookbackDays`, e.g. 30, to pick up recent posts).",
+                        "markdown": "**CUSTOMIZE - Trigger**\n\nRuns daily (Recurrence) - change the frequency as you like. Every post handled is recorded in Dataverse, so overlapping runs or a longer `lookbackDays` never notify twice. To test, use Test / Run now.",
                         "color": "yellow"
                       },
                       "outcomes": []
@@ -2204,14 +2557,14 @@
                       "y": 30
                     },
                     "width": 300,
-                    "height": 440,
+                    "height": 460,
                     "style": {
                       "width": 300,
-                      "height": 440
+                      "height": 460
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Configuration (fill in first)**\n\n- `tenantId`, `clientId` - Entra app with Graph *ServiceMessage.Read.All* (application)\n- `keyVaultSecretName` - Key Vault secret with that app's client secret\n- `adminEmail` - governance mailbox: gets one summary per post and every email in test mode\n- `contactText` - who owners should contact, shown in the owner email (default: your Power Platform environment admins)\n- `lookbackDays` - must match the trigger interval\n- `testMode` - **true** = owner emails go to `adminEmail` only (shows the real recipient), max `testModeMaxEmails` per post\n- `maxOwnerEmailsPerPost` - safety cap on owner emails per post (the summary says when it was hit)\n- `environmentIds` - **scope**: environment IDs to check, e.g. `[\"<env-id-1>\", \"<env-id-2>\"]` (Power Platform admin center > Environments > Details). Leave `[]` for the whole tenant",
+                        "markdown": "**CUSTOMIZE - Configuration (fill in first)**\n\n- `tenantId`, `clientId` - Entra app with Graph *ServiceMessage.Read.All* (application)\n- `keyVaultSecretName` - Key Vault secret with that app's client secret\n- `adminEmail` - governance mailbox: gets one summary per post and every email in test mode\n- `contactText` - who owners should contact, shown in the owner email (default: your Power Platform environment admins)\n- `lookbackDays` - how far back to read posts each run (default 30). A safety window: missed runs catch up, already-handled posts are skipped\n- `testMode` - **true** = owner emails go to `adminEmail` only (shows the real recipient), max `testModeMaxEmails` per post\n- `maxOwnerEmailsPerPost` - safety cap on owner emails per post (the summary says when it was hit)\n- `environmentIds` - **scope**: environment IDs to check, e.g. `[\"<env-id-1>\", \"<env-id-2>\"]` (Power Platform admin center > Environments > Details). Leave `[]` for the whole tenant",
                         "color": "yellow"
                       },
                       "outcomes": []
@@ -2246,19 +2599,42 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 1232,
+                      "x": 949,
                       "y": 120
                     },
-                    "width": 300,
+                    "width": 540,
                     "height": 200,
                     "style": {
-                      "width": 300,
+                      "width": 540,
                       "height": 200
                     },
                     "data": {
                       "config": {
                         "markdown": "**CUSTOMIZE - Graph call**\n\nEntra app registration with ServiceMessage.Read.All (application). Tenant and client id come from *Config*; the client secret is read from Azure Key Vault with secure inputs/outputs - rotate it in Key Vault, never paste it here. Paging is on.",
                         "color": "yellow"
+                      },
+                      "outcomes": []
+                    }
+                  },
+                  {
+                    "id": "canvasNote-169f03c0-f98c-5ef1-8d17-2181eeb1115c",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 1515,
+                      "y": 120
+                    },
+                    "width": 540,
+                    "height": 200,
+                    "style": {
+                      "width": 540,
+                      "height": 200
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**Already handled? (Dataverse)**\n\nThe *AI model processed post* table keeps one row per post this workflow handled (status, agents impacted, reason). *Filter new posts* drops posts already in the table, so an **updated** post is not sent again and nothing is processed twice. To re-send a post, delete its row.",
+                        "color": "blue"
                       },
                       "outcomes": []
                     }
@@ -2280,7 +2656,7 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Connections (production)**\n\nKey Vault, *Power Platform for Admins V2*, Office 365 Outlook and Users connections sign in as a user. If that sign-in expires or the user loses a role, runs fail (401/403). Use a dedicated service account (or for Key Vault a service principal / Secret environment variable) so runs don't depend on a person.\n\nAfter assigning an admin role, **re-sign-in** the Admins V2 connection (Fix connection) - old tokens keep returning 403.",
+                        "markdown": "**CUSTOMIZE - Connections (production)**\n\nKey Vault, *Power Platform for Admins V2*, Dataverse, Office 365 Outlook and Users connections sign in as a user: if that sign-in expires or the user loses a role, runs fail (401/403). Use a dedicated service account (or for Key Vault a service principal / Secret environment variable) so runs don't depend on a person.\n\nAfter assigning an admin role, **re-sign-in** the Admins V2 connection (Fix connection) - old tokens keep returning 403.",
                         "color": "yellow"
                       },
                       "outcomes": []
@@ -2292,7 +2668,7 @@
                     "type": "canvasNote",
                     "version": 1,
                     "position": {
-                      "x": 1485,
+                      "x": 2334,
                       "y": 510.5
                     },
                     "width": 320,
@@ -2374,7 +2750,7 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "**For each Message Center post**\n\nEvery post returned by the Graph call is checked here, one at a time. *Is it about AI model lifecycle?* applies the *ModelServices* + keyword filter; posts that don't match go to Else and nothing happens (no agent run, no cost).",
+                        "markdown": "**For each new Message Center post**\n\nEvery post not handled before is checked here, one at a time. *Is it about AI model lifecycle?* applies the *ModelServices* + keyword filter; posts that don't match go to Else and nothing happens (no agent run, no cost).",
                         "color": "blue"
                       },
                       "outcomes": []
@@ -2391,14 +2767,14 @@
                       "y": 330
                     },
                     "width": 280,
-                    "height": 200,
+                    "height": 220,
                     "style": {
                       "width": 280,
-                      "height": 200
+                      "height": 220
                     },
                     "data": {
                       "config": {
-                        "markdown": "**Any agents impacted?**\n\nTrue when the agent returned at least one `inventoryKeys` value (a model + harness that exists in this tenant / scope). Otherwise the post doesn't affect any agent: Else, no emails.",
+                        "markdown": "**Any agents impacted?**\n\nTrue when the agent returned at least one `inventoryKeys` value (a model + harness that exists in this tenant / scope). Otherwise the post doesn't affect any agent: Else records it as *no_impact* (with the agent's reason), no emails.",
                         "color": "blue"
                       },
                       "outcomes": []
@@ -2510,15 +2886,15 @@
                       "x": 3800,
                       "y": 330
                     },
-                    "width": 420,
-                    "height": 240,
+                    "width": 560,
+                    "height": 260,
                     "style": {
-                      "width": 420,
-                      "height": 240
+                      "width": 560,
+                      "height": 260
                     },
                     "data": {
                       "config": {
-                        "markdown": "**Admin summary**\n\nRuns after all owner emails for the post. One email to `adminEmail`: scope, totals, whether the email cap was hit, the *What changes* table and the first 500 impacted agents (incl. agents without an owner, who get no email). Sent from the same *Office 365 Outlook* connection.",
+                        "markdown": "**Admin summary + record**\n\nRuns after all owner emails for the post. One email to `adminEmail`: scope, totals, whether the email cap was hit, the *What changes* table and the first 500 impacted agents (incl. agents without an owner, who get no email). Then *Record processed post* saves the post as *notified* (or *notified_with_errors*). If an earlier step fails nothing is recorded, so the post is retried next run.",
                         "color": "blue"
                       },
                       "outcomes": []
@@ -2548,8 +2924,23 @@
                     "target": "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa"
                   },
                   {
-                    "id": "edge-builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa-connector-5b1f3c2a-8e4d-4a7b-9c61-2f0d7e3a9b14",
+                    "id": "edge-builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa-connector-d194b48e-0549-5cd5-9d97-8d26163bf805",
                     "source": "builtinFunction-2a9d4628-45fe-4ad6-92d6-25b745bbf8aa",
+                    "target": "connector-d194b48e-0549-5cd5-9d97-8d26163bf805"
+                  },
+                  {
+                    "id": "edge-connector-d194b48e-0549-5cd5-9d97-8d26163bf805-builtinFunction-4196b120-7f45-57c3-af8c-d09cd8f600c4",
+                    "source": "connector-d194b48e-0549-5cd5-9d97-8d26163bf805",
+                    "target": "builtinFunction-4196b120-7f45-57c3-af8c-d09cd8f600c4"
+                  },
+                  {
+                    "id": "edge-builtinFunction-4196b120-7f45-57c3-af8c-d09cd8f600c4-builtinFunction-7375ec27-163f-5c8b-8872-ad5bc6cf8f01",
+                    "source": "builtinFunction-4196b120-7f45-57c3-af8c-d09cd8f600c4",
+                    "target": "builtinFunction-7375ec27-163f-5c8b-8872-ad5bc6cf8f01"
+                  },
+                  {
+                    "id": "edge-builtinFunction-7375ec27-163f-5c8b-8872-ad5bc6cf8f01-connector-5b1f3c2a-8e4d-4a7b-9c61-2f0d7e3a9b14",
+                    "source": "builtinFunction-7375ec27-163f-5c8b-8872-ad5bc6cf8f01",
                     "target": "connector-5b1f3c2a-8e4d-4a7b-9c61-2f0d7e3a9b14"
                   },
                   {
@@ -2589,10 +2980,15 @@
                     "sourceHandle": "condition:4d7b225c-87d1-5f2a-bc37-b1e625c48304"
                   },
                   {
-                    "id": "edge-ifElse-1097d8dc-5416-5d60-9021-acf5938c94d6-else-loop-49cc1e78-beb8-47cd-ae39-24625f467aec-internal-target",
+                    "id": "edge-ifElse-1097d8dc-5416-5d60-9021-acf5938c94d6-else-connector-44698fa5-af37-5b65-8f56-9c7e25a094f3",
                     "source": "ifElse-1097d8dc-5416-5d60-9021-acf5938c94d6",
+                    "target": "connector-44698fa5-af37-5b65-8f56-9c7e25a094f3",
+                    "sourceHandle": "else"
+                  },
+                  {
+                    "id": "edge-connector-44698fa5-af37-5b65-8f56-9c7e25a094f3-loop-49cc1e78-beb8-47cd-ae39-24625f467aec-internal-target",
+                    "source": "connector-44698fa5-af37-5b65-8f56-9c7e25a094f3",
                     "target": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
-                    "sourceHandle": "else",
                     "targetHandle": "internal-target"
                   },
                   {
@@ -2665,8 +3061,13 @@
                     "target": "connector-38feacf7-c7da-5e18-bf65-23d373ec74e9"
                   },
                   {
-                    "id": "edge-connector-38feacf7-c7da-5e18-bf65-23d373ec74e9-loop-49cc1e78-beb8-47cd-ae39-24625f467aec-internal-target",
+                    "id": "edge-connector-38feacf7-c7da-5e18-bf65-23d373ec74e9-connector-0758f421-15cf-5e87-ad03-dd9eddaca287",
                     "source": "connector-38feacf7-c7da-5e18-bf65-23d373ec74e9",
+                    "target": "connector-0758f421-15cf-5e87-ad03-dd9eddaca287"
+                  },
+                  {
+                    "id": "edge-connector-0758f421-15cf-5e87-ad03-dd9eddaca287-loop-49cc1e78-beb8-47cd-ae39-24625f467aec-internal-target",
+                    "source": "connector-0758f421-15cf-5e87-ad03-dd9eddaca287",
                     "target": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec",
                     "targetHandle": "internal-target"
                   }
@@ -2681,6 +3082,16 @@
                     },
                     "runtimeSource": "embedded",
                     "connectionName": "shared-keyvault-mcplanner"
+                  },
+                  "shared_commondataserviceforapps": {
+                    "api": {
+                      "name": "shared_commondataserviceforapps"
+                    },
+                    "connection": {
+                      "connectionReferenceLogicalName": "new_sharedcommondataserviceforapps_aimodel"
+                    },
+                    "runtimeSource": "embedded",
+                    "connectionName": "shared-commondataser-0f699fde-ec38-4f23-be4a-1fa3328f1311"
                   },
                   "shared_agentnode": {
                     "api": {
@@ -2773,7 +3184,7 @@
                   "keyVaultSecretName": "<your-key-vault-secret-name>",
                   "adminEmail": "ai-governance@contoso.com",
                   "contactText": "your Power Platform environment admins",
-                  "lookbackDays": 1,
+                  "lookbackDays": 30,
                   "testMode": true,
                   "testModeMaxEmails": 3,
                   "maxOwnerEmailsPerPost": 100,
@@ -2850,7 +3261,7 @@
             "method": "GET",
             "uri": "https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/messages",
             "queries": {
-              "$filter": "lastModifiedDateTime ge @{formatDateTime(addDays(utcNow(), mul(-1, int(coalesce(variables('Config')?['lookbackDays'], 1)))),'yyyy-MM-ddTHH:mm:ssZ')}"
+              "$filter": "lastModifiedDateTime ge @{formatDateTime(addDays(utcNow(), mul(-1, int(coalesce(variables('Config')?['lookbackDays'], 30)))),'yyyy-MM-ddTHH:mm:ssZ')}"
             },
             "authentication": {
               "type": "ActiveDirectoryOAuth",
@@ -2874,6 +3285,66 @@
             "paginationPolicy": {
               "minimumItemCount": 5000
             }
+          }
+        },
+        "List_processed_posts": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "entityName": "at_aimodelprocessedposts",
+              "$select": "at_name"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords"
+            }
+          },
+          "runAfter": {
+            "Get_Message_Center_posts": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "List processed posts",
+            "nodeId": "connector-d194b48e-0549-5cd5-9d97-8d26163bf805"
+          },
+          "runtimeConfiguration": {
+            "paginationPolicy": {
+              "minimumItemCount": 5000
+            }
+          }
+        },
+        "Select_processed_post_IDs": {
+          "type": "Select",
+          "inputs": {
+            "from": "@coalesce(body('List_processed_posts')?['value'], json('[]'))",
+            "select": "@item()?['at_name']"
+          },
+          "runAfter": {
+            "List_processed_posts": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Select processed post IDs",
+            "nodeId": "builtinFunction-4196b120-7f45-57c3-af8c-d09cd8f600c4"
+          }
+        },
+        "Filter_new_posts": {
+          "type": "Query",
+          "inputs": {
+            "from": "@coalesce(body('Get_Message_Center_posts')?['value'], json('[]'))",
+            "where": "@not(contains(body('Select_processed_post_IDs'), item()?['id']))"
+          },
+          "runAfter": {
+            "Select_processed_post_IDs": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "description": "Filter new posts",
+            "nodeId": "builtinFunction-7375ec27-163f-5c8b-8872-ad5bc6cf8f01"
           }
         },
         "Get_model_summary": {
@@ -2953,7 +3424,7 @@
             }
           },
           "runAfter": {
-            "Get_Message_Center_posts": [
+            "Filter_new_posts": [
               "Succeeded"
             ]
           },
@@ -2964,7 +3435,7 @@
         },
         "For_each_message": {
           "type": "Foreach",
-          "foreach": "@coalesce(body('Get_Message_Center_posts')?['value'], json('[]'))",
+          "foreach": "@body('Filter_new_posts')",
           "metadata": {
             "description": "For each message",
             "nodeId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
@@ -3193,7 +3664,32 @@
                     ]
                   },
                   "else": {
-                    "actions": {}
+                    "actions": {
+                      "Record_no_impact": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "parameters": {
+                            "entityName": "at_aimodelprocessedposts",
+                            "item/at_name": "@items('For_each_message')?['id']",
+                            "item/at_title": "@{take(coalesce(items('For_each_message')?['title'], ''), 500)}",
+                            "item/at_status": "no_impact",
+                            "item/at_agentsimpacted": 0,
+                            "item/at_postlastmodified": "@items('For_each_message')?['lastModifiedDateTime']",
+                            "item/at_reason": "@{take(coalesce(body('Identify_impacted_models')?['structuredOutput/reason'], ''), 4000)}"
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                            "connectionName": "shared_commondataserviceforapps",
+                            "operationId": "CreateRecord"
+                          }
+                        },
+                        "runAfter": {},
+                        "metadata": {
+                          "description": "Record no impact",
+                          "nodeId": "connector-44698fa5-af37-5b65-8f56-9c7e25a094f3"
+                        }
+                      }
+                    }
                   },
                   "runAfter": {
                     "Identify_impacted_models": [
@@ -3730,6 +4226,35 @@
                       "metadata": {
                         "description": "Send admin summary",
                         "nodeId": "connector-38feacf7-c7da-5e18-bf65-23d373ec74e9"
+                      }
+                    },
+                    "Record_processed_post": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "entityName": "at_aimodelprocessedposts",
+                          "item/at_name": "@items('For_each_message')?['id']",
+                          "item/at_title": "@{take(coalesce(items('For_each_message')?['title'], ''), 500)}",
+                          "item/at_status": "@{if(and(equals(coalesce(actions('For_each_owner')?['status'], ''), 'Succeeded'), equals(coalesce(actions('Send_admin_summary')?['status'], ''), 'Succeeded')), 'notified', 'notified_with_errors')}",
+                          "item/at_agentsimpacted": "@int(coalesce(body('Get_impacted_agents')?['totalRecords'], 0))",
+                          "item/at_postlastmodified": "@items('For_each_message')?['lastModifiedDateTime']",
+                          "item/at_reason": "@{take(coalesce(body('Identify_impacted_models')?['structuredOutput/reason'], ''), 4000)}"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                          "connectionName": "shared_commondataserviceforapps",
+                          "operationId": "CreateRecord"
+                        }
+                      },
+                      "runAfter": {
+                        "Send_admin_summary": [
+                          "Succeeded",
+                          "Failed"
+                        ]
+                      },
+                      "metadata": {
+                        "description": "Record processed post",
+                        "nodeId": "connector-0758f421-15cf-5e87-ad03-dd9eddaca287"
                       }
                     }
                   }

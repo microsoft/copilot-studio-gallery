@@ -6,6 +6,7 @@ tenant with hundreds or thousands of agents, nobody knows which agents use the
 model a post is about, or who owns them.
 
 This workflow closes that gap. Once a day it reads new Message Center posts,
+skips the ones it has already handled,
 lets an agent node work out which models and harnesses a post affects, finds
 the impacted agents in the Power Platform inventory and emails each owner:
 
@@ -35,12 +36,16 @@ post**, however many agents are impacted.
    `GET https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/messages`
    with client-credentials auth, filtered to posts modified in the last
    `lookbackDays`, with paging on.
-6. **Get model summary** queries the Power Platform inventory once and returns
+6. **List processed posts**, **Select processed post IDs** and **Filter new
+   posts** read the *AI model processed post* Dataverse table and drop every
+   post that is already in it. Each post is handled once, even when Microsoft
+   updates it later or the lookback windows of two runs overlap.
+7. **Get model summary** queries the Power Platform inventory once and returns
    one row per `model` + `harness` combination with an agent count. This stays
    small even in tenants with thousands of agents. Agents on *Copilot Studio
    default* and *Microsoft 365 Copilot* are excluded, because Microsoft moves
    them automatically.
-7. **For each message:**
+8. **For each new post:**
    1. **Is it about AI model lifecycle?** keeps posts that list one of the
       filter's services **and** mention a model term in the title (AI model,
       GPT, Claude, harness, ...) or a retirement term in the body. Other posts
@@ -50,7 +55,9 @@ post**, however many agents are impacted.
       It normalizes names, requires exact versions and maps harness names. It
       returns structured output only: `inventoryKeys`, `impacts` (model,
       harness, change, replacement, date), `actionBy`, `headline` and `reason`.
-   3. **Any agents impacted?** stops here when no inventory key matched.
+   3. **Any agents impacted?** When no inventory key matched, *Record no
+      impact* saves the post as `no_impact` (with the agent's reason) and the
+      workflow moves on.
    4. **Get impacted agents** and **Get impacted owners** query the inventory
       server-side for the matched keys. Owners are grouped, and agents with no
       owner are left out of the owner emails.
@@ -62,6 +69,10 @@ post**, however many agents are impacted.
       automatic migrations and behavior changes owners are asked to test.
    6. **Send admin summary** emails `adminEmail` with the scope, totals, whether
       the email cap was hit, and the first 500 impacted agents.
+   7. **Record processed post** saves the post as `notified` (or
+      `notified_with_errors` when an email failed) with the number of impacted
+      agents. If an earlier step fails, nothing is recorded and the post is
+      retried on the next run.
 
 Every customization point has a **CUSTOMIZE** note on the workflow canvas. The
 blue notes explain the steps in between. Open the workflow in the designer to
@@ -70,7 +81,7 @@ read them.
 ## Prerequisites
 
 - A Dataverse environment with Copilot Studio workflows, plus permission to
-  import an unmanaged solution and create connections.
+  import an unmanaged solution (it creates one table) and create connections.
 - **An Entra app registration** with Microsoft Graph `ServiceMessage.Read.All`
   (**application** permission, admin consent granted) and a client secret.
 - **Azure Key Vault** holding that client secret, and an account or app that can
@@ -95,6 +106,7 @@ read them.
    | --- | --- | --- |
    | `new_sharedkeyvault_mcplanner` | Azure Key Vault (point it at your vault) | Graph client secret |
    | `new_sharedpowerplatformadminv2_aimodel` | Power Platform for Admins V2 | Agent inventory queries |
+   | `new_sharedcommondataserviceforapps_aimodel` | Microsoft Dataverse (this environment) | Reading and recording processed posts |
    | `new_sharedagentnode_50374135` | Agent | *Identify impacted models* |
    | `new_sharedoffice365_aimodel` | Office 365 Outlook | Sending the emails (sender) |
    | `new_sharedoffice365users_aimodel` | Office 365 Users | Owner names and emails |
@@ -108,7 +120,7 @@ read them.
    | `keyVaultSecretName` | `<your-key-vault-secret-name>` | The secret holding its client secret |
    | `adminEmail` | `ai-governance@contoso.com` | Gets one summary per post, and every email in test mode |
    | `contactText` | `your Power Platform environment admins` | Who owners should contact, shown in the owner email |
-   | `lookbackDays` | `1` | How far back to read posts. Keep it equal to the trigger interval |
+   | `lookbackDays` | `30` | How far back to read posts each run. A safety window: missed or failed runs catch up, and posts already handled are skipped |
    | `testMode` | `true` | Owner emails go to `adminEmail` only, with a banner showing the real recipient |
    | `testModeMaxEmails` | `3` | Owner emails per post in test mode |
    | `maxOwnerEmailsPerPost` | `100` | Safety cap on owner emails per post. The summary says when it was hit |
@@ -116,13 +128,31 @@ read them.
 
 4. Optionally adjust **Set model lifecycle filter** (services) and the keywords
    in **Is it about AI model lifecycle?**.
-5. Test it from the designer (**Test** / **Run now**). To pick up recent posts,
-   raise `lookbackDays` temporarily (for example to `30`), and scope it to one or
-   two environments with `environmentIds`. In test mode, every email arrives in
+5. Test it from the designer (**Test** / **Run now**), scoped to one or two
+   environments with `environmentIds`. In test mode, every email arrives in
    `adminEmail`.
-6. When the emails look right, set `testMode` to `false`, set `lookbackDays` back
-   to the trigger interval, and leave the workflow on. It runs **daily**. If you
-   change the frequency, keep `lookbackDays` equal to it.
+6. Test runs also record the posts they handle. Before going live, delete the
+   test rows from the *AI model processed post* table (see below) so owners get
+   those posts too. Then set `testMode` to `false` and leave the workflow on. It
+   runs **daily**; you can change the frequency without touching `lookbackDays`.
+
+### Processed posts (Dataverse)
+
+The solution includes the **AI model processed post** table
+(`at_aimodelprocessedpost`). The workflow adds one row per post it has handled:
+
+| Column | Content |
+| --- | --- |
+| Name (`at_name`) | Message Center ID, for example `MC1234567` |
+| Title | Post title |
+| Status | `notified`, `notified_with_errors` or `no_impact` |
+| Agents impacted | Number of impacted agents in scope |
+| Post last modified | The post's `lastModifiedDateTime` when it was handled |
+| Reason | The agent's reasoning |
+
+Posts that the keyword filter skips are not recorded, so they cost nothing and
+are checked again only while they are inside the lookback window. To send a post
+again (for example after changing the scope or the email text), delete its row.
 
 ### Who the emails come from
 
@@ -146,7 +176,8 @@ change, not the workflow.
 - **Reads:** Microsoft 365 Message Center posts for your tenant (Graph), one Key
   Vault secret, Copilot Studio agents and environments in the Power Platform
   inventory, and owner profiles in Entra.
-- **Writes:** sends emails to agent owners and to `adminEmail`. Nothing in your
+- **Writes:** sends emails to agent owners and to `adminEmail`, and adds one
+  row per handled post to the *AI model processed post* table. Nothing in your
   agents or environments is changed. The post content and the model summary are
   sent to the agent node's model.
 
@@ -170,9 +201,9 @@ change, not the workflow.
   fails it shows a red warning; check *Send owner email* in the run history.
 - An owner who can't be found in Entra (for example a deleted user) gets no
   email. The email goes to `adminEmail` with an *Owner not found* banner instead.
-- Each run looks back a fixed `lookbackDays` window. If a run is missed or fails,
-  posts changed in that gap are not picked up unless they change again. To catch
-  up, run once with a larger `lookbackDays` (owners may get an email again for
-  posts already processed).
+- A post is handled once. If Microsoft later updates it (for example with a new
+  date), owners are not emailed again; delete the post's row to re-send it.
+- Posts older than `lookbackDays` are never read. If the workflow is off for
+  longer than that, raise `lookbackDays` for one run to catch up.
 - The sample was built and tested in its source environment, scoped to a few
   environments. No fresh-environment import has been verified yet.
