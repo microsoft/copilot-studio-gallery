@@ -38,13 +38,16 @@ from a model service**, however many agents are impacted.
 5. **List processed posts**, **Select processed post IDs** and **Filter new
    posts** read the *AI model processed post* Dataverse table and drop every
    post that is already in it. Each post is handled once, even when Microsoft
-   updates it later or the lookback windows of two runs overlap.
+   updates it later or the lookback windows of two runs overlap. The lookup
+   pages through up to 100,000 rows (years of posts); see
+   [Processed posts](#processed-posts-dataverse).
 6. **Get model summary** queries the Power Platform inventory once and returns
    one row per `model` + `harness` combination with an agent count. This stays
    small even in tenants with thousands of agents. Agents on *Copilot Studio
    default* and *Microsoft 365 Copilot* are excluded, because Microsoft moves
    them automatically.
-7. **For each new post:**
+7. **For each new post** (one at a time, so the per-post variables are not
+   shared):
    1. **Is it from a model service?** keeps posts that list one of the
       filter's services. This is the only deterministic gate: there is no
       keyword list to maintain. Posts from other services are skipped without
@@ -67,18 +70,26 @@ from a model service**, however many agents are impacted.
       `unmatched_keys` (the agent said impacted but none of its keys exist in
       the inventory), and the workflow moves on. Unmatched keys are listed in
       the reason, so a bad match is distinguishable from a genuine no-impact.
-   5. **Get impacted agents** and **Get impacted owners** query the inventory
-      server-side for the matched keys. Owners are grouped, and agents with no
-      owner are left out of the owner emails.
-   6. **For each owner** (5 in parallel): *Get owner agents* lists that owner's
-      agents with environment names, *Get owner profile* resolves the name and
-      email in Entra, and *Send owner email* sends the email. The email is High
+   5. **Read all impacted agents** queries the inventory once per post for the
+      matched keys and follows the `skipToken` page by page (1,000 rows per
+      page, up to 100 pages). *Select owner ids*, *Filter owner ids*, *Join
+      owner ids* and *Select owners* then build the owner list in the workflow:
+      one entry per owner with an agent count. Agents with no owner are left out
+      of the owner emails.
+   6. **For each owner** (5 in parallel) runs over the owners sorted by agent
+      count (most first, ties by owner id), so when the email cap applies the
+      most impacted owners are emailed first and the selection is the same on
+      every run. *Filter owner agents* takes that owner's agents from the rows
+      already read (no second query), *Get owner profile* resolves the name and
+      email in Entra, and *Send owner email* sends the email. If the profile
+      lookup fails, *Add unresolved owner* records the owner id for the admin
+      summary and the email goes to `adminEmail` instead. The email is High
       importance when the action-by date is within 30 days. Migration steps are
       only included for impacts that list a replacement model; for upgrades,
       automatic migrations and behavior changes owners are asked to test.
    7. **Send admin summary** emails `adminEmail` with the scope, totals, whether
-      the email cap was hit, any keys the agent returned that are not in the
-      inventory, and the first 500 impacted agents.
+      the email cap was hit, owners not found in Entra, any keys the agent
+      returned that are not in the inventory, and the first 500 impacted agents.
    8. **Record processed post** saves the post as `notified` (or
       `notified_with_errors` when an owner email or the admin summary failed)
       with the number of impacted agents.
@@ -178,6 +189,11 @@ Review `unmatched_keys` rows: they usually mean the agent matched a model name
 that is written differently in the inventory. To send a post
 again (for example after changing the scope or the email text), delete its row.
 
+*List processed posts* reads up to 100,000 rows each run. Past that, older rows
+are not read and their posts could be handled again if they come back into the
+lookback window. Delete rows older than `lookbackDays` from time to time (they
+are no longer needed) to stay well below that.
+
 ### Who the emails come from
 
 *Send owner email* and *Send admin summary* use **Send an email (V2)**, so they
@@ -214,14 +230,15 @@ connections change, not the workflow.
   your posts or inventory name harnesses differently.
 - `properties.model` in the inventory is a preview field and reflects the
   **published** version of each agent. Draft-only changes are not seen.
-- The inventory API returns at most 1,000 rows per call. Each owner's list is
-  queried separately (up to 1,000 agents per owner). If an owner has more, the
-  email says the list is partial. The admin summary lists at most 500 agents
-  (totals are always exact).
+- Impacted agents are read in pages of 1,000, up to 100,000 per post. If a post
+  impacts more, the owner emails say the list is partial and the admin summary
+  says how many were read. The admin summary lists at most 500 agents (totals
+  are always exact).
 - The admin summary counts the owners **selected** for an email. If any send
   fails it shows a red warning; check *Send owner email* in the run history.
 - An owner who can't be found in Entra (for example a deleted user) gets no
-  email. The email goes to `adminEmail` with an *Owner not found* banner instead.
+  email. The email goes to `adminEmail` with an *Owner not found* banner
+  instead, and the admin summary lists the owner id.
 - A post is handled once. If Microsoft later updates it (for example with a new
   date), owners are not emailed again; delete the post's row to re-send it.
 - Each run reads up to 1,000 posts modified within `lookbackDays` (30 days is
