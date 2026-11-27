@@ -58,7 +58,13 @@ from a model service**, however many agents are impacted.
       names, requires exact versions and maps harness names. It returns
       structured output only: `verdict` (`impacted`, `no_impact` or
       `not_about_models`), `inventoryKeys`, `impacts` (model, harness, change,
-      replacement, date), `actionBy`, `headline` and `reason`.
+      replacement, date), `actionBy`, `headline` and `reason`. Only significant
+      changes that could alter how an agent responds count (retirements,
+      deprecations, new versions or snapshots, changed output, tool calling or
+      limits). Compliance, legal or labelling notices, pricing, data residency
+      and changes that only affect prompts / AI Builder models are not treated
+      as impacting agents. Against a 20-post labelled set of real Message
+      Center posts the agent scored 20/20 on two consecutive runs.
    3. **Validate the agent's keys.** *Select returned keys* splits the agent's
       `inventoryKeys`, and *Filter matched keys* / *Filter unmatched keys*
       compare them (case-insensitively) with the keys in the model summary.
