@@ -2650,7 +2650,7 @@
                         "parameters": {
                           "emailMessage/To": "@{variables('Config')?['adminEmail']}",
                           "emailMessage/Subject": "AI model lifecycle summary - @{items('For_each_message')?['id']}: @{length(variables('AgentRows'))} agent(s), @{length(body('Filter_owner_ids'))} owner(s)",
-                          "emailMessage/Body": "<p>@{body('Identify_impacted_models')?['structuredOutput/headline']}</p><p><i>@{body('Identify_impacted_models')?['structuredOutput/reason']}</i></p><h3>What changes</h3>@{body('Create_impacts_table')}<h3>Numbers</h3><ul><li>Scope: @{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'all environments in the tenant', concat(string(length(coalesce(variables('Config')?['environmentIds'], json('[]')))), ' environment(s) listed in environmentIds'))}</li><li>Impacted agents: @{length(variables('AgentRows'))}@{if(not(empty(variables('SkipToken'))), ' - <b style=\"color:#a4262c\">more exist</b> (paging stopped at 100 pages); owner lists and the table below are incomplete', '')}</li><li>Owners with impacted agents: @{length(body('Filter_owner_ids'))}</li><li>Owners selected for an email this run: @{length(take(sort(body('Select_owners'), 'sortKey'), if(bool(coalesce(variables('Config')?['testMode'], true)), min(int(coalesce(variables('Config')?['testModeMaxEmails'], 3)), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100))), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100)))))}@{if(bool(coalesce(variables('Config')?['testMode'], true)), ' (TEST MODE - all sent to you)', '')}@{if(greater(length(body('Filter_owner_ids')), length(take(sort(body('Select_owners'), 'sortKey'), if(bool(coalesce(variables('Config')?['testMode'], true)), min(int(coalesce(variables('Config')?['testModeMaxEmails'], 3)), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100))), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100)))))), ' - <b>capped</b>: owners with the most impacted agents were picked first; raise maxOwnerEmailsPerPost / turn off testMode to reach every owner', '')}@{if(equals(coalesce(actions('For_each_owner')?['status'], 'Succeeded'), 'Succeeded'), '', concat('<br><b style=\"color:#a4262c\">Some owner emails were not sent (owner loop status: ', actions('For_each_owner')?['status'], '). Check Send owner email in the run history.</b>'))}</li>@{if(empty(variables('UnresolvedOwners')), '', concat('<li><b style=\"color:#a4262c\">Owners not found in Entra (', string(length(variables('UnresolvedOwners'))), '):</b> ', join(variables('UnresolvedOwners'), ', '), '. Their email was sent to you with an <i>Owner not found</i> banner - forward it or reassign the agents.</li>'))}@{if(empty(body('Filter_unmatched_keys')), '', concat('<li><b>Keys the agent returned that are not in the inventory (ignored):</b> ', join(body('Filter_unmatched_keys'), '; '), '</li>'))}<li>Agents without an owner (ownerId empty or 00000000-...) get no email - they are in the table below.</li></ul><h3>All impacted agents (first 500)</h3>@{body('Create_all_agents_table')}<p>Message Center post: <a href=\"https://admin.microsoft.com/Adminportal/Home#/MessageCenter/:/messages/@{items('For_each_message')?['id']}\">@{items('For_each_message')?['id']} - @{items('For_each_message')?['title']}</a></p>",
+                          "emailMessage/Body": "<p>@{body('Identify_impacted_models')?['structuredOutput/headline']}</p><p><i>@{body('Identify_impacted_models')?['structuredOutput/reason']}</i></p><h3>What changes</h3>@{body('Create_impacts_table')}<h3>Numbers</h3><ul><li>Scope: @{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'all environments in the tenant', concat(string(length(coalesce(variables('Config')?['environmentIds'], json('[]')))), ' environment(s) listed in environmentIds'))}</li><li>Impacted agents: @{length(variables('AgentRows'))}@{if(not(empty(variables('SkipToken'))), ' - <b style=\"color:#a4262c\">more exist</b> (paging stopped at 100 pages); owner lists and the table below are incomplete', '')}</li><li>Owners with impacted agents: @{length(body('Filter_owner_ids'))}</li><li>Owners selected for an email this run: @{min(length(body('Filter_owner_ids')), if(bool(coalesce(variables('Config')?['testMode'], true)), min(int(coalesce(variables('Config')?['testModeMaxEmails'], 3)), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100))), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100))))}@{if(bool(coalesce(variables('Config')?['testMode'], true)), ' (TEST MODE - all sent to you)', '')}@{if(greater(length(body('Filter_owner_ids')), min(length(body('Filter_owner_ids')), if(bool(coalesce(variables('Config')?['testMode'], true)), min(int(coalesce(variables('Config')?['testModeMaxEmails'], 3)), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100))), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100))))), ' - <b>capped</b>: owners with the most impacted agents were picked first; raise maxOwnerEmailsPerPost / turn off testMode to reach every owner', '')}@{if(equals(coalesce(actions('For_each_owner')?['status'], 'Succeeded'), 'Succeeded'), '', concat('<br><b style=\"color:#a4262c\">Some owner emails were not sent (owner loop status: ', actions('For_each_owner')?['status'], '). Check Send owner email in the run history.</b>'))}</li>@{if(empty(variables('UnresolvedOwners')), '', concat('<li><b style=\"color:#a4262c\">Owners not found in Entra (', string(length(variables('UnresolvedOwners'))), '):</b> ', join(variables('UnresolvedOwners'), ', '), '. Their email was sent to you with an <i>Owner not found</i> banner - forward it or reassign the agents.</li>'))}@{if(empty(body('Filter_unmatched_keys')), '', concat('<li><b>Keys the agent returned that are not in the inventory (ignored):</b> ', join(body('Filter_unmatched_keys'), '; '), '</li>'))}<li>Agents without an owner (ownerId empty or 00000000-...) get no email - they are in the table below.</li></ul><h3>All impacted agents (first 500)</h3>@{body('Create_all_agents_table')}<p>Message Center post: <a href=\"https://admin.microsoft.com/Adminportal/Home#/MessageCenter/:/messages/@{items('For_each_message')?['id']}\">@{items('For_each_message')?['id']} - @{items('For_each_message')?['title']}</a></p>",
                           "emailMessage/Importance": "Normal"
                         },
                         "connectionName": "shared_office365"
@@ -2853,8 +2853,8 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Trigger**\n\nRuns daily (Recurrence) - change the frequency as you like. Every post handled is recorded in Dataverse, so overlapping runs or a longer `lookbackDays` never notify twice. To test, use Test / Run now.",
-                        "color": "yellow"
+                        "markdown": "**OPTIONAL - Trigger**\n\nRuns daily (Recurrence) - change the frequency as you like. Every post handled is recorded in Dataverse, so overlapping runs or a longer `lookbackDays` never notify twice. To test, use Test / Run now.",
+                        "color": "green"
                       },
                       "outcomes": []
                     }
@@ -2876,7 +2876,7 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Configuration (fill in first)**\n\n- `adminEmail` - governance mailbox: gets one summary per post and every email in test mode\n- `contactText` - who owners should contact, shown in the owner email (default: your Power Platform environment admins)\n- `lookbackDays` - how far back to read posts each run (default 30). A safety window: missed runs catch up, already-handled posts are skipped\n- `testMode` - **true** = owner emails go to `adminEmail` only (shows the real recipient), max `testModeMaxEmails` per post\n- `maxOwnerEmailsPerPost` - safety cap on owner emails per post (the summary says when it was hit)\n- `environmentIds` - **scope**: environment IDs to check, e.g. `[\"<env-id-1>\", \"<env-id-2>\"]` (Power Platform admin center > Environments > Details). Leave `[]` for the whole tenant",
+                        "markdown": "**SETUP REQUIRED - Configuration (fill in first)**\n\n- `adminEmail` - governance mailbox: gets one summary per post and every email in test mode\n- `contactText` - who owners should contact, shown in the owner email (default: your Power Platform environment admins)\n- `lookbackDays` - how far back to read posts each run (default 30). A safety window: missed runs catch up, already-handled posts are skipped\n- `testMode` - **true** = owner emails go to `adminEmail` only (shows the real recipient), max `testModeMaxEmails` per post\n- `maxOwnerEmailsPerPost` - safety cap on owner emails per post (the summary says when it was hit)\n- `environmentIds` - **scope**: environment IDs to check, e.g. `[\"<env-id-1>\", \"<env-id-2>\"]` (Power Platform admin center > Environments > Details). Leave `[]` for the whole tenant",
                         "color": "yellow"
                       },
                       "outcomes": []
@@ -2899,8 +2899,8 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Model lifecycle filter**\n\n*ModelServices*: Message Center services whose posts can affect Copilot Studio agents. Only new posts tagged with one of these services reach the agent, which decides whether the post is about a model change. Each post that passes is one agent run (Copilot credits); every post the agent reads is recorded, so it is never read twice.",
-                        "color": "yellow"
+                        "markdown": "**OPTIONAL - Model lifecycle filter**\n\n*ModelServices*: Message Center services whose posts can affect Copilot Studio agents. Only new posts tagged with one of these services reach the agent, which decides whether the post is about a model change. Each post that passes is one agent run (Copilot credits); every post the agent reads is recorded, so it is never read twice.",
+                        "color": "green"
                       },
                       "outcomes": []
                     }
@@ -2912,17 +2912,17 @@
                     "version": 1,
                     "position": {
                       "x": 1120,
-                      "y": 108.5
+                      "y": 88.5
                     },
                     "width": 300,
-                    "height": 252,
+                    "height": 272,
                     "style": {
                       "width": 300,
-                      "height": 252
+                      "height": 272
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Graph call (no secrets)**\n\n*HTTP With Microsoft Entra ID* calls Graph as the connection user - no app registration, secret or certificate. The user needs the *Message Center Reader* role (or higher) and an admin must consent to `ServiceMessage.Read.All` for the connector. One page of up to 1,000 posts.",
+                        "markdown": "**SETUP REQUIRED - Graph call (no secrets)**\n\n*HTTP With Microsoft Entra ID* calls Graph as the connection user - no app registration, secret or certificate. The user needs the *Message Center Reader* role (or higher) and an admin must consent to `ServiceMessage.Read.All` for the connector. One page of up to 1,000 posts.",
                         "color": "yellow"
                       },
                       "outcomes": []
@@ -2968,7 +2968,7 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Connections (production)**\n\n*HTTP With Microsoft Entra ID*, *Power Platform for Admins V2*, Dataverse, Office 365 Outlook and Users connections sign in as a user: if that sign-in expires or the user loses a role, runs fail (401/403). Use a dedicated service account so runs don't depend on a person.\n\nAfter assigning an admin role, **re-sign-in** the Admins V2 connection (Fix connection) - old tokens keep returning 403.",
+                        "markdown": "**SETUP REQUIRED - Connections**\n\n*HTTP With Microsoft Entra ID*, *Power Platform for Admins V2*, Dataverse, Office 365 Outlook and Users connections sign in as a user: if that sign-in expires or the user loses a role, runs fail (401/403). Use a dedicated service account so runs don't depend on a person.\n\nAfter assigning an admin role, **re-sign-in** the Admins V2 connection (Fix connection) - old tokens keep returning 403.",
                         "color": "yellow"
                       },
                       "outcomes": []
@@ -2991,8 +2991,8 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Agent inventory**\n\n*Query Power Platform resources* (Power Platform for Admins V2) reads the Power Platform inventory. The connection must be an OAuth (user) connection of a **Power Platform / Global administrator**.\n\n*Get model summary* returns one row per `model` + `harness` (with agent count) - small enough for the agent even in tenants with thousands of agents. Agents on *Copilot Studio default* and *Microsoft 365 Copilot* are excluded (Microsoft moves them automatically). `properties.model` is a preview field and reflects the **published** agent.",
-                        "color": "green"
+                        "markdown": "**SETUP REQUIRED - Agent inventory**\n\n*Query Power Platform resources* (Power Platform for Admins V2) reads the Power Platform inventory. The connection must be an OAuth (user) connection of a **Power Platform / Global administrator**.\n\n*Get model summary* returns one row per `model` + `harness` (with agent count) - small enough for the agent even in tenants with thousands of agents. Agents on *Copilot Studio default* and *Microsoft 365 Copilot* are excluded (Microsoft moves them automatically). `properties.model` is a preview field and reflects the **published** agent.",
+                        "color": "yellow"
                       },
                       "outcomes": []
                     }
@@ -3014,7 +3014,7 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Agent (reasoning only)**\n\nReads the post (incl. tables), maps affected models + harness to the inventory summary (normalized names, exact versions, harness mapping: *Microsoft Copilot harness* = `GitHub Copilot`) and returns **structured output**: `verdict` (*impacted*, *no_impact* or *not_about_models*), `inventoryKeys`, `impacts` (model, harness, change, replacement, date), `actionBy`, `headline`, `reason`. It sends nothing itself, so cost stays at one agent run per matching post no matter how many agents are impacted.",
+                        "markdown": "**OPTIONAL - Agent (reasoning only)**\n\nReads the post (incl. tables), maps affected models + harness to the inventory summary (normalized names, exact versions, harness mapping: *Microsoft Copilot harness* = `GitHub Copilot`) and returns **structured output**: `verdict` (*impacted*, *no_impact* or *not_about_models*), `inventoryKeys`, `impacts` (model, harness, change, replacement, date), `actionBy`, `headline`, `reason`. It sends nothing itself, so cost stays at one agent run per matching post no matter how many agents are impacted.",
                         "color": "green"
                       },
                       "outcomes": []
@@ -3230,7 +3230,7 @@
                     },
                     "data": {
                       "config": {
-                        "markdown": "**CUSTOMIZE - Owner email**\n\nOne email per owner per post (5 in parallel): what changes, what to do and the action-by date, then their agents (list last so long lists don't bury the actions; High importance within 30 days). Runs whether or not the owner was found (configure run after: *Add unresolved owner* succeeded or skipped).\n\n**Sender**: the account of the *Office 365 Outlook* connection. To send from a shared mailbox instead, swap to *Send an email from a shared mailbox (V2)* - the connection user needs Send As on it.",
+                        "markdown": "**OPTIONAL - Owner email**\n\nOne email per owner per post (5 in parallel): what changes, what to do and the action-by date, then their agents (list last so long lists don't bury the actions; High importance within 30 days). Runs whether or not the owner was found (configure run after: *Add unresolved owner* succeeded or skipped).\n\n**Sender**: the account of the *Office 365 Outlook* connection. To send from a shared mailbox instead, swap to *Send an email from a shared mailbox (V2)* - the connection user needs Send As on it.",
                         "color": "green"
                       },
                       "outcomes": []
@@ -3470,6 +3470,29 @@
                       "outcomes": []
                     },
                     "parentId": "loop-49cc1e78-beb8-47cd-ae39-24625f467aec"
+                  },
+                  {
+                    "id": "canvasNote-25af70dc-30fe-582a-b68a-69152ce12c97",
+                    "name": "Note",
+                    "type": "canvasNote",
+                    "version": 1,
+                    "position": {
+                      "x": 100,
+                      "y": 516.5
+                    },
+                    "width": 300,
+                    "height": 212,
+                    "style": {
+                      "width": 300,
+                      "height": 212
+                    },
+                    "data": {
+                      "config": {
+                        "markdown": "**How to read these notes**\n\n- **Orange - SETUP REQUIRED**: do this before the first run\n- **Green - OPTIONAL**: works as is, change it if you want\n- **Blue**: explains how the steps work, nothing to change",
+                        "color": "blue"
+                      },
+                      "outcomes": []
+                    }
                   }
                 ],
                 "edges": [
@@ -4963,7 +4986,7 @@
                         "parameters": {
                           "emailMessage/To": "@{variables('Config')?['adminEmail']}",
                           "emailMessage/Subject": "AI model lifecycle summary - @{items('For_each_message')?['id']}: @{length(variables('AgentRows'))} agent(s), @{length(body('Filter_owner_ids'))} owner(s)",
-                          "emailMessage/Body": "<p>@{body('Identify_impacted_models')?['structuredOutput/headline']}</p><p><i>@{body('Identify_impacted_models')?['structuredOutput/reason']}</i></p><h3>What changes</h3>@{body('Create_impacts_table')}<h3>Numbers</h3><ul><li>Scope: @{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'all environments in the tenant', concat(string(length(coalesce(variables('Config')?['environmentIds'], json('[]')))), ' environment(s) listed in environmentIds'))}</li><li>Impacted agents: @{length(variables('AgentRows'))}@{if(not(empty(variables('SkipToken'))), ' - <b style=\"color:#a4262c\">more exist</b> (paging stopped at 100 pages); owner lists and the table below are incomplete', '')}</li><li>Owners with impacted agents: @{length(body('Filter_owner_ids'))}</li><li>Owners selected for an email this run: @{length(take(sort(body('Select_owners'), 'sortKey'), if(bool(coalesce(variables('Config')?['testMode'], true)), min(int(coalesce(variables('Config')?['testModeMaxEmails'], 3)), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100))), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100)))))}@{if(bool(coalesce(variables('Config')?['testMode'], true)), ' (TEST MODE - all sent to you)', '')}@{if(greater(length(body('Filter_owner_ids')), length(take(sort(body('Select_owners'), 'sortKey'), if(bool(coalesce(variables('Config')?['testMode'], true)), min(int(coalesce(variables('Config')?['testModeMaxEmails'], 3)), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100))), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100)))))), ' - <b>capped</b>: owners with the most impacted agents were picked first; raise maxOwnerEmailsPerPost / turn off testMode to reach every owner', '')}@{if(equals(coalesce(actions('For_each_owner')?['status'], 'Succeeded'), 'Succeeded'), '', concat('<br><b style=\"color:#a4262c\">Some owner emails were not sent (owner loop status: ', actions('For_each_owner')?['status'], '). Check Send owner email in the run history.</b>'))}</li>@{if(empty(variables('UnresolvedOwners')), '', concat('<li><b style=\"color:#a4262c\">Owners not found in Entra (', string(length(variables('UnresolvedOwners'))), '):</b> ', join(variables('UnresolvedOwners'), ', '), '. Their email was sent to you with an <i>Owner not found</i> banner - forward it or reassign the agents.</li>'))}@{if(empty(body('Filter_unmatched_keys')), '', concat('<li><b>Keys the agent returned that are not in the inventory (ignored):</b> ', join(body('Filter_unmatched_keys'), '; '), '</li>'))}<li>Agents without an owner (ownerId empty or 00000000-...) get no email - they are in the table below.</li></ul><h3>All impacted agents (first 500)</h3>@{body('Create_all_agents_table')}<p>Message Center post: <a href=\"https://admin.microsoft.com/Adminportal/Home#/MessageCenter/:/messages/@{items('For_each_message')?['id']}\">@{items('For_each_message')?['id']} - @{items('For_each_message')?['title']}</a></p>",
+                          "emailMessage/Body": "<p>@{body('Identify_impacted_models')?['structuredOutput/headline']}</p><p><i>@{body('Identify_impacted_models')?['structuredOutput/reason']}</i></p><h3>What changes</h3>@{body('Create_impacts_table')}<h3>Numbers</h3><ul><li>Scope: @{if(empty(coalesce(variables('Config')?['environmentIds'], json('[]'))), 'all environments in the tenant', concat(string(length(coalesce(variables('Config')?['environmentIds'], json('[]')))), ' environment(s) listed in environmentIds'))}</li><li>Impacted agents: @{length(variables('AgentRows'))}@{if(not(empty(variables('SkipToken'))), ' - <b style=\"color:#a4262c\">more exist</b> (paging stopped at 100 pages); owner lists and the table below are incomplete', '')}</li><li>Owners with impacted agents: @{length(body('Filter_owner_ids'))}</li><li>Owners selected for an email this run: @{min(length(body('Filter_owner_ids')), if(bool(coalesce(variables('Config')?['testMode'], true)), min(int(coalesce(variables('Config')?['testModeMaxEmails'], 3)), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100))), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100))))}@{if(bool(coalesce(variables('Config')?['testMode'], true)), ' (TEST MODE - all sent to you)', '')}@{if(greater(length(body('Filter_owner_ids')), min(length(body('Filter_owner_ids')), if(bool(coalesce(variables('Config')?['testMode'], true)), min(int(coalesce(variables('Config')?['testModeMaxEmails'], 3)), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100))), int(coalesce(variables('Config')?['maxOwnerEmailsPerPost'], 100))))), ' - <b>capped</b>: owners with the most impacted agents were picked first; raise maxOwnerEmailsPerPost / turn off testMode to reach every owner', '')}@{if(equals(coalesce(actions('For_each_owner')?['status'], 'Succeeded'), 'Succeeded'), '', concat('<br><b style=\"color:#a4262c\">Some owner emails were not sent (owner loop status: ', actions('For_each_owner')?['status'], '). Check Send owner email in the run history.</b>'))}</li>@{if(empty(variables('UnresolvedOwners')), '', concat('<li><b style=\"color:#a4262c\">Owners not found in Entra (', string(length(variables('UnresolvedOwners'))), '):</b> ', join(variables('UnresolvedOwners'), ', '), '. Their email was sent to you with an <i>Owner not found</i> banner - forward it or reassign the agents.</li>'))}@{if(empty(body('Filter_unmatched_keys')), '', concat('<li><b>Keys the agent returned that are not in the inventory (ignored):</b> ', join(body('Filter_unmatched_keys'), '; '), '</li>'))}<li>Agents without an owner (ownerId empty or 00000000-...) get no email - they are in the table below.</li></ul><h3>All impacted agents (first 500)</h3>@{body('Create_all_agents_table')}<p>Message Center post: <a href=\"https://admin.microsoft.com/Adminportal/Home#/MessageCenter/:/messages/@{items('For_each_message')?['id']}\">@{items('For_each_message')?['id']} - @{items('For_each_message')?['title']}</a></p>",
                           "emailMessage/Importance": "Normal"
                         },
                         "host": {

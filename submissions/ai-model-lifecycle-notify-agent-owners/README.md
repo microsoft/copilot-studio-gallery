@@ -101,9 +101,10 @@ from a model service**, however many agents are impacted.
    history, then delete its row to send it again. That re-sends to every owner of
    the post, so owners who already got the email get it twice.
 
-Every customization point has a **CUSTOMIZE** note on the workflow canvas. The
-blue notes explain the steps in between. Open the workflow in the designer to
-read them.
+The notes on the workflow canvas are colour-coded: **orange - SETUP REQUIRED**
+(do this before the first run), **green - OPTIONAL** (works as is, change it if
+you want) and **blue** (explains how the steps work). Open the workflow in the
+designer to read them.
 
 ## Prerequisites
 
