@@ -16,7 +16,7 @@ the impacted agents in the Power Platform inventory and emails each owner:
 > What changes - what you need to do - your impacted agents (name, model,
 > harness, environment).
 
-Admins get one summary per post with totals and the full list of impacted
+Admins get one summary per post with totals and a list of up to 500 impacted
 agents, including agents that have no owner.
 
 ## How the workflow works
@@ -242,8 +242,9 @@ connections change, not the workflow.
   **published** version of each agent. Draft-only changes are not seen.
 - Impacted agents are read in pages of 1,000, up to 100,000 per post. If a post
   impacts more, the owner emails say the list is partial and the admin summary
-  says how many were read. The admin summary lists at most 500 agents (totals
-  are always exact).
+  says how many were read. Agent and owner totals cover the rows read, so in
+  that case they are lower bounds. Separately, the admin summary table lists
+  at most 500 agents; the totals are not limited by that.
 - The admin summary counts the owners **selected** for an email. If any send
   fails it shows a red warning; check *Send owner email* in the run history.
 - An owner who can't be found in Entra (for example a deleted user) gets no
